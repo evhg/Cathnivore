@@ -67,9 +67,10 @@ import {
   star,
   drawThornPile,
   castShadow,
+  setLamps,
   setShadowSun,
 } from "./sprites";
-import { dayPhase, dayShadowDir, dayShadowLength, daySunRgb, dayWarmth } from "./sunlight";
+import { dayLamps, dayPhase, dayShadowDir, dayShadowLength, daySunRgb, dayWarmth } from "./sunlight";
 
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
 // Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
@@ -814,6 +815,7 @@ export class Renderer {
     const away = dayShadowDir(game.level.id, this.day);
     const len = dayShadowLength(this.day);
     setShadowSun({ x: away.x * len, y: away.y * len });
+    setLamps(dayLamps(this.day));
     this.clock += dt;
     this.cheer = Math.max(0, this.cheer - dt);
     this.gold.age += dt;

@@ -28,6 +28,11 @@ let sun2d = { x: 0.94, y: 0.34 };
 export function setShadowSun(dir: { x: number; y: number }): void {
   sun2d = dir;
 }
+/** Plan item 485: in the day's last third the farm's lamps are lit (the farmhouse windows glow out onto the yard). */
+let lamps2d = false;
+export function setLamps(on: boolean): void {
+  lamps2d = on;
+}
 export function shadowSun(): { x: number; y: number } {
   return sun2d;
 }
@@ -2541,6 +2546,20 @@ export function drawFarmhouse(ctx: C, x: number, y: number, s: number, t: number
   rr(ctx, x - s * 0.07, base - s * 0.26, s * 0.14, s * 0.26, s * 0.06, H.door);
   for (const wx of [-0.24, 0.16]) {
     rr(ctx, x + wx * s, base - s * 0.36, s * 0.1, s * 0.1, s * 0.01, "#ffe39a");
+  }
+  if (lamps2d) {
+    // lamplight: each window's warm pool, and the door left ajar on a lit hall
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (const [cx, cy, r] of [[x - s * 0.19, base - s * 0.31, s * 0.32], [x + s * 0.21, base - s * 0.31, s * 0.32], [x, base - s * 0.08, s * 0.42]] as const) {
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, "rgba(255,196,96,0.55)");
+      g.addColorStop(1, "rgba(255,150,60,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    }
+    ctx.restore();
+    rr(ctx, x - s * 0.07, base - s * 0.26, s * 0.05, s * 0.26, s * 0.02, "#ffd27a");
   }
   // Flower boxes.
   ctx.fillStyle = "#e8748b";
