@@ -215,6 +215,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   sheet.setAttribute("aria-label", "Starting file");
   // Plan item 210: on an upright phone the sheet is a paper dossier clipped over the street (styles.css).
   sheet.dataset.dossier = "";
+  // Plan item 504: at D (1100 px+) the same sheet is a cream case file on the table (styles.css `[data-casefile]`).
+  sheet.dataset.casefile = "";
   el("p", "cp-label", sheet, "Starts with");
   // Plan item 397: the phone's key to the bars' marks (hidden at D).
   const key = el("p", "cp-attrs-key", sheet);
@@ -395,6 +397,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const was = root.dataset.class;
     root.dataset.cls = cls;
     root.dataset.class = cls;
+    sheet.dataset.class = cls;
     if (was && was !== cls) {
       root.classList.remove("cp-swap");
       void root.offsetWidth;

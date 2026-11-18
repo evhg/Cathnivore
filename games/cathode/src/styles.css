@@ -3222,3 +3222,81 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .cp-opt-body:has(.cp-opt-role) > .cp-opt-meter { grid-area: meter; }
 .cp-opt-role { grid-area: role; align-self: center; font: 600 var(--fs-2) / 1 var(--font-ui); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 700px) and (orientation: portrait) { .cp-opt-role { display: none; } }
+
+/* Plan item 504: at D the spec column is a paper case file on the wet table under the lamp (the front door's paper,
+   item 494's Ledger and List): a cream folder with its tab, the type in the case board's ink (local tokens, so every
+   rule of the sheet keeps its job), the dials stamped in ink, the lit gun a print clipped to the page, the trees in
+   ink, Walk in the red stamp at its foot. The phone keeps its glass dossier (item 334). */
+@media (min-width: 1100px) {
+  .cp-sheet[data-casefile] {
+    --ink: var(--card-ink); --ink-2: var(--card-ink-2); --ink-3: var(--card-ink-2);
+    --ink-rgb: 29 26 22;
+    --line-2: color-mix(in srgb, var(--card-ink) 24%, transparent); --line-3: color-mix(in srgb, var(--card-ink) 14%, transparent);
+    color: var(--card-ink);
+  }
+  .cp-sheet[data-casefile]::before {
+    inset: calc(var(--u) * -26) calc(var(--u) * -26) calc(var(--u) * -22) calc(var(--u) * -34);
+    background:
+      radial-gradient(120% 60% at 30% 0%, color-mix(in srgb, var(--print-paper) 70%, transparent), transparent 70%),
+      repeating-linear-gradient(0deg, transparent 0 calc(var(--u) * 27), var(--card-rule) calc(var(--u) * 27) calc(var(--u) * 28)),
+      var(--card-paper);
+    background-position: 0 0, 0 calc(var(--u) * 12), 0 0;
+    border-radius: calc(var(--u) * 3);
+    box-shadow:
+      inset 0 0 calc(var(--u) * 40) color-mix(in srgb, var(--cork-lo) 22%, transparent),
+      0 calc(var(--u) * 14) calc(var(--u) * 30) rgb(var(--black-rgb) / .55);
+    transform: rotate(-.5deg);
+  }
+  /* The folder's tab, top left, with the file's class typed on it. */
+  .cp-sheet[data-casefile]::after {
+    content: "File · " attr(data-class);
+    position: absolute; z-index: calc(var(--z-lift) * -1); top: calc(var(--u) * -56); left: calc(var(--u) * -34);
+    padding: calc(var(--u) * 6) calc(var(--u) * 22) calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 6) calc(var(--u) * 14) 0 0;
+    background: var(--card-paper);
+    font: 700 var(--fs-1)/1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .06em; text-transform: uppercase; color: var(--card-ink-2);
+    transform: rotate(-.5deg); transform-origin: 0 100%;
+    pointer-events: none;
+  }
+  .cp-sheet[data-casefile] .cp-attrs {
+    background: none;
+    box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 1.5)) color-mix(in srgb, var(--card-ink) 30%, transparent); /* px-ok */
+  }
+  .cp-sheet[data-casefile] .cp-attr-n { font-variant-numeric: tabular-nums; }
+  /* The lit gun is a print clipped to the page: a white border, a deep foot, tilted, a steel clip over its top. */
+  .cp-sheet[data-casefile] .cp-weapon-art.cp-case {
+    /* The border is drawn in shadows, outside the view, so the gun keeps its 360 x 150 px+ frame (item 313). */
+    background-color: var(--night-2);
+    box-shadow:
+      0 0 0 calc(var(--u) * 8) var(--print-paper),
+      0 calc(var(--u) * 12) calc(var(--u) * 16) calc(var(--u) * 6) rgb(var(--black-rgb) / .4);
+    margin-bottom: calc(var(--u) * 12);
+    transform: rotate(1.2deg);
+  }
+  .cp-sheet[data-casefile] .cp-case-lamp { display: none; }
+  /* A steel paperclip over the print's top edge: the wire's outer loop and the inner loop inside it. */
+  .cp-sheet[data-casefile] .cp-weapon { position: relative; }
+  .cp-sheet[data-casefile] .cp-weapon::before,
+  .cp-sheet[data-casefile] .cp-weapon::after {
+    content: ""; position: absolute; z-index: var(--z-lift); pointer-events: none;
+    border: max(1.5px, calc(var(--u) * 2.2)) solid color-mix(in srgb, var(--card-ink-2) 70%, var(--print-paper)); /* px-ok */
+    filter: drop-shadow(0 max(1px, var(--u)) 0 rgb(var(--black-rgb) / .4)); /* px-ok */
+    transform: rotate(-4deg);
+  }
+  .cp-sheet[data-casefile] .cp-weapon::before { top: calc(var(--u) * -30); left: calc(var(--u) * 46); width: calc(var(--u) * 18); height: calc(var(--u) * 54); border-radius: calc(var(--u) * 9); }
+  .cp-sheet[data-casefile] .cp-weapon::after { top: calc(var(--u) * -22); left: calc(var(--u) * 51); width: calc(var(--u) * 9); height: calc(var(--u) * 36); border-radius: calc(var(--u) * 5); }
+  /* The three trees: each name an inked seal (a ruled box in the ink, a touch off square), its line typed beside it. */
+  .cp-sheet[data-casefile] .cp-tree-name {
+    justify-self: start; padding: calc(var(--u) * 3) calc(var(--u) * 8);
+    border: max(1.5px, calc(var(--u) * 2)) solid var(--card-ink); border-radius: calc(var(--u) * 3); /* px-ok */
+    box-shadow: inset 0 0 0 max(1px, var(--u)) color-mix(in srgb, var(--card-ink) 30%, transparent); /* px-ok */
+    transform: rotate(-1.5deg);
+  }
+  .cp-sheet[data-casefile] .cp-tree:nth-child(2) .cp-tree-name { transform: rotate(1deg); }
+  .cp-sheet[data-casefile] .cp-tree[role="button"]:hover .cp-tree-name,
+  .cp-sheet[data-casefile] .cp-tree[role="button"]:focus-visible .cp-tree-name { color: var(--stamp-red); border-color: var(--stamp-red); }
+  /* The lead figures stamped in the case board's red (the hot red read 3:1 on the cream). */
+  .cp-sheet[data-casefile] .cp-edge-lead { color: var(--stamp-red); }
+  .cp-sheet[data-casefile] .cp-tree-name { color: var(--card-ink); }
+  .cp-sheet[data-casefile] .cp-tree-theme { color: var(--card-ink-2); }
+}

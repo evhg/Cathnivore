@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (17:51 11-18): CI green on 36e6565c, E2E green on 49669ea7. Item 319 slice 90 (the leaf clip on her crown, hidden under the hood and the hat), handed back. Left from the 17:10 critique: the face's modelling (cheekbone light, side-of-nose shade), the far jaw corner, the title sleeve's elbow, the Ghost hood's drape. Open unclaimed: 319, 471, 496, 501-506. Release 19:51 11-18 (lane A).
+- Lane A (18:51 11-18): CI green on c9994b55. Item 502 done (fad5313b: the Setup's opening table, the game's own board dealt for the picks and a seed rolled on open; e2e setup-opening). Item 504 slices 1-2 (the D class pick's sheet as a cream case file: paper, ink, the gun a clipped print, the trees as seals), handed back. Open unclaimed: 319, 471, 496, 501, 503-506. Release 19:51 11-18 (lane A): ships the newest commit through E2E.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -42,6 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-18 18:51 lane A session:** 502 done, 504 slices 1-2. setup-*, quick-game (Play again flaked once under load, 3/3 alone), layouts, board-diorama, ability-preview specs (D, P); opening-preview unit (new), css lint, cathode-type; cathode-classpick spec; tsc, eslint. No full check. Lock released. Shots scratchpad s502, s504.
 - **2026-11-18 17:51 lane A session:** 319 slice 90. classpick and classpose (D, 11) pass; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad i319.
 - 2026-11-18 18:21 lane B: 501 slice 2 (trial CSS committed as a script, measured; no product code).
 - 2026-11-18 17:21 lane B: 495 closed (short, logged); planning 501-506; 501 slice 1 (measure only, the script extended); no product code changed.
@@ -56,4 +57,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-18 13:21 lane B: 495 slice 4 measured and reverted (board-scale, table-cath, table-producers fail with it; table-producers passes on the head); no code committed.
 - 2026-11-18 12:21 lane B: 497 slice 3 and done; margins, field, crayon, landmark, rollout (P, D, 23), margins unit, keyart-fresh pass; 497 measure h497c.
 - **2026-11-18 11:51 lane A session:** 498 slice 2 and done. cathode-setprops (with the new slung check) and cathode-classpose (D) pass; keyart-fresh after re-rendering posters and key art; cathode-perf alone within budget; tsc, eslint. No full check. Lock released. Shots scratchpad p498 (before, m0, m1, a2).
-- **2026-11-18 10:51 lane A session:** 498 slice 1. cathode-setprops (new, D), classstage (D), setprops unit (new), keyart-fresh after re-rendering posters and key art, tsc, eslint. No full check. Lock released. Shots scratchpad p498 (before, a1-a3).
