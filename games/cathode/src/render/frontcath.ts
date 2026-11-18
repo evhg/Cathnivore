@@ -61,7 +61,8 @@ export interface FrontCath {
   look(v: number | null, instant?: boolean): void;
   readonly gaze: number;
   /** C14: pulls her rim from the street's pink toward `c` by `w` (0..1): the wardrobe's class colour. */
-  tint(c: THREE.Color, w: number): void;
+  /** `keyGain` scales the face key (plan item 505: the landscape title's brighter face). */
+  tint(c: THREE.Color, w: number, keyGain?: number): void;
   /** Plan item 16: indoors the umbrella is furled and hangs from her fist, and no rain runs off it. */
   indoors(on: boolean): void;
   /** Plan item 42: the coat's cloth colour (the class pick's outfit swap); null puts her black trench back. */
@@ -4382,10 +4383,10 @@ float reliefShade( vec2 uv ) {
       g.getWorldPosition(out);
       return true;
     },
-    tint(c, w) {
+    tint(c, w, keyGain = 1) {
       rimU.uRimA.value.copy(rimA0).lerp(tmpC.copy(c).multiplyScalar(0.75), w);
       // The class's own key lights her face in the wardrobe: the face key steps back so it keeps its modelling.
-      rimU.uKey.value.copy(key0).multiplyScalar(1 - 0.55 * w);
+      rimU.uKey.value.copy(key0).multiplyScalar((1 - 0.55 * w) * keyGain);
       // Plan item 427: the title's coat key (item 363's warm fill on the wool) steps back too: in the pick it lifted
       // the Ghost's black trench to a flat pale grey (coat luma 111 against 35 without it) and drowned the class's
       // own key; at 0.15 the trench reads black with its folds, its cloth and the class's coloured rim.

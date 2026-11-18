@@ -325,6 +325,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   world.scene.add(sets.group);
   const groundAt = (x: number, z: number) => world.floorAt?.(x, feet.y + 1, z) ?? world.groundHeight(x, z);
   const neonRimI = phone ? 7 : 9;
+  const titleFaceKey = { pos: toWorld(0.5, 1.95, 0.85), color: new THREE.Color(1.0, 0.8, 0.72), intensity: 2.4, range: 1.9 };
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
   world.renderer.domElement.dataset.keyLight = "neon";
   if (world.light) {
@@ -337,7 +338,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (world.liveLight) removers.push(world.liveLight(neonRim));
     // Plan item 117: a soft face key, warm white, low and ahead of her left cheek, under the umbrella's edge, so
     // her face reads from the front (the pink sign alone left it a dark oval).
-    removers.push(world.light(toWorld(0.5, 1.95, 0.85), new THREE.Color(1.0, 0.8, 0.72), 2.4, 1.9));
+    // Plan item 505: on a landscape title the key steps up (2.4 -> 3.6), so her face is the frame's bright point over
+    // the paper on the case wall; upright (P) and on the pick it stays at 2.4.
+    if (world.liveLight) removers.push(world.liveLight(titleFaceKey));
+    else removers.push(world.light(titleFaceKey.pos, titleFaceKey.color, 2.4, 1.9));
     // Plan item 203: the poster's light, for the key-art shoot only. A warm tungsten key low ahead of her left (the
     // lens's side) lifts the black trench off the street; a second, softer one at face height; a cool cyan rim from
     // behind her right parts her from the dark.
@@ -536,7 +540,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const lit = neon.level(time, o.still);
     pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
     neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
-    cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)));
+    titleFaceKey.intensity = 2.4 + (cam.aspect >= 1 ? 1.2 * (1 - wd.w) : 0);
+    // Plan item 505: on a landscape title her face key is a third brighter, so her face outshines the case wall's
+    // paper (the pick eases it back with the wardrobe; upright it stays at 1).
+    cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)), cam.aspect >= 1 ? 1 + 0.35 * (1 - wd.w) : 1);
     // Plan item 481: the optic camo preview: a cold shimmer runs over her and fades.
     if (camoUntil > clock) {
       const u = (camoUntil - clock) / 2.2;

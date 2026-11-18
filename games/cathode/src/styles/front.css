@@ -1670,19 +1670,19 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .menu-hint { margin-top: calc(var(--u) * 10); }
 }
 
-/* Plan item 505 slice 1: the paper stops outshining Cath. At D the Ledger and the List are graded down to about 0.76-0.8
+/* Plan item 505 slices 1 and 3: the paper stops outshining Cath. At D the Ledger and the List are graded down to about 0.6-0.72
    value, the Ledger under a faint rain glaze on the window glass (streaks and a darker head), so her face is the
    frame's bright point; a print you point at comes back to full value as it comes forward. */
 @media (min-width: 900px) and (min-height: 521px) {
-  .dossier.front-page { filter: brightness(.76) saturate(.9); }
+  .dossier.front-page { filter: brightness(.6) saturate(.9); }
   .dossier.front-page::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
       repeating-linear-gradient(97deg, transparent 0 calc(var(--u) * 23), rgb(var(--white-rgb) / .07) calc(var(--u) * 23) calc(var(--u) * 24), transparent calc(var(--u) * 24) calc(var(--u) * 41)),
       linear-gradient(180deg, rgb(var(--black-rgb) / .1), transparent 35%, transparent 70%, rgb(var(--black-rgb) / .08));
   }
-  .the-list-wall { filter: brightness(.8) saturate(.92); }
-  .the-list-wall .mug:is(:hover, :focus-within) { filter: brightness(1.25); }
+  .the-list-wall { filter: brightness(.72) saturate(.92); }
+  .the-list-wall .mug:is(:hover, :focus-within) { filter: brightness(1.38); }
 }
 
 /* Plan item 505 slice 2: the Ledger is a clipping pinned to the case wall, not a broadsheet across the street. At D
