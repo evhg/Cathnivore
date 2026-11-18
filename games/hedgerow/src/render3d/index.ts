@@ -2197,6 +2197,67 @@ export class Renderer3D {
     for (let i = 0; i < v.meshes.length; i++) v.meshes[i]!.material = on ? this.flashMat : v.mats[i]!;
   }
 
+  /** Plan item 492: on the Fleet her run level is an inked rosette at her feet (one sprite, kept in the scene, not the
+   *  world the levels rebuild); a level-up stamps it down from 1.7x over 0.25 s (the number alone under reduced motion). */
+  private rosette: THREE.Sprite | null = null;
+  private rosetteLv = 0;
+  private levelBeat = 9;
+  levelUp(): void {
+    this.levelBeat = 0;
+  }
+  /** Tests: the rosette's level and whether it shows. */
+  rosette3d(): { level: number; visible: boolean } {
+    return { level: this.rosetteLv, visible: !!this.rosette?.visible };
+  }
+  private syncRosette(game: Game, show: boolean, x: number, y: number, z: number, dt: number): void {
+    this.levelBeat += dt;
+    if (!show || game.level.rules !== "fleet") {
+      if (this.rosette) this.rosette.visible = false;
+      return;
+    }
+    if (!this.rosette) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 128;
+      const tex = new THREE.CanvasTexture(cv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      this.rosette = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, fog: false }));
+      this.rosette.renderOrder = 5;
+      this.scene.add(this.rosette);
+      this.rosetteLv = 0;
+    }
+    const lv = game.hero.level;
+    if (this.rosetteLv !== lv) {
+      const mat = this.rosette.material;
+      const cv = (mat.map as THREE.CanvasTexture).image as HTMLCanvasElement;
+      const g2 = cv.getContext("2d")!;
+      g2.clearRect(0, 0, 128, 128);
+      g2.beginPath();
+      for (let i = 0; i <= 20; i++) {
+        const a = (i / 20) * Math.PI * 2;
+        const r = 54 * (i % 2 ? 0.86 : 1);
+        if (i === 0) g2.moveTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r);
+        else g2.lineTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r);
+      }
+      g2.closePath();
+      g2.fillStyle = "#e7c36a";
+      g2.fill();
+      g2.lineWidth = 8;
+      g2.strokeStyle = "#3a2716";
+      g2.stroke();
+      g2.fillStyle = "#3a2716";
+      g2.font = "800 60px system-ui, sans-serif";
+      g2.textAlign = "center";
+      g2.textBaseline = "middle";
+      g2.fillText(String(lv), 64, 68);
+      (mat.map as THREE.CanvasTexture).needsUpdate = true;
+      this.rosetteLv = lv;
+    }
+    const k = this.levelBeat < 0.25 && !this.reducedMotion ? 1.7 - (this.levelBeat / 0.25) * 0.7 : 1;
+    const size = 0.27 * (this.canvas.clientWidth < 600 ? 1.3 : 1) * k;
+    this.rosette.scale.set(size, size, 1);
+    this.rosette.position.set(x + 0.2, y + 0.11, z + 0.14);
+    this.rosette.visible = true;
+  }
   private syncHero(game: Game, dt: number, t: number): void {
     // Plan item 102: a warm key on her face when the camera comes in close to her (a lift of the face's own
     // material, not another scene light: no extra cost per pixel and no shader change as it fades).
@@ -2211,9 +2272,10 @@ export class Renderer3D {
     if (!c) return;
     dressCath(c);
     c.visible = !hasTwist(game.level, "nocath") && !this.harvesting;
-    if (!c.visible) return;
     const h = game.hero;
     const y = this.height(h.x, h.y);
+    this.syncRosette(game, c.visible, h.x, y, h.y, dt);
+    if (!c.visible) return;
     c.position.set(h.x, y, h.y);
     // Plan item 78 made her twice her old size; item 346 brings her back to the farm's one scale. Plan item 459: on a
     // phone's small canvas she stands a quarter larger (about 1.5x a farmer there), as the gate's sign grows on it:

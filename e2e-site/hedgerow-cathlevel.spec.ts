@@ -55,3 +55,16 @@ for (const reduce of [false, true]) {
     await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HF }).hedgerow.footprints()), { timeout: 20_000 }).toBe(0)
   })
 }
+
+// Plan item 492 in 3D: the rosette stands at her feet on the Fleet and follows her level.
+type H3 = { game(): unknown; heroUp(): number | null; rosette3d(): { level: number; visible: boolean } | null }
+test('3D: the rosette at her feet follows her level', async ({ page }) => {
+  test.setTimeout(240_000)
+  const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate((t) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { 1: 3, 2: 3 }, seenBefore: { 3: true }, tips: t })), tips)
+  await page.goto('/hedgerow/?sandbox=1&level=3')
+  await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow?: H3 }).hedgerow?.rosette3d?.() ?? null), { timeout: 180_000 }).toEqual({ level: 1, visible: true })
+  await page.evaluate(() => { const hg = (window as unknown as { hedgerow: H3 }).hedgerow; hg.heroUp(); hg.heroUp() })
+  await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: H3 }).hedgerow.rosette3d()), { timeout: 60_000 }).toEqual({ level: 3, visible: true })
+})

@@ -863,6 +863,8 @@ if (SANDBOX)
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
     // Plan item 486: a cell's centre on the 3D canvas (CSS px), to sample the lane and the plots in shots.
     cellPx3d: (col: number, row: number) => (renderer && is3D(renderer) ? renderer.cellToCanvas(col, row) : null),
+    // Plan item 492: the 3D rosette at her feet (null in 2D).
+    rosette3d: () => (renderer && is3D(renderer) ? renderer.rosette3d() : null),
     // Plan item 492: her footprints on the 2D field now (null in 3D).
     footprints: () => (renderer as { printCount?: number } | null)?.printCount ?? null,
     // Plan item 492: Cath one level up, as the layers popped would raise her (her level-up beat runs for real).
