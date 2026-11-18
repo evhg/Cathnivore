@@ -68,6 +68,8 @@ test("Cathnivore title: the minor tags carry no radio-like ring, and their label
   for (const o of out) {
     expect(o.ring === 'none' || o.ring === 'normal' || o.ring === '').toBe(true)
     expect(o.font).toBeGreaterThanOrEqual(11)
-    if (!hasTouch) expect(o.icon).toBeGreaterThanOrEqual(14)
+    // Plan item 482 (2026-11-17): from 1100 px the menu is a sign of paper links with no glyphs (they crowded it);
+    // where a glyph is still drawn it stays 14 px or more.
+    if (!hasTouch && o.icon) expect(o.icon).toBeGreaterThanOrEqual(14)
   }
 })
