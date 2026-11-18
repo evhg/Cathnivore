@@ -279,3 +279,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-18 03:10 lane A (item 485): cut the 2D ground canvas's baked bed light following the day: repainting the whole field each round for thin bed edges; the cast shadows, grade and lamps carry it.
 - 2026-11-18 03:20 lane A (item 485): the 2D evening multiply 0.38 -> 0.48: the field's dE sat at 15-16.6 and read 14.8 with a farmer's lantern in the sample.
 - 2026-11-18 03:35 lane A (item 487): cut the act banner hung from the gate board (it would compete with item 471's stops and the 1280x800 fold), today's crop on the Daily slate (a seedling instead) and a rosette on Cath's coin (her face clips overflow; a brass ring instead).
+- 2026-11-18 03:55 lane B: item 486's phone lane tone is per act (`PHONE_LANE`): Rivermead's dark-earth beds took a pale packed lane, judged by eye over the metric, whose 'plot' cells beside the lane are partly hedge and verge.
