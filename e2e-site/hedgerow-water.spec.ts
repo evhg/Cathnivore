@@ -3,8 +3,12 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 94: the 3D water is the 2D water's colour (sampled at a pond plot's middle, within ΔE 15).
 // Item 399 gave each act its own water plot in 2D; Saltmarsh's is a salt pan (pink brine under a white crust, not open
 // water), so the check samples Rivermead's willow pond (level 31), the first act whose water plot is open water.
+// 2026-11-18: the pond on the field's middle rows, not water[0]. Level 31's first pond is on row 1, the 3D frame's far
+// edge: under the deliberate far haze (scene fog and the CSS haze band), beside the gate queue and at a grazing angle,
+// it read pale and moving (ΔE 14-19 by ripple and queue) while the near ponds matched 2D within ΔE 8-10. The colour
+// was nudged four times chasing that sample (aa3e735, 13afa15, 3d3a54a); the check is the water's colour, not the haze.
 const LEVEL = 31
-type HG = { game(): { level: { terrain?: { water: Array<[number, number]> } } } | null; cellCenter(c: number, r: number): { x: number; y: number } | null }
+type HG = { game(): { level: { rows: number; terrain?: { water: Array<[number, number]> } } } | null; cellCenter(c: number, r: number): { x: number; y: number } | null }
 
 async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, number, number]> {
   const q = mode === '2d' ? '&2d' : ''
