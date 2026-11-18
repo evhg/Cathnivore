@@ -4210,3 +4210,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-18 12:21 lane B: 497 slice 3 and done; margins, field, crayon, landmark, rollout (P, D, 23), margins unit, keyart-fresh pass; 497 measure h497c.
 - **2026-11-18 12:51 lane A session:** 319 slices 80-81. cathode-front/classpick (face, looks, hero, class), keyart-fresh after re-rendering posters and key art, tsc, eslint. No full check. Lock released. Shots scratchpad s319 (before, a2, a3).
 - 2026-11-18 14:21 lane B: 496 slice 1; hedgerow-ambient (new), map, map-ink, masthead (P, D, 59), keyart-fresh pass.
+- 2026-11-18 15:21 lane B: 496 slices 2-3; map, map-ink, map-you (110 px bar), ambient, level-card, masthead (P, D, 60) pass.
