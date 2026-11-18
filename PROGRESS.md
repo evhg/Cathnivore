@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (08:51 11-18): **planned items 495-500** from a fresh critique (`e2e/screenshots/plan1118a`, local); 319 got the critique's sculpt list. 495 slice 1 (one voice at the table), handed back with the board's height budget (24.6% of D, accept revised to 28%). 500 done (bug batch). 499 done (the valley recedes at D in play). Open unclaimed: 319, 471, 486, 495, 496, 497, 498. E2E record for ac13bb76 reads false though run 407 concluded success; 409 (f1ceafbc) was running at 08:55. Next release 19:51 11-18.
+- Lane A (09:51 11-18): item 495 slices 2-3 (1240-1399 px fold: 1280x800 hexes 16.3% -> 22.5%; hand 148 px at 861 px+: 1440x900 24.6% -> 25.6%), handed back with the next steps in its note. Open unclaimed: 319, 471, 486, 495, 496, 497, 498. CI green on cb947be5; E2E green on 8163bfa6. Next release 19:51 11-18.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -42,6 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-18 09:51 lane A session:** 495 slices 2-3. board-scale (1280 half; its 1440 head 82 vs 78 fails locally before and after, as do producer-line and producer-faces: green on CI), plan-cards, table-producers, table-cath, rival, 17 hand/table specs (action-hand keyboard flaked under 3 workers, passes alone), css lint, tsc, eslint. Measure `scripts/cathnivore-495-measure.mjs` (BASE/OUT env now). Full `npm run check` passed (322 files, 2783 tests). Lock released.
 - 2026-11-18 10:21 lane B: 497 slice 2; hedgerow-rollout (new), gatequeue (P, D, 26), keyart-fresh pass.
 - 2026-11-18 09:21 lane B: 497 slice 1; gatequeue, threat, depot, field (P, D, 51), gatequeue unit, keyart-fresh pass.
 - **2026-11-18 08:51 lane A session:** planning (495-500), 495 slice 1, 500 done, 499 done. producer-line (P, D), hedgerow-map-you/map/round-chips/tray, portfolio-present, site-hero, hero-fan (80), 28 Runnel D specs (lesson-hand flake passes alone), runnel-greened new D case, css lint, keyart-fresh, tsc, eslint. Full `npm run check` passed (322 files, 2783 tests). Lock released.
@@ -56,4 +57,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-18 04:21 lane B: cath3d toon fix (01f3f43); planning 489-494; 489 slice 1 (c4db179); hedgerow-cath3d (P, D, 10) and producer-lines (unit, new) pass.
 - **2026-11-18 03:51 lane A session:** 486 slice 4 (786f70f3). hedgerow-dayphase (P, D; 2/2 alone, 3D dE 44.5), shadow3d (D), keyart-fresh and dayphase units, tsc, eslint; 486 measure runs m-before, m-a2..m-a5 (scratchpad); two depot-framing attempts measured and reverted. No full check. Lock released.
 - 2026-11-18 03:21 lane B: 486 slice 3; shadow3d, biome3d (P), keyart-fresh pass; measure runs h486d1/d2 (agree), h486e.
-- **2026-11-18 02:51 lane A session:** 485 slices 2-4 and done, 487 slice 3 and done. hedgerow-dayphase (2D P/D dE 18.6/19.9, new 3D case 28.8), shadow3d, depot3d, masthead/map/map-you (54), hedgerow unit tests (733), dayphase units, css lint, keyart-fresh after re-shooting Hedgerow. Shots scratchpad h485b-d, m487. No full check. Lock released.
