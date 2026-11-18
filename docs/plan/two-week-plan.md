@@ -4677,7 +4677,7 @@ Progress (lane B, 2026-11-18 17:55, slice 1: measured with trial CSS; `scripts/c
 - **Accept:** the hex board 28%+ of 1440x900 and 25%+ of 1280x800 (`scripts/cathnivore-495-measure.mjs`); producers 0.75+ of Cath (table-producers); Cath clear of every hex (board-scale, table-cath); no scroll, hand names whole; each key opens its drawer by mouse and keyboard; P unchanged; shots P, D, 1280x800 before/after.
 - **Size:** 2
 
-## 502. [ ] Cathnivore desktop Setup: the opening table you'll play, drawn as you pick
+## 502. [ ] Cathnivore desktop Setup: the opening table you'll play, drawn as you pick *(lane A, in progress)*
 - **Why:** `cath-setup-D`: step 2's maps (105-585 x 530-760) are bare thumbnails, step 3's threat three lines of text (610-1000 x 590-700): nothing shows the board you'll open on (VISION 1-2, 5). Checked 67/195/239/367 (layout and the held poster kept), 490 (step 1's power previews), 461 (phone track), 436.
 - **Build:** under the picked map a `BoardMiniature` opening preview (`src/ui/Setup.tsx`, `BoardMiniature.tsx`) from `createGame(seed, map, difficulty, pair)`: Hollowell's opening Outlets and Buyouts per region, the producers' home stalls, the event's ground marks (item 144) where it hits; a pick updates it within 250 ms (pieces settle 200 ms, Hollowell's without overshoot); on a phone step 2's panel shows it at 200 px+.
 - **Accept:** a unit test that the preview's pieces match `createGame` for 3 maps x 3 difficulties; e2e: a difficulty change updates `[data-opening-preview]` within 250 ms; 360 px+ wide at 1440x900; no scroll at 1440x900, 1280x800, 390x844; setup, ability-preview, quick-game specs pass; shots P and D.
