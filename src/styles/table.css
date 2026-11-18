@@ -6059,4 +6059,11 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
     overflow: visible;
   }
   .table-head.with-table-cath .plan-strip-target-short .plan-chip { font-size: var(--fs-label); padding-inline: 3px; }
+  /* a card whose regions show as chips drops the dial the chips covered (the
+     turns stay in its accessible name and tooltip) */
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dial { display: none; }
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) { position: relative; grid-template-areas: "art head eff eff" "tgt tgt tgt tgt"; }
+  /* its stage tag a tab on the card's top-left corner, so the chips have the whole line */
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dateline { position: absolute; left: -4px; top: -6px; }
+  .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% - 5px); }
 }
