@@ -51,6 +51,7 @@ import {
   inherentProps,
   canCallEarly,
   drainEvents,
+  growHero,
   earlyBonus,
   isBig,
   crownBlock,
@@ -209,7 +210,7 @@ import { holdsKnockout, KNOCKOUT_MS, renderStep } from "./knockout";
 import { doorstepCleared, doorstepLeak, doorstepRound, doorstepShown, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
 import { dayLamps, dayPhase } from "./sunlight";
 import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
-import { KITS } from "./hero";
+import { KITS, xpFor } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
 import { castSvg, type CastMember } from "./cast";
@@ -862,6 +863,14 @@ if (SANDBOX)
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
     // Plan item 486: a cell's centre on the 3D canvas (CSS px), to sample the lane and the plots in shots.
     cellPx3d: (col: number, row: number) => (renderer && is3D(renderer) ? renderer.cellToCanvas(col, row) : null),
+    // Plan item 492: Cath one level up, as the layers popped would raise her (her level-up beat runs for real).
+    heroUp: () => {
+      const g = game;
+      if (!g) return null;
+      g.popped = Math.max(g.popped, xpFor(g.hero.level + 1));
+      growHero(g);
+      return g.hero.level;
+    },
     // Plan item 486: the drifting cloud shadows off, so a sampled 3D frame is the same each run.
     noCloudShadows3d: () => (renderer && is3D(renderer) ? (renderer.noCloudShadows(), true) : false),
     dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
@@ -5053,6 +5062,10 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         break;
       case "heroLevel":
         banner(`Cath is level ${ev.level}`, "Stronger and tougher for the rest of the run");
+        // Plan item 492: her rosette stamps the new number and the leaves spiral (2D); tests read the level here.
+        ui.stage.dataset.heroLevel = String(ev.level);
+        (renderer as { levelUp?: () => void } | null)?.levelUp?.();
+        hostFeel("delighted");
         break;
       case "injunction":
         sfx.playInjunction();
@@ -5468,6 +5481,8 @@ function frame(now: number): void {
   // Plan item 162: her pose on the stage (rest, cheer after a clean round, worried after a leak), for tests and CSS.
   const pose = (renderer as { heroMood?: string } | null)?.heroMood;
   if (pose && ui.stage.dataset.cathPose !== pose) ui.stage.dataset.cathPose = pose;
+  // Plan item 492: her run level (a resumed run starts where it was).
+  if (ui.stage.dataset.heroLevel !== String(g.hero.level)) ui.stage.dataset.heroLevel = String(g.hero.level);
   syncDepots(g);
   if (g.phase === "won" && doorstep.parcels) doorstepSwept(doorstep);
   syncDoorstep(g);

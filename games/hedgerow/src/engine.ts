@@ -3078,7 +3078,7 @@ export function hitEnemy(game: Game, e: Enemy, amount: number, by?: number, type
 }
 
 /** Cath's in-run level follows the layers popped; her body scales from the level-1 stats. */
-function growHero(game: Game): void {
+export function growHero(game: Game): void {
   const h = game.hero;
   const lv = levelFor(game.popped);
   if (lv <= h.level) return;

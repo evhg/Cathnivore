@@ -234,7 +234,13 @@ export class Renderer {
   private moodWorry = 9;
   private moodPlant = 9;
   private towersSeen = -1;
-  heroMood: "rest" | "cheer" | "worried" | "plant" = "rest";
+  /** Her pose for tests and CSS (item 162's moods, plus item 492's crook swing while it lands). */
+  heroMood: "rest" | "cheer" | "worried" | "plant" | "swing" = "rest";
+  /** Plan item 492: seconds since her last level-up (the rosette's stamp and the leaves run 0.7 s). */
+  private levelBeat = 9;
+  levelUp(): void {
+    this.levelBeat = 0;
+  }
   private leaksThisWave = 0;
   /** Tower id -> seconds since it was built or upgraded (drives the pop-in). */
   private built = new Map<number, number>();
@@ -1286,7 +1292,8 @@ export class Renderer {
     if (game.towers.length > this.towersSeen && this.towersSeen >= 0) this.moodPlant = 0;
     this.towersSeen = game.towers.length;
     const mood = this.moodCheer < 1.4 ? "cheer" : this.moodWorry < 1.4 ? "worried" : this.moodPlant < 1.2 ? "plant" : "rest";
-    this.heroMood = mood;
+    this.levelBeat += dt;
+    this.heroMood = this.heroSwung < 0.3 && h.down === 0 ? "swing" : mood;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
     // Plan item 132: the site poster (`?keyart`) stands its own Cath in front, so the field leaves hers out.
     const keyart = typeof document !== "undefined" && document.documentElement.dataset.keyart !== undefined;
@@ -1315,6 +1322,8 @@ export class Renderer {
               ? this.faceCheer
               : this.face,
         );
+        // Plan item 492: on the Fleet, where she grows through a run, her level is an inked rosette at her feet.
+        if (level.rules === "fleet") this.levelRosette(X(h.x) + s * HERO_SCALE * 0.2, Y(h.y + 0.22) - s * 0.02, s, h.level);
       },
     });
     // Plan item 143: the farmfolk, y-sorted with everything else on the field.
@@ -2184,6 +2193,52 @@ export class Renderer {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+  }
+
+  /** Plan item 492: her run level as a small scalloped rosette in wheat and ink; a level-up stamps it down (1.7x to
+   *  1x over 0.25 s) while six leaves spiral out from her for 0.7 s (the stamp alone under reduced motion). */
+  private levelRosette(x: number, y: number, s: number, lv: number): void {
+    const { ctx } = this;
+    const b = this.levelBeat;
+    const r = Math.max(7, s * 0.1);
+    if (b < 0.7 && !this.reducedMotion) {
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + b * 7;
+        const d = r * (1.2 + b * 6);
+        ctx.save();
+        ctx.globalAlpha = 1 - b / 0.7;
+        ctx.translate(x - s * 0.2 + Math.cos(a) * d, y - s * 0.3 + Math.sin(a) * d * 0.6);
+        ctx.rotate(a + 1);
+        ctx.fillStyle = i % 2 ? "#7fae4a" : "#5f8a34";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * 0.55, r * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    const k = b < 0.25 && !this.reducedMotion ? 1.7 - (b / 0.25) * 0.7 : 1;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(k, k);
+    ctx.beginPath();
+    for (let i = 0; i <= 20; i++) {
+      const a = (i / 20) * Math.PI * 2;
+      const rr = r * (i % 2 ? 0.86 : 1);
+      if (i === 0) ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      else ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "#e7c36a";
+    ctx.fill();
+    ctx.lineWidth = Math.max(1.2, r * 0.14);
+    ctx.strokeStyle = "#3a2716";
+    ctx.stroke();
+    ctx.fillStyle = "#3a2716";
+    ctx.font = `800 ${Math.round(r * 1.05)}px system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(lv), 0, r * 0.06);
+    ctx.restore();
   }
 
   private heroBar(game: Game, x: number, y: number, s: number): void {
