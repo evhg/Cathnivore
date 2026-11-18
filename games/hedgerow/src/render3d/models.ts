@@ -3654,7 +3654,9 @@ export function buildLandmark(kind: LandmarkKind, w: number, d: number, seed = 1
       // Plan item 429: a rounded, wandering pool on a mud rim, not a flat box with straight edges.
       // Plan item 469: the shelf between the mud and the water is a wet teal, not a near-white band (#cfe2dc read as a
       // pale ring round the pool at D), and the rim the pond banks' damp earth rather than a near-black outline.
-      g.add(softPool(w - 0.12, d - 0.12, "#6b5a3e", 0.06, 0.004), softPool(w - 0.16, d - 0.16, "#5f968e", 0.02, 0.012), softPool(w - 0.2, d - 0.2, "#2f6f86", 0, 0.02));
+      // Plan item 506: the water the field's own lit teal (the old #2f6f86 was item 330's first water colour, read
+      // matte here without the shared water's sky gloss: a near-black sheet at luminance 47 beside the river's 110).
+      g.add(softPool(w - 0.12, d - 0.12, "#6b5a3e", 0.06, 0.004), softPool(w - 0.16, d - 0.16, "#77b0a6", 0.02, 0.012), softPool(w - 0.2, d - 0.2, "#79bcc0", 0, 0.02));
       const reed = [matte("#5d8a3a"), matte("#7aa84a")];
       const n = Math.round(w * d * 9);
       for (let k = 0; k < n; k++) {
