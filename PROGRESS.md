@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (14:51 11-18): item 319 slices 84-86 (catch-lights after the skin knee; determined's half-smile and brow; the fringe under the Ghost's hood), handed back. Fresh critique FAILED on jaw facets, glove hands, the neck: next taker starts there. Open: 319, 471, 486, 495, 496 (unclaimed). Next release 19:51 11-18.
+- Lane A (15:51 11-18): CI red on 32c625a4 was keyart-fresh only (slice 84 pushed before its posters were re-rendered; 3d889c2e re-rendered them, passes locally). Item 319 slice 87 (the posing hand: fingers side by side, not a claw), handed back: left the jaw facets and the neck, then a critique. Open: 319, 471, 486, 495, 496 (unclaimed). Next release 19:51 11-18.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -42,6 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-18 15:51 lane A session:** 319 slice 87. classpick + classpose (D, 11) pass; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad g319.
 - 2026-11-18 15:21 lane B: 496 slices 2-3; map, map-ink, map-you (110 px bar), ambient, level-card, masthead (P, D, 60) pass.
 - **2026-11-18 14:51 lane A session:** 319 slices 84-86. cathode-front/classpick specs started locally but not finished by wrap-up (left to CI E2E); keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad f319.
 - 2026-11-18 14:21 lane B: 496 slice 1; hedgerow-ambient (new), map, map-ink, masthead (P, D, 59), keyart-fresh pass.
@@ -56,5 +57,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-18 10:21 lane B: 497 slice 2; hedgerow-rollout (new), gatequeue (P, D, 26), keyart-fresh pass.
 - 2026-11-18 09:21 lane B: 497 slice 1; gatequeue, threat, depot, field (P, D, 51), gatequeue unit, keyart-fresh pass.
 - **2026-11-18 08:51 lane A session:** planning (495-500), 495 slice 1, 500 done, 499 done. producer-line (P, D), hedgerow-map-you/map/round-chips/tray, portfolio-present, site-hero, hero-fan (80), 28 Runnel D specs (lesson-hand flake passes alone), runnel-greened new D case, css lint, keyart-fresh, tsc, eslint. Full `npm run check` passed (322 files, 2783 tests). Lock released.
-- 2026-11-18 08:21 lane B: 492 slice 4 and done; hedgerow-cathlevel (2D and 3D, incl. 3D prints), cath3d, shadow3d (P, D, 22) pass.
-- **2026-11-18 07:51 lane A session:** 486 slices 5-6. biome3d, 3dframe (35), closeframe, depot3d, camera3d (14), keyart-fresh, eslint, tsc pass; measure runs m0-m6 (scratchpad). No full check. Lock released.

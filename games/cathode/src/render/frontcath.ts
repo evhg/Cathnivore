@@ -2494,36 +2494,72 @@ float reliefShade( vec2 uv ) {
   // hand outward, the index above the cigarette's end and the middle finger under it, the ring and little fingers
   // curled in toward the palm, the thumb along the index. Built in the chest frame on the forearm bone, so the
   // class idles' IK carries it.
+  // Plan item 319 slice 87: a second hand for her poses (the pick's hand on her hip, at the sling, on a grip), where
+  // the cigarette is palmed: the cigarette hand's curled stubs read there as a claw round nothing (critique 11-18,
+  // pf-ghost-D). The posing hand's fingers lie side by side, about 6-7 cm long against a 7.6 cm back of the hand, each
+  // curling gently toward the palm, the thumb along the index. One mesh; its geometry (and its ink hull's) is swapped
+  // when the cigarette is palmed, so no draw call is added.
+  let handMesh: THREE.Mesh | null = null;
+  let handRestGeo: THREE.BufferGeometry | null = null;
+  let handPoseGeo: THREE.BufferGeometry | null = null;
   {
     const dir = V(0, -1, 0.15).normalize();
-    const parts: THREE.BufferGeometry[] = [];
-    const pad = new THREE.SphereGeometry(1, seg(10), seg(8));
-    // Plan item 319 slice 78: the back of the hand 7.6 cm long, not 8.4 (a paddle from the cuff: 'mittens'), its
-    // knuckle end where it was.
-    pad.scale(0.016, 0.038, 0.028);
-    pad.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir));
-    const padAt = wristL.clone().addScaledVector(dir, 0.049);
-    pad.translate(padAt.x, padAt.y, padAt.z);
-    parts.push(pad);
-    parts.push(turned(wristL.clone().addScaledVector(dir, -0.01), wristL.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.026]], seg(8), 0.8));
-    // Plan item 319 slice 2: jointed like the umbrella fist: a tapering bone between each pair of joints, rounded
-    // knuckles between, the tip narrowest (one even tube read as a rubber finger close up).
-    // Plan item 319 slice 78: each finger one smooth tapering tube through its joints (a capsule per bone overlapped
-    // at every knuckle, and each overlap drew its own ink crease: the curled fingers read as a chain's links).
-    const finger = (pts: THREE.Vector3[], r: number) => {
-      const n = pts.length - 1;
-      parts.push(taperTube(pts, pts.map((_, k) => r * (1.06 - (0.26 * k) / n)), seg(8)));
+    const buildHand = (fingerSet: Array<[THREE.Vector3[], number]>, padX: number) => {
+      const parts: THREE.BufferGeometry[] = [];
+      const pad = new THREE.SphereGeometry(1, seg(10), seg(8));
+      // Plan item 319 slice 78: the back of the hand 7.6 cm long, not 8.4 (a paddle from the cuff: 'mittens'), its
+      // knuckle end where it was.
+      pad.scale(padX, 0.038, 0.028);
+      pad.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir));
+      const padAt = wristL.clone().addScaledVector(dir, 0.049);
+      pad.translate(padAt.x, padAt.y, padAt.z);
+      parts.push(pad);
+      parts.push(turned(wristL.clone().addScaledVector(dir, -0.01), wristL.clone().addScaledVector(dir, 0.03), [[0, 0.024], [1, 0.026]], seg(8), 0.8));
+      // Plan item 319 slice 2: jointed like the umbrella fist: a tapering bone between each pair of joints, rounded
+      // knuckles between, the tip narrowest (one even tube read as a rubber finger close up).
+      // Plan item 319 slice 78: each finger one smooth tapering tube through its joints (a capsule per bone overlapped
+      // at every knuckle, and each overlap drew its own ink crease: the curled fingers read as a chain's links).
+      for (const [pts, r] of fingerSet) {
+        const n = pts.length - 1;
+        parts.push(taperTube(pts, pts.map((_, k) => r * (1.06 - (0.26 * k) / n)), seg(8)));
+      }
+      const hand = mergeGeos(parts);
+      for (const g of parts) g.dispose();
+      return hand;
     };
-    finger([V(0.175, -0.292, 0.062), V(0.178, -0.304, 0.068), V(0.181, -0.311, 0.078), V(0.183, -0.318, 0.09)], 0.0078);
-    finger([V(0.175, -0.294, 0.05), V(0.179, -0.314, 0.058), V(0.182, -0.327, 0.068), V(0.184, -0.334, 0.08)], 0.008);
-    finger([V(0.175, -0.292, 0.039), V(0.171, -0.314, 0.042), V(0.164, -0.32, 0.051), V(0.159, -0.309, 0.055)], 0.0076);
-    finger([V(0.174, -0.286, 0.028), V(0.17, -0.304, 0.03), V(0.164, -0.309, 0.038), V(0.16, -0.3, 0.041)], 0.0066);
-    finger([V(0.166, -0.258, 0.06), V(0.167, -0.276, 0.072), V(0.171, -0.293, 0.079)], 0.0088);
-    const hand = mergeGeos(parts);
-    for (const g of parts) g.dispose();
-    const handMesh = add(hand, gloveMat, foreL);
+    handRestGeo = buildHand([
+      [[V(0.175, -0.292, 0.062), V(0.178, -0.304, 0.068), V(0.181, -0.311, 0.078), V(0.183, -0.318, 0.09)], 0.0078],
+      [[V(0.175, -0.294, 0.05), V(0.179, -0.314, 0.058), V(0.182, -0.327, 0.068), V(0.184, -0.334, 0.08)], 0.008],
+      [[V(0.175, -0.292, 0.039), V(0.171, -0.314, 0.042), V(0.164, -0.32, 0.051), V(0.159, -0.309, 0.055)], 0.0076],
+      [[V(0.174, -0.286, 0.028), V(0.17, -0.304, 0.03), V(0.164, -0.309, 0.038), V(0.16, -0.3, 0.041)], 0.0066],
+      [[V(0.166, -0.258, 0.06), V(0.167, -0.276, 0.072), V(0.171, -0.293, 0.079)], 0.0088],
+    ], 0.016);
+    // The posing hand: from a knuckle line across the back of the hand's lower end, each finger three bones (45%, 32%,
+    // 23% of its length) bending 12, 16 and 18 degrees toward the palm (-x), fanned a touch apart at the tips.
+    const down = dir.clone();
+    const palm = V(-1, 0, 0);
+    const poseFinger = (z: number, len: number, fan: number, y0: number): THREE.Vector3[] => {
+      const pts = [V(0.163, y0, z)];
+      let ang = 0;
+      for (const [frac, bend] of [[0.45, 12], [0.32, 16], [0.23, 18]] as const) {
+        ang += (bend * Math.PI) / 180;
+        const step = down.clone().multiplyScalar(Math.cos(ang)).addScaledVector(palm, Math.sin(ang));
+        step.z += fan;
+        pts.push(pts[pts.length - 1]!.clone().addScaledVector(step.normalize(), len * frac));
+      }
+      return pts;
+    };
+    handPoseGeo = buildHand([
+      [poseFinger(0.091, 0.062, 0.05, -0.29), 0.0074],
+      [poseFinger(0.077, 0.068, 0.0, -0.293), 0.0077],
+      [poseFinger(0.063, 0.063, -0.04, -0.291), 0.0072],
+      [poseFinger(0.05, 0.05, -0.09, -0.286), 0.0063],
+      // The thumb from the base of the palm, along the index side, its tip toward the palm.
+      [[V(0.152, -0.252, 0.097), V(0.148, -0.274, 0.108), V(0.142, -0.293, 0.106)], 0.0084],
+    ], 0.0145);
+    handMesh = add(handRestGeo, gloveMat, foreL);
     handMesh.name = "cath-hand-l";
-    statics.push(handMesh); // merged with its strap; the merged mesh keeps the name
+    statics.push(handMesh); // alone on its bone in glove leather (the cuff strap is coat cloth), so it stays unmerged
   }
   // The cigarette between two fingers, the ember at its tip.
   const cig = new THREE.CylinderGeometry(0.0035, 0.0035, 0.075, 6);
@@ -3037,6 +3073,14 @@ float reliefShade( vec2 uv ) {
     const palmed = armOn && !!posing && posing.kind !== "fixer";
     poseProps(gunInHand, glint, rack, shellU);
     cigMesh.visible = !palmed;
+    // Plan item 319 slice 87: the posing hand (its fingers side by side) while the cigarette is palmed.
+    {
+      const want = palmed ? handPoseGeo : handRestGeo;
+      if (handMesh?.parent && want && handMesh.geometry !== want) {
+        handMesh.geometry = want;
+        for (const c of handMesh.children) if ((c as THREE.Mesh).isMesh) (c as THREE.Mesh).geometry = want;
+      }
+    }
     if (rigMat) {
       const held = stanceNow === "wirewitch" ? stanceW * 0.6 : 0;
       const on = Math.max(held, clip?.kind === "wirewitch" ? THREE.MathUtils.smoothstep(clip.u, 0.15, 0.35) * (1 - THREE.MathUtils.smoothstep(clip.u, 0.75, 0.95)) : 0);
@@ -4080,6 +4124,7 @@ float reliefShade( vec2 uv ) {
     };
     for (const { m } of cands.slice(0, INK_MAX)) {
       inkNormals(m.geometry);
+      if (m === handMesh && handPoseGeo) inkNormals(handPoseGeo);
       const hull = new THREE.Mesh(m.geometry, inkMat);
       hull.name = "ink";
       hull.castShadow = false;
@@ -4306,6 +4351,8 @@ float reliefShade( vec2 uv ) {
         const m = o as THREE.Mesh;
         if (m.geometry) m.geometry.dispose();
       });
+      handRestGeo?.dispose(); // whichever hand geometry is off the mesh now
+      handPoseGeo?.dispose();
       for (const m of mats) m.dispose();
       for (const m of kitMats) m.dispose();
       smokeTex.dispose();
