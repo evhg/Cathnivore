@@ -3300,3 +3300,47 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-casefile] .cp-tree-name { color: var(--card-ink); }
   .cp-sheet[data-casefile] .cp-tree-theme { color: var(--card-ink-2); }
 }
+
+/* Plan item 504 slice 3: her line is a note on cream slip paper taped beside the file (the quote's dark plate was
+   the last glass on the D pick); a class switch turns the file's page down (220 ms; a fade under reduced motion);
+   Walk in is the file's red stamp: a double rule inside its edge. */
+@media (min-width: 1100px) {
+  .cp-words .cp-line {
+    margin-left: calc(var(--u) * 6);
+    padding: calc(var(--u) * 16) calc(var(--u) * 22) calc(var(--u) * 18);
+    color: var(--card-ink);
+    transform: rotate(-1.2deg);
+  }
+  .cp-words .cp-line::before {
+    background:
+      repeating-linear-gradient(0deg, transparent 0 calc(var(--u) * 27), var(--card-rule) calc(var(--u) * 27) calc(var(--u) * 28)),
+      var(--print-paper);
+    background-position: 0 calc(var(--u) * 10), 0 0;
+    border-radius: calc(var(--u) * 2);
+    box-shadow:
+      inset 0 0 calc(var(--u) * 24) color-mix(in srgb, var(--cork-lo) 18%, transparent),
+      0 calc(var(--u) * 10) calc(var(--u) * 22) rgb(var(--black-rgb) / .5);
+  }
+  /* a strip of tape across the slip's top corner */
+  .cp-words .cp-line::after {
+    content: ""; position: absolute; top: calc(var(--u) * -8); right: calc(var(--u) * -16);
+    width: calc(var(--u) * 74); height: calc(var(--u) * 22);
+    background: color-mix(in srgb, var(--print-paper) 55%, transparent);
+    box-shadow: 0 max(1px, var(--u)) calc(var(--u) * 2) rgb(var(--black-rgb) / .18); /* px-ok */
+    transform: rotate(28deg);
+    pointer-events: none;
+  }
+  .cp.cp-swap .cp-sheet[data-casefile] > * { animation: cp-file-turn 220ms cubic-bezier(.2, .7, .2, 1); }
+  .cp-sheet[data-casefile] .cp-hold {
+    box-shadow:
+      inset 0 0 0 calc(var(--u) * 4) var(--stamp-red),
+      inset 0 0 0 max(1.5px, calc(var(--u) * 6)) color-mix(in srgb, var(--on-blood) 62%, transparent); /* px-ok */
+  }
+}
+@keyframes cp-file-turn {
+  from { opacity: .2; clip-path: inset(-50% -50% 100% -50%); transform: translateY(calc(var(--u) * -6)); }
+  to { opacity: 1; clip-path: inset(-50%); transform: none; }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .cp.cp-swap .cp-sheet[data-casefile] > * { animation: fade-in 220ms ease-out; }
+}

@@ -642,3 +642,61 @@ test('the five classes show five different guns, by name and silhouette', async 
     await expect(page.locator('.cp-weapon-name')).toHaveText(new RegExp(names[cls]!, 'i'))
   }
 })
+
+// Plan item 504: at D the spec column is a paper case file: its class on the folder (changing on keys 1-5), its
+// type 4.5:1 on the cream and the weapon's name 7:1, her line a slip of the same paper, a class switch turning the
+// page in 250 ms or less, and Walk in the file's red stamp.
+test('at D the stat sheet is a paper case file that turns its page on a class change', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop file (the phone keeps its glass dossier)')
+  test.setTimeout(300_000)
+  await fresh(page, false)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  for (const size of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
+    await page.setViewportSize(size)
+    await page.waitForTimeout(400)
+    for (const [i, cls] of CLASSES.entries()) {
+      await page.keyboard.press(String(i + 1))
+      await expect(page.locator(`.cp-sheet[data-casefile][data-class=${cls}]`)).toHaveCount(1)
+      const turn = await page.evaluate(() =>
+        document.querySelector('.cp-sheet')!.firstElementChild!.getAnimations().map((a) => ({ name: (a as CSSAnimation).animationName, ms: Number(a.effect!.getComputedTiming().duration) })),
+      )
+      if (i > 0) expect(turn.find((a) => a.name === 'cp-file-turn')?.ms, JSON.stringify(turn)).toBeLessThanOrEqual(250)
+    }
+    await page.waitForTimeout(600)
+    const m = await page.evaluate(() => {
+      const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+      const lum = (c: string) => {
+        const [r, g, b] = c.match(/[\d.]+/g)!.map(Number)
+        return 0.2126 * lin(r!) + 0.7152 * lin(g!) + 0.0722 * lin(b!)
+      }
+      const ratio = (a: string, b: string) => {
+        const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p)
+        return (x! + 0.05) / (y! + 0.05)
+      }
+      const probe = document.createElement('i')
+      document.querySelector('.cp-sheet')!.append(probe)
+      probe.style.color = 'var(--card-paper)'
+      const paper = getComputedStyle(probe).color
+      probe.remove()
+      const sheet = document.querySelector('.cp-sheet')!
+      const texts = [...sheet.querySelectorAll<HTMLElement>('*')]
+        .filter((e) => e.offsetParent && !e.closest('.cp-hold, .cp-weapon-art') && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()))
+        .map((e) => ({ cls: e.className, r: ratio(getComputedStyle(e).color, paper) }))
+      const lineEl = document.querySelector<HTMLElement>('.cp-line')!
+      const lineBg = getComputedStyle(lineEl, '::before').backgroundColor
+      return {
+        worst: texts.sort((a, b) => a.r - b.r)[0],
+        head: ratio(getComputedStyle(document.querySelector('.cp-weapon-name')!).color, paper),
+        line: ratio(getComputedStyle(lineEl).color, lineBg === 'rgba(0, 0, 0, 0)' ? paper : lineBg),
+        stamp: getComputedStyle(document.querySelector('.cp-hold')!).boxShadow.includes('inset'),
+        inView: sheet.getBoundingClientRect().bottom <= innerHeight,
+      }
+    })
+    const s = JSON.stringify({ size, m })
+    expect(m.worst!.r, s).toBeGreaterThanOrEqual(4.5)
+    expect(m.head, s).toBeGreaterThanOrEqual(7)
+    expect(m.line, s).toBeGreaterThanOrEqual(4.5)
+    expect(m.stamp && m.inView, s).toBe(true)
+  }
+})
