@@ -26,6 +26,9 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
       return {
         w: (rr - l) / table.width, h: (bb - t) / table.height, hexes, table,
         head: document.querySelector('.table-head')!.getBoundingClientRect().height,
+        headTop: document.querySelector('.table-head')!.getBoundingClientRect().top,
+        boardTop: document.querySelector('.market-board')!.getBoundingClientRect().top,
+        l, t, r: rr, b: bb,
         cath: box(document.querySelector('.table-cath-figure')!),
         bea: box(document.querySelector('.beas-drawing')!),
         scroll: document.documentElement.scrollHeight,
@@ -34,7 +37,11 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
     const at = `${width}x${height}`
     // Plan item 249: at 1400 px and up the readings fold beside the papers in one 78 px row (a memo's dial drops to
     // its target line), so the head is one row of 78 px or less instead of two rows (about 133 px).
-    expect(r.head, at).toBeLessThanOrEqual(width >= 1400 ? 78 : 72)
+    // Plan item 495 slice 2: from 1240 px the fold is the same one row, so the board takes the status bar's row back
+    // at 1280x800 too (hexes 16% -> 22% of the window).
+    expect(r.head, at).toBeLessThanOrEqual(78)
+    expect(Math.abs(r.boardTop - r.headTop), `${at} readings beside the papers`).toBeLessThan(12)
+    expect(((r.r - r.l) * (r.b - r.t)) / (width * height), `${at} hex board's share of the window`).toBeGreaterThanOrEqual(width >= 1440 ? 0.24 : 0.21)
     expect(r.w, at).toBeGreaterThanOrEqual(minW)
     expect(r.h, at).toBeGreaterThanOrEqual(0.9)
     expect(r.cath.height, at).toBeGreaterThanOrEqual(width >= 1440 ? 300 : 290)

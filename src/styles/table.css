@@ -4834,7 +4834,7 @@ html.no-animations .table-cath-line { animation: none; }
 /* Plan item 249: at 1400 px and up (the table's widest sizes) the board is the hero. The Market Board folds to a 2x2 block of readings
    and shares one row with tomorrow's papers and Pell, so the cloth takes that row's height back and the hexes
    (sized by height) grow with it. Everything else in the column keeps its own full-width row. */
-@media (min-width: 1400px) and (min-height: 760px) {
+@media (min-width: 1240px) and (min-height: 760px) {
   .game:has(.table-head.with-table-cath) {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -4874,7 +4874,7 @@ html.no-animations .table-cath-line { animation: none; }
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
   }
 }
-@media (min-width: 1400px) and (min-height: 760px) {
+@media (min-width: 1240px) and (min-height: 760px) {
   /* The memos are narrower beside the readings: the (i) sits tighter to the edge. */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child {
     padding-right: 26px;
@@ -4885,7 +4885,7 @@ html.no-animations .table-cath-line { animation: none; }
   .game:has(.table-head.with-table-cath) .plan-strip-item svg.plan-art { width: 24px; height: 24px; }
   .game:has(.table-head.with-table-cath) .plan-strip-item > .tooltip-trigger { right: 3px; }
 }
-@media (min-width: 1400px) and (min-height: 760px) {
+@media (min-width: 1240px) and (min-height: 760px) {
   /* The taller cloth widens the hexes (sized by height) into Cath's waist-up box at the left: the map stands
      44 px in, so the board centres 22 px right of the cloth's middle, still clear of the portraits on the right. */
   .game:has(.table-head.with-table-cath) .map { margin-left: 44px; width: calc(100% - 44px); }
@@ -4928,7 +4928,7 @@ html.no-animations .terrain-art .idle-sheep-head { animation: none; }
   .terrain-art [data-idle],
   .terrain-art .idle-sheep-head { animation: none; }
 }
-@media (min-width: 1400px) and (min-height: 760px) {
+@media (min-width: 1240px) and (min-height: 760px) {
   /* The memos beside the readings are about 205 px: the dial and stage tag drop to the target's line, so the
      headline and its effect keep the first line whole (a two-region target wraps to a third line, 77 px). */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child {
@@ -5353,7 +5353,7 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 /* Plan item 366 slice 2: the readings beside the papers keep their words at 1400 px+ (they went to the tooltips, and a
    new player couldn't tell Trust from Land): each label sits over its figure beside a smaller object, in the same
    80 + 74 px columns, so the papers keep their width and the board its box. 'Land left' says 'Land' here. */
-@media (min-width: 1400px) and (min-height: 760px) {
+@media (min-width: 1240px) and (min-height: 760px) {
   .game:has(.table-head.with-table-cath) .board-cell { padding: 2px 4px; }
   .game:has(.table-head.with-table-cath) .board-head {
     grid-template-columns: 24px minmax(0, 1fr);
@@ -5999,3 +5999,22 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
 /* on a phone it lies over her line (placed in Game.tsx), the tail pointing right at the busts */
 .counter-bench .producer-line { display: flex; align-items: center; padding: 4px 10px; font-size: .9375rem; line-height: 1.18; transform-origin: 100% 50%; }
 .counter-bench .producer-line::after { right: -8px; top: calc(50% - 7px); bottom: auto; rotate: -45deg; }
+
+/* Plan item 495 slice 2: from 1240 px (was 1400) the readings fold beside tomorrow's papers, so the board takes the
+   status bar's row back (1280x800: board 16% -> 22% of the window). The row is about 160 px narrower there, so Pell's
+   frame hangs further into the gap and the readings' columns close up a little: each memo keeps its two lines whole. */
+@media (min-width: 1240px) and (max-width: 1399.98px) and (min-height: 760px) {
+  .table-head.with-table-cath .rival { min-width: 100px; }
+  .table-head.with-table-cath .rival-frame { margin-inline: -8px -12px; }
+  .game:has(.table-head.with-table-cath) .market-board { grid-template-columns: 72px 68px auto; }
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child { padding-right: 22px; }
+  /* The short line is region chips, one a line beside the dial: Chromium's line clamp reports the one-line width as
+     overflow there, so it's held to two lines by its height instead. */
+  .table-head.with-table-cath .plan-strip-target-full[data-long] + .plan-strip-target-short {
+    -webkit-line-clamp: unset;
+    max-height: 2.8em;
+  }
+  /* The board stands 30 px in (44 at 1400 px+): clear of Cath's box on the left, and the producers on the right keep
+     Cath's scale (item 374: three quarters of her height or more). */
+  .game:has(.table-head.with-table-cath) .map { margin-left: 30px; width: calc(100% - 30px); }
+}
