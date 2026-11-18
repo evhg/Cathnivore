@@ -274,7 +274,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // shot breaks the bottle (glass flies); later shots splinter the crate; a new class stands a fresh bottle.
   const target = new THREE.Group();
   {
-    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.36, 0.36), new THREE.MeshStandardMaterial({ color: 0x7a5434, roughness: 0.85 }));
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.36, 0.36), new THREE.MeshStandardMaterial({ color: 0x7a5434, roughness: 0.85, emissive: 0x2a190b }));
+    // (a faint warm self-light: upright it stands past the stoop's bulb, where unlit wood read as a black box)
     crate.position.y = 0.18;
     const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.04, 0.24, 10), new THREE.MeshStandardMaterial({ color: 0x1f6a3a, roughness: 0.15, metalness: 0.1, emissive: 0x1d6a38 }));
     bottle.position.y = 0.36 + 0.12;
@@ -1271,8 +1272,10 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       const still = idleReduce || o.still;
       const crateAt = target.position.clone();
       // the sentry stands in front of the crate, toward the lens (her frame: +x to her left, +z to the lens)
-      const sentryAt = toWorld(0.5, 0, -0.18);
-      sentryAt.y = target.position.y;
+      // (upright, where the floor is under the sheet, it is set down on the crate's lid beside the bottle)
+      const upright = cam.aspect < 1;
+      const sentryAt = upright ? toWorld(TARGET_UPRIGHT[0] - 0.1, 0, TARGET_UPRIGHT[1] + 0.06) : toWorld(0.5, 0, -0.18);
+      sentryAt.y = target.position.y + (upright ? 0.36 : 0);
       previewFx.play(p.look, clock, p.ms, hand, aim, crateAt, sentryAt);
       const breakBottle = () => {
         if (!bottle.visible) return;

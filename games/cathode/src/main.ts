@@ -1060,7 +1060,14 @@ async function boot(): Promise<void> {
       $("screen-title").hidden = true;
       const cls = (params.get("class") as ClassId | null) ?? "ghost";
       s?.wardrobe(cls, true);
-      openClassPick(document.body, () => undefined, cls, { still: true, gunReel: pickGunReel, gunIcon: pickGunIcon });
+      // (the previews and the test fire play on this still's street too, so a shot of a tree's look is the real one)
+      openClassPick(document.body, () => undefined, cls, {
+        still: true,
+        gunReel: pickGunReel,
+        gunIcon: pickGunIcon,
+        onTestFire: (c) => s?.testFire(c),
+        onSkillPreview: (tr) => s?.skillPreview(tr),
+      });
       stagePick();
       s?.wardrobe(cls, true);
     }

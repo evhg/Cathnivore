@@ -75,6 +75,10 @@ export function buildPreviewFx(): PreviewFx {
   const cageGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(0.46, 0.4, 0.4, 2, 2, 2));
   const cageMat = new THREE.LineBasicMaterial({ color: hdr(0.3, 2.2, 2.6), ...additive });
   const cage = new THREE.LineSegments(cageGeo, cageMat);
+  // ...filled with a faint glow, so it reads on a phone's frame, where its one-pixel lines alone were lost (slice 5)
+  const cageGlowGeo = new THREE.BoxGeometry(0.46, 0.4, 0.4);
+  const cageGlowMat = new THREE.MeshBasicMaterial({ color: hdr(0.05, 0.42, 0.5), ...additive });
+  cage.add(new THREE.Mesh(cageGlowGeo, cageGlowMat));
 
   // Daemon: the Moth, a small drone with a lit eye and two rotor discs (one mesh).
   const moth = new THREE.Group();
@@ -186,6 +190,8 @@ export function buildPreviewFx(): PreviewFx {
           const flick = hot ? 0.55 + 0.45 * Math.abs(Math.sin(now * 37) * Math.sin(now * 13)) : 0.8 + 0.2 * Math.sin(now * 6);
           cageMat.color.copy(hot ? hdr(2.6, 2.6, 3.2) : hdr(0.3, 2.2, 2.6)).multiplyScalar(flick);
           cageMat.opacity = env;
+          cageGlowMat.color.copy(cageMat.color).multiplyScalar(0.4);
+          cageGlowMat.opacity = env;
           break;
         }
         case "moth": {
@@ -226,6 +232,8 @@ export function buildPreviewFx(): PreviewFx {
       reticleMat.dispose();
       cageGeo.dispose();
       cageMat.dispose();
+      cageGlowGeo.dispose();
+      cageGlowMat.dispose();
       group.traverse((o) => {
         const m = o as THREE.Mesh;
         if (m.isMesh) {
