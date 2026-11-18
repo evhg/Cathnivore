@@ -125,6 +125,8 @@ export interface FrontScene {
 }
 
 const LOOP_S = 36;
+/** Plan item 481: the test-fire target's spot on an upright phone, in her frame (+x to her left, -z behind her), on a drum. */
+const TARGET_UPRIGHT: [number, number, number] = [0.42, -0.9, 0.88]; // x, z, and the drum's height (m)
 const FOV = 38;
 /** Cath stands 1.2 m north of the job's start, facing south down the street: the push passes her shoulder. */
 const CATH_BACK = 1.2;
@@ -284,6 +286,21 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   }
   target.position.copy(toWorld(0.42, 0, -0.6));
   target.position.y = world.floorAt?.(target.position.x, feet.y + 1, target.position.z) ?? feet.y;
+  // Plan item 481, slice 4: an upright phone's pick shows only the stage above the sheet, and the crate there stood
+  // under the class tabs (its top at the frame's middle), so the previews' cage, sentry and reticle went unseen. Upright,
+  // it stands a little further back at her side.
+  const targetWide = target.position.clone();
+  const targetUpright = toWorld(TARGET_UPRIGHT[0], 0, TARGET_UPRIGHT[1]);
+  targetUpright.y = world.floorAt?.(targetUpright.x, feet.y + 1, targetUpright.z) ?? feet.y;
+  // ...on an oil drum, so it clears the horizon: a floor-standing crate can't rise above the stage's foot.
+  const drum = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.27, 0.27, TARGET_UPRIGHT[2], 18),
+    new THREE.MeshStandardMaterial({ color: 0x46413b, roughness: 0.55, metalness: 0.55 }),
+  );
+  drum.position.copy(targetUpright).setY(targetUpright.y + TARGET_UPRIGHT[2] / 2);
+  drum.visible = false;
+  world.scene.add(drum);
+  targetUpright.y += TARGET_UPRIGHT[2];
   target.visible = false;
   world.scene.add(target);
   const bottle = target.getObjectByName("bottle")!;
@@ -933,6 +950,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     stoop.update(wd.w, wd.cls);
     target.visible = wd.w > 0.5;
     if (!target.visible) previewFx.stop();
+    else target.position.copy(cam.aspect < 1 ? targetUpright : targetWide);
+    drum.visible = target.visible && cam.aspect < 1;
     previewFx.update(time, cam);
     const showing = previewFx.showing();
     if ((world.renderer.domElement.dataset.previewFx ?? "") !== showing) world.renderer.domElement.dataset.previewFx = showing;
