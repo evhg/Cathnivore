@@ -4534,7 +4534,7 @@ Progress (lane B, 2026-11-17 23:55, slice 1: the measure): sandbox `cellPx3d(col
 - **Accept:** at 390x844 on levels 5, 21, 34 and 40, lane-to-plot luminance 1.6:1 or more (sampled via `window.hedgerow`), the depot box and every plot inside the canvas, hedge ink 2 px+; phone draw calls +3 or fewer; D unchanged; shots P and D.
 - **Size:** 2
 
-## 487. [ ] Hedgerow act map: the masthead and keys as farm-gate signage
+## 487. [ ] Hedgerow act map: the masthead and keys as farm-gate signage *(lane B, in progress)*
 - **Why:** `hedge-menu-D` 0-1440 x 0-56: a plain wordmark off-centre (370-515) and five identical brown pills (795-1425) read as web chrome; `hedge-menu-P` the dock (8-382 x 785-840) five equal brown boxes: the one undesigned strip against the painted country (VISION 1, 6). Checked 18, 47, 209, 253 (the header's function and layout kept) and 471 (stops untouched).
 - **Build:** the wordmark a carved, painted gate board on two posts over the map's top edge, the act banner hung from it; the keys hanging plaques, each illustrated (Cath's coin with her rosette, Daily a chalk slate with today's crop, the Almanac a bound book, the Seed Bank a jar with its count); at P a gate rail of five plaques; a 150 ms swing on tap (a fade under reduced motion).
 - **Accept:** `[data-masthead=gate]`; every key 44x44+ at P with its label and aria-label; the wordmark centred within 4 px at D; 4.5:1 contrast on labels; css lint; hedgerow-map specs pass; shots P and D.
