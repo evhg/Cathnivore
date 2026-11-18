@@ -4518,7 +4518,7 @@ Progress (lane A, 2026-11-18 00:35, slice 1, d3a4d29): `src/ui/dailyPostcard.ts`
 - **Accept:** `[data-daily-postcard]` only after a Daily, 1200x630; its numbers match `endSummary` (unit test); Share falls back to Save without `navigator.share` (e2e); no network request; shots P and D, a win and a loss.
 - **Size:** 2
 
-## 485. [ ] Hedgerow: the day passes over the field, morning to dusk across a level
+## 485. [ ] Hedgerow: the day passes over the field, morning to dusk across a level *(lane A, in progress)*
 - **Why:** `hedge-l21-2d-D`, `hedge-l21-3d-D`: round 1 and round 26 look the same; the light is fixed per act (`sunlight.ts` `ACT_SUN_AZ`/`ACT_SUN_COLOUR`), so a long level never moves on (VISION 2, 4). Checked 440 (the act's sun stays the midday key), 419/438 (golden hour becomes one point on the arc), 469 (dressing untouched), 479 (the last round lands at dusk), 43 (the Night twist keeps its own ground).
 - **Build:** `dayPhase(round, rounds)` in `sunlight.ts` (0 morning to 1 dusk): the azimuth swings about ±40 degrees round the act's noon, shadows lengthen and warm. 2D: `render.ts` shadow direction, rim and a warm grade; 3D: `render3d/palette.ts` and `backdrop.ts` key light and sky card. The last third: the farmhouse windows lit, the depot's band and billboards in neon, folk with lanterns. Eased over 1.2 s between rounds, never mid-wave; stepped under reduced motion. Cosmetic only.
 - **Accept:** `#stage[data-day-phase]` 0-1; rounds 1 and 26 differ by 15+ dE over a 200x100 field sample and the shadow angle by 30+ degrees; `[data-lamps=on]` in the last third; `dayPhase` unit-tested (monotonic); 3D +2 draw calls or fewer; level tests unchanged; shots P and D, 2D and 3D, rounds 1, 13 and 26.
