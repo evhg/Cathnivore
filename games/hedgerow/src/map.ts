@@ -365,6 +365,34 @@ function sheep(b: Brush, x: number, y: number, s: number): string {
   return `<g transform="translate(${f(x)} ${f(y)}) scale(${f(dir * s)} ${f(s)})"><ellipse cx="-1" cy="0.6" rx="5.5" ry="1.1" fill="#1a160c" opacity=".25"/><path d="M-2.6 -.5v2.2M2.2 -.5v2.2" stroke="#3a3330" stroke-width="1"/><ellipse cx="0" cy="-2.4" rx="4.4" ry="2.9" fill="#d6cdb9"/><ellipse cx="-.5" cy="-3.3" rx="3.3" ry="1.7" fill="#fbf7ec"/><ellipse cx="4.4" cy="-3.2" rx="1.5" ry="1.15" fill="#3a3330"/></g>`;
 }
 
+const WATER_ACTS = new Set(["Saltmarsh", "Rivermead", "Shingle Bay"]);
+/** Plan item 496: an act banner's ambient layer (a flock, glints on water, a cloud shadow), each `[data-ambient]`. */
+function actAmbient(place: string): HTMLElement {
+  const box = document.createElement("div");
+  box.className = "act-ambient";
+  box.setAttribute("aria-hidden", "true");
+  const tick = (x: number, y: number, k: number) => `M${x - k} ${y - k * 0.3}q${k * 0.5} ${-k * 0.45} ${k} ${k * 0.3}q${k * 0.5} ${-k * 0.75} ${k} ${-k * 0.3}`;
+  const flock = `<svg viewBox="0 0 40 16"><path d="${tick(8, 9, 3.2)}${tick(17, 5, 2.6)}${tick(25, 10, 2.9)}${tick(33, 7, 2.2)}" fill="none" stroke="#3b3340" stroke-width="1.1" stroke-linecap="round"/></svg>`;
+  let html = `<span class="amb-flock" data-ambient="flock">${flock}</span><span class="amb-cloud" data-ambient="cloud"></span>`;
+  if (WATER_ACTS.has(place)) html += `<span class="amb-glints" data-ambient="glints"><i></i><i></i><i></i><i></i></span>`;
+  box.innerHTML = html;
+  ambientWatch(box);
+  return box;
+}
+
+/** Plan item 496: the act banners' loops run only while their act is on screen. */
+let ambientObserver: IntersectionObserver | null = null;
+function ambientWatch(el: HTMLElement): void {
+  if (typeof IntersectionObserver === "undefined") {
+    el.toggleAttribute("data-live", true);
+    return;
+  }
+  ambientObserver ??= new IntersectionObserver((entries) => {
+    for (const e of entries) (e.target as HTMLElement).toggleAttribute("data-live", e.isIntersecting);
+  });
+  ambientObserver.observe(el);
+}
+
 /** Birds as little ticks: one path. */
 function birds(b: Brush, n: number, x0: number, x1: number, y0: number, y1: number, s: number, color = "#3b3340"): string {
   let d = "";
@@ -2277,6 +2305,10 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     img.decoding = "async";
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(actScene(n, "banner").replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '))}`;
     head.replaceChildren(img);
+    // Plan item 496: the scene lives a little: a small flock crosses the sky, water glints where the act has water,
+    // and a cloud's shadow drifts over the land. CSS loops only (none under reduced motion, paused off-screen by
+    // ambientWatch); not on the pencil acts beyond the open country.
+    if (!pencil) head.append(actAmbient(lvs[0]!.place));
     const title = document.createElement("div");
     title.className = "act-title";
     const num = document.createElement("span");

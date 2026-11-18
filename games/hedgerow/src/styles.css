@@ -5936,3 +5936,33 @@ img.act-scene {
   #screen-select .level-card.open.plate-open .lcard-thumb { cursor: zoom-out; justify-self: stretch; }
   #screen-select .level-card.open.plate-open .lcard-thumb svg.lcard-plate-tall { width: 100%; height: auto; max-height: 42vh; }
 }
+/* Plan item 496: the act banners live a little: a flock crossing the sky (28 s), a cloud's shadow drifting over the
+   land (40 s), and on the water acts a few glints on the water's band. They run only while their act is on screen
+   (map.ts sets data-live) and not at all under reduced motion. */
+.act-ambient { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.act-ambient > * { position: absolute; animation-play-state: paused; }
+.act-ambient[data-live] > *, .act-ambient[data-live] .amb-glints i { animation-play-state: running; }
+.amb-flock { top: 14%; left: 0; width: 44px; opacity: .7; animation: amb-flock 28s linear infinite; }
+.amb-flock svg { display: block; width: 100%; height: auto; animation: amb-flap 1.4s ease-in-out infinite alternate; }
+@keyframes amb-flock { from { translate: -60px 0; } 50% { translate: 50vw 10px; } to { translate: calc(100vw + 60px) -6px; } }
+@keyframes amb-flap { from { scale: 1 .8; } to { scale: 1 1.15; } }
+.amb-cloud {
+  top: 30%; left: 0; width: 34%; height: 70%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 14%, transparent), transparent);
+  animation: amb-cloud 40s linear infinite;
+}
+@keyframes amb-cloud { from { translate: -40% 0; } to { translate: 330% 0; } }
+.amb-glints { inset: 62% 8% 6%; }
+.amb-glints i {
+  position: absolute; width: 10px; height: 2px; border-radius: 1px;
+  background: color-mix(in srgb, var(--paper-hi) 85%, transparent);
+  opacity: 0; animation: amb-glint 3.2s ease-in-out infinite; animation-play-state: paused;
+}
+.amb-glints i:nth-child(1) { left: 12%; top: 30%; }
+.amb-glints i:nth-child(2) { left: 38%; top: 60%; animation-delay: .9s; }
+.amb-glints i:nth-child(3) { left: 61%; top: 20%; animation-delay: 1.7s; }
+.amb-glints i:nth-child(4) { left: 84%; top: 52%; animation-delay: 2.4s; }
+@keyframes amb-glint { 0%, 100% { opacity: 0; scale: .4 1; } 45% { opacity: .9; scale: 1 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .act-ambient { display: none; }
+}
