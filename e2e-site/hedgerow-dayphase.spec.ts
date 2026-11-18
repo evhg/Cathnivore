@@ -81,3 +81,37 @@ test('the day runs from morning to dusk across a level', async ({ page }) => {
   console.log('dE morning to dusk', dE.toFixed(1))
   expect(dE).toBeGreaterThanOrEqual(15)
 })
+
+// The 3D field: the frame's painted horizon (the sky band over the field) runs from the act's morning to dusk, and
+// the 3D renderer follows the same phase. Desktop only: headless WebGL is slow and the phone frame is the same code.
+test('the 3D horizon warms from morning to dusk', async ({ page }, info) => {
+  test.skip(info.project.name.includes('phone'), 'desktop only')
+  test.setTimeout(240_000)
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate((L) => {
+    const stars = Object.fromEntries(Array.from({ length: L - 1 }, (_, i) => [String(i + 1), 3]))
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [L]: true }, tips: { all: true } }))
+  }, LEVEL)
+  await page.goto(`/hedgerow/?sandbox=1&level=${LEVEL}`)
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 120_000 })
+  const horizon = async (which: 'first' | 'last'): Promise<[number, number, number]> => {
+    await page.evaluate((which) => {
+      const g = (window as unknown as { hedgerow: HG }).hedgerow.game()!
+      g.phase = 'build'
+      g.wave = which === 'first' ? 0 : g.level.waves.length - 1
+    }, which)
+    // the light eases over 1.2 s of wall-clock time, a frame at a time (a few fps under SwiftShader)
+    await page.waitForFunction((want) => document.querySelector<HTMLElement>('#stage')?.dataset.dayPhase === want, which === 'first' ? '0.00' : '1.00', { timeout: 60_000 })
+    await page.waitForTimeout(6000)
+    const hex = await page.evaluate(() => getComputedStyle(document.querySelector('#stage')!).getPropertyValue('--field-horizon').trim())
+    expect(hex).toMatch(/^#[0-9a-f]{6}$/)
+    return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number]
+  }
+  const morning = lab(await horizon('first'))
+  const dusk = lab(await horizon('last'))
+  const dE = Math.hypot(morning[0] - dusk[0], morning[1] - dusk[1], morning[2] - dusk[2])
+  console.log('3D horizon dE morning to dusk', dE.toFixed(1))
+  expect(dE).toBeGreaterThanOrEqual(15)
+  // dusk is warmer: more red than blue
+  expect(dusk[2]).toBeGreaterThan(morning[2])
+})

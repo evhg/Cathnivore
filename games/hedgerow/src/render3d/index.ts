@@ -203,7 +203,7 @@ const DUSK_SUN = new THREE.Color("#ff965c");
 const DUSK_FILL = new THREE.Color("#e8a888");
 const DUSK_BOUNCE = new THREE.Color("#8a5434");
 const DUSK_SKY = new THREE.Color("#5c5a8c");
-const DUSK_HORIZON = new THREE.Color("#f08a58");
+const DUSK_HORIZON = new THREE.Color("#ee7440");
 
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
 const CATH_LEAN_FROM = 0.95;
@@ -658,7 +658,7 @@ export class Renderer3D {
     const stage = this.canvas.parentElement;
     if (stage) {
       stage.style.setProperty("--field-sky", `#${b.sky.clone().lerp(DUSK_SKY, 0.45 * warm).getHexString()}`);
-      stage.style.setProperty("--field-horizon", `#${b.horizon.clone().lerp(DUSK_HORIZON, 0.6 * warm).getHexString()}`);
+      stage.style.setProperty("--field-horizon", `#${b.horizon.clone().lerp(DUSK_HORIZON, 0.8 * warm).getHexString()}`);
       stage.style.setProperty("--field-sun-x", `${Math.round(50 + 38 * Math.sin(az))}%`);
     }
   }

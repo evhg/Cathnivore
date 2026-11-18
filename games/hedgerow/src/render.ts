@@ -2471,7 +2471,7 @@ export class Renderer {
     const warm = dayWarmth(this.day);
     if (warm > 0) {
       ctx.globalCompositeOperation = "multiply";
-      ctx.fillStyle = `rgba(255,158,96,${(0.38 * warm).toFixed(3)})`;
+      ctx.fillStyle = `rgba(255,150,88,${(0.48 * warm).toFixed(3)})`;
       ctx.fillRect(0, 0, W, H);
     }
     ctx.restore();
