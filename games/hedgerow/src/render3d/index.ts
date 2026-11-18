@@ -46,7 +46,7 @@ import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnem
 
 /** Path tier 3 looks that throw like an old specialisation's shot. */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
-import { buildGround, regionShapes, waterNormalTexture, type Ground } from "./terrain";
+import { buildGround, regionShapes, waterNormalTexture, type Ground, setCloudShadows } from "./terrain";
 import { Crops } from "./crops";
 import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
 import { RungInstances, liveryOf } from "./rungs";
@@ -1705,6 +1705,9 @@ export class Renderer3D {
     return s.t < 0.3 ? s.t / 0.3 : s.t > s.dur - 0.6 ? Math.max(0, (s.dur - s.t) / 0.6) : 1;
   }
   /** Plan item 486 (tests): a cell's centre on the canvas (CSS px from its corner) at the current view. */
+  noCloudShadows(): void {
+    setCloudShadows(0);
+  }
   cellToCanvas(col: number, row: number): { x: number; y: number } {
     const v = new THREE.Vector3(col + 0.5, this.height(col + 0.5, row + 0.5), row + 0.5).project(this.camera);
     return { x: (v.x * 0.5 + 0.5) * this.canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * this.canvas.clientHeight };

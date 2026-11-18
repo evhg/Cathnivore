@@ -22,6 +22,8 @@ for (const [size, viewport] of [['P', { width: 390, height: 844 }], ['D', { widt
     await page.evaluate(([s, t, l]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { [l]: true }, tips: t })), [stars, tips, level])
     await page.goto(`${base}/hedgerow/?sandbox=1&level=${level}`)
     await page.waitForFunction(() => window.hedgerow?.depotShutter3d() != null, null, { timeout: 120000 })
+    // (the drifting cloud shadows off: the same build read l40's plots 0.043 then 0.029 with them)
+    await page.evaluate(() => window.hedgerow.noCloudShadows3d())
     await page.waitForTimeout(10000)
     const shot = `${out}/l${level}-${size}.png`
     await page.screenshot({ path: shot })

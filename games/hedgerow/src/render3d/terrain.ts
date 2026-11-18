@@ -64,6 +64,10 @@ const RES = 6; // vertices per cell
 const timeU = { value: 0 };
 const cloudOff = { value: new THREE.Vector2() };
 const cloudAmt = { value: 0.3 };
+/** Plan item 486 (tests): the drifting cloud shadows off (or back to `amt`), so a sampled frame is the same each run. */
+export function setCloudShadows(amt: number): void {
+  cloudAmt.value = amt;
+}
 let cloudTex: THREE.Texture | null = null;
 
 /** Soft, tileable cloud blobs (white = shadow) that drift over the ground. */
@@ -681,6 +685,9 @@ function fieldGround(act: number, c: THREE.Color, x: number, y: number, seed: nu
 /** Plan item 346: the farmhouse model's scale on the field (1.33 units tall, a little over a farmer). */
 export const FARMHOUSE_3D_SCALE = 1.6;
 
+/** Plan item 486: how an upright phone's lane ribbon is toned per act, apart from its beds (darker where the beds are
+ *  light; lighter where they are dark earth). */
+const PHONE_LANE: Record<number, number> = { 3: 2.4 };
 /** Plan item 486: `phone` (an upright phone's frame, set at build): the lane's packed earth a shade darker and the
  *  beds a shade lighter, so at 390 px the lane reads apart from the plots (lane-to-plot contrast 1.0-1.3 on the
  *  darker acts before; `scripts/hedgerow-486-measure`). */
@@ -1270,7 +1277,8 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
   for (const m of buildLanes(level, laneAct, heightAt, withCloudShadows, rng(level.id * 6271 + 5)).meshes) {
     // Plan item 486: on a phone the lane's ribbon (its textured surface, drawn first of the see-through things) a shade
     // darker, apart from the beds.
-    if (phone && m instanceof THREE.Mesh && m.renderOrder === -1) (m.material as THREE.MeshStandardMaterial).color.multiplyScalar(0.62);
+    // Rivermead's beds are dark tilled earth, as dark as its lane: there the lane goes the other way, a pale packed track.
+    if (phone && m instanceof THREE.Mesh && m.renderOrder === -1) (m.material as THREE.MeshStandardMaterial).color.multiplyScalar(PHONE_LANE[act] ?? 0.62);
     group.add(m);
   }
   const loose = laneStyle(laneAct).looseStones;

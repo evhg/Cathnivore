@@ -862,6 +862,8 @@ if (SANDBOX)
     depots3d: () => (renderer && is3D(renderer) ? renderer.depotRects() : []),
     // Plan item 486: a cell's centre on the 3D canvas (CSS px), to sample the lane and the plots in shots.
     cellPx3d: (col: number, row: number) => (renderer && is3D(renderer) ? renderer.cellToCanvas(col, row) : null),
+    // Plan item 486: the drifting cloud shadows off, so a sampled 3D frame is the same each run.
+    noCloudShadows3d: () => (renderer && is3D(renderer) ? (renderer.noCloudShadows(), true) : false),
     dressing3d: () => (renderer && is3D(renderer) ? renderer.dressing() : null),
     // Plan item 360: the 3D sun's cast shadows off or on (false in 2D).
     shadows3d: (on: boolean) => (renderer && is3D(renderer) ? (renderer.setShadows(on), true) : false),
