@@ -11,7 +11,9 @@ import { LANDMARKS } from '../content/campaignMapLayout'
 import { Landmark } from './Landmark'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import type { CathPoseId } from '../../shared/cath/cath'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { DEPART_MS, DEPART_STILL_MS, departFrame, departureOn } from './departure'
+import { playCues } from '../platform/sound'
 import { campaignLine } from '../content/campaignLines'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
@@ -552,6 +554,45 @@ export default function CampaignScreen({
     // Only when the layout changes to the phone's carousel: later picks scroll it themselves.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phone])
+  // Plan item 483: Start is a staged departure (departure.ts): the chapter's homes lift and glow at once, the atlas
+  // zooms in on them, Cath steps toward them and the paper rustles; then the screen fades into the chapter. A tap
+  // or a key skips it.
+  const mainRef = useRef<HTMLElement>(null)
+  const [departing, setDeparting] = useState<Chapter | null>(null)
+  const leave = useRef<{ chapter: Chapter; timer: number } | null>(null)
+  const finish = () => {
+    const d = leave.current
+    if (!d) return
+    leave.current = null
+    window.clearTimeout(d.timer)
+    const root = document.documentElement
+    root.dataset.arrived = ''
+    window.setTimeout(() => delete root.dataset.arrived, 400)
+    onStart(d.chapter)
+  }
+  useEffect(() => () => window.clearTimeout(leave.current?.timer), [])
+  const start = (chapter: Chapter) => {
+    if (leave.current) return
+    if (!departureOn(location.search, navigator.webdriver)) return onStart(chapter)
+    const main = mainRef.current
+    const mapEl = main?.querySelector<HTMLElement>('.cmp-map-svg')
+    if (main && mapEl) {
+      const homes = (CHAPTER_HOMES[chapter.id] ?? chapter.activeRegions).flatMap((id) => {
+        const el = mapEl.querySelector(`[data-region="${id}"]`)
+        return el ? [el.getBoundingClientRect()] : []
+      })
+      const cath = main.querySelector('.cmp-host-stand')?.getBoundingClientRect()
+      const f = departFrame(homes, mapEl.getBoundingClientRect(), cath)
+      main.style.setProperty('--dep-x', `${f.x}px`)
+      main.style.setProperty('--dep-y', `${f.y}px`)
+      main.style.setProperty('--dep-s', String(f.scale))
+      main.style.setProperty('--dep-step', `${f.step}px`)
+    }
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+    leave.current = { chapter, timer: window.setTimeout(finish, still ? DEPART_STILL_MS : DEPART_MS) }
+    setDeparting(chapter)
+    if (!still) playCues(['paperSlide', 'paperFlip'])
+  }
   const say = campaignLine(pointed ?? (phone ? open : next?.id), done === chapters.length)
   const stateOf = (i: number): 'done' | 'locked' | 'current' => {
     const c = chapters[i]!
@@ -585,7 +626,21 @@ export default function CampaignScreen({
     </figure>
   )
   return (
-    <main className="campaign campaign-screen">
+    <main
+      ref={mainRef}
+      className="campaign campaign-screen"
+      data-departing={departing?.id}
+      onKeyDownCapture={
+        departing
+          ? (e) => {
+              e.preventDefault()
+              finish()
+            }
+          : undefined
+      }
+    >
+      {/* Plan item 483: while the departure plays, a tap anywhere skips it */}
+      {departing && <button type="button" className="cmp-depart-skip" aria-label={`Skip to ${departing.title}`} onClick={finish} />}
       <header className="cmp-header">
         <div className="cmp-header-text">
           <p className="cmp-kicker">The liberation of Marrow</p>
@@ -639,8 +694,9 @@ export default function CampaignScreen({
       <CampaignMap
         chapters={chapters}
         completed={completed}
-        onStart={onStart}
+        onStart={start}
         celebrate={celebrate}
+        departing={departing?.id}
         lit={pointed ?? (phone ? open : undefined)}
         host={wide ? host : undefined}
         onPick={phone ? (c) => pick(c.id) : undefined}
@@ -721,7 +777,7 @@ export default function CampaignScreen({
               <Medallion n={i + 1} state={state} />
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}
-                onClick={() => onStart(chapter)}
+                onClick={() => start(chapter)}
                 onPointerEnter={() => setHovered(chapter.id)}
                 onPointerLeave={() => setHovered(null)}
                 onFocus={() => setFocused(chapter.id)}

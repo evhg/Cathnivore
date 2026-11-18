@@ -1697,3 +1697,68 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .campaign-screen > .cmp-path { gap: 4px; }
   .campaign-screen > .cmp-map .cmp-map-svg { max-height: calc(100dvh - 170px); }
 }
+
+/* Plan item 483: Start is a staged departure from the atlas to the table (CampaignScreen's `start`, departure.ts).
+   At once the chapter's home regions glow and the rest of the island dims; from 120 ms the atlas zooms in on the
+   homes (the map over the rest of the screen), Cath steps toward them with her crates; the rail and header fade,
+   and the screen fades to the paper the chapter opens on (`html[data-arrived]` fades the next screen in). */
+.cmp-depart-skip {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.campaign[data-departing] { pointer-events: none; }
+.campaign[data-departing] .cmp-depart-skip { pointer-events: auto; }
+.campaign[data-departing] .cmp-map-hex.is-departing {
+  filter: drop-shadow(0 0 6px var(--lamp-glow)) brightness(1.08) saturate(1.2);
+  transition: filter 90ms ease-out;
+}
+.campaign[data-departing] .cmp-map-hex:not(.is-departing) {
+  filter: saturate(0.55) brightness(0.92);
+  transition: filter 90ms ease-out;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .campaign[data-departing] .cmp-map { position: relative; z-index: var(--z-sheet); }
+  .campaign[data-departing] .cmp-map-svg {
+    transform-origin: var(--dep-x, 50%) var(--dep-y, 50%);
+    animation: cmp-depart-zoom 680ms cubic-bezier(.45, 0, .2, 1) 120ms both;
+  }
+  .campaign[data-departing] .cmp-host-stand { animation: cmp-depart-step 620ms var(--ease-settle) 60ms both; }
+  .campaign[data-departing] .cmp-cath-line,
+  .campaign[data-departing] .cmp-header,
+  .campaign[data-departing] .cmp-path,
+  .campaign[data-departing] .cmp-tabs { animation: cmp-depart-fade 360ms ease-in 200ms both; }
+  .campaign[data-departing]::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    background: var(--paper);
+    pointer-events: none;
+    animation: cmp-depart-paper 260ms ease-in 640ms both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campaign[data-departing] { animation: cmp-depart-fade 200ms ease-in both; }
+}
+@keyframes cmp-depart-zoom {
+  to { transform: scale(var(--dep-s, 1.6)); }
+}
+@keyframes cmp-depart-step {
+  45% { transform: translate(calc(var(--dep-step, 0px) * .6), -6px); }
+  to { transform: translate(var(--dep-step, 0px), -2px) scale(1.03); }
+}
+@keyframes cmp-depart-fade {
+  to { opacity: 0; }
+}
+@keyframes cmp-depart-paper {
+  from { opacity: 0; }
+}
+html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
+@keyframes cmp-arrive {
+  from { opacity: 0; }
+}

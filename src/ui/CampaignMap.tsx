@@ -245,6 +245,7 @@ export default function CampaignMap({
   onPick,
   picked,
   onPoint,
+  departing,
 }: {
   chapters: Chapter[]
   completed: string[]
@@ -260,6 +261,8 @@ export default function CampaignMap({
   picked?: string
   /** Plan item 395: a stop under the pointer points at its chapter in the rail (null when it leaves). */
   onPoint?(id: string | null): void
+  /** Plan item 483: the chapter being started; its home regions lift and glow while the atlas zooms in on them. */
+  departing?: string
 }) {
   const phase = useCelebration(celebrate && savedCompleted.includes(celebrate) ? celebrate : undefined)
   // Until the flood, the chapter just won still reads as not won; Cath waits at its pin until she walks.
@@ -278,6 +281,7 @@ export default function CampaignMap({
   const regionIds = Object.keys(MAP_AXIAL) as RegionId[]
   const nextHomes = new Set(allDone ? [] : (CHAPTER_HOMES[herChapter.id] ?? []))
   const litHomes = new Set(lit ? (CHAPTER_HOMES[lit] ?? []) : [])
+  const departHomes = new Set(departing ? (CHAPTER_HOMES[departing] ?? chapters.find((c) => c.id === departing)?.activeRegions ?? []) : [])
   // Plan item 373: on a desktop the large presenter stands beside the map, so her marker on it is a small leaf pin
   // (one Cath on the screen). Plan item 386: the phone too, where she presents from the header.
   const cath = useMemo(
@@ -365,7 +369,7 @@ export default function CampaignMap({
           const c = centre(id)
           const isFree = free.has(id)
           const type = REGIONS[id].type
-          const cls = `cmp-map-hex cmp-map-${type} ${isFree ? 'is-free' : 'is-held'}${nextHomes.has(id) ? ' is-next' : ''}${flooding.has(id) ? ' is-flooding' : ''}`
+          const cls = `cmp-map-hex cmp-map-${type} ${isFree ? 'is-free' : 'is-held'}${nextHomes.has(id) ? ' is-next' : ''}${flooding.has(id) ? ' is-flooding' : ''}${departHomes.has(id) ? ' is-departing' : ''}`
           // Plan item 248: freed (full colour, a market), current (the next chapter's home), locked (Hollowell's grey).
           const state = isFree ? 'freed' : nextHomes.has(id) ? 'current' : 'locked'
           return (
