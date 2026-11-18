@@ -2266,6 +2266,53 @@ float reliefShade( vec2 uv ) {
     p.translate(0.074 * side, -0.03, 0.0);
     addS(p, pearlMat, headPivot);
   }
+  // Plan item 319 slice 90: the bible's cute touch, a pasture-green enamel leaf clip in her hair beside the parting,
+  // over her left temple (the side turned to the lens), the leaf swept along the hair's fall on a fine gold bar (the 17:10 critique: 'no cute touch').
+  // One mesh in a group that hides under the Ghost's hood and the Gunslinger's hat; the bar shares the pearls' material.
+  const leafClip = new THREE.Group();
+  leafClip.name = "cath-leaf-clip";
+  headPivot.add(leafClip);
+  {
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x4f9a34, roughness: 0.28, metalness: 0.1, emissive: 0x18400c, side: THREE.DoubleSide });
+    mats.push(leafMat);
+    rimify(leafMat, 0.9);
+    // The blade: a pointed oval, 4 cm by 1.8, its halves folded a touch up from the midrib.
+    const s = new THREE.Shape();
+    const L = 0.02;
+    const W = 0.0088;
+    s.moveTo(-L, 0);
+    s.bezierCurveTo(-L * 0.45, W * 1.25, L * 0.4, W * 1.05, L, 0);
+    s.bezierCurveTo(L * 0.4, -W * 1.05, -L * 0.45, -W * 1.25, -L, 0);
+    const blade = new THREE.ShapeGeometry(s, seg(10));
+    {
+      const p = blade.attributes.position as THREE.BufferAttribute;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        // folded along the midrib and curled toward the tip, so the light breaks across its two halves
+        p.setZ(i, Math.abs(y) * 0.35 + ((x + L) / (2 * L)) ** 2 * 0.0025);
+      }
+      blade.computeVertexNormals();
+    }
+    // A short stalk at the base.
+    const stalk = new THREE.CylinderGeometry(0.0009, 0.0011, 0.006, 5);
+    stalk.rotateZ(Math.PI / 2);
+    stalk.translate(-L - 0.0025, 0, 0.0005);
+    const leafGeo = mergeGeos([blade, stalk]);
+    leafGeo.rotateZ(0.35); // the tip swept down and back, along the hair's fall from the parting
+    // Laid on the crown beside the parting, over her left temple, its face tipped up and out to the lens (lower, the
+    // face-framing locks covered it; on her far side it stood off the silhouette).
+    leafGeo.rotateX(-0.6);
+    leafGeo.rotateY(0.5);
+    leafGeo.translate(0.05, 0.072, 0.07);
+    add(leafGeo, leafMat, leafClip);
+    const bar = new THREE.CylinderGeometry(0.0012, 0.0012, 0.022, 6);
+    bar.rotateZ(Math.PI / 2 + 0.35);
+    bar.rotateX(-0.6);
+    bar.rotateY(0.5);
+    bar.translate(0.051, 0.07, 0.067);
+    add(bar, pearlMat, leafClip);
+  }
   const head = new THREE.Object3D();
   headPivot.add(head);
 
@@ -4189,6 +4236,7 @@ float reliefShade( vec2 uv ) {
       wearing = cls && kits.has(cls) ? cls : null;
       for (const [k, g] of kits) g.visible = k === wearing;
       for (const [k, g] of kitExtras) g.visible = k.split("-")[0] === wearing;
+      leafClip.visible = wearing !== "ghost" && wearing !== "gunslinger"; // under the hood, under the hat
       // Plan item 319: the hood up holds the face-framing locks in; on the far side of her three-quarter face a
       // curtain lay over her outer eye as a dark glossy blob, the rim light catching it.
       lockGeo?.setDrawRange(0, wearing === "ghost" ? lockSheetIdx : Infinity);
