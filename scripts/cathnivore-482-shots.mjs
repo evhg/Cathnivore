@@ -19,7 +19,7 @@ for (const [w, h] of [[1440, 900], [1280, 800], [1920, 1080], [1100, 800], [1024
     return { board: r('.title-board'), map: r('.title-board .map'), hexes: hx, nhex: hexes.length, cath: r('.title-cath svg'), line: r('.title-cath-line'), menu: r('.title-menu'), hang: r('.title-hang svg'), front: r('.title-table-front'), ritual: r('.daily-ritual:not(.is-compact)'), tag: r('.title-tagline') }
   })
   console.log(w, h, scheme, JSON.stringify(m))
-  if (h === 900 || w === 1280 || w === 1920) await p.screenshot({ path: `${S}/${out}-${w}-${scheme}.png` })
+  if (h === 900 || w === 1280 || w === 1920 || w === 1100) await p.screenshot({ path: `${S}/${out}-${w}-${scheme}.png` })
   if (w === 1440 && scheme === 'light') await p.screenshot({ path: `${S}/${out}-menu-zoom.png`, clip: { x: 0, y: 280, width: 900, height: 520 } })
   await ctx.close()
 }
