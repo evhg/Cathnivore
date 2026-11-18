@@ -153,7 +153,7 @@ function withFieldUv(mat: THREE.MeshStandardMaterial): THREE.MeshStandardMateria
 }
 
 /** Plants bend in the breeze: the higher a vertex, the further it sways, each plant out of step. */
-function withSway(mat: THREE.Material, amount: number, key: string): THREE.Material {
+export function withSway(mat: THREE.Material, amount: number, key: string): THREE.Material {
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = timeU;
     sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nuniform float uTime;").replace(

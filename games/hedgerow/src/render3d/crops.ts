@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import type { Game, Level } from "../engine";
 import { cropOf, growthPlots, occupiedPlots, ripeCount, shownCrops, type Crop, type CropStage } from "../growth";
+import { withSway } from "./terrain";
 
 interface Look {
   plant: () => THREE.BufferGeometry;
@@ -116,10 +117,12 @@ export class Crops {
       });
     }
     const n = Math.max(1, this.slots.length);
-    const mat = () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.85, metalness: 0, flatShading: true });
-    this.plants = new THREE.InstancedMesh(this.look.plant(), mat(), n);
-    this.heads = new THREE.InstancedMesh(this.look.head(), mat(), n);
-    this.seedlings = new THREE.InstancedMesh(SEEDLING_GEO(), mat(), n);
+    // Plan item 506: the crop sways in the breeze with the field's grass (the same clock, each plant out of step); a
+    // plant and its head share the slot's phase, so the head stays on its stem.
+    const mat = (key: string) => withSway(new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.85, metalness: 0, flatShading: true }), 0.008, `hedgerow-crop-${key}`);
+    this.plants = new THREE.InstancedMesh(this.look.plant(), mat("plant"), n);
+    this.heads = new THREE.InstancedMesh(this.look.head(), mat("head"), n);
+    this.seedlings = new THREE.InstancedMesh(SEEDLING_GEO(), mat("seedling"), n);
     for (const m of [this.plants, this.heads, this.seedlings]) {
       m.castShadow = false;
       m.receiveShadow = true;
