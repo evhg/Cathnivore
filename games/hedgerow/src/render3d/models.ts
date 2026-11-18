@@ -11,7 +11,7 @@ import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind, LandmarkKind, MegaId, TowerKind } from "../engine";
-import { bubble, C, chrome, glass, gloss, glow, matte, metal, plastic, shoreFade, shoreFoam } from "./palette";
+import { bubble, C, chrome, duskLamps, glass, gloss, glow, matte, metal, plastic, shoreFade, shoreFoam } from "./palette";
 
 type M = THREE.Material;
 
@@ -2555,7 +2555,7 @@ export function buildFarmhouse(): THREE.Group {
   g.add(box(0.1, 0.28, 0.1, matte("#8a5a35"), 0.2, 0.55, -0.1));
   g.add(box(0.14, 0.26, 0.01, matte(C.leaf), 0, 0, 0.285));
   for (const x of [-0.24, 0.24]) {
-    g.add(box(0.12, 0.12, 0.01, glow("#ffd98a", 1.2), x, 0.22, 0.285));
+    g.add(box(0.12, 0.12, 0.01, duskLamps.windows, x, 0.22, 0.285));
     // A white frame and a cross of glazing bars on each window.
     const fr = matte("#f6f1e6");
     g.add(box(0.14, 0.014, 0.014, fr, x, 0.34, 0.29), box(0.014, 0.12, 0.014, fr, x - 0.063, 0.22, 0.29), box(0.014, 0.12, 0.014, fr, x + 0.063, 0.22, 0.29));
@@ -2566,7 +2566,7 @@ export function buildFarmhouse(): THREE.Group {
   for (const sd of [-1, 1]) {
     const fr = matte("#f6f1e6");
     const x = sd * 0.375;
-    g.add(box(0.01, 0.12, 0.12, glow("#ffd98a", 1.2), x, 0.22, 0));
+    g.add(box(0.01, 0.12, 0.12, duskLamps.windows, x, 0.22, 0));
     g.add(box(0.014, 0.014, 0.14, fr, x + sd * 0.004, 0.34, 0), box(0.014, 0.12, 0.014, fr, x + sd * 0.004, 0.22, -0.063), box(0.014, 0.12, 0.014, fr, x + sd * 0.004, 0.22, 0.063));
     g.add(box(0.012, 0.12, 0.008, fr, x + sd * 0.006, 0.22, 0), box(0.012, 0.008, 0.12, fr, x + sd * 0.006, 0.276, 0));
     g.add(box(0.05, 0.04, 0.14, matte("#e8748b", 0.6), x + sd * 0.02, 0.14, 0));
@@ -2594,7 +2594,7 @@ export function buildDepot(): THREE.Group {
   const white = plastic("#f3f5f7", 0.22);
   // Plan item 336: the canopy band and fascia in Hollowell's lit orange, as the 2D megastore's (it was teal like the
   // roof, so from the camera the depot read as one flat teal box); the roof stays teal.
-  const orange = plastic("#ef7a2a", 0.3);
+  const orange = duskLamps.neon;
   // The shed, on a low grey plinth.
   g.add(box(1.5, 0.06, 1.7, matte("#9aa3ab"), 0, 0, 0));
   g.add(box(1.4, 0.86, 1.6, white, 0, 0.06, 0));

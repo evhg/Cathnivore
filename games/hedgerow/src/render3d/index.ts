@@ -39,7 +39,8 @@ import {
   type Tower,
   type TowerKind,
 } from "../engine";
-import { actLight, actMood, dayKey, matte, nightLight, shoreFade, shoreFoam } from "./palette";
+import { actLight, actMood, dayKey, matte, nightLight, setDuskLamps, shoreFade, shoreFoam } from "./palette";
+import { dayAzFor, dayLamps, dayPhase, dayShadowLength, dayWarmth } from "../sunlight";
 import { fordMiddle } from "../landmarks";
 import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnemy, buildRung, buildBarn, buildLandmark, buildMega, buildOak, buildThornPile, buildTower, crownTopper, enemyLift, enemyScale } from "./models";
 
@@ -197,6 +198,13 @@ const HERO_REACH_X = 1.3;
 export const CATH_3D_SCALE = 1.15;
 /** Plan item 459: her extra size on a phone's canvas (under 600 px wide). */
 const CATH_PHONE_GROW = 1.25;
+/** Plan item 485: the dusk the day's light runs toward (key, sky fill, ground bounce, the frame's sky and horizon). */
+const DUSK_SUN = new THREE.Color("#ff965c");
+const DUSK_FILL = new THREE.Color("#e8a888");
+const DUSK_BOUNCE = new THREE.Color("#8a5434");
+const DUSK_SKY = new THREE.Color("#5c5a8c");
+const DUSK_HORIZON = new THREE.Color("#f08a58");
+
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
 const CATH_LEAN_FROM = 0.95;
 
@@ -213,6 +221,10 @@ export class Renderer3D {
   private world = new THREE.Group();
   private dynamic = new THREE.Group();
   private ground: Ground | null = null;
+  /** Plan item 485: the day across a level (0 morning to 1 dusk), eased on wall-clock time, and the level's noon light. */
+  private day = -1;
+  private dayAt = 0;
+  private dayBase: { levelId: number; night: boolean; el: number; cx: number; cz: number; sun: THREE.Color; sunI: number; hemi: THREE.Color; hemiG: THREE.Color; sky: THREE.Color; horizon: THREE.Color; exposure: number; lamps: number } | null = null;
   /** Plan item 59: the growing field. */
   private crops: Crops | null = null;
   private levelId = -1;
@@ -569,6 +581,23 @@ export class Renderer3D {
     const d = 20;
     this.sun.position.set(cx + Math.cos(az) * Math.cos(el) * d, Math.sin(el) * d, cz + Math.sin(az) * Math.cos(el) * d);
     this.sun.target.position.set(cx, 0, cz);
+    this.dayBase = {
+      levelId: game.level.id,
+      night,
+      el: key.el,
+      cx,
+      cz,
+      sun: this.sun.color.clone(),
+      sunI: this.sun.intensity,
+      hemi: this.hemi.color.clone(),
+      hemiG: this.hemi.groundColor.clone(),
+      sky: new THREE.Color(L.skyTop),
+      horizon: horizon.clone(),
+      exposure: this.renderer.toneMappingExposure,
+      // the windows lit all level at night and in Blackout's dark
+      lamps: night || setPiece(game.level, "blackout") ? 1 : -1,
+    };
+    this.day = -1;
     const span = Math.max(game.level.cols, game.level.rows) * 0.9 + 2;
     const sc = this.sun.shadow.camera;
     sc.left = -span;
@@ -587,6 +616,49 @@ export class Renderer3D {
     // Plan item 255: her figure inked like the 2D field's people, on her eight largest parts.
     inkFigure(this.cath, 8, 0.02);
     this.dynamic.add(this.cath);
+  }
+
+  /** Plan item 485: the sun crosses the sky over the level, as in 2D (render.ts): the phase follows the round under
+   *  way or next up, eased over 1.2 s on wall-clock time (the game's dt is 0 between rounds), stepped under reduced
+   *  motion. The sun swings about the act's noon and sinks so shadows lengthen 1.8x; after noon the key, the sky fill
+   *  and the frame's horizon warm toward dusk; from the last third the farmhouse windows and the depot's neon are lit.
+   *  Night levels keep their moonlit set and lit windows. */
+  private syncDay(game: Game): void {
+    const b = this.dayBase;
+    if (!b || b.levelId !== game.level.id) return;
+    const to = dayPhase(Math.max(1, game.phase === "build" ? game.wave + 1 : game.wave), game.level.waves.length);
+    const now = performance.now();
+    const wall = this.dayAt ? Math.min(0.1, (now - this.dayAt) / 1000) : 0;
+    this.dayAt = now;
+    const was = this.day;
+    if (this.day < 0 || this.reducedMotion) this.day = to;
+    else this.day += Math.sign(to - this.day) * Math.min(Math.abs(to - this.day), wall / 1.2);
+    if (this.day === was) return;
+    const p = this.day;
+    if (b.night) {
+      setDuskLamps(1);
+      return;
+    }
+    const az = (dayAzFor(game.level.id, p) * Math.PI) / 180;
+    // a low sun: tan(elevation) falls by the shadow's lengthening, so a shadow is 1.8x noon's at morning and dusk
+    const el = Math.atan(Math.tan((b.el * Math.PI) / 180) / dayShadowLength(p));
+    const d = 20;
+    this.sun.position.set(b.cx + Math.cos(az) * Math.cos(el) * d, Math.sin(el) * d, b.cz + Math.sin(az) * Math.cos(el) * d);
+    const warm = dayWarmth(p);
+    const low = 2 * Math.abs(p - 0.5);
+    this.sun.color.copy(b.sun).lerp(DUSK_SUN, 0.6 * warm);
+    this.sun.intensity = b.sunI * (1 - 0.12 * low * low);
+    this.hemi.color.copy(b.hemi).lerp(DUSK_FILL, 0.35 * warm);
+    this.hemi.groundColor.copy(b.hemiG).lerp(DUSK_BOUNCE, 0.3 * warm);
+    this.renderer.toneMappingExposure = b.exposure * (1 - 0.06 * warm);
+    const lit = b.lamps > 0 ? 1 : dayLamps(p) ? Math.min(1, (p - 2 / 3) * 6 + 0.4) : 0;
+    setDuskLamps(lit);
+    const stage = this.canvas.parentElement;
+    if (stage) {
+      stage.style.setProperty("--field-sky", `#${b.sky.clone().lerp(DUSK_SKY, 0.45 * warm).getHexString()}`);
+      stage.style.setProperty("--field-horizon", `#${b.horizon.clone().lerp(DUSK_HORIZON, 0.6 * warm).getHexString()}`);
+      stage.style.setProperty("--field-sun-x", `${Math.round(50 + 38 * Math.sin(az))}%`);
+    }
   }
 
   /** The living air: pollen and birds by day; fireflies, lantern halos and bats by night. */
@@ -1657,6 +1729,7 @@ export class Renderer3D {
 
   draw(game: Game, dt: number): void {
     if (game.level.id !== this.levelId) this.resize(game);
+    this.syncDay(game);
     this.clock += dt;
     const t = this.clock;
     this.syncTowers(game, dt, t);

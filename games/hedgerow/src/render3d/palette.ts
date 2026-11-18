@@ -80,6 +80,18 @@ export function glow(color: string, intensity = 2): THREE.MeshStandardMaterial {
   return m;
 }
 
+/** Plan item 485: the lamps that light at dusk, one shared material each (the farmhouse windows; the depot's orange
+ * band and fascia as neon), scaled by the renderer's day with `setDuskLamps` (0 day, 1 lit). No new draw calls. */
+export const duskLamps = {
+  windows: shared(new THREE.MeshStandardMaterial({ color: "#ffd98a", emissive: "#ffd98a", emissiveIntensity: 1.2, roughness: 0.5 })),
+  neon: shared(new THREE.MeshPhysicalMaterial({ color: "#ef7a2a", roughness: 0.22, metalness: 0.03, clearcoat: 1, clearcoatRoughness: 0.08, emissive: "#ef7a2a", emissiveIntensity: 0.3 })),
+};
+
+export function setDuskLamps(k: number): void {
+  duskLamps.windows.emissiveIntensity = 1.2 + 2.2 * k;
+  duskLamps.neon.emissiveIntensity = 0.3 + 1.1 * k;
+}
+
 export function glass(color = "#1c2a36"): THREE.MeshPhysicalMaterial {
   const k = key({ m: "glass", color });
   let m = cache.get(k) as THREE.MeshPhysicalMaterial | undefined;

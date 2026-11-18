@@ -51,3 +51,16 @@ describe('the day light', () => {
     expect(daySunRgb(21, 1)).not.toBe(sunRgbFor(21))
   })
 })
+
+describe("the 3D dusk lamps (plan item 485)", () => {
+  it("lights the farmhouse windows and the depot's neon from day to dusk, and back", async () => {
+    const { duskLamps, setDuskLamps } = await import("../games/hedgerow/src/render3d/palette");
+    setDuskLamps(0);
+    const day = [duskLamps.windows.emissiveIntensity, duskLamps.neon.emissiveIntensity];
+    setDuskLamps(1);
+    expect(duskLamps.windows.emissiveIntensity).toBeGreaterThan(day[0]! * 2);
+    expect(duskLamps.neon.emissiveIntensity).toBeGreaterThan(day[1]! * 3);
+    setDuskLamps(0);
+    expect([duskLamps.windows.emissiveIntensity, duskLamps.neon.emissiveIntensity]).toEqual(day);
+  });
+});
