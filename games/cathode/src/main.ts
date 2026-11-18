@@ -30,6 +30,7 @@ import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
 import { FrontAudio, renderRack } from "./ui/frontaudio";
 import { el, reducedMotion } from "./ui/dom";
+import { frontPageFor, LAST_CASE_KEY, MASTHEAD, PAPER_SEEN_KEY, parseLastCase, type LastCase } from "./sim/frontpage";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -286,7 +287,15 @@ function hint(id: string): void {
   showDossier(dossierFor(id, { hasSave: hasSave(), jobsDone: done, district }));
 }
 
-/** Plan item 89: the case file that slides in beside the menu at D while New Case or Continue has the focus. */
+/** Plan item 494: the title spins a new edition in once (the first visit after a case closes). */
+let paperSpun = false;
+
+/**
+ * Plan items 89 and 494: the morning paper that slides in beside the menu at D (in the hint's place on an upright
+ * phone) while New Case or Continue has the focus: Hollowell's own rag, folded, its front page the last closed case
+ * in the city's slant (a teaser on Tomas Reed on a fresh save), the case's best kill-cam still halftoned (else the
+ * target's booking photo), and below the fold the case file for the row in focus.
+ */
 function showDossier(d: ReturnType<typeof dossierFor>): void {
   const box = document.getElementById("dossier") ?? el("aside", "dossier", $("menu").parentElement!);
   box.id = "dossier";
@@ -296,22 +305,73 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   const phone = innerWidth <= 600 && innerHeight > innerWidth;
   box.style.setProperty("--dossier-top", `${phone ? $("menu-hint").offsetTop : $("menu").offsetTop}px`);
   if (!d) return;
+  let last: LastCase | null = null;
+  try {
+    last = parseLastCase(localStorage.getItem(LAST_CASE_KEY));
+  } catch {
+    last = null;
+  }
+  const page = frontPageFor(jobs(), last);
+  box.classList.add("front-page");
+  box.dataset.frontPage = "";
+  box.dataset.case = page.caseId;
+  box.dataset.edition = page.edition;
+  if (!paperSpun) {
+    paperSpun = true;
+    let seen: string | null = null;
+    try {
+      seen = localStorage.getItem(PAPER_SEEN_KEY);
+      localStorage.setItem(PAPER_SEEN_KEY, page.edition);
+    } catch {
+      seen = page.edition;
+    }
+    // A fresh save's teaser never spins; a new edition does, once.
+    if (page.caseId !== "reed" && seen !== page.edition) {
+      box.classList.add("is-fresh");
+      box.addEventListener("animationend", () => box.classList.remove("is-fresh"), { once: true });
+    }
+  }
   box.replaceChildren();
-  el("i", "dossier-pin", box);
-  const photo = el("figure", "dossier-photo", box);
-  // Plan item 99: the focused target's mugshot (Tomas Reed's for the opening case), clipped to the file.
-  const who = d.job ? BUST_FOR_CASE[d.job] : d.target === "Tomas Reed" ? "reed" : undefined;
-  // Plan item 139: the dossier's print is about 150 px wide, where the slate's lettering drew at 8 px; it carries
-  // item 107's lettered shapes instead, and the name stands in type under the print.
-  photo.innerHTML = mugshotSvg(who ?? null, who ? d.target.toUpperCase().slice(0, 16) : "CASE FILE", true);
-  el("p", "dossier-kicker", box, "Case file");
+  const mast = el("header", "fp-mast", box);
+  el("b", "fp-title", mast, MASTHEAD);
+  const dateline = el("span", "fp-date", mast);
+  el("span", "", dateline, "Morning edition \u00B7 2 scrip");
+  el("span", "fp-weather", dateline, page.weather);
+  el("h3", "fp-head", box, page.headline);
+  const body = el("div", "fp-body", box);
+  const photo = el("figure", "dossier-photo fp-photo", body);
+  // The story's own picture: the case's best kill-cam still when the debrief kept one; else the booking photo of
+  // who the story is about (Tomas Reed on a fresh save or after the fish market, the struck name after a case).
+  const struck = page.caseId === "reed" || page.caseId === "fishMarket" ? "reed" : BUST_FOR_CASE[page.caseId];
+  const struckName = struck === "reed" ? "Tomas Reed" : THE_LIST.find((n) => n.job === page.caseId)?.name;
+  const still = last && last.caseId === page.caseId ? last.still : undefined;
+  if (still) {
+    const img = el("img", "fp-still", photo);
+    img.src = still;
+    img.alt = "";
+  } else {
+    const who = struck ?? (d.job ? BUST_FOR_CASE[d.job] : d.target === "Tomas Reed" ? "reed" : undefined);
+    // Plan item 139: the print carries item 107's lettered shapes; the name stands in type beside it.
+    photo.innerHTML = mugshotSvg(who ?? null, who ? (struckName ?? d.target).toUpperCase().slice(0, 16) : "CASE FILE", true);
+  }
+  photo.classList.toggle("is-struck", page.caseId !== "reed" && page.caseId !== "fishMarket" && !still);
+  const col = el("div", "fp-col", body);
+  const dek = el("p", "fp-dek", col);
+  el("b", "fp-kicker", dek, page.kicker);
+  dek.append(` ${page.dek}`);
+  // Below the fold: the case file for the row in focus (who the case is after, where, the tag).
+  const file = el("div", "fp-file", col);
+  const tab = el("span", "fp-tab", file);
+  el("span", "dossier-kicker", tab, "Case file");
   // Plan item 412: the file's typed number, steady for a name (Hollowell Police, the year, four digits).
   let h = 7;
   for (const c of d.target) h = (h * 31 + c.charCodeAt(0)) % 9973;
-  el("span", "dossier-no", box, `HPD 2079 \u00B7 ${String(1000 + (h % 9000)).padStart(4, "0")}`);
-  el("b", "dossier-target", box, d.target);
-  el("span", "dossier-place", box, d.place);
-  el("span", "dossier-tag", box, d.tag);
+  el("span", "dossier-no", tab, `HPD 2079 \u00B7 ${String(1000 + (h % 9000)).padStart(4, "0")}`);
+  el("b", "dossier-target", file, d.target);
+  const where = el("span", "fp-where", file);
+  el("span", "dossier-place", where, d.place);
+  el("span", "dossier-tag", where, d.tag);
+  el("p", "fp-classified", col, page.classified);
   placeDossier(box);
 }
 

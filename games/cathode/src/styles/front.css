@@ -1312,9 +1312,98 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   /* a short phone: the card's foot clears The List's label under it */
   .dossier { padding-block: 2px 3px; } /* px-ok */
 }
+/* Plan item 494: the case file is the morning paper, Hollowell's own rag folded once: a Bodoni masthead, the last
+   closed case's front page in the city's slant (a heavy condensed headline, a halftoned still), and below the fold the
+   case file for the row in focus. A new edition spins in once (main.ts .is-fresh); reduced motion fades it. */
+.dossier.front-page { --news: color-mix(in srgb, var(--card-paper) 84%, rgb(var(--white-rgb))); --news-ink: var(--card-ink); }
+.front-page .fp-mast, .front-page .fp-head, .front-page .fp-dek, .front-page .fp-classified { margin: 0; }
+.front-page .fp-title { font: italic 800 var(--fs-3) / 1 var(--font-voice); letter-spacing: -.01em; white-space: nowrap; }
+.front-page .fp-date { display: grid; font: 600 var(--fs-1) / 1.1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .06em; text-transform: uppercase; text-align: right; }
+.front-page .fp-weather { font-weight: 500; letter-spacing: 0; text-transform: none; font-style: italic; }
+.front-page .fp-kicker { font: 700 var(--fs-1) / 1 var(--font-ui); font-style: normal; font-stretch: var(--wdth-label); letter-spacing: .06em; text-transform: uppercase; color: color-mix(in srgb, var(--blood) 72%, var(--card-ink)); }
+.front-page .fp-head { font: 900 var(--fs-3) / .96 var(--font-ui); font-stretch: var(--wdth-head); letter-spacing: -.01em; text-wrap: balance; }
+.front-page .fp-dek { font: italic 500 var(--fs-1) / 1.22 var(--font-voice); }
+.front-page .fp-photo { filter: grayscale(1) contrast(1.15); }
+.front-page .fp-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgb(var(--black-rgb) / .3) 32%, transparent 36%) 0 0 / calc(var(--u) * 4) calc(var(--u) * 4);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.front-page .fp-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.front-page .fp-classified { font: 500 var(--fs-1) / 1.2 var(--font-ui); font-stretch: var(--wdth-label); }
+.front-page .fp-where .dossier-tag::before { content: "\00A0\00B7\00A0"; font-style: normal; }
+@media (min-width: 900px) and (min-height: 521px) {
+  .dossier.front-page {
+    top: calc(var(--dossier-top, 0px) - var(--u) * 66);
+    width: calc(var(--u) * 560);
+    gap: calc(var(--u) * 6);
+    padding: calc(var(--u) * 10) calc(var(--u) * 14);
+    /* newsprint, the fold a soft crease across its middle */
+    background:
+      linear-gradient(to bottom, transparent 49.4%, rgb(var(--black-rgb) / .16) 50%, rgb(var(--white-rgb) / .35) 50.4%, transparent 52%),
+      linear-gradient(100deg, rgb(var(--white-rgb) / .14), transparent 40%, rgb(var(--black-rgb) / .08)),
+      var(--news);
+    color: var(--news-ink);
+    rotate: 2deg;
+  }
+  .front-page .fp-mast { display: grid; justify-items: center; gap: calc(var(--u) * 4); }
+  .front-page .fp-title { font-size: var(--fs-4); }
+  .front-page .fp-date { display: flex; justify-content: space-between; justify-self: stretch; padding-block: calc(var(--u) * 3); border-block: calc(var(--u) * 1) solid var(--news-ink); border-top-width: calc(var(--u) * 2); }
+  .front-page .fp-head { font-size: var(--fs-4); line-height: .94; }
+  /* the print 140 px or more at 1440x900 (plan item 99's spec) */
+  .front-page .fp-body { display: grid; grid-template-columns: calc(var(--u) * 190) minmax(0, 1fr); gap: calc(var(--u) * 14); align-items: start; }
+  .front-page .fp-photo { margin: 0; }
+  .front-page .fp-col { display: grid; gap: calc(var(--u) * 7); }
+  .front-page .fp-file { display: grid; gap: calc(var(--u) * 1); padding-block: calc(var(--u) * 5); border-block: calc(var(--u) * 1) solid color-mix(in srgb, var(--news-ink) 55%, transparent); }
+  .front-page .fp-tab { display: flex; justify-content: space-between; gap: calc(var(--u) * 6); }
+  .front-page .dossier-target { font-size: var(--fs-2); }
+  .front-page .dossier-place, .front-page .dossier-tag { font-size: var(--fs-1); }
+  .front-page .dossier-no { position: static; padding: 0; background: none; border-radius: 0; font-size: var(--fs-1); }
+}
+.dossier.front-page.is-fresh.is-open { animation: fp-spin 900ms cubic-bezier(.2, .7, .2, 1) both; }
+/* the end state is the card's own tilt (2deg at D, -2deg upright) */
+@keyframes fp-spin {
+  from { opacity: 0; scale: .15; rotate: -700deg; }
+  to { opacity: 1; scale: 1; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .dossier.front-page {
+    grid-template-columns: 58px minmax(0, 1fr); /* px-ok: --u floors at .62 px on a phone */
+    row-gap: 3px; /* px-ok */
+    width: min(48vw, 178px); /* px-ok */
+    padding: 6px 8px 7px 6px; /* px-ok */
+    background: var(--news);
+    color: var(--news-ink);
+  }
+  .front-page .fp-mast { grid-column: 1 / -1; padding-bottom: 2px; border-bottom: 1px solid var(--news-ink); } /* px-ok */
+  .front-page .fp-title { font-size: var(--fs-1); }
+  .front-page .fp-date, .front-page .fp-dek, .front-page .fp-classified, .front-page .dossier-no, .front-page .dossier-kicker { display: none; }
+  .front-page .fp-head { grid-column: 1 / -1; font-size: var(--fs-1); line-height: 1.05; }
+  .front-page .fp-body { display: contents; }
+  .front-page .fp-photo { grid-row: auto; height: 70px; } /* px-ok: the photo 64 px or more (plan item 379) */
+  .front-page .fp-col, .front-page .fp-file { display: grid; align-content: start; }
+  .front-page .fp-where { display: grid; }
+  .front-page .fp-where .dossier-tag::before { content: none; }
+}
+/* a short phone (375x667): the band under the menu is about 126 px, so the headline stands beside the photo with
+   the name under it, and the place and tag step back (the menu hint carries them) */
+@media (max-width: 600px) and (orientation: portrait) and (max-height: 720px) {
+  .front-page .fp-head { grid-column: 2; grid-row: 2; }
+  .dossier.front-page { row-gap: 2px; padding-block: 3px 4px; } /* px-ok */
+  .front-page .fp-photo { grid-column: 1; grid-row: 2 / span 2; height: 66px; } /* px-ok: 64 px or more (item 379) */
+  .front-page .fp-col { grid-column: 2; grid-row: 3; }
+  .front-page .fp-where { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .dossier { transition: opacity 120ms ease; translate: 0 0; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .dossier.front-page.is-fresh.is-open { animation: fp-fade 300ms ease both; }
+}
+@keyframes fp-fade { from { opacity: 0; } to { opacity: 1; } }
 
 /* Plan item 99: the mugshots fill their prints; the dossier's photo is clipped on, and while it shows the menu's
    one-line hint (which said the same) steps back. */

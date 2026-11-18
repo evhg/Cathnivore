@@ -114,7 +114,8 @@ import { loadCover } from "./ai/coverload";
 import { BARK_LINES } from "./ai/squad";
 import { SECOND_WIND, SecondWind, weaponDt, type SecondWindLook } from "../sim/secondwind";
 import { beginVisit, grabFrame, keepStill, wantsStill } from "./debriefledger";
-import { CLOSING_CASES, stillScore } from "../sim/debrief";
+import { CLOSING_CASES, debriefGrade, debriefScore, stillScore } from "../sim/debrief";
+import { LAST_CASE_KEY, type LastCase } from "../sim/frontpage";
 import { openDebrief } from "../ui/debrief";
 import { makeUnique, UNIQUE_BY_ID } from "../sim/loot";
 
@@ -2922,6 +2923,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     coaching = true;
     document.exitPointerLock?.();
     s.debrief = { caseId, ledger: { ...visit.ledger }, stills: visit.stills.length };
+    // Plan item 494: the morning paper on the title reports this case, its grade and its best still.
+    try {
+      const rec: LastCase = { caseId, grade: debriefGrade(debriefScore(visit.ledger)), spotted: visit.ledger.spotted, kills: visit.ledger.kills, still: visit.stills[0]?.src };
+      localStorage.setItem(LAST_CASE_KEY, JSON.stringify(rec));
+    } catch {
+      // private mode or a full store: the paper reads the case ungraded
+    }
     openDebrief(o.hud.parentElement ?? o.hud, { caseId, title: info.title, district: info.district, ledger: { ...visit.ledger }, stills: visit.stills.map(({ src, caption }) => ({ src, caption })), keepsake }, () => {
       coaching = false;
       if (s.debriefStay) return;
