@@ -460,6 +460,8 @@ export interface Ground {
   update: (t: number, dt: number) => void;
   /** Plan item 506: each plot bed's tint ("c,r"), so the crops' seedlings can keep the bed's value. */
   bedTints: Map<string, THREE.Color>;
+  /** Plan item 506: each plot's 2D bed look ("c,r"), so its seedlings flower in the 2D field's colours. */
+  bedLooks: Map<string, string>;
 }
 
 
@@ -949,6 +951,7 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
   const beds: Record<(typeof bedLooks)[number], Inst[]> = { earth: [], stubble: [], clover: [], sward: [] };
   const boards: Inst[] = [];
   const bedTints = new Map<string, THREE.Color>();
+  const plotBedLooks = new Map<string, string>();
   const puddles: Inst[] = [];
   const cloverHeads: Inst[] = [];
   const bedGeo = new THREE.BoxGeometry(0.78, 0.05, 0.78).translate(0, 0.005, 0);
@@ -1028,6 +1031,7 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
         const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar((0.92 + fieldJitter * 0.16) * (phone ? 1.2 : 1));
         beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: tint });
         bedTints.set(`${c},${r}`, tint);
+        plotBedLooks.set(`${c},${r}`, look);
         const joins = (dc: number, dr: number) => sameField(level, c, r, c + dc, r + dr);
         // The ticks at the field's outer corners only (each plot's quarter at a corner no plot of its field shares).
         for (const [sx, sz, ry] of [[-1, -1, 0], [1, -1, -Math.PI / 2], [-1, 1, Math.PI / 2], [1, 1, Math.PI]] as const)
@@ -2286,7 +2290,7 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
       water.position.y = -0.09 + Math.sin(t * 0.8) * 0.006;
     }
   };
-  return { group, heightAt, farmhouse, water, lamps, update, bedTints };
+  return { group, heightAt, farmhouse, water, lamps, update, bedTints, bedLooks: plotBedLooks };
 }
 
 /**

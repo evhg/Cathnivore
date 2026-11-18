@@ -522,7 +522,7 @@ export class Renderer3D {
       const side: 1 | -1 = Math.abs(toCam) > 0.3 ? (toCam > 0 ? 1 : -1) : ec >= lv.cols - 2 ? -1 : 1;
       this.door.attach(this.ground.farmhouse, side, { x: bx, y: this.ground.heightAt(bx, bz), z: bz, yaw: 0 }, this.world);
     }
-    this.crops = new Crops(game.level, this.ground.heightAt, this.canvas, this.reducedMotion, this.ground.bedTints);
+    this.crops = new Crops(game.level, this.ground.heightAt, this.canvas, this.reducedMotion, this.ground.bedTints, this.ground.bedLooks);
     this.world.add(this.crops.group);
     this.folkMeshes = new FolkMeshes();
     this.world.add(this.folkMeshes.group);

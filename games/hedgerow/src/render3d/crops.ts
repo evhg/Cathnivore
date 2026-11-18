@@ -1,5 +1,5 @@
-// Plan item 59: the act's crop growing on every empty plot in 3D, twelve plants a plot (item 506), as three instanced meshes
-// (the plant, its ripe head and a bare plot's seedlings (item 506): three draw calls for the whole field). Stages come from growth.ts; a change grows
+// Plan item 59: the act's crop growing on every empty plot in 3D, twelve plants a plot (item 506), as four instanced meshes
+// (the plant, its ripe head, and a bare plot's seedlings and their flowers (item 506): four draw calls for the whole field). Stages come from growth.ts; a change grows
 // or shrinks each plant over half a second (at once under reduced motion). Drawing only.
 
 import * as THREE from "three";
@@ -56,13 +56,19 @@ const LOOKS: Record<Crop, Look> = {
 };
 
 /** Plan item 506: a bare plot's sown drills, a low leafy tuft per plant (a third instanced mesh: one more draw call). */
+/** Plan item 506: the flowers the 2D field draws on a bed, as a fleck on each seedling (beds with none: absent). */
+const BED_FLOWER: Record<string, string> = {
+  lavender: "#b8a0e4", samphire: "#c8553a", garlic: "#f2f0e4", bluebell: "#6a78d8", thrift: "#e690b4", rape: "#e8d040",
+  fallow: "#e6c838", sweetpea: "#d27ab8", meadow: "#f2e6a0", strawberry: "#d8402e", clover: "#e6a0c0", seakale: "#f0ecd8",
+};
+const FLECK_GEO = () => new THREE.IcosahedronGeometry(0.03, 0).scale(1.2, 0.7, 1.2).translate(0.03, 0.06, -0.02);
 const hsl = { h: 0, s: 0, l: 0 };
 const bedHsl = { h: 0, s: 0, l: 0 };
 function seedlingColour(green: string, bed: THREE.Color | undefined): THREE.Color {
   if (!bed) return new THREE.Color(green);
   new THREE.Color(green).getHSL(hsl);
   bed.getHSL(bedHsl);
-  return new THREE.Color().setHSL(hsl.h, hsl.s * 0.8, Math.min(0.8, Math.max(0.1, bedHsl.l * 0.92)));
+  return new THREE.Color().setHSL(hsl.h, hsl.s * 0.8, Math.min(0.8, Math.max(0.1, bedHsl.l * 0.96)));
 }
 const SEEDLING_GEO = () => new THREE.IcosahedronGeometry(0.085, 0).scale(1.35, 0.5, 1.15).translate(0, 0.028, 0);
 
@@ -84,6 +90,9 @@ export class Crops {
   private plants: THREE.InstancedMesh;
   private heads: THREE.InstancedMesh;
   private seedlings: THREE.InstancedMesh;
+  private flecks: THREE.InstancedMesh;
+  /** Slots whose bed flowers (a fleck shown with the seedling). */
+  private readonly flowering: boolean[] = [];
   private slots: Slot[] = [];
   private look: Look;
   private sig = "";
@@ -102,6 +111,7 @@ export class Crops {
     private readonly canvas: HTMLCanvasElement,
     private readonly reducedMotion: boolean,
     bedTints: ReadonlyMap<string, THREE.Color> = new Map(),
+    bedLooks: ReadonlyMap<string, string> = new Map(),
   ) {
     this.look = LOOKS[cropOf(level)];
     // Plan item 506: three drills of four plants a plot (were four plants, which vanished at play distance and left
@@ -123,7 +133,8 @@ export class Crops {
     this.plants = new THREE.InstancedMesh(this.look.plant(), mat("plant"), n);
     this.heads = new THREE.InstancedMesh(this.look.head(), mat("head"), n);
     this.seedlings = new THREE.InstancedMesh(SEEDLING_GEO(), mat("seedling"), n);
-    for (const m of [this.plants, this.heads, this.seedlings]) {
+    this.flecks = new THREE.InstancedMesh(FLECK_GEO(), mat("fleck"), n);
+    for (const m of [this.plants, this.heads, this.seedlings, this.flecks]) {
       m.castShadow = false;
       m.receiveShadow = true;
       m.frustumCulled = false;
@@ -137,6 +148,10 @@ export class Crops {
       // the crop's green at the bed's own lightness, so a plot keeps its value beside the lane (item 486's 1.6:1 on
       // a phone: pale leaves lifted a dark bed toward a pale lane, dark ones sank a pale bed toward a dark lane)
       this.seedlings.setColorAt(i, seedlingColour(this.look.green[0], bedTints.get(this.slots[i]?.key ?? "")));
+      const flower = BED_FLOWER[bedLooks.get(this.slots[i]?.key ?? "") ?? ""];
+      // two seedlings in three flower, so a bed reads as sprays among leaves
+      this.flowering[i] = !!flower && i % 3 !== 1;
+      this.flecks.setColorAt(i, new THREE.Color(flower ?? "#ffffff"));
     }
   }
 
@@ -191,6 +206,8 @@ export class Crops {
       this.plants.setMatrixAt(i, this.mx);
       this.mx.compose(this.p, this.q, this.sc.setScalar(Math.max(1e-4, s.seed)));
       this.seedlings.setMatrixAt(i, this.mx);
+      this.mx.compose(this.p, this.q, this.sc.setScalar(this.flowering[i] ? Math.max(1e-4, s.seed) : 1e-4));
+      this.flecks.setMatrixAt(i, this.mx);
       // The head sits on the plant's top, so it rides the plant's scale.
       this.q.setFromAxisAngle(this.up, s.ry * 0.3);
       this.mx.compose(this.p, this.q, this.sc.set(Math.max(1e-4, s.head) * Math.max(0.6, s.plant), Math.max(1e-4, s.head) * Math.max(0.6, s.plant), Math.max(1e-4, s.head) * Math.max(0.6, s.plant)));
@@ -199,6 +216,7 @@ export class Crops {
     this.plants.instanceMatrix.needsUpdate = true;
     this.heads.instanceMatrix.needsUpdate = true;
     this.seedlings.instanceMatrix.needsUpdate = true;
+    this.flecks.instanceMatrix.needsUpdate = true;
     if (this.heads.instanceColor) this.heads.instanceColor.needsUpdate = true;
     this.moving = !still;
   }
