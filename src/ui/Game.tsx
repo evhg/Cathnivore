@@ -1157,7 +1157,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // Set on the parent so the spacer that holds the hand's place while it steps away (item 190) keeps its height:
     // on the hand itself the spacer fell back to 140 px, and the board jumped 34 px on Hollowell's turn after the
     // painted cards (item 218) grew taller.
-    ;(hand.parentElement ?? hand).style.setProperty('--hand-h', `${Math.round(cardH + (rows.length - 1) * rowStep + padB + 12)}px`)
+    // Plan item 501: the hand's foot below its cards (12 px; the tall-desktop table takes 6: table.css `--hand-foot`).
+    const foot = parseFloat(cs.getPropertyValue('--hand-foot')) || 12
+    ;(hand.parentElement ?? hand).style.setProperty('--hand-h', `${Math.round(cardH + (rows.length - 1) * rowStep + padB + foot)}px`)
     // Plan item 312: where each row's shelf plank runs (table.css .table-hand[data-rows]::before).
     hand.style.setProperty('--row-step', `${rowStep}px`)
     hand.style.setProperty('--pad-b', `${padB}px`)

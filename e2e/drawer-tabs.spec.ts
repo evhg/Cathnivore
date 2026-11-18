@@ -15,7 +15,7 @@ test('desktop drawer keys are drawer fronts with 13 px+ words', async ({ page },
     const m = await k.evaluate((el) => {
       const w = el.querySelector('.drawer-key-word')!
       const pull = getComputedStyle(el, '::before')
-      return { size: parseFloat(getComputedStyle(w).fontSize), pull: pull.content !== 'none' && parseFloat(pull.width) > 10, overflow: w.getBoundingClientRect().right > el.getBoundingClientRect().right + 0.5 }
+      return { size: parseFloat(getComputedStyle(w).fontSize), pull: pull.content !== 'none' && Math.max(parseFloat(pull.width), parseFloat(pull.height)) >= 10, overflow: w.getBoundingClientRect().right > el.getBoundingClientRect().right + 0.5 }
     })
     expect(m.size).toBeGreaterThanOrEqual(13)
     expect(m.pull).toBe(true)
@@ -25,7 +25,9 @@ test('desktop drawer keys are drawer fronts with 13 px+ words', async ({ page },
   if (await count.count()) expect(await count.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('50%')
   await keys.first().click()
   await expect(keys.first()).toHaveClass(/is-open/)
-  expect(await keys.first().evaluate((el) => getComputedStyle(el).translate)).toContain('-6px')
+  // plan item 501: at 1280x760 up the fronts sit at the head row's end and an opened one drops 1 px (it slid left
+  // out of the rail before), its brass pull a knob at the right end
+  expect(await keys.first().evaluate((el) => getComputedStyle(el).translate)).toMatch(/-6px|0px 1px/)
 })
 
 // Plan item 366 slice 2: beside the papers at 1440x900 each reading keeps its word, 12 px+, over its figure.

@@ -6018,3 +6018,45 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
      Cath's scale (item 374: three quarters of her height or more). */
   .game:has(.table-head.with-table-cath) .map { margin-left: 30px; width: calc(100% - 30px); }
 }
+
+/* Plan item 501: on the table's desktop (1280x760 up; 1240-1279 keeps the rail, so a big deal there still takes two rows) the rail's 72 px column goes to the table: the Market, Cath's
+   Plan and the Log are three short drawer fronts stacked at the head row's right end (the row keeps its height; the
+   papers give up 96 px), each opening its drawer below; the 'not yet' pile, which stood at the rail's foot, stays
+   beside the hand. With the room, the producers stand 0.85 of Cath's height (were 0.77), and item 495's last gains
+   come in: the hand's cards 12 px off the frame's foot (were 24) and Expand's region chips on one line. Board 25.6% ->
+   about 28% of 1440x900, 22.5% -> about 25% of 1280x800 (scripts/cathnivore-495-measure.mjs). */
+@media (min-width: 1280px) and (min-height: 760px) {
+  .game-layout { grid-template-columns: clamp(272px, 22vw, 320px) minmax(0, 1fr) 0; }
+  .desktop-rail { position: fixed; top: 14px; right: var(--sp-4); width: 84px; z-index: var(--z-hud); }
+  .desktop-rail .drawer-rail { gap: 4px; padding: 4px; }
+  .desktop-rail .drawer-key {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 4px;
+    min-height: 26px;
+    padding: 2px 16px 2px 6px;
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--wood-lo) 70%, transparent),
+      inset 0 0 0 3px color-mix(in srgb, var(--wheat) 40%, var(--paper-hi)),
+      0 2px 0 var(--wood-lo), 0 3px 4px rgb(var(--shadow-ink) / .3);
+  }
+  /* the brass pull a knob at the front's right end, clear of its word */
+  .desktop-rail .drawer-key::before { top: calc(50% - 5px); left: auto; right: 5px; width: 6px; height: 10px; margin-left: 0; }
+  .desktop-rail .drawer-key.is-open { translate: 0 1px; }
+  /* (the words carry the tabs: at 84 px an icon left MARKET without room for its own) */
+  .desktop-rail .drawer-key svg { display: none; }
+  .desktop-rail .drawer-key-count { top: -6px; right: -6px; min-width: 18px; height: 18px; line-height: 14px; }
+  .desktop-rail .drawer-panel { top: calc(100% + var(--sp-2)); right: 0; bottom: auto; height: min(70vh, 640px); }
+  .desktop-rail .hand-later { position: fixed; left: auto; right: 28px; bottom: 18px; }
+  .table-head.with-table-cath { padding-right: 96px; }
+  .game:has(.table-head.with-table-cath) .table-hand { --hand-foot: 6px; padding-bottom: 6px; }
+  .table-head.with-table-cath .plan-strip-target-full[data-long] + .plan-strip-target-short {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    max-height: none;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+  .table-head.with-table-cath .plan-strip-target-short .plan-chip { font-size: var(--fs-label); padding-inline: 3px; }
+}
