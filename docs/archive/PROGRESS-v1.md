@@ -4202,3 +4202,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-18 05:21 lane B: 492 slice 1; hedgerow-cathlevel (new), cath2d, showdown, fleet3d (P, D, 14), hedgerow-water (D), keyart-fresh, hedgerow-fleet unit pass.
 - **2026-11-18 05:51 lane A session:** 491 slice 2 and done, 493 slices 1-2 and done. portfolio-studio (new), portfolio-present, site-hero, site.spec's portfolio axe, hedgerow-plate-preview (new), level-card, hedgerow-map, depart, masthead, map-you pass at P and D; portfolio units, css lint, keyart-fresh, tsc, eslint. Full `npm run check` passed (321 files, 2778 tests). Lock released. Shots scratchpad s491, s493.
 - 2026-11-18 06:21 lane B: 492 slice 2; hedgerow-cathlevel (now with the trail and its reduced-motion path), cath2d (P, D, 10), keyart-fresh pass.
+- 2026-11-18 07:21 lane B: 492 slice 3; hedgerow-cathlevel (2D and 3D cases), hedgerow-cath3d (P, D, 18), keyart-fresh pass; shots r3, r3b.
