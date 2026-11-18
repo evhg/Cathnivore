@@ -42,7 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
-- **2026-11-18 08:51 lane A session:** planning (495-500), 495 slice 1, 500 done, 499 done. producer-line (P, D), hedgerow-map-you/map/round-chips/tray, portfolio-present, site-hero, hero-fan (80), 28 Runnel D specs (lesson-hand flake passes alone), runnel-greened new D case, css lint, keyart-fresh, tsc, eslint. Full `npm run check` started at wrap-up (see next session). Lock released.
+- **2026-11-18 08:51 lane A session:** planning (495-500), 495 slice 1, 500 done, 499 done. producer-line (P, D), hedgerow-map-you/map/round-chips/tray, portfolio-present, site-hero, hero-fan (80), 28 Runnel D specs (lesson-hand flake passes alone), runnel-greened new D case, css lint, keyart-fresh, tsc, eslint. Full `npm run check` passed (322 files, 2783 tests). Lock released.
 - 2026-11-18 08:21 lane B: 492 slice 4 and done; hedgerow-cathlevel (2D and 3D, incl. 3D prints), cath3d, shadow3d (P, D, 22) pass.
 - **2026-11-18 07:51 lane A session:** 486 slices 5-6. biome3d, 3dframe (35), closeframe, depot3d, camera3d (14), keyart-fresh, eslint, tsc pass; measure runs m0-m6 (scratchpad). No full check. Lock released.
 - 2026-11-18 07:21 lane B: 492 slice 3; hedgerow-cathlevel (2D and 3D cases), hedgerow-cath3d (P, D, 18), keyart-fresh pass; shots r3, r3b.
