@@ -4580,7 +4580,7 @@ Done (lane A, 05:25): `AbilityPreview.tsx` stands a tile of the producer's home 
 - **Accept:** `[data-ability-preview=mara|tomas|ines|sol]` with `data-played` within 1.2 s; the stage inside step 1, clear of Cath, Start and the map cards at P and D, no scroll at 390x844; a still under reduced motion; setup specs plus a keyboard case pass; shots P and D.
 - **Size:** 2
 
-## 491. [ ] Portfolio: today in the studio, the last 24 hours shown as work
+## 491. [ ] Portfolio: today in the studio, the last 24 hours shown as work *(lane A, in progress)*
 - **Why:** `portfolio-D` (100-980 x 700-860): the method's proof is four bare numbers and a status line, with 980-1440 x 620-900 empty; the page says the studio never sleeps but shows nothing it made today (VISION 1, 6); `portfolio-P` the same under the fold. Checked 303, 339, 350, 404, 445, 454, 398: none touches the stats row.
 - **Build:** a 24-hour track in place of the numbers row, a notch per build session coloured by lane; each opens a card with that session's commit subjects (subjects only: no author names or emails), the game it touched and its 320 px frame (`portfolio/public/work/games-*-640.webp`). Data at build time from `scripts/studio-log.ts` (git log, 24 h) into `dist-site/studio.json`; the static numbers if it's missing; the four numbers as captions at the track's ends; a horizontal swipe of cards on the phone.
 - **Accept:** `[data-studio-track]` a notch per session in a fixture; a card's frame matches its `apps.ts` entry; no author fields in the JSON (unit test in `tests/portfolio.test.ts`); 100-1340 px at 1440, no page scroll at 390; cards keyboard-reachable; `e2e:site` passes; shots P and D.
