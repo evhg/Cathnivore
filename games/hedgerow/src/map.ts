@@ -2107,6 +2107,44 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
   foes.addEventListener("focusin", lightFrom);
   foes.addEventListener("pointerleave", () => preview?.light(null));
   foes.addEventListener("focusout", () => preview?.light(null));
+  // On a phone a tap on the plate opens it to the card's width (and the sheet with it); a second tap closes it.
+  const phone = matchMedia("(max-width: 899.98px)");
+  const plateOpen = (on: boolean) => {
+    el.classList.toggle("plate-open", on);
+    if (phone.matches) thumb.setAttribute("aria-expanded", String(on));
+  };
+  const plateRole = () => {
+    if (phone.matches) {
+      thumb.setAttribute("role", "button");
+      thumb.tabIndex = 0;
+      thumb.setAttribute("aria-label", "Show the field larger");
+      thumb.setAttribute("aria-expanded", String(el.classList.contains("plate-open")));
+    } else {
+      for (const a of ["role", "tabindex", "aria-label", "aria-expanded"]) thumb.removeAttribute(a);
+      plateOpen(false);
+    }
+  };
+  plateRole();
+  phone.addEventListener("change", plateRole);
+  const togglePlate = () => {
+    if (!phone.matches) return;
+    const on = !el.classList.contains("plate-open");
+    if (on && !cardOpen) {
+      cardOpen = true;
+      sync();
+    }
+    plateOpen(on);
+  };
+  thumb.addEventListener("click", togglePlate);
+  thumb.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      togglePlate();
+    }
+  });
+  grip.addEventListener("click", () => {
+    if (!cardOpen) plateOpen(false);
+  });
   return {
     el,
     show(lv) {

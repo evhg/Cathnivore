@@ -3,8 +3,9 @@
 // while the card shows; pointing at or focusing a vehicle's row on the card lights that vehicle on the plate. Nothing is
 // drawn while the plate is off screen, hidden or the tab is in the background; under reduced motion it is one still,
 // the convoy stopped on the lane's first stretch.
-import { ENEMIES, type EnemyKind, type Level } from "./engine";
-import { enemyIcon } from "./icons";
+import { ENEMIES, type EnemyKind, type Level, type TowerKind } from "./engine";
+import { enemyIcon, towerIcon } from "./icons";
+import { roundAdvice } from "./advice";
 
 /** The plate's cell size (map.ts fieldThumb). */
 export const PLATE_CELL = 12;
@@ -39,6 +40,28 @@ export function convoyOf(lv: Level, also: readonly EnemyKind[] = [], max = 8): C
 }
 
 type Pt = [number, number];
+
+/** The towers the level's rules suggest: the one Cath's advice names for the first round, then the kit's first. */
+export function suggestedTowers(lv: Level): TowerKind[] {
+  const spawns = (lv.waves[0] ?? []).flatMap((g) => Array.from({ length: g.count }, () => ({ kind: g.enemy })));
+  const named = roundAdvice(spawns, lv.towers, [])?.tower ?? null;
+  const out = [named, lv.towers[0] ?? null].filter((t): t is TowerKind => t !== null);
+  return out.filter((t, i) => out.indexOf(t) === i);
+}
+
+/** Free plots beside the lane, spread along it (a third and two thirds of the way for two), for the suggested towers. */
+export function towerSpots(lv: Level, n: number): Pt[] {
+  const key = (c: number, r: number) => `${c},${r}`;
+  const blocked = new Set([...lv.path, ...(lv.path2 ?? []), ...(lv.terrain?.water ?? []), ...(lv.oaks ?? []), ...(lv.barns ?? [])].map(([c, r]) => key(c, r)));
+  const spots: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const at = lv.path[Math.min(lv.path.length - 1, Math.round(((i + 1) / (n + 1)) * (lv.path.length - 1)))]!;
+    const near = ([[0, -1], [1, 0], [0, 1], [-1, 0], [1, -1], [1, 1], [-1, 1], [-1, -1]] as const).map(([dc, dr]) => [at[0] + dc, at[1] + dr] as Pt);
+    const free = near.find(([c, r]) => c >= 0 && r >= 0 && c < lv.cols && r < lv.rows && !blocked.has(key(c, r)) && !spots.some((p) => p[0] === c && p[1] === r));
+    if (free) spots.push(free);
+  }
+  return spots;
+}
 
 /** A point a fraction `f` of the way down a lane of cells, in plate units, and the way it heads there. */
 export function along(path: readonly Pt[], f: number): { x: number; y: number; dx: number; dy: number } {
@@ -75,6 +98,24 @@ export function startPlatePreview(thumb: HTMLElement, lv: Level, reduced: boolea
   const lanes: readonly (readonly Pt[])[] = [lv.path, lv.path2 ?? lv.path]
   const size = PLATE_CELL * 1.35
   const groups = [...thumb.querySelectorAll<SVGGElement>(".lcard-convoy")]
+  const towers = suggestedTowers(lv)
+  const spots = towerSpots(lv, towers.length)
+  for (const g of groups) {
+    const turned = g.ownerSVGElement?.classList.contains("lcard-plate-wide") ?? false
+    spots.forEach(([c, r], i) => {
+      const im = document.createElementNS(SVGNS, "image")
+      const ts = PLATE_CELL * 1.25
+      im.setAttribute("href", towerIcon(towers[i]!))
+      im.setAttribute("width", String(ts))
+      im.setAttribute("height", String(ts))
+      im.setAttribute("class", "lcard-tower")
+      im.dataset.tower = towers[i]!
+      const x = c * PLATE_CELL + PLATE_CELL / 2
+      const y = r * PLATE_CELL + PLATE_CELL / 2
+      im.setAttribute("transform", `translate(${x} ${y})${turned ? " rotate(90)" : ""} translate(${-ts / 2} ${-ts * 0.7})`)
+      g.append(im)
+    })
+  }
   const sprites = groups.map((g) =>
     cars.map((c) => {
       const im = document.createElementNS(SVGNS, "image")

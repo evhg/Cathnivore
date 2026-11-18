@@ -87,3 +87,22 @@ test('reduced motion shows one still convoy', async ({ browser }) => {
   expect(await thumb.locator('svg:visible .lcard-car:not([opacity="0"])').count()).toBeGreaterThan(0)
   await ctx.close()
 })
+
+test('on a phone a tap on the stamp opens the plate to the card width', async ({ page }, info) => {
+  test.skip(!info.project.name.includes('phone'), 'the phone sheet')
+  await seed(page, 20)
+  await page.reload()
+  const card = page.locator('[data-level-card]')
+  const thumb = card.locator('.lcard-thumb')
+  await expect(thumb).toHaveAttribute('role', 'button')
+  await thumb.click()
+  await expect(card).toHaveClass(/plate-open/)
+  await expect(card).toHaveClass(/open/)
+  await expect(thumb).toHaveAttribute('aria-expanded', 'true')
+  const plate = (await thumb.locator('svg:visible').boundingBox())!
+  const cardBox = (await card.boundingBox())!
+  expect(plate.width).toBeGreaterThanOrEqual(cardBox.width * 0.8)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+  await thumb.press('Enter')
+  await expect(card).not.toHaveClass(/plate-open/)
+})

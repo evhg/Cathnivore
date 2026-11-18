@@ -5912,3 +5912,24 @@ img.act-scene {
 .lcard-car.is-lit { filter: drop-shadow(0 0 1.4px var(--paper-hi)) drop-shadow(0 0 2.4px var(--brass-hi)); }
 .lcard-enemies li[data-kind] { cursor: default; border-radius: 10px; }
 .lcard-enemies li[data-kind]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Plan item 493: each vehicle on the card idles in its portrait, as on the lane (a slow bob, staggered). */
+.lcard-enemies .enemy-portrait img { animation: lcard-idle 1.8s ease-in-out infinite; }
+.lcard-enemies li:nth-child(2) .enemy-portrait img { animation-delay: -0.45s; }
+.lcard-enemies li:nth-child(3) .enemy-portrait img { animation-delay: -0.9s; }
+.lcard-enemies li:nth-child(4) .enemy-portrait img { animation-delay: -1.35s; }
+@keyframes lcard-idle {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -1.5px; }
+}
+.lcard-enemies li[data-kind]:is(:hover, :focus-visible) .enemy-portrait { box-shadow: 0 0 0 3px var(--brass-hi); }
+@media (prefers-reduced-motion: reduce) {
+  .lcard-enemies .enemy-portrait img { animation: none; }
+}
+/* On a phone the plate is a stamp; a tap opens it to the card's width over the name. */
+@media (max-width: 899.98px) {
+  #screen-select .level-card .lcard-thumb[role="button"] { cursor: zoom-in; border-radius: 8px; }
+  #screen-select .level-card .lcard-thumb[role="button"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #screen-select .level-card.open.plate-open { grid-template-areas: "grip grip" "thumb thumb" "body body" "cath cath" "foes foes" "play play"; }
+  #screen-select .level-card.open.plate-open .lcard-thumb { cursor: zoom-out; justify-self: stretch; }
+  #screen-select .level-card.open.plate-open .lcard-thumb svg.lcard-plate-tall { width: 100%; height: auto; max-height: 42vh; }
+}
