@@ -552,7 +552,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const blackMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.32, metalness: 0.05 });
   // Plan item 319: her gloves are soft kid leather, a touch warmer and less glossy than the belt and umbrella, so the
   // fingers read as a hand in leather, not black clumps of patent (the critique's 'black-clump gloves').
-  const gloveMat = new THREE.MeshStandardMaterial({ color: 0x1b181c, roughness: 0.5, metalness: 0.03 });
+  // Slice 88: oxblood kid, not near-black (the 11-18 17:10 critique: each glove a black lump that merged into the
+  // charcoal sleeve, so neither hand read as fingers); the game's one red accent, deep enough to stay noir.
+  const gloveMat = new THREE.MeshStandardMaterial({ color: 0x5a1820, roughness: 0.46, metalness: 0.03 });
   // Hair: combed-back strands as a streaked colour and roughness map (a shine band reads as hair, not a helmet).
   const strands = (() => {
     const c = document.createElement("canvas");
