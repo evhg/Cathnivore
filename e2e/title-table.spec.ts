@@ -202,3 +202,39 @@ test('the vans drive under the name plates', async ({ page }, testInfo) => {
   })
   expect(m).toEqual({ inMap: true, signs: 7, under: true })
 })
+
+// Plan item 482: at D the board is the one focal point: 40% of the width or more and the largest thing on the
+// stall; Cath stands at its near-left corner with her box clear of every hex; the menu sign is 22% of the width
+// or less (from 1280 px; it keeps 280 px for its words below that). Checked at 1440x900 and the narrowest and widest desktops that take the layout.
+for (const [width, height] of [[1440, 900], [1100, 800], [1920, 1080]] as const) {
+  test(`the board is the title's focal point at ${width}x${height}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop composition')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.locator('.title-board .region-hex').first().waitFor()
+    const m = await page.evaluate(() => {
+      const box = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+      const board = box('.title-board')
+      const cath = box('.title-cath svg')
+      const menu = box('.title-menu')
+      const ritual = box('.daily-ritual:not(.is-compact)')
+      const hexes = [...document.querySelectorAll('.title-board .region-hex > polygon:first-of-type')].map((e) => e.getBoundingClientRect())
+      const area = (r: DOMRect) => r.width * r.height
+      return {
+        share: board.width / innerWidth,
+        largest: [cath, menu, ritual].every((r) => area(r) < area(board)),
+        cathOnHex: hexes.filter((h) => h.left < cath.right && h.right > cath.left && h.top < cath.bottom && h.bottom > cath.top).length,
+        cathAtCorner: cath.right > board.left && cath.left < board.left,
+        hexes: hexes.length,
+        menuShare: menu.width / innerWidth,
+      }
+    })
+    expect(m.hexes).toBe(7)
+    expect(m.share).toBeGreaterThanOrEqual(0.4)
+    expect(m.largest).toBe(true)
+    expect(m.cathOnHex).toBe(0)
+    expect(m.cathAtCorner).toBe(true)
+    // the sign keeps 280 px for its words, so on the narrowest of these desktops it may take a little more
+    if (width >= 1280) expect(m.menuShare).toBeLessThanOrEqual(0.22)
+  })
+}

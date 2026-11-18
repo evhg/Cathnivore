@@ -64,6 +64,16 @@ async function worstContrast(page: Page, selectors: string[]): Promise<{ sel: st
   )
 }
 
+// Plan item 482: from 1100 px wide the board is the title's focal point and lies on the cloth in front of the
+// street, so its far edge may rise past the sky's foot (the far rooftops) but stays under the bunting's line.
+async function skyFoot(page: import('@playwright/test').Page, sel: string) {
+  const sky = (await page.locator('.title-sky').boundingBox())!
+  const width = page.viewportSize()!.width
+  if (sel !== '.title-board' || width < 1100) return sky.y + sky.height
+  const bunting = (await page.locator('.title-bunting').boundingBox())!
+  return bunting.y + bunting.height
+}
+
 for (const s of STATES) {
   test(`the ${s.sky} sky (${s.scheme}, ${s.hour}:30): words read and the sky stays off the menu and board`, async ({ page }, testInfo) => {
     test.skip(!['phone', 'desktop-chromium'].includes(testInfo.project.name), 'P and D')
@@ -71,10 +81,9 @@ for (const s of STATES) {
     await expect(page.locator('.title-screen')).toHaveAttribute('data-sky', s.sky)
     const ratios = await worstContrast(page, ['.title-kicker', '.title-wordmark', '.title-tagline', '.title-cta', '.title-minor button'])
     for (const r of ratios) expect(r.ratio, `${r.sel} ${r.ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5)
-    const sky = (await page.locator('.title-sky').boundingBox())!
     for (const sel of ['.title-menu', '.title-board']) {
       const b = (await page.locator(sel).boundingBox())!
-      expect(sky.y + sky.height, `the sky reaches ${sel}`).toBeLessThanOrEqual(b.y)
+      expect(await skyFoot(page, sel), `the sky reaches ${sel}`).toBeLessThanOrEqual(b.y)
     }
   })
 }
@@ -96,10 +105,9 @@ test('the sky stays above the menu and board on short desktops and landscape pho
   for (const [width, height] of [[1280, 800], [1024, 768], [1920, 1080], [844, 390]] as const) {
     await page.setViewportSize({ width, height })
     await open(page, 11, 'light')
-    const sky = (await page.locator('.title-sky').boundingBox())!
     for (const sel of ['.title-menu', '.title-board']) {
       const b = (await page.locator(sel).boundingBox())!
-      expect(sky.y + sky.height, `${width}x${height}: the sky reaches ${sel}`).toBeLessThanOrEqual(b.y)
+      expect(await skyFoot(page, sel), `${width}x${height}: the sky reaches ${sel}`).toBeLessThanOrEqual(b.y)
     }
   }
 })

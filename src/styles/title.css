@@ -2001,3 +2001,52 @@ html.no-animations .title-screen * {
 @keyframes title-opening-fade {
   from { opacity: 0; }
 }
+
+/* Plan item 482: at D the board is the one focal point. One diagonal from the menu (a narrow sign hung on cords, 22%
+   of the frame or less) through Cath to the board, which lies centre-right over 40% of the width and is the largest
+   thing on the stall. Her map is sized by the frame's height and the cloth runs on past it to the left, so its
+   near-left corner is bare: Cath stands just behind that corner, her hand over it and never over a hex (she is over
+   the cloth, under the counter), with Bea's drawing pinned beside her. The phone (item 453) and the narrow desktop
+   (1024-1099 px) keep their layout. */
+@media (min-width: 1100px) {
+  .title-hero { max-width: min(1400px, calc(100% - 48px)); grid-template-columns: minmax(280px, 0.3fr) minmax(0, 1fr); column-gap: clamp(12px, 1.5vw, 24px); }
+  .title-menu { width: clamp(280px, 21.5vw, 380px); }
+  /* the narrow sign's three paper links keep their words and lose the small glyphs (they crowded the word before) */
+  .title-menu .title-minor { justify-content: space-between; margin-inline: -6px; }
+  .title-menu .title-minor .quiet { padding-inline: 6px; }
+  .title-menu .title-minor .title-key-icon { display: none; }
+  .title-art.title-table { max-width: none; width: 100%; grid-template-columns: minmax(0, 1fr) auto; gap: 0; }
+  .title-art.title-table .title-cath { justify-self: end; width: clamp(300px, 25vw, 400px); margin: 0 calc(-1 * var(--cloth-corner) + 24px) -52px 0; z-index: var(--z-lift); }
+  .title-art.title-table .title-board { --cloth-corner: clamp(120px, 10vw, 170px); z-index: var(--z-raised); padding: 12px 18px 18px var(--cloth-corner); }
+  .title-art.title-table { --cloth-corner: clamp(120px, 10vw, 170px); }
+  /* the map is as tall as the frame allows: the cloth's far edge stays under the bunting */
+  .title-art.title-table .title-board .map { width: auto; height: clamp(340px, calc(100dvh - 400px), 620px); }
+  /* at dusk the bunting's lanterns throw a warm pool on the cloth's bare corner, so her dark hair reads against it */
+  .title-screen[data-sky='evening'] .title-art.title-table .title-board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-under);
+    border-radius: inherit;
+    --pool: radial-gradient(ellipse calc(var(--cloth-corner) * 1.6) 64% at 0 34%, var(--lamp-glow), color-mix(in srgb, var(--lamp-glow) 50%, transparent) 62%, transparent);
+    background: var(--pool), var(--pool);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  /* Bea's drawing at the cloth's bare corner, between Cath's jacket and the board's first hex */
+  .title-art .title-bea { top: auto; bottom: 22px; left: calc(var(--cloth-corner) - 64px); transform: rotate(-6deg); width: 72px; }
+  /* the crates stand in the gap between the menu and Cath (her waist is at the cloth's corner now) */
+  .title-prop-crates { left: max(360px, calc(50% - 340px)); }
+}
+/* the menu hangs from the market's sign on two short cords, the sign from the bunting: signage, not a stand */
+@media (min-width: 1100px) and (min-height: 860px) {
+  .title-hang {
+    background:
+      linear-gradient(var(--wood-lo), var(--wood-lo)) calc(50% - 90px) 36px / 1.5px calc(100% - 136px) no-repeat,
+      linear-gradient(var(--wood-lo), var(--wood-lo)) calc(50% + 90px) 36px / 1.5px calc(100% - 136px) no-repeat,
+      linear-gradient(var(--cord), var(--cord)) calc(50% - 90px) 100% / 2px 24px no-repeat,
+      linear-gradient(var(--cord), var(--cord)) calc(50% + 90px) 100% / 2px 24px no-repeat;
+    --cord: color-mix(in srgb, var(--wood-lo) 70%, var(--ink));
+  }
+  .title-menu::after { content: none; }
+}
