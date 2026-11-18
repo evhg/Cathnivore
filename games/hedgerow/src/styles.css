@@ -5623,7 +5623,8 @@ img.act-scene {
      the fold on load */
   #screen-select .map-hud-row + li.act.act-has-card > .trail.has-home {
     margin-top: -136px;
-    row-gap: clamp(8px, calc((100dvh - 700px) / 2 + 16px), 120px);
+    /* plan item 496: half item 377's spread (was up to 120 px), so the trail's middle sits in the screen's middle third */
+    row-gap: clamp(8px, calc((100dvh - 700px) / 4 + 8px), 60px);
   }
   #screen-select li.act.act-has-card > .level-card {
     grid-column: 2;
