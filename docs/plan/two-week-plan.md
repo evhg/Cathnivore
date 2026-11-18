@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-18 04:26 UTC
 
 
 
@@ -4560,3 +4559,41 @@ Check each against a fresh shot first (some may be timing in headless shots); fi
 - Hedgerow: `hedge-l21-3d-D` 1188-1340 x 588-604 a Coming-up chip cut ('Airborne needs a Scarecr'); 50-105 x 135-235 the red sailboat cut by the frame's left edge; `hedge-l34-2d-P` 10-88 x 75-140 and 10-60 x 610-660 both depots over the field's edge plots and lane; `hedge-menu-D` 460-745 x 125-205 a lumpy cloud not inked like item 441's suns; the phone's 2D and 3D benches differ (Cath's line vs the seed tray, 0-390 x 690-765).
 - NIGHT SHIFT: `ns-title-P` 17-188 x 500-570 a ghosted LUNA neon through the case-file card; `ns-title-D` 680-900 x 230-560 an unlit dark smear beside the umbrella; `ns-play-D` 455-605 x 285-450 the LUNA sign and the scope tripod crowd the class list and Cath's shoulder; `ns-play-P` 16-164 x 637-698 the weapon plate's rifle dim grey on grey.
 - **Size:** 1-2
+
+Planning 2026-11-18 04:50 lane B: shots `e2e/screenshots/plan1118a` (P 390x844, D 1440x900, every game), two subagent critiques against VISION.md (features only, no bug list), each checked against items 400-488 first; checked again here (492 keeps item 346's one scale: poses and her level, not a bigger figure; 491 publishes commit subjects only, the repo being public, never names or emails).
+
+## 489. [ ] Cathnivore: the producers talk back at the table
+- **Why:** `cath-game-D` (1130-1335 x 450-690): Mara and Tomas stand full height and never speak; Cath's bubble (355-550 x 170-345) is the table's only voice; `cath-game-P` (265-345 x 490-560) the producers are silent name tags. VISION 5 (voice, reactions). Checked 80 (moods, `producerMood.ts`), 225 (one Cath voice: she narrates, they reply), 276, 374/387, 436, 467: none voices the producers.
+- **Build:** `src/content/producerLines.ts`: short replies per producer per beat (round start, their ability used, a liberation, a Squeeze on their home, the last round), in each one's voice (Mara dry, Tomas warm, Ines clinical, Sol a broadcaster), some answering Cath's line by pair (keyed as `pairLines.ts`). After her line settles the replying producer gets a small bubble from their figure (D) or tag (P) for 3.5 s, on the existing `producerMoods` events and item 276/436's beat; one bubble at a time, on the cloth, never over the board.
+- **Accept:** `[data-producer-line]` with `data-beat`; never meets a hex, the hand or Cath's bubble at 390x844, 1280x800, 1440x900; 14 px+ at 4.5:1 light and dark; a unit test for every producer x beat and pair; fades only under reduced motion; e2e drives a liberation; shots P and D.
+- **Size:** 2
+
+## 490. [ ] Cathnivore Setup: see each producer's power play out before you pick
+- **Why:** `cath-setup-D` (290-640 x 385-445), `cath-setup-P` (30-370 x 610-660): each power is 3-4 lines of 12-13 px rules; the game stages every ability (`AbilityMoment.tsx`, item 189) but Setup shows none (VISION 1, 3). Checked 195, 239, 328, 349, 367, 461 (layouts kept), 101, 189 (art reused).
+- **Build:** a small stage in step 1 (D: a 220x160 slice of the picked map's `BoardMiniature` beside the cards; P: the open producer card's lower half): hover, focus or pick runs that producer's `AbilityMoment` once on a demo hex (Mara's gavel, Tomas's awning, Ines striking a Doubt, Sol's radio rings); the rules become a one-line caption; the recommended pair plays both with Cath's `pairLines` line.
+- **Accept:** `[data-ability-preview=mara|tomas|ines|sol]` with `data-played` within 1.2 s; the stage inside step 1, clear of Cath, Start and the map cards at P and D, no scroll at 390x844; a still under reduced motion; setup specs plus a keyboard case pass; shots P and D.
+- **Size:** 2
+
+## 491. [ ] Portfolio: today in the studio, the last 24 hours shown as work
+- **Why:** `portfolio-D` (100-980 x 700-860): the method's proof is four bare numbers and a status line, with 980-1440 x 620-900 empty; the page says the studio never sleeps but shows nothing it made today (VISION 1, 6); `portfolio-P` the same under the fold. Checked 303, 339, 350, 404, 445, 454, 398: none touches the stats row.
+- **Build:** a 24-hour track in place of the numbers row, a notch per build session coloured by lane; each opens a card with that session's commit subjects (subjects only: no author names or emails), the game it touched and its 320 px frame (`portfolio/public/work/games-*-640.webp`). Data at build time from `scripts/studio-log.ts` (git log, 24 h) into `dist-site/studio.json`; the static numbers if it's missing; the four numbers as captions at the track's ends; a horizontal swipe of cards on the phone.
+- **Accept:** `[data-studio-track]` a notch per session in a fixture; a card's frame matches its `apps.ts` entry; no author fields in the JSON (unit test in `tests/portfolio.test.ts`); 100-1340 px at 1440, no page scroll at 390; cards keyboard-reachable; `e2e:site` passes; shots P and D.
+- **Size:** 2
+
+## 492. [ ] Hedgerow: Cath fights on the field and grows through a run
+- **Why:** `hedge-l21-2d-D` (330-375 x 635-715), `hedge-l34-2d-D` (830-885 x 280-375), `hedge-l21-2d-P` (15-55 x 480-545), 3D (150-235 x 505-640): she stands on her ring as still as the scarecrow while she levels up inside a run (`hero.ts` `levelFor`, max 20) unseen (VISION 3-5). Checked 447 (her plate), 459 and 346 (her 3D model and one scale: kept, no bigger figure), 162 (her rest/cheer/worry poses: extended), 420/448, 468 (towers' attacks), 479, 480.
+- **Build:** a pose set in 2D (`sprites.ts`/`render.ts`) and 3D: an idle sway, a crook swing at a vehicle in reach (468's 2 px knock-back), a flinch when hit, a cheer on a knockout; her level a small inked rosette at her feet; a level-up a 700 ms beat (leaves spiral, the rosette stamps the number, one line through `cathsay.ts`); a footprint trail that fades in 1 s when she's moved. Reduced motion: the rosette's number and the line only.
+- **Accept:** `[data-cath-pose]` takes 4+ values in a sandbox wave (`window.hedgerow.sendWave`); `data-hero-level` matches `levelFor` at each level-up, its beat within 150 ms; her size unchanged (346); phone 2D fps in budget, 3D +2 draw calls or fewer; shots l21 and l34 P and D, 2D and 3D, one mid level-up.
+- **Size:** 2-3
+
+## 493. [ ] Hedgerow act map: the level card plays its level before you do
+- **Why:** `hedge-menu-D`: the card's field plate (1188-1360 x 140-262) is a still thumbnail and its enemy list (1135-1415 x 455-635) four 40 px line icons with a sentence each; `hedge-menu-P` the plate a stamp (20-50 x 615-665): the level is chosen from text (VISION 1, 3). Checked 471 (the stops), 487 (the masthead), 448 (Play grows the plate into the field: it now starts from a live plate), 406/420.
+- **Build:** the plate a small live preview from the 2D renderer at thumbnail scale (the lane, the first round's convoy rolling from the depot, the towers its rules suggest), looping every 6 s while the card shows; each enemy row's icon that vehicle's sprite, idling; hovering or focusing a row lights it in the preview; at P a tap on the stamp opens the plate to the card's width; one still under reduced motion.
+- **Accept:** the plate 220 px+ at D; `[data-preview-playing]` within 500 ms of the card opening; rows `[data-kind]` light their vehicle within 150 ms; no preview drawn while the card is hidden (e2e); the act map's first paint at most 100 ms slower; shots P and D, acts 1, 3 and 6.
+- **Size:** 2
+
+## 494. [ ] NIGHT SHIFT title: the morning paper, front page for the last case
+- **Why:** `ns-title-D` the case-file card (405-580 x 260-570) floats between the menu and Cath, the same Tomas Reed card every visit; `ns-title-P` (2x shot, 30-390 x 890-1055) the same card over a dead band down to The List; the Ghost's line ('Somebody reads about it in the morning') promises a consequence the front door never shows (VISION 4, 6). Checked 159, 331, 433, 473 (framing kept), 465, 412/321 (The List), 12/266 (the debrief on the cork: read from, not replaced).
+- **Build:** the floating card becomes a folded front page of Hollowell's own rag (masthead in Bodoni Moda): a headline from the last case's debrief (`ui/debrief.ts`: grade, district, the target crossed off) in slanted Hollowell PR ('Market Trader Retires Suddenly, Says Spokesman'), the debrief's best kill-cam still halftoned (a teaser on Tomas Reed on a fresh save), a weather line and a classified carrying the joke; coming back from a case it spins in (about 900 ms, a fade under reduced motion); on the phone it fills the band beside The List.
+- **Accept:** `[data-front-page]` with `data-case` of the last closed case; the headline changes after a sandboxed case (e2e); headline 7:1, body 4.5:1; 5% or less of Cath's silhouette covered at P and D (433's mask method); sizes in `var(--u)` (`cathode-type`, `ui-css-lint`); posters re-rendered, keyart-fresh; shots P and D, fresh and after a case.
+- **Size:** 2-3
