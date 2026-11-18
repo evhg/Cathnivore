@@ -4638,7 +4638,7 @@ Progress (lane A, 09:05): **slice 1** (one voice): while a producer answers from
 - **Accept:** each class shows 3+ props of its own (scene tags, e2e switching classes); under 40% of the D frame's pixels below luminance 10; slung weapon's box doesn't intersect the head/hood box for any class (render-spec check); `cathode-perf` within budget run alone; shots P, D and 844x390.
 - **Size:** 3
 
-## 499. [ ] Runnel desktop: the field fills the frame, and watering pays off
+## 499. [ ] Runnel desktop: the field fills the frame, and watering pays off *(lane A, in progress)*
 - **Why:** `plan1118a/runnel-D`: the lesson's tiles fill about 25% of the 1440x900 frame; the rest is low-contrast farmland with tiny figures, and water has no shimmer or payoff when a field greens.
 - **Build:** the playfield scaled to fill the desktop stage (the valley recedes: lower saturation, a soft depth blur), animated water in the channels (a flowing highlight, off under reduced motion), and a watered moment when a field is reached (a ripple out across its crops, a small sound).
 - **Accept:** the tile cluster covers 40%+ of the D frame on the lesson and on today's puzzle; background saturation 30%+ below the tiles' (measure); a spec sees `[data-watered]` play once per newly watered field and not under reduced motion; runnel specs pass; key art re-shot; shots P and D.
