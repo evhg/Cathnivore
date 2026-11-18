@@ -888,7 +888,9 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
     );
     water.rotation.x = -Math.PI / 2;
     water.position.set(cols / 2, -0.09, rows / 2);
-    water.receiveShadow = true;
+    // Plan item 506: no cast shadows on the water: it shows the sky more than its own lit colour, and a pond in the
+    // farmhouse's or a depot's shadow read as a dark slab (0.62 of the river's luminance at l34 D; the bar is 0.75).
+    water.receiveShadow = false;
     group.add(water);
     // Plan item 419: surf along the coastal acts' shore: a broken line of flat foam patches just off the beach,
     // where the sea meets the land (none where a lane runs into the water).
