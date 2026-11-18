@@ -4,7 +4,7 @@ import { chromium } from '@playwright/test'
 const base = process.env.BASE ?? 'http://localhost:4180'
 const out = process.env.OUT
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
-for (const [name, q] of [['lesson', ''], ['daily', '']]) {
+for (const [name, q] of [['lesson', ''], ['daily', '?shotsolve']]) {
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
   if (name === 'daily') await p.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, results: {} })))
   await p.goto(`${base}/runnel/${q}`); await p.waitForTimeout(2500)
