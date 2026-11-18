@@ -1,5 +1,5 @@
-// Plan item 59: the act's crop growing on every empty plot in 3D, four plants a plot, as two instanced meshes
-// (the plant and its ripe head: two draw calls for the whole field). Stages come from growth.ts; a change grows
+// Plan item 59: the act's crop growing on every empty plot in 3D, twelve plants a plot (item 506), as three instanced meshes
+// (the plant, its ripe head and a bare plot's seedlings (item 506): three draw calls for the whole field). Stages come from growth.ts; a change grows
 // or shrinks each plant over half a second (at once under reduced motion). Drawing only.
 
 import * as THREE from "three";
@@ -54,6 +54,9 @@ const LOOKS: Record<Crop, Look> = {
   },
 };
 
+/** Plan item 506: a bare plot's sown drills, a low leafy tuft per plant (a third instanced mesh: one more draw call). */
+const SEEDLING_GEO = () => new THREE.IcosahedronGeometry(0.075, 0).scale(1.15, 0.5, 1.15).translate(0, 0.025, 0);
+
 interface Slot {
   key: string;
   x: number;
@@ -64,12 +67,14 @@ interface Slot {
   /** Shown plant and head scale, eased toward the stage's. */
   plant: number;
   head: number;
+  seed: number;
 }
 
 export class Crops {
   readonly group = new THREE.Group();
   private plants: THREE.InstancedMesh;
   private heads: THREE.InstancedMesh;
+  private seedlings: THREE.InstancedMesh;
   private slots: Slot[] = [];
   private look: Look;
   private sig = "";
@@ -89,25 +94,24 @@ export class Crops {
     private readonly reducedMotion: boolean,
   ) {
     this.look = LOOKS[cropOf(level)];
-    const spots: Array<[number, number]> = [
-      [0.31, 0.32],
-      [0.69, 0.3],
-      [0.3, 0.7],
-      [0.7, 0.68],
-    ];
+    // Plan item 506: three drills of four plants a plot (were four plants, which vanished at play distance and left
+    // the bed reading as bare paving), close enough that neighbours touch and each drill reads as a row.
+    const spots: Array<[number, number]> = [];
+    for (const v of [0.24, 0.5, 0.76]) for (const u of [0.18, 0.39, 0.61, 0.82]) spots.push([u + (v === 0.5 ? 0.04 : 0), v]);
     for (const plot of growthPlots(level)) {
       spots.forEach(([u, v], i) => {
         const j = Math.abs(Math.sin(level.id * 3.1 + plot.col * 12.9898 + plot.row * 78.233 + i * 4.7)) % 1;
-        const x = plot.col + u + (j - 0.5) * 0.06;
-        const z = plot.row + v + (j - 0.5) * 0.05;
-        this.slots.push({ key: plot.key, x, y: heightAt(plot.col + 0.5, plot.row + 0.5) + 0.03, z, ry: j * Math.PI * 2, jitter: 0.88 + j * 0.24, plant: 0, head: 0 });
+        const x = plot.col + u + (j - 0.5) * 0.04;
+        const z = plot.row + v + (j - 0.5) * 0.03;
+        this.slots.push({ key: plot.key, x, y: heightAt(plot.col + 0.5, plot.row + 0.5) + 0.03, z, ry: j * Math.PI * 2, jitter: 0.88 + j * 0.24, plant: 0, head: 0, seed: 0 });
       });
     }
     const n = Math.max(1, this.slots.length);
     const mat = () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.85, metalness: 0, flatShading: true });
     this.plants = new THREE.InstancedMesh(this.look.plant(), mat(), n);
     this.heads = new THREE.InstancedMesh(this.look.head(), mat(), n);
-    for (const m of [this.plants, this.heads]) {
+    this.seedlings = new THREE.InstancedMesh(SEEDLING_GEO(), mat(), n);
+    for (const m of [this.plants, this.heads, this.seedlings]) {
       m.castShadow = false;
       m.receiveShadow = true;
       m.frustumCulled = false;
@@ -118,6 +122,7 @@ export class Crops {
     for (let i = 0; i < n; i++) {
       this.heads.setColorAt(i, ripe);
       this.plants.setColorAt(i, new THREE.Color(this.look.green[0]));
+      this.seedlings.setColorAt(i, new THREE.Color(this.look.green[1]).lerp(new THREE.Color(this.look.green[0]), 0.4));
     }
   }
 
@@ -152,7 +157,10 @@ export class Crops {
     let still = true;
     this.slots.forEach((s, i) => {
       const st = (occupied.has(s.key) ? 0 : (stages.get(s.key) ?? 0)) as CropStage;
+      // Plan item 506: a bare plot shows its sown drills as seedlings (the 2D field draws planted rows from the start;
+      // with nothing on them the 3D beds read as paving); a tower's plot stays clear.
       const wantPlant = st === 0 ? 0 : this.look.scale[st - 1]! * s.jitter;
+      const wantSeed = st === 0 && !occupied.has(s.key) ? s.jitter : 0;
       const wantHead = st === 3 ? s.jitter : 0;
       s.plant += (wantPlant - s.plant) * k;
       s.head += (wantHead - s.head) * k;
@@ -160,10 +168,15 @@ export class Crops {
       else still = false;
       if (Math.abs(wantHead - s.head) < 0.005) s.head = wantHead;
       else still = false;
+      s.seed += (wantSeed - s.seed) * k;
+      if (Math.abs(wantSeed - s.seed) < 0.005) s.seed = wantSeed;
+      else still = false;
       this.q.setFromAxisAngle(this.up, s.ry);
       this.p.set(s.x, s.y, s.z);
       this.mx.compose(this.p, this.q, this.sc.setScalar(Math.max(1e-4, s.plant)));
       this.plants.setMatrixAt(i, this.mx);
+      this.mx.compose(this.p, this.q, this.sc.setScalar(Math.max(1e-4, s.seed)));
+      this.seedlings.setMatrixAt(i, this.mx);
       // The head sits on the plant's top, so it rides the plant's scale.
       this.q.setFromAxisAngle(this.up, s.ry * 0.3);
       this.mx.compose(this.p, this.q, this.sc.set(Math.max(1e-4, s.head) * Math.max(0.6, s.plant), Math.max(1e-4, s.head) * Math.max(0.6, s.plant), Math.max(1e-4, s.head) * Math.max(0.6, s.plant)));
@@ -171,6 +184,7 @@ export class Crops {
     });
     this.plants.instanceMatrix.needsUpdate = true;
     this.heads.instanceMatrix.needsUpdate = true;
+    this.seedlings.instanceMatrix.needsUpdate = true;
     if (this.heads.instanceColor) this.heads.instanceColor.needsUpdate = true;
     this.moving = !still;
   }
