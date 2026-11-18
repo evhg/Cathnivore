@@ -628,7 +628,8 @@ export class Renderer3D {
     if (!b || b.levelId !== game.level.id) return;
     const to = dayPhase(Math.max(1, game.phase === "build" ? game.wave + 1 : game.wave), game.level.waves.length);
     const now = performance.now();
-    const wall = this.dayAt ? Math.min(0.1, (now - this.dayAt) / 1000) : 0;
+    // (a slow frame may carry up to half a second, so a few-fps device still finishes the 1.2 s ease in three frames)
+    const wall = this.dayAt ? Math.min(0.5, (now - this.dayAt) / 1000) : 0;
     this.dayAt = now;
     const was = this.day;
     if (this.day < 0 || this.reducedMotion) this.day = to;
@@ -648,7 +649,11 @@ export class Renderer3D {
     const warm = dayWarmth(p);
     const low = 2 * Math.abs(p - 0.5);
     this.sun.color.copy(b.sun).lerp(DUSK_SUN, 0.6 * warm);
-    this.sun.intensity = b.sunI * (1 - 0.12 * low * low);
+    // The ground's sunlight goes as sin(elevation): a sun sunk to lengthen the shadows 1.8x lit the morning field at
+    // about half of noon's (lane B's measure, l21's lane 0.27 -> 0.11 on a phone), so the key is raised by the sine it
+    // lost and only a light softening at the ends of the day is kept: the long shadows and warmth carry the hour.
+    const sinRatio = Math.sin((b.el * Math.PI) / 180) / Math.max(0.15, Math.sin(el));
+    this.sun.intensity = b.sunI * sinRatio * (1 - 0.06 * low * low);
     this.hemi.color.copy(b.hemi).lerp(DUSK_FILL, 0.35 * warm);
     this.hemi.groundColor.copy(b.hemiG).lerp(DUSK_BOUNCE, 0.3 * warm);
     this.renderer.toneMappingExposure = b.exposure * (1 - 0.06 * warm);
