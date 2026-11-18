@@ -1684,3 +1684,21 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .the-list-wall { filter: brightness(.8) saturate(.92); }
   .the-list-wall .mug:is(:hover, :focus-within) { filter: brightness(1.25); }
 }
+
+/* Plan item 505 slice 2: the Ledger is a clipping pinned to the case wall, not a broadsheet across the street. At D
+   it takes about 80% of its old width (470 u, was 560), its print and headline step down a size, and a red push pin
+   holds its head to the glass, so the left part of the frame is one wall and her side of the street stays open. Type
+   keeps its 13 px floor (a scale() would take it under). */
+@media (min-width: 900px) and (min-height: 521px) {
+  .dossier.front-page { width: calc(var(--u) * 470); gap: calc(var(--u) * 5); padding: calc(var(--u) * 8) calc(var(--u) * 12) calc(var(--u) * 10); }
+  .front-page .fp-title { font-size: var(--fs-3); }
+  .front-page .fp-head { font-size: var(--fs-3); line-height: .98; }
+  .front-page .fp-body { grid-template-columns: calc(var(--u) * 150) minmax(0, 1fr); gap: calc(var(--u) * 10); }
+  .front-page .fp-col { gap: calc(var(--u) * 5); }
+  .dossier.front-page::before {
+    content: ""; position: absolute; z-index: var(--z-lift); top: calc(var(--u) * -9); left: 50%;
+    width: calc(var(--u) * 18); height: calc(var(--u) * 18); margin-left: calc(var(--u) * -9); border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--blood) 45%, rgb(var(--white-rgb))) 0 18%, var(--blood) 45%, color-mix(in srgb, var(--blood) 55%, rgb(var(--black-rgb))) 100%);
+    box-shadow: calc(var(--u) * 3) calc(var(--u) * 5) calc(var(--u) * 6) rgb(var(--black-rgb) / .55);
+  }
+}
