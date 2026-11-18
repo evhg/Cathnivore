@@ -42,3 +42,18 @@ test('a solved board greens the valley over', async ({ page }) => {
     }
   }
 })
+
+// Plan item 499: on a desktop the valley recedes (toward the paper) while the board is in play, and comes back to
+// full colour once it's solved.
+test('at D the valley recedes during play and returns in full colour when solved', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop stage')
+  await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
+  await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, results: {} })))
+  await page.goto('/runnel/?shotsolve')
+  await page.locator('[data-last]').waitFor()
+  const vk = () => page.locator('.stage .valley').first().evaluate((e) => getComputedStyle(e).getPropertyValue('--vk').trim())
+  expect(await vk()).toBe('64%')
+  await page.locator('[data-last]').click({ force: true })
+  await expect(page.locator('.board.won')).toHaveCount(1)
+  expect(await vk()).toBe('100%')
+})
