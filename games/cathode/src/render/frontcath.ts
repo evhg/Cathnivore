@@ -223,13 +223,6 @@ const FACE_RELIEF: ReadonlyArray<readonly [number, number, number, number, numbe
 const RELIEF_SLOPE = 0.75;
 const RELIEF_CAVITY = 2.2;
 
-/** Plan item 227: squeezes a geometry's uv.y into [v0, v1] (a sleeve part's span of the whole sleeve's map). */
-function vSpan(g: THREE.BufferGeometry, v0: number, v1: number): THREE.BufferGeometry {
-  const uv = g.attributes.uv as THREE.BufferAttribute | undefined;
-  if (uv) for (let i = 0; i < uv.count; i++) uv.setY(i, v0 + uv.getY(i) * (v1 - v0));
-  return g;
-}
-
 /** Merges non-indexed copies of geometries that share position and normal attributes. */
 function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   const parts = list.map((g) => (g.index ? g.toNonIndexed() : g));
@@ -2035,14 +2028,19 @@ float reliefShade( vec2 uv ) {
     const lockAtArr: number[] = [];
     let sd = 11;
     const rnd = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
-    const LOCKS = 18;
-    const ALONG = 12;
+    // Plan item 319 slice 83: 34 finer locks, each five vertices across on a rounded section, in two layers (the
+    // under layer closer to the sheet), not 18 wide three-vertex ribbons: those read as a few flat slabs of hair
+    // (critique 2026-11-18). The cap locks below keep their own count and section.
+    const LOCKS = 34;
+    const ALONG = 14;
+    const LC = 5;
     for (let i = 0; i < LOCKS; i++) {
-      const uc = i === 0 ? 0.025 : i === LOCKS - 1 ? 0.975 : (i + 0.5) / LOCKS + (rnd() - 0.5) * 0.025;
-      const du = 0.03 + rnd() * 0.02;
+      const under = i % 2 === 1;
+      const uc = i === 0 ? 0.02 : i === LOCKS - 1 ? 0.98 : (i + 0.5) / LOCKS + (rnd() - 0.5) * 0.02;
+      const du = (under ? 0.03 : 0.022) + rnd() * 0.014;
       const t0 = 0.04 + rnd() * 0.12;
-      const t1 = 0.8 + rnd() * 0.26;
-      const lift = 0.004 + rnd() * 0.005;
+      const t1 = (under ? 0.86 : 0.8) + rnd() * 0.24;
+      const lift = (under ? 0.002 : 0.0055) + rnd() * 0.004;
       const dv = (rnd() - 0.5) * 0.08;
       const curl = (rnd() - 0.5) * 0.03;
       const base = lp.length / 3;
@@ -2055,21 +2053,22 @@ float reliefShade( vec2 uv ) {
         // Narrow where it emerges, full through the length, then to a point.
         const w = du * (0.55 + 0.45 * Math.min(1, s / 0.2)) * (1 - 0.92 * Math.pow(s, 3));
         const uMid = uc + curl * Math.sin(s * Math.PI);
-        for (let j = 0; j < 3; j++) {
-          const u = THREE.MathUtils.clamp(uMid + (j - 1) * w * 0.5, 0, 1);
+        for (let j = 0; j < LC; j++) {
+          const x = (j / (LC - 1)) * 2 - 1;
+          const u = THREE.MathUtils.clamp(uMid + x * w * 0.5, 0, 1);
           const az = Math.PI + (u * 2 - 1) * (Math.PI - open);
           const wave = 1 + (0.03 + 0.05 * tc) * Math.sin(u * 22 + tc * 9) + 0.02 * Math.sin(u * 61);
-          // Rounded across: the middle stands proud of the edges.
-          const rad = rad0 * wave + lift + (j === 1 ? 0.0045 : 0) * (1 - s * 0.6);
+          // Rounded across: a half-round section, proudest down its middle.
+          const rad = rad0 * wave + lift + 0.005 * Math.sqrt(Math.max(0, 1 - x * x)) * (1 - s * 0.6);
           lp.push(Math.sin(az) * rad, y0 + yExtra, Math.cos(az) * rad * 0.86 - 0.02);
-          luv.push(uMid * 3 + (j - 1) * 0.16, 1 - t + dv);
+          luv.push(uMid * 3 + x * 0.12, 1 - t + dv);
           lockAtArr.push(u * cols, Math.min(1, t) * rows);
         }
       }
       for (let a = 0; a < ALONG; a++)
-        for (let j = 0; j < 2; j++) {
-          const p0 = base + a * 3 + j;
-          const p1 = p0 + 3;
+        for (let j = 0; j < LC - 1; j++) {
+          const p0 = base + a * LC + j;
+          const p1 = p0 + LC;
           lidx.push(p0, p1, p0 + 1, p1, p1 + 1, p0 + 1);
         }
     }
@@ -2259,48 +2258,6 @@ float reliefShade( vec2 uv ) {
   // ---- arms: her right holds the umbrella up, her left hangs with the cigarette ----
   // Set-in sleeves: full at the shoulder seam (inside the coat's shoulder line, so no ball shows), easing to the
   // elbow, flaring a touch at the cuff with a strap; black leather gloves with a thumb.
-  const sleeve = (sh: THREE.Vector3, el: THREE.Vector3, wr: THREE.Vector3, parent: THREE.Object3D, fore: THREE.Object3D = parent) => {
-    // Plan item 147: the upper sleeve tapers into the elbow ball (its flat end showed as a rim with the forearm
-    // starting inside it), and the forearm starts just outside both, so the join reads as a soft fold.
-    // A straight arm (her left at rest) showed the forearm's wider start as a step, so the radii now meet at the
-    // elbow (0.039) and only the bend's fold shows.
-    // Plan item 175: the upper sleeve runs 1.2 cm past the elbow (its corner stays inside the ball at a full bend) and gathers there (a fold over the forearm), and
-    // the forearm's closed start sits inside the elbow ball at a smaller radius, so a bent arm never swings the
-    // forearm's rim out of the sleeve (at D it caught the light as a capsule top at the elbow).
-    const ud = el.clone().sub(sh).normalize();
-    const upLen = sh.distanceTo(el);
-    const past = 0.012;
-    const k = upLen / (upLen + past);
-    // Plan item 227: the sleeve map's v runs 0 to 0.5 down the upper sleeve and 0.5 to 1 down the forearm.
-    // Plan item 319 slice 71: the sleeve head domes over the shoulder point (it started as a 3 cm flat cap that
-    // swelled to 5.2 cm in 1.5 cm, a square corner where the shoulder met the sleeve: 'a boxy shoulder').
-    addS(vSpan(turned(sh, el.clone().addScaledVector(ud, past), [[0, 0.014], [0.025 * k, 0.036], [0.06 * k, 0.047], [0.12 * k, 0.052], [0.3 * k, 0.05], [0.8 * k, 0.0425], [0.93 * k, 0.0405], [k, 0.0395], [k + (1 - k) * 0.5, 0.038], [1, 0.0365]], seg(24), 0.9), 0, 0.5), sleeveMat, parent);
-    // The elbow: a ball inside the sleeve so the bend never opens a gap between upper arm and forearm.
-    // Plan item 319 slice 63: 0.041 -> 0.0375, inside the sleeve's gathered end (0.037) and the forearm's (0.0375 at
-    // 0.2): wider than both, it stood out below the sleeve's end as a ring round the elbow (critique, D pick). The
-    // upper sleeve's last 6 cm taper to it as well (0.042 -> 0.0395 at the elbow, 0.0365 at its end), so the outline
-    // runs on into the forearm instead of stepping in under a wider tube's end.
-    const elb = new THREE.SphereGeometry(0.0375, seg(24), seg(12));
-    elb.scale(1, 1, 0.92);
-    elb.translate(el.x, el.y, el.z);
-    addS(vSpan(elb, 0.5, 0.5), sleeveMat, fore);
-    const foreA = el.clone().addScaledVector(ud, -0.006);
-    // Plan item 319 slice 58: the forearm stays inside the upper sleeve's gathered end (0.037) for its first 3 cm
-    // and only then eases out, so a straight arm's outline runs on from the upper sleeve: at 0.0405 just below the
-    // elbow it stood wider than the sleeve's end, two stacked tubes with a ring between them (critique, D pick).
-    // Plan item 319 slice 77: the forearm tapers from the elbow to the wrist, with only a slim turn-back at the cuff
-    // (it widened 0.0385 -> 0.044 toward a bell cuff: the critique's 'stacked cylinders', a tube on a wider tube).
-    const foreProf: Array<[number, number]> = [[0, 0.026], [0.06, 0.034], [0.12, 0.0362], [0.2, 0.037], [0.5, 0.0355], [0.8, 0.0335], [0.87, 0.0355], [0.96, 0.0362], [1, 0.028]];
-    addS(vSpan(turned(foreA, wr, foreProf, seg(24), 0.9), 0.5, 1), sleeveMat, fore);
-    parent = fore;
-    // The cuff strap. Plan item 319: a flat leather band laid on the sleeve, following its oval, not a round ring
-    // (a torus round the oval sleeve stood off it at the sides and read as a floating bracelet).
-    const d = wr.clone().sub(foreA).normalize();
-    const tAt = 1 - 0.04 / foreA.distanceTo(wr);
-    // Plan item 319 slice 81: the strap is the coat's own cloth at the facing's tone (coatMat), not glossy black
-    // leather: a lit leather ring round each forearm read as a ball-joint seam at the wrist (critique 2026-11-18).
-    addS(cuffBand(wr.clone().addScaledVector(d, -0.04), d, profR(foreProf, tAt), 0.9, seg(24)), coatMat, parent);
-  };
   // Plan item 319 slice 73: the shoulder joints 7 mm in, with the coat's narrower shoulder line.
   const shoulderR = V(-0.143, 0.25, -0.005);
   const elbowR = V(-0.192, 0.0, 0.07);
@@ -2433,7 +2390,98 @@ float reliefShade( vec2 uv ) {
   upperL.matrixAutoUpdate = false;
   foreL.matrixAutoUpdate = false;
   chest.add(upperL, foreL);
-  sleeve(shoulderL, elbowL, wristL, upperL, foreL);
+  // Plan item 319 slice 82: her left sleeve is one tube bent through shoulder, elbow and wrist (like the umbrella
+  // arm's), rebuilt whenever the IK moves the arm, not two tubes on two bones with a ball between them: the ball and
+  // the forearm's start read as a ball-joint seam at the elbow (critique 2026-11-18). The cuff strap rides the
+  // forearm bone with the hand.
+  const sleeveL = (() => {
+    const upProf: Array<[number, number]> = [[0, 0.014], [0.025, 0.036], [0.06, 0.047], [0.12, 0.052], [0.3, 0.05], [0.8, 0.0425], [0.93, 0.0405], [1, 0.0395]];
+    const foProf: Array<[number, number]> = [[0, 0.0395], [0.2, 0.037], [0.5, 0.0355], [0.8, 0.0335], [0.87, 0.0355], [0.96, 0.0362], [1, 0.028]];
+    const upLen = shoulderL.distanceTo(elbowL);
+    const sE = upLen / (upLen + elbowL.distanceTo(wristL));
+    // Rings: an even run plus every profile key, so the sleeve head's dome and the cuff's turn-back keep their shape.
+    const ss = new Set<number>();
+    const N = seg(32);
+    for (let i = 0; i <= N; i++) ss.add(Math.round((i / N) * 1e4) / 1e4);
+    for (const [t] of upProf) ss.add(Math.round(t * sE * 1e4) / 1e4);
+    for (const [t] of foProf) ss.add(Math.round((sE + t * (1 - sE)) * 1e4) / 1e4);
+    const rings = [...ss].sort((a, b) => a - b);
+    const radius = (s: number) => (s < sE ? profR(upProf, s / sE) : profR(foProf, (s - sE) / (1 - sE)));
+    const R = seg(24);
+    const T = rings.length;
+    const pos = new Float32Array(T * (R + 1) * 3);
+    const nor = new Float32Array(T * (R + 1) * 3);
+    const uvs = new Float32Array(T * (R + 1) * 2);
+    const idx: number[] = [];
+    for (let i = 0; i < T; i++) {
+      const s = rings[i]!;
+      const v = s < sE ? (0.5 * s) / sE : 0.5 + (0.5 * (s - sE)) / (1 - sE);
+      for (let j = 0; j <= R; j++) {
+        uvs[(i * (R + 1) + j) * 2] = j / R;
+        uvs[(i * (R + 1) + j) * 2 + 1] = v;
+        if (i < T - 1 && j < R) {
+          const a = i * (R + 1) + j;
+          const b = a + R + 1;
+          idx.push(a, a + 1, b, b, a + 1, b + 1);
+        }
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
+    geo.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    geo.setIndex(idx);
+    const pts = [shoulderL.clone(), shoulderL.clone(), elbowL.clone(), elbowL.clone(), wristL.clone()];
+    const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
+    const c = new THREE.Vector3();
+    const tan = new THREE.Vector3();
+    const n = new THREE.Vector3();
+    const b = new THREE.Vector3();
+    const o = new THREE.Vector3();
+    const bend = (sh: THREE.Vector3, el: THREE.Vector3, wr: THREE.Vector3) => {
+      pts[0]!.copy(sh);
+      pts[1]!.copy(sh).lerp(el, 0.55);
+      pts[2]!.copy(el);
+      pts[3]!.copy(el).lerp(wr, 0.5);
+      pts[4]!.copy(wr);
+      curve.updateArcLengths();
+      n.set(0, 0, 1);
+      for (let i = 0; i < T; i++) {
+        const s = rings[i]!;
+        curve.getPointAt(s, c);
+        curve.getTangentAt(s, tan);
+        // Parallel transport: the ring's frame turns with the sleeve, so the cloth's weave never twists.
+        n.addScaledVector(tan, -n.dot(tan)).normalize();
+        b.crossVectors(tan, n);
+        const r = radius(s);
+        for (let j = 0; j <= R; j++) {
+          const a = (j / R) * Math.PI * 2;
+          o.copy(n).multiplyScalar(Math.cos(a)).addScaledVector(b, Math.sin(a));
+          const k = (i * (R + 1) + j) * 3;
+          pos[k] = c.x + o.x * r;
+          pos[k + 1] = c.y + o.y * r;
+          pos[k + 2] = c.z + o.z * r;
+          nor[k] = o.x;
+          nor[k + 1] = o.y;
+          nor[k + 2] = o.z;
+        }
+      }
+      (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+      (geo.attributes.normal as THREE.BufferAttribute).needsUpdate = true;
+      geo.computeBoundingSphere();
+    };
+    bend(shoulderL, elbowL, wristL);
+    const mesh = add(geo, sleeveMat, chest);
+    mesh.name = "cath-sleeve-l";
+    return { bend, fore: foProf };
+  })();
+  {
+    // The cuff strap: a flat band on the sleeve in the coat's cloth (slice 81), on the forearm bone with the hand.
+    const d = wristL.clone().sub(elbowL).normalize();
+    const tAt = 1 - 0.04 / elbowL.distanceTo(wristL);
+    addS(cuffBand(wristL.clone().addScaledVector(d, -0.04), d, profR(sleeveL.fore, tAt), 0.9, seg(24)), coatMat, foreL);
+  }
+  let sleeveBent = false;
   // Plan item 147: her left hand hangs relaxed with the cigarette between two fingers, not a mitt: the back of the
   // hand outward, the index above the cigarette's end and the middle finger under it, the ring and little fingers
   // curled in toward the palm, the thumb along the index. Built in the chest frame on the forearm bone, so the
@@ -2518,6 +2566,8 @@ float reliefShade( vec2 uv ) {
     foreL.matrix.makeTranslation(ikE.x, ikE.y, ikE.z).multiply(ikM.makeRotationFromQuaternion(ikQ2)).multiply(ikM2.makeTranslation(-elbowL.x, -elbowL.y, -elbowL.z));
     upperL.matrixWorldNeedsUpdate = true;
     foreL.matrixWorldNeedsUpdate = true;
+    sleeveL.bend(shoulderL, ikE, ikT);
+    sleeveBent = true;
   }
 
   // ---- the umbrella: shaft from her right fist up and a little back, the canopy on 8 ribs ----
@@ -2992,6 +3042,8 @@ float reliefShade( vec2 uv ) {
       foreL.matrix.identity();
       upperL.matrixWorldNeedsUpdate = true;
       foreL.matrixWorldNeedsUpdate = true;
+      if (sleeveBent) sleeveL.bend(shoulderL, elbowL, wristL);
+      sleeveBent = false;
     }
 
     // The hem: Verlet with a spring home, wind and a gust that comes and goes.
