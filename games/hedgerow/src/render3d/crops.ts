@@ -55,7 +55,15 @@ const LOOKS: Record<Crop, Look> = {
 };
 
 /** Plan item 506: a bare plot's sown drills, a low leafy tuft per plant (a third instanced mesh: one more draw call). */
-const SEEDLING_GEO = () => new THREE.IcosahedronGeometry(0.075, 0).scale(1.15, 0.5, 1.15).translate(0, 0.025, 0);
+const hsl = { h: 0, s: 0, l: 0 };
+const bedHsl = { h: 0, s: 0, l: 0 };
+function seedlingColour(green: string, bed: THREE.Color | undefined): THREE.Color {
+  if (!bed) return new THREE.Color(green);
+  new THREE.Color(green).getHSL(hsl);
+  bed.getHSL(bedHsl);
+  return new THREE.Color().setHSL(hsl.h, hsl.s * 0.8, Math.min(0.8, Math.max(0.1, bedHsl.l * 0.92)));
+}
+const SEEDLING_GEO = () => new THREE.IcosahedronGeometry(0.085, 0).scale(1.35, 0.5, 1.15).translate(0, 0.028, 0);
 
 interface Slot {
   key: string;
@@ -92,6 +100,7 @@ export class Crops {
     heightAt: (x: number, z: number) => number,
     private readonly canvas: HTMLCanvasElement,
     private readonly reducedMotion: boolean,
+    bedTints: ReadonlyMap<string, THREE.Color> = new Map(),
   ) {
     this.look = LOOKS[cropOf(level)];
     // Plan item 506: three drills of four plants a plot (were four plants, which vanished at play distance and left
@@ -122,7 +131,9 @@ export class Crops {
     for (let i = 0; i < n; i++) {
       this.heads.setColorAt(i, ripe);
       this.plants.setColorAt(i, new THREE.Color(this.look.green[0]));
-      this.seedlings.setColorAt(i, new THREE.Color(this.look.green[1]).lerp(new THREE.Color(this.look.green[0]), 0.4));
+      // the crop's green at the bed's own lightness, so a plot keeps its value beside the lane (item 486's 1.6:1 on
+      // a phone: pale leaves lifted a dark bed toward a pale lane, dark ones sank a pale bed toward a dark lane)
+      this.seedlings.setColorAt(i, seedlingColour(this.look.green[0], bedTints.get(this.slots[i]?.key ?? "")));
     }
   }
 
