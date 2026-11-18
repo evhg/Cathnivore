@@ -34,7 +34,7 @@ for (const s of sizes) {
         }
         return `${b.name}:${Math.round((100 * vis) / n)}%[${b.left},${b.top},${b.right},${b.bottom}]`
       })
-      return sc && { calls: sc.stats.drawCalls, set: sc.renderer?.domElement?.dataset?.setProps ?? document.querySelector('canvas')?.dataset.setProps, props } })
+      return sc && { slung: sc.slungBox?.(), calls: sc.stats.drawCalls, set: sc.renderer?.domElement?.dataset?.setProps ?? document.querySelector('canvas')?.dataset.setProps, props } })
     await page.screenshot({ path: `${SP}/p498/${tag}-${s}-${cls}.png`, timeout: 300_000 })
     console.log(s, cls, JSON.stringify(info))
   }

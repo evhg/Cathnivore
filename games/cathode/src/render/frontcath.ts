@@ -3234,8 +3234,10 @@ float reliefShade( vec2 uv ) {
     {
       const sling = buildGunDisplay("sniper", phone);
       sling.name = "kit-ghost-back-rifle";
-      const muzzle = V(0.318, 1.06, -0.118);
-      const along = V(0.31, 1.02, -0.12).sub(V(0.02, 0.05, -0.19)).normalize();
+      // Plan item 498: leaned 6 cm further out over her left shoulder and 3 cm lower: the barrel stood against the
+      // hood's edge at the pick (critique 11-18, 'the sniper through her hood'); `slungBox().gap` keeps it clear.
+      const muzzle = V(0.378, 1.03, -0.122);
+      const along = V(0.37, 0.99, -0.124).sub(V(0.02, 0.05, -0.19)).normalize();
       const zAxis = along.clone().negate(); // the model's muzzle runs -z
       const yAxis = V(0, 0, -1).addScaledVector(zAxis, zAxis.z).normalize(); // its top, out from her back
       const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis);

@@ -107,6 +107,11 @@ export interface FrontScene {
    *  or null when her hands are empty, and how many of its projected vertices fall inside her face box (0: the prop
    *  stays off her face; a rifle held upright beside her cheek may share the face box's bounds but not its pixels). */
   propBox(): { left: number; top: number; right: number; bottom: number; inFace: number } | null;
+  /** Plan item 498: the projected box of the weapons she carries on her (the Ghost's slung rifle, the Butcher's
+   *  shouldered shotgun, the Gunslinger's holstered revolver), or null with none showing, and how many of their
+   *  projected vertices fall inside her head-and-hood box (the hood's shell with 2 cm of air, projected), and the
+   *  nearest one's distance from that box (CSS px, 0 when inside). */
+  slungBox(): { left: number; top: number; right: number; bottom: number; inHood: number; gap: number; hood: { left: number; top: number; right: number; bottom: number } } | null;
   /** Plan item 205: the painted eyes' and cheeks' centres on screen, in CSS px (for the face's contrast check). */
   facePoints(): { eyes: Array<{ x: number; y: number }>; cheeks: Array<{ x: number; y: number }> };
   /** Loop time in seconds (screenshots; the live loop also advances it). */
@@ -1115,6 +1120,50 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         }
       });
       return left === Infinity ? null : { left, top, right, bottom, inFace };
+    },
+    slungBox() {
+      const r = world.renderer.domElement.getBoundingClientRect();
+      cath.group.updateMatrixWorld(true);
+      // The hood's shell (frontcath.ts: 0.112 x 0.13 x 0.118 round the head pivot, lifted 1.2 cm) with 2 cm of air.
+      let hl = Infinity, ht = Infinity, hr = -Infinity, hb = -Infinity;
+      for (const x of [-0.135, 0.135]) for (const y of [-0.14, 0.165]) for (const z of [-0.15, 0.13]) {
+        corner.set(x, y, z).applyMatrix4(cath.head.matrixWorld).project(cam);
+        const sx = r.left + ((corner.x + 1) / 2) * r.width;
+        const sy = r.top + ((1 - corner.y) / 2) * r.height;
+        hl = Math.min(hl, sx);
+        hr = Math.max(hr, sx);
+        ht = Math.min(ht, sy);
+        hb = Math.max(hb, sy);
+      }
+      const SLUNG = new Set(["kit-ghost-back-rifle", "kit-butcher-gun", "kit-gunslinger-revolver"]);
+      const slung = (o: THREE.Object3D | null): boolean => {
+        let on = false;
+        for (; o; o = o.parent) {
+          if (!o.visible) return false;
+          if (SLUNG.has(o.name)) on = true;
+        }
+        return on;
+      };
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity, inHood = 0, gap = Infinity;
+      cath.group.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !slung(m)) return;
+        const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
+        if (!pos) return;
+        for (let i = 0; i < pos.count; i++) {
+          corner.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld).project(cam);
+          const x = r.left + ((corner.x + 1) / 2) * r.width;
+          const y = r.top + ((1 - corner.y) / 2) * r.height;
+          left = Math.min(left, x);
+          right = Math.max(right, x);
+          top = Math.min(top, y);
+          bottom = Math.max(bottom, y);
+          if (x > hl && x < hr && y > ht && y < hb) inHood++;
+          gap = Math.min(gap, Math.hypot(Math.max(hl - x, 0, x - hr), Math.max(ht - y, 0, y - hb)));
+        }
+      });
+      const hood = { left: Math.round(hl), top: Math.round(ht), right: Math.round(hr), bottom: Math.round(hb) };
+      return left === Infinity ? null : { left: Math.round(left), top: Math.round(top), right: Math.round(right), bottom: Math.round(bottom), inHood, gap: Math.round(gap), hood };
     },
     faceBox() {
       const r = world.renderer.domElement.getBoundingClientRect();

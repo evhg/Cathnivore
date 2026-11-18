@@ -4,7 +4,10 @@ import { expect, test } from './own-gpu'
 // each class's set has its own, no prop is shared, and at D at least two of the dressing props stand in view (half of
 // their box or more clear of the list and the sheet, or a third for the set-wide ones).
 type Box = { name: string; left: number; top: number; right: number; bottom: number }
-type F = { cathodeFront?: { ready: boolean; scene: () => { setPropBoxes(): Box[] } | null } }
+// Her carried weapon (the Ghost's slung rifle, the Butcher's shotgun, the Gunslinger's revolver) stays off her head and
+// hood: no vertex inside its projected box and 6 px of air at least (the rifle's barrel stood on the hood's edge).
+type Slung = { inHood: number; gap: number } | null
+type F = { cathodeFront?: { ready: boolean; scene: () => { setPropBoxes(): Box[]; slungBox(): Slung } | null } }
 
 test('each class pick set shows props of its own, in view', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop class pick')
@@ -48,5 +51,10 @@ test('each class pick set shows props of its own, in view', async ({ page, hasTo
       })
     })
     expect(inView.filter((p) => p.ok).length, `${cls} ${JSON.stringify(inView)}`).toBeGreaterThanOrEqual(2)
+    const slung = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.slungBox())
+    if (slung) {
+      expect(slung.inHood, `${cls} ${JSON.stringify(slung)}`).toBe(0)
+      expect(slung.gap, `${cls} ${JSON.stringify(slung)}`).toBeGreaterThanOrEqual(6)
+    }
   }
 })
