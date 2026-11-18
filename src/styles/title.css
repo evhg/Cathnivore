@@ -1917,6 +1917,10 @@ html.no-animations .title-screen * {
   }
   .title-menu .title-daily .title-daily-no { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
   .title-menu .title-daily small { display: flex; flex-wrap: wrap; column-gap: 0.5em; font-size: 0.875rem; }
+  /* Gate 7 (2026-11-18): two lines are always reserved. A long day's event ('Harvest Festival') fits one line in the
+     fallback face and wraps in Fraunces, so the menu grew 12 px when the font landed and the whole table above it
+     jumped (Lighthouse CLS 0.18, score 72-76); the button's height no longer depends on the day or the font. */
+  .title-menu .title-daily small { min-height: 2lh; align-content: flex-start; }
   .title-menu .title-daily small > .title-daily-when { margin-top: 0; }
   /* Plan item 470: on the event's line it reads 'Great Glut · Open · 21h left' (the gap alone ran them together) */
   .title-menu .title-daily small > .title-daily-when::before { content: '·'; margin-right: 0.5em; }
