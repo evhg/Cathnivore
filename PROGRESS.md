@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (06:51 11-18): item 494 done (27fb9b1e, 4c5ae50d: NIGHT SHIFT's title case file is the morning paper, The Hollowell Ledger; Cath's silhouette under it 0% P, 0.8% D). Full check green (322 files, 2783 tests). Open unclaimed: 319, 471, 486, 492: under 3 fresh items after these, so the next free session plans. Next release 19:51 11-18, once E2E is green on the head.
+- Lane A (07:51 11-18): item 486 slices 5-6 (ac13bb76, 78db875d), handed back: the 486 measure fixed (it sampled only waypoints), Rivermead's phone lane a pale track, the phone view leans to the depot. P contrast all 1.53+ (l21 the weak one). Open unclaimed: 319, 471, 486 (492 lane B). Next release 19:51 11-18.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -42,6 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-18 07:51 lane A session:** 486 slices 5-6. biome3d, 3dframe (35), closeframe, depot3d, camera3d (14), keyart-fresh, eslint, tsc pass; measure runs m0-m6 (scratchpad). No full check. Lock released.
 - 2026-11-18 07:21 lane B: 492 slice 3; hedgerow-cathlevel (2D and 3D cases), hedgerow-cath3d (P, D, 18), keyart-fresh pass; shots r3, r3b.
 - **2026-11-18 06:51 lane A session:** 494 done (slices 1-2 and the measure). cathode-frontpage (new unit test and spec, P and D), cathode-front's dossier/mugshot/captions/never-meet/upright cases (P, D, 375x667), cathode-type, ui-css-lint, tsc, eslint, paper-cover measure (new). Full `npm run check` passed (322 files, 2783 tests). Lock released. Shots scratchpad p494.
 - **2026-11-18 05:51 lane A session:** 491 slice 2 and done, 493 slices 1-2 and done. portfolio-studio (new), portfolio-present, site-hero, site.spec's portfolio axe, hedgerow-plate-preview (new), level-card, hedgerow-map, depart, masthead, map-you pass at P and D; portfolio units, css lint, keyart-fresh, tsc, eslint. Full `npm run check` passed (321 files, 2778 tests). Lock released. Shots scratchpad s491, s493.
@@ -56,4 +57,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-18 01:51 lane A session:** E2E red checked (critique103, fixed). 481 done, 485 slice 1. cathode-skillpreview/testtarget (P, D), previewfx/skillpreview/dayphase units, sunlight tests, hedgerow-water (D), hedgerow-dayphase (new, P, D), keyart-fresh after re-rendering NIGHT SHIFT posters/key art and Hedgerow key art, css lint. Shots p481b, h485. No full check (CI covers it). Lock released.
 - 2026-11-18 01:21 lane B: critique103 follows item 482 (9e2eb3f); 486 slice 2 (966173c); critique103 minor-tags, shadow3d, biome3d (P), keyart-fresh pass; measure runs h486b/h486c.
 - **2026-11-18 00:51 lane A session:** hedgerow-water fixed at the root (sample), 484 done (slice 2), 481 slice 4. Checks: tsc, eslint, daily-postcard unit + spec (P, D), end-moment, ui-css-lint, hedgerow-water 2/2, cathode-skillpreview/testtarget.
-- 2026-11-18 00:21 lane B: E2E red on fee8009: showdown, runnel-tiles, runnel-host-size fixed (447e7bd); hedgerow-water diagnosed, left for lane A; runnel tiles/host-size/lesson-close/garden/garden-farm/valley (30) and hedgerow-showdown x2 (12) pass at P and D.
