@@ -5103,6 +5103,9 @@ img.act-scene {
   margin: 0 var(--you-dx, 0px) calc(-1 * var(--you-dy, 0px)) var(--you-dx, 0px);
 }
 #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 12px); }
+/* Plan item 500: she stands on the coin's right edge, where its number badge sat under her legs (plan1118a hedge-menu-D);
+   the badge moves to the coin's other foot corner so the stop's number stays clear of her. */
+#screen-select .node.next:has(.you[data-side="right"]) .level-num.vignette .level-n { right: auto; left: -6px; }
 #screen-select .node.next .you svg { transform-origin: 50% 100%; }
 @media (max-width: 420px) {
   /* plan item 441: 72 px on a phone (66) */

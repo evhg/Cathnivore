@@ -3019,6 +3019,8 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .panel .intel-locks:has(.lock-chip) {
   flex-wrap: wrap;
   gap: 3px;
+  /* Plan item 500: a breath above the round columns' heads (the line sat 2 px over 'ROUND 12', plan1118a) */
+  margin-bottom: 4px;
 }
 .play .panel .intel-locks:has(.lock-chip) .intel-label {
   flex: none;
