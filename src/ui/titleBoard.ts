@@ -5,7 +5,8 @@
 
 import { createGame } from '../engine/state'
 import type { GameState, ProducerId, RegionId } from '../engine/types'
-import { liberatedRegions } from '../content/campaignMap'
+import { CHAPTER_HOMES, liberatedRegions } from '../content/campaignMap'
+import { REGIONS } from '../content/map'
 
 const RING: RegionId[] = ['kingsmarket', 'highmoor', 'saltmarsh', 'rivermead', 'shingleBay', 'oakvale', 'brindleHills']
 /** Hollowell's hold on each region on a fresh save: the capital worst, the coast taking a Buyout. */
@@ -59,4 +60,28 @@ export function titleLine(completed: readonly string[]): string {
   if (free === 0) return "Hollowell's in every stall in Marrow. We start with Brindle Hills."
   if (free <= 2) return `${free} regions back in local hands. Bea drew me a picture to celebrate.`
   return `${free} of 7 regions free. Kingsmarket is starting to worry.`
+}
+
+/** Plan item 503: the title's attract beat, a preview of what Campaign will do next. */
+export interface ChapterBeat {
+  chapter: string
+  /** The hex the beat flips: the next unwon chapter's first home region still held. */
+  region: RegionId
+  /** Cath's one line while it plays. */
+  line: string
+}
+
+const BEAT_TAIL: Record<string, string> = { kingsmarket: 'Shall we finish it?' }
+
+/** The next unwon chapter's beat, in campaign order; none once Marrow is free. Pure. */
+export function nextChapterBeat(completed: readonly string[]): ChapterBeat | null {
+  if (completed.includes('kingsmarket')) return null
+  const free = liberatedRegions(completed)
+  for (const [chapter, homes] of Object.entries(CHAPTER_HOMES)) {
+    if (completed.includes(chapter)) continue
+    const region = homes.find((r) => !free.has(r))
+    if (!region) continue
+    return { chapter, region, line: `${REGIONS[region].name} next. ${BEAT_TAIL[chapter] ?? 'Shall we?'}` }
+  }
+  return null
 }

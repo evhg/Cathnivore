@@ -2054,3 +2054,24 @@ html.no-animations .title-screen * {
   }
   .title-menu::after { content: none; }
 }
+
+/* Plan item 503: the board previews the next chapter. The region flips from Hollowell's orange to the co-op's green
+   (item 127's moment), holds green about 2 s under a dashed wheat edge and eases back; Cath's line changes while it
+   plays (a fade only). Opacity and the bunting's drop only, so it stays on the compositor. Reduced motion: a still
+   dashed edge on the region, nothing animated. */
+@keyframes title-beat-wash { 0%, 20% { opacity: 0; } 28%, 82% { opacity: 0.6; } 100% { opacity: 0; } }
+@keyframes title-beat-hold { 0%, 18% { opacity: 0; } 26%, 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes title-beat-line { from { opacity: 0; } to { opacity: 1; } }
+.title-beat-wash { fill: var(--pasture); animation: title-beat-wash 3600ms var(--ease-settle) both; }
+.title-beat-edge { fill: none; stroke: var(--wheat-hi); stroke-width: 3.5; stroke-dasharray: 9 6; stroke-linecap: round; animation: title-beat-hold 3600ms ease both; }
+.title-beat-bunting { animation: title-beat-hold 3600ms ease both; }
+.title-beat-flag { stroke: var(--ink); stroke-width: 1; }
+.title-beat-flag.f0 { fill: var(--clay); }
+.title-beat-flag.f1 { fill: var(--wheat); }
+.title-beat-flag.f2 { fill: var(--pasture); }
+.title-beat.is-still .title-beat-edge { animation: none; opacity: 0.9; }
+.title-cath[data-beat] .title-cath-line { animation: title-beat-line 240ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .title-beat *, .title-cath[data-beat] .title-cath-line { animation: none; }
+}
+html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .title-cath-line { animation: none !important; }

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import Map, { HEX_R } from './Map'
-import { titleBoardState, titleLine } from './titleBoard'
+import Map, { GAP_SCALE, HEX_R, hexCenter, hexPoints } from './Map'
+import { nextChapterBeat, titleBoardState, titleLine } from './titleBoard'
+import { attractOn, startTitleBeats, useTitleBeat } from './titleBeat'
+import type { RegionId } from '../engine/types'
 import { BeasDrawing, CoinPile, JamJar, ProduceCrates } from './TableProps'
 import { lightForHour } from './tableLight'
 import { loadCampaign } from '../platform/storage'
@@ -25,6 +27,14 @@ export default function TitleArt() {
   // Plan item 133: her line and face follow the Daily streak once there is one (kept, broken, the first ever).
   const ritual = useMemo(() => dailyRitual(new Date(), dailyRecord()), [])
   const expression = useMenuExpression(ritual.expression)
+  // Plan item 503: the board previews the next chapter (a beat about every 10 s; a still highlight under reduced motion).
+  const beat = useMemo(() => nextChapterBeat(completed), [completed])
+  const still = useMemo(isStill, [])
+  useEffect(() => {
+    if (!beat || still || !attractOn(window.location.search, navigator.webdriver === true)) return
+    return startTitleBeats(beat.region, new URLSearchParams(window.location.search).has('attract'))
+  }, [beat, still])
+  const line = ritual.line ?? titleLine(completed)
   return (
     <div className="title-art title-table" aria-hidden="true" data-free={Object.values(state.regions).filter((r) => r.liberated).length}>
       {/* Plan item 453: the stall's striped awning over her on a tall phone (it unrolls in the day's opening). */}
@@ -34,10 +44,7 @@ export default function TitleArt() {
           <path key={i} className={`title-awning-stripe s${i % 2}`} d={`M${i * 30} 5H${i * 30 + 30}V20Q${i * 30 + 15} 32 ${i * 30} 20z`} />
         ))}
       </svg>
-      <div className="title-cath" data-expression={expression}>
-        <p className="title-cath-line">{ritual.line ?? titleLine(completed)}</p>
-        <CathArt framing="half" expression={expression} pose={SCREEN_POSE['cathnivore:title']} animate />
-      </div>
+      <TitleCath line={line} beatLine={beat?.line} expression={expression} />
       <div className="title-board" data-light={light}>
         {/* Bea is at the market too: her drawing of her mum, pinned to the cloth's corner. */}
         <div className="title-bea">
@@ -45,7 +52,15 @@ export default function TitleArt() {
         </div>
         <div className="title-map-wrap">
           {/* Plan item 98: the vans drive under the region name plates (one sat on Kingsmarket's in early frames). */}
-          <Map state={state} underNames={<TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />} />
+          <Map
+            state={state}
+            underNames={
+              <>
+                <TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />
+                {beat && <TitleBeatTile region={beat.region} still={still} />}
+              </>
+            }
+          />
         </div>
       </div>
       {/* Plan item 133: on a phone the Daily's receipt is pinned to the table's lip in front of her (outside her
@@ -92,6 +107,57 @@ export default function TitleArt() {
         </div>
       </div>
     </div>
+  )
+}
+
+/** Plan item 503: Cath beside the table; while a beat plays she points at it and says where Campaign goes next. */
+function TitleCath({ line, beatLine, expression }: { line: string; beatLine?: string; expression: CathExpression }) {
+  const beat = useTitleBeat()
+  const on = beat !== null && beatLine !== undefined
+  return (
+    <div className="title-cath" data-expression={on ? 'delighted' : expression} data-beat={on || undefined}>
+      <p className="title-cath-line" key={on ? `b${beat.n}` : 'rest'}>
+        {on ? beatLine : line}
+      </p>
+      <CathArt framing="half" expression={on ? 'delighted' : expression} pose={on ? 'point' : SCREEN_POSE['cathnivore:title']} animate />
+    </div>
+  )
+}
+
+/**
+ * Plan item 503: the beat on the board, drawn over the tiles in the board's own viewBox: the region flips from
+ * Hollowell's orange to the co-op's green (item 127's moment), holds and eases back. Under reduced motion the
+ * region keeps a still green ring instead, and nothing moves.
+ */
+function TitleBeatTile({ region, still }: { region: RegionId; still: boolean }) {
+  const beat = useTitleBeat()
+  const { x, y } = hexCenter(region)
+  if (still) {
+    return (
+      <g className="title-beat is-still" data-attract-still={region} pointerEvents="none">
+        <polygon className="title-beat-edge" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.94)} />
+      </g>
+    )
+  }
+  if (!beat || beat.region !== region) return null
+  return (
+    <g className="title-beat" key={beat.n} data-attract-beat={region} pointerEvents="none">
+      <polygon className="title-beat-wash" points={hexPoints(x, y, HEX_R * GAP_SCALE)} />
+      <polygon className="lib-flip" points={hexPoints(x, y, HEX_R * GAP_SCALE)} />
+      <g className="title-beat-bunting">
+        <g className="lib-bunting">
+          <path d={`M${x - HEX_R * 0.62} ${y - HEX_R * 0.32} Q${x} ${y - HEX_R * 0.12} ${x + HEX_R * 0.62} ${y - HEX_R * 0.32}`} fill="none" stroke="var(--ink)" strokeWidth={1.5} />
+          {Array.from({ length: 7 }, (_, i) => {
+            const t = (i + 0.5) / 7
+            const bx = x - HEX_R * 0.62 + t * HEX_R * 1.24
+            const by = y - HEX_R * 0.32 + 4 * t * (1 - t) * HEX_R * 0.2
+            return <path key={i} d={`M${bx - 6} ${by} L${bx + 6} ${by} L${bx} ${by + 12} Z`} className={`title-beat-flag f${i % 3}`} />
+          })}
+        </g>
+      </g>
+      <circle className="lib-ring" cx={x} cy={y} r={HEX_R * 0.5} fill="none" stroke="var(--wheat-hi, #e8c35a)" strokeWidth={4} />
+      <polygon className="title-beat-edge" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.94)} />
+    </g>
   )
 }
 

@@ -38,7 +38,8 @@ export const GAP_SCALE = 0.96 // shrink each hex slightly for the 3px paper gap 
 /** Plan item 20: a tile's thickness (its edge shows below the face) and how far its shadow falls. */
 const TILE_DEPTH = 7
 
-function hexCenter(id: RegionId, layout: Layout = LAYOUTS.ring): { x: number; y: number } {
+// eslint-disable-next-line react-refresh/only-export-components -- shared with the title's beat (plan item 503)
+export function hexCenter(id: RegionId, layout: Layout = LAYOUTS.ring): { x: number; y: number } {
   const [q, r] = layout.hexes[id] ?? LAYOUTS.ring.hexes[id] ?? [0, 0]
   return { x: RING_DISTANCE * (q + r / 2), y: HEX_R * 1.5 * r }
 }
