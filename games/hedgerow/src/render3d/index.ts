@@ -637,6 +637,7 @@ export class Renderer3D {
     const p = this.day;
     if (b.night) {
       setDuskLamps(1);
+      this.folkMeshes.lit = true;
       return;
     }
     const az = (dayAzFor(game.level.id, p) * Math.PI) / 180;
@@ -653,6 +654,7 @@ export class Renderer3D {
     this.renderer.toneMappingExposure = b.exposure * (1 - 0.06 * warm);
     const lit = b.lamps > 0 ? 1 : dayLamps(p) ? Math.min(1, (p - 2 / 3) * 6 + 0.4) : 0;
     setDuskLamps(lit);
+    this.folkMeshes.lit = lit > 0;
     const stage = this.canvas.parentElement;
     if (stage) {
       stage.style.setProperty("--field-sky", `#${b.sky.clone().lerp(DUSK_SKY, 0.45 * warm).getHexString()}`);

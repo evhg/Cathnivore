@@ -33,6 +33,9 @@ let lamps2d = false;
 export function setLamps(on: boolean): void {
   lamps2d = on;
 }
+export function lampsLit(): boolean {
+  return lamps2d;
+}
 export function shadowSun(): { x: number; y: number } {
   return sun2d;
 }

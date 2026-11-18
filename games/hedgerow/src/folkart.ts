@@ -4,7 +4,7 @@
 // running (leaning in, faster stride), hiding (crouched, arms over the head) and cheering (arms up, a hop).
 
 import type { Folk } from "./farmfolk";
-import { castShadow, groundShadow, INK } from "./sprites";
+import { castShadow, groundShadow, INK, lampsLit } from "./sprites";
 
 type C = CanvasRenderingContext2D;
 
@@ -305,5 +305,44 @@ function hen(ctx: C, f: Folk, x: number, y: number, s: number, t: number): void 
 export function drawFolk(ctx: C, f: Folk, x: number, y: number, s: number, t: number): void {
   if (f.kind === "dog") dog(ctx, f, x, y, s, t);
   else if (f.kind === "hen") hen(ctx, f, x, y, s, t);
-  else person(ctx, f, x, y, s, t);
+  else {
+    person(ctx, f, x, y, s, t);
+    if (lampsLit() && f.mode !== "home") lantern(ctx, f, x, y, s, t);
+  }
+}
+
+/** Plan item 485: at dusk the farm's people carry a lantern at their side, its warm pool on the ground beside them. */
+function lantern(ctx: C, f: Folk, x: number, y: number, s: number, t: number): void {
+  const h = s * (f.kind === "bea" ? 0.52 : 0.7);
+  const lx = x - f.facing * h * 0.2;
+  const ly = y - h * 0.3 + (f.moving ? Math.sin(t * 10 + f.id) * h * 0.02 : 0);
+  ctx.save();
+  const pool = ctx.createRadialGradient(lx, y, 0, lx, y, h * 0.75);
+  pool.addColorStop(0, "rgba(255,190,100,0.38)");
+  pool.addColorStop(1, "rgba(255,190,100,0)");
+  ctx.fillStyle = pool;
+  ctx.beginPath();
+  ctx.ellipse(lx, y, h * 0.75, h * 0.32, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const halo = ctx.createRadialGradient(lx, ly, 0, lx, ly, h * 0.32);
+  halo.addColorStop(0, "rgba(255,214,140,0.7)");
+  halo.addColorStop(1, "rgba(255,214,140,0)");
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(lx, ly, h * 0.32, 0, Math.PI * 2);
+  ctx.fill();
+  const w = Math.max(2, h * 0.11);
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = Math.max(1, h * 0.025);
+  ctx.beginPath();
+  ctx.moveTo(lx, ly - w * 0.9);
+  ctx.lineTo(lx, ly - w * 1.5);
+  ctx.stroke();
+  ctx.fillStyle = "#ffcf7a";
+  ctx.strokeStyle = INK;
+  ctx.beginPath();
+  ctx.roundRect(lx - w / 2, ly - w * 0.8, w, w * 1.3, w * 0.2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
 }

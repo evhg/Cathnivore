@@ -345,9 +345,20 @@ export const FOLK_3D_SCALE = 1.25;
 export class FolkMeshes {
   readonly group = new THREE.Group();
   private rigs = new Map<number, Rig>();
+  /** Plan item 485: at dusk the farm's people carry a lantern at their side (one instanced draw for them all). */
+  lit = false;
+  private lanterns = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.05, 0.07, 0.05),
+    Object.assign(new THREE.MeshStandardMaterial({ color: "#ffcf7a", emissive: "#ffb85a", emissiveIntensity: 3.2, roughness: 0.5 }), { shared: true }),
+    16,
+  );
+  private m = new THREE.Matrix4();
 
   constructor() {
     this.group.name = "farmfolk";
+    this.lanterns.count = 0;
+    this.lanterns.frustumCulled = false;
+    this.group.add(this.lanterns);
   }
 
   /** Pose everyone for this frame. `height(x, z)` is the ground under a point. */
@@ -366,6 +377,20 @@ export class FolkMeshes {
       this.pose(r, f, t);
       r.root.position.set(f.x, height(f.x, f.y), f.y);
     }
+    let n = 0;
+    if (this.lit)
+      for (const f of folk) {
+        if (f.kind === "dog" || f.kind === "hen" || f.mode === "home" || n >= 16) continue;
+        const r = this.rigs.get(f.id)!;
+        const k = FOLK_3D_SCALE * r.h;
+        // at the hand on the far side from the way they face, a little below the hip, swinging as they walk
+        const sway = f.moving ? Math.sin(t * 10 + f.id) * 0.012 : 0;
+        this.m.makeTranslation(f.x - f.facing * k * 0.12, r.root.position.y + k * 0.32 + sway, f.y + 0.06);
+        this.lanterns.setMatrixAt(n++, this.m);
+      }
+    this.lanterns.count = n;
+    this.lanterns.instanceMatrix.needsUpdate = n > 0;
+    this.lanterns.visible = n > 0;
     for (const [id, r] of this.rigs) if (!alive.has(id)) {
       this.group.remove(r.root);
       this.rigs.delete(id);
