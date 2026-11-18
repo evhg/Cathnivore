@@ -771,7 +771,11 @@ if (SANDBOX)
     place,
     upgrade,
     merge,
-    sendWave,
+    sendWave: (g: Game, forced?: boolean) => {
+      const r = sendWave(g, forced);
+      if (r.ok) markShowdown(g);
+      return r;
+    },
     // Plan item 27: open a level's opening scene straight from the hook (each act's opener for shots and e2e).
     story: (id: number) => {
       const lv = LEVELS.find((l) => l.id === id);
@@ -1067,7 +1071,17 @@ function drawGhost(g: Game): void {
 function doAct(a: Action): boolean {
   if (!game || player) return false;
   const g = game;
-  return act(() => (recorder ? recorder.act(g, a) : applyAction(g, a)));
+  const ok = act(() => (recorder ? recorder.act(g, a) : applyAction(g, a)));
+  if (ok && a.t === "wave") markShowdown(g);
+  return ok;
+}
+
+/** Plan item 479: the stage takes the showdown in the same task as the last round's call, not on the next drawn
+ *  frame (a slow frame held it 230 ms on CI); the round's event still brings the ribbon, her line and the music. */
+function markShowdown(g: Game): void {
+  if (player || g !== game || g.phase !== "wave" || g.wave !== g.level.waves.length) return;
+  showdown = true;
+  ui.stage.dataset.showdown = "";
 }
 
 /**

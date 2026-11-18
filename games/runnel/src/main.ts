@@ -726,6 +726,11 @@ if (typeof ResizeObserver !== 'undefined') {
     if (st) ro.observe(st)
   }
   watch()
+  // Plan item 488 follow-up: the garden's tag grows when its font arrives (no board resize follows), so it re-checks
+  // its own clearance then.
+  const sign = document.querySelector('.bea-garden .farm-sign')
+  if (sign) new ResizeObserver(() => placeGardenSign()).observe(sign)
+  void document.fonts?.ready.then(() => placeGardenSign())
 }
 
 // Plan item 165: on an upright phone Cath stands in the valley, as tall as the board leaves room for (140, 120, 100
@@ -781,9 +786,28 @@ function placePhoneCath(cath: HTMLElement): void {
   none()
 }
 
+/** Plan item 488 follow-up (E2E red 2026-11-18): Bea's garden is pinned to the valley's corner, and a wide daily's
+ *  board reaches under it (the 18 Nov phone board ran a tile's channel under its name tag). The tag moves to the
+ *  foot of the garden (under the fence) when it meets a tile. */
+function placeGardenSign(): void {
+  const garden = document.querySelector<HTMLElement>('.bea-garden')
+  const sign = garden?.querySelector<HTMLElement>('.farm-sign')
+  if (!garden || !sign) return
+  delete garden.dataset.signUnder
+  const polys = screenPolys(document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
+  const meets = (): boolean => {
+    const r = sign.getBoundingClientRect()
+    if (!r.width) return false
+    for (let y = r.top + 2; y <= r.bottom - 2; y += 4) for (let x = r.left + 2; x <= r.right - 2; x += 4) if (inPolys(polys, x, y)) return true
+    return false
+  }
+  if (meets()) garden.dataset.signUnder = ''
+}
+
 function placeValleyCath(): void {
   setGrain()
   placeWeekValley()
+  placeGardenSign()
   const cath = document.getElementById('valley-cath')
   if (!cath) return
   // Plan item 122: one Cath. On a phone the portrait beside her line is the one (its face follows the water the

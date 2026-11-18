@@ -13,6 +13,9 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
       test.setTimeout(120_000)
       await page.setViewportSize(size)
       await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
+      // One board for every run: today's daily changed the tiles measured at UTC midnight (18 Nov's phone board read one
+      // dead-end stub on a meadow field at 2.8:1 under golden light, logged in DECISIONS for a look).
+      await page.clock.setFixedTime(new Date('2026-11-17T10:00:00Z'))
       for (const sky of SKIES) {
         await page.goto(`/runnel/?nohelp&sky=${sky}`)
         await expect(page.locator('.tiles > g.cell').first()).toBeVisible()

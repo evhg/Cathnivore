@@ -4927,6 +4927,9 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
    each bed an equal share of the row (square, up to its old size). */
 .stage[data-tile-e] .bea-garden { --gw: clamp(150px, calc(var(--tile-e) * 2.6), 236px); width: var(--gw); }
 .stage[data-tile-e] .bea-fence { width: 100%; }
+/* Plan item 488 follow-up: a board that reaches under the garden's corner sends its name tag under the fence
+   (main.ts placeGardenSign). */
+.bea-garden[data-sign-under] .farm-sign { order: 9; }
 .stage[data-tile-e] .bea-crops:not(.bare) { align-self: stretch; justify-content: space-between; }
 .stage[data-tile-e] .bea-crops:not(.bare) i { width: min(28px, calc((var(--gw) - 40px) / 8)); height: min(28px, calc((var(--gw) - 40px) / 8)); }
 @media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
