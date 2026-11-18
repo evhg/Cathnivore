@@ -4510,7 +4510,7 @@ Planning 2026-11-17 23:30 lane B: shots `e2e/screenshots/plan1117b` (P 390x844, 
 - **Accept:** first visual change within 100 ms of the tap; the move 700-1100 ms (e2e frame timestamps); skip and reduced-motion paths tested; campaign specs pass; shots P and D at 0, 50 and 100%.
 - **Size:** 2
 
-## 484. [ ] Cathnivore Daily Market: a market-day postcard to share
+## 484. [ ] Cathnivore Daily Market: a market-day postcard to share *(lane A, in progress)*
 - **Why:** a Daily ends with a text-only Share (`ShareResultButton` in `Game.tsx`) and the title's receipt (item 133); nothing you'd want to send. Runnel's solve has a card and a replay (items 6, 478). `cath-title-D` 855-1395 x 760-850 asks for a daily ritual that never leaves the stall (VISION 4-5).
 - **Build:** on a Daily's end screen a postcard rendered to canvas: the final board (read-only map; item 417's grey for held land), Daily #N, its event, Trust and rounds, the streak pennants, Cath's one-line verdict with her face; Share with the image file (Web Share level 2 where `canShare({files})`), else Save image; the existing text share kept as the fallback. Tokens and loaded fonts only, no network.
 - **Accept:** `[data-daily-postcard]` only after a Daily, 1200x630; its numbers match `endSummary` (unit test); Share falls back to Save without `navigator.share` (e2e); no network request; shots P and D, a win and a loss.
