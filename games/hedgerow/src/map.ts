@@ -7,6 +7,7 @@ import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
 import { ENEMIES, TWISTS, isFleet, type EnemyKind, type Level } from "./engine";
 import { enemyIcon } from "./icons";
+import { startPlatePreview, type PlatePreview } from "./platepreview";
 import { openActs } from "./unlocks";
 import { landState, stopLandSvg } from "./stopland";
 import { stopArtKey, stopArtSvg } from "./stopart";
@@ -2006,6 +2007,8 @@ function fieldThumb(lv: Level, landscape = false): string {
     `<rect width="${fw}" height="${fh}" rx="4" fill="url(#lcm-${lv.id}${landscape ? "w" : ""})"/>` +
     (landscape ? turned : "<g>") +
     beds + lanes + barns + trees +
+    // Plan item 493: the first round's convoy rolls down the lane here (platepreview.ts).
+    `<g class="lcard-convoy"></g>` +
     "</g>" +
     `<rect width="${fw}" height="${fh}" rx="4" fill="none" stroke="#fff6dc" stroke-opacity=".35" stroke-width="1"/>` +
     `</svg>`
@@ -2096,11 +2099,20 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
   });
   el.append(grip, thumb, body, say, foes, go);
   sync();
+  // Plan item 493: the plate plays the first round; a vehicle's row lights it there.
+  let preview: PlatePreview | null = null;
+  const rowKind = (e: Event) => ((e.target as Element | null)?.closest?.("li[data-kind]") as HTMLElement | null)?.dataset.kind as EnemyKind | undefined;
+  const lightFrom = (e: Event) => preview?.light(rowKind(e) ?? null);
+  foes.addEventListener("pointerover", lightFrom);
+  foes.addEventListener("focusin", lightFrom);
+  foes.addEventListener("pointerleave", () => preview?.light(null));
+  foes.addEventListener("focusout", () => preview?.light(null));
   return {
     el,
     show(lv) {
       if (shown === lv) return;
       shown = lv;
+      preview?.stop();
       thumb.innerHTML = fieldThumb(lv) + fieldThumb(lv, true);
       const stars = data.stars[String(lv.id)] ?? 0;
       const kinds = new Map<EnemyKind, number>();
@@ -2116,9 +2128,10 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       foes.innerHTML = top
         .map(
           ([k]) =>
-            `<li data-kind="${k}"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt=""></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span></span></li>`,
+            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt=""></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span></span></li>`,
         )
         .join("");
+      preview = startPlatePreview(thumb, lv, matchMedia("(prefers-reduced-motion: reduce)").matches, top.map(([k]) => k));
       go.textContent = stars ? "Play again" : "Play";
       go.setAttribute("aria-label", `${stars ? "Play again" : "Play"}: level ${lv.id}, ${lv.name}`);
     },

@@ -5632,7 +5632,9 @@ img.act-scene {
     gap: 8px;
   }
   #screen-select li.act.act-has-card .lcard-thumb { justify-self: center; }
-  #screen-select li.act.act-has-card .lcard-thumb svg.lcard-plate-wide { height: 120px; }
+  /* Plan item 493: the plate plays its level, so it is as wide as the card allows (252 px; was 120 px tall, 137-187
+     wide); 160 px tall at most, so act 1's tall fields keep the card whole on a 900 px screen (item 372) */
+  #screen-select li.act.act-has-card .lcard-thumb svg.lcard-plate-wide { width: min(100%, 252px); height: auto; max-height: 160px; }
   #screen-select li.act.act-has-card .lcard-body { align-self: start; }
   /* one vehicle a row in the 300 px docked card: in two 130 px columns 'Same-Day van' and 'Cargo quadcopter' wrapped
      (critique103 keeps each name on one line) */
@@ -5688,7 +5690,7 @@ img.act-scene {
 /* On a desktop under 860 px tall the docked card's field plate is smaller, so the card stays whole under act 1's
    banner (it starts there, under Cath's line and kit). */
 @media (min-width: 1200px) and (min-height: 700px) and (max-height: 860px) {
-  #screen-select li.act.act-has-card .lcard-thumb svg.lcard-plate-wide { height: 76px; }
+  #screen-select li.act.act-has-card .lcard-thumb svg.lcard-plate-wide { width: auto; height: 76px; }
   #screen-select li.act.act-has-card > .level-card { gap: 6px; padding-block: 10px 12px; }
 }
 
@@ -5903,3 +5905,10 @@ img.act-scene {
 #screen-select > .top[data-masthead="gate"] .cath-btn-face {
   box-shadow: 0 0 0 2px var(--brass), 0 0 0 3px var(--brass-lo);
 }
+
+/* Plan item 493: the plate's convoy; a row pointed at or focused lights its vehicle (a warm halo, a size up). */
+.lcard-car { transition: filter 120ms ease-out; transform-box: fill-box; }
+.lcard-thumb[data-lit] .lcard-car:not(.is-lit) { filter: saturate(0.4) brightness(0.9); }
+.lcard-car.is-lit { filter: drop-shadow(0 0 1.4px var(--paper-hi)) drop-shadow(0 0 2.4px var(--brass-hi)); }
+.lcard-enemies li[data-kind] { cursor: default; border-radius: 10px; }
+.lcard-enemies li[data-kind]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
