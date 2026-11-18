@@ -4705,7 +4705,7 @@ Progress (lane A, 2026-11-18 19:40, slices 1-2): at 1100 px+ the sheet carries `
 - **Accept:** her face's mean luminance over the Ledger's and the List's (a measure on a live frame and the poster); nothing DOM-drawn over x 860+ but LUNA (494's cover check 0% at D); menu and paper 7:1; cathode-front, the paper and List specs, keyart-fresh pass; shots D 1440x900 and 1280x800, fresh and after a case; P unchanged.
 - **Size:** 2
 
-## 506. [ ] Hedgerow 3D: beds and water that read the way the 2D field does *(handed back 2026-11-18 22:05 by lane B after slice 4)*
+## 506. [ ] Hedgerow 3D: beds and water that read the way the 2D field does *(lane B, in progress)*
 
 Progress (lane B, 2026-11-18 22:05, slices 3-4, `25bc295`, `e5b0d43`): the seedling tufts fuller, so each drill closes into a row: the lilac-grey share of the D l21 frame 4.05% -> 1.82% (55% down; `scripts/hedgerow-506-measure.py <shot>`). The seedlings take the crop's green at 0.92 of the lightness of the bed under them (`Ground.bedTints` handed to `Crops`): pale leaves had dropped l34-P's lane-to-plot to 1.51 and dark ones l21-P to 1.09; now item 486's phone contrast is l5 2.44, l21 1.61, l34 2.55, l40 1.82 (were 2.14, 1.62, 2.69, 1.56). The water takes no cast shadows: l34's ponds by the farmhouse and depot read 0.62-0.64 of the river, now every l34 water body 0.94-1.30 (the shallow top-right pond was 1.26 before). Draw calls +1 (the seedlings). **Left:** the head band in the 2D fieldkit's colours and a vertex sway on the drills; a Hedgerow perf read for fps; then tick it.
 
