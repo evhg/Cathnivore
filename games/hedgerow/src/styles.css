@@ -5869,3 +5869,37 @@ img.act-scene {
   #screen-select > .top[data-masthead="gate"] .keys-side > .bank-btn { transition: none; }
   #screen-select > .top[data-masthead="gate"] .keys-side > .bank-btn:active { rotate: none; }
 }
+/* Plan item 487, slice 3: each plaque carries its own small painting in place of a glyph on a coloured disc: the
+   Daily a chalk slate with a sprouting seedling under the sun, the Almanac a bound book with a brass title plate, Modes
+   a fingerpost, the Seed Bank a seed jar beside its count. Painted from the theme's tokens, so they hold in dark mode. */
+.bank-btn span.chip-ico.plaque-ico[aria-hidden],
+#btn-bank span.chip-ico.plaque-ico[aria-hidden] {
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
+  background: none;
+  filter: drop-shadow(0 1px 0 var(--oak-ink));
+}
+.plaque-ico .pi { display: block; width: 100%; height: 100%; overflow: visible; }
+.pi-frame { fill: var(--oak-hi); stroke: var(--oak-ink); stroke-width: 1; }
+.pi-board { fill: color-mix(in srgb, var(--pasture-ink) 55%, var(--oak-ink)); }
+.pi-chalk { fill: none; stroke: var(--on-fill); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.pi-sun { fill: var(--brass-hi); stroke: var(--brass-lo); stroke-width: 0.8; }
+.pi-cover { fill: var(--path-2); stroke: var(--oak-ink); stroke-width: 0.9; }
+.pi-spine { fill: color-mix(in srgb, var(--path-2) 60%, var(--oak-ink)); }
+.pi-pages { fill: var(--on-fill); stroke: var(--oak-ink); stroke-width: 0.6; }
+.pi-brass { fill: var(--brass); stroke: var(--brass-lo); stroke-width: 0.7; }
+.pi-leaf { fill: var(--path-2); }
+.pi-postwood { fill: var(--kraft); stroke: var(--oak-ink); stroke-width: 0.8; }
+.pi-arm { fill: var(--on-fill); stroke: var(--oak-ink); stroke-width: 0.9; stroke-linejoin: round; }
+.pi-arm2 { fill: var(--brass); stroke: var(--oak-ink); stroke-width: 0.9; stroke-linejoin: round; }
+.pi-tuft { fill: none; stroke: var(--path-2); stroke-width: 1.4; stroke-linecap: round; }
+.pi-lid { fill: var(--brass); stroke: var(--brass-lo); stroke-width: 0.8; }
+.pi-glass { fill: color-mix(in srgb, var(--on-fill) 38%, transparent); stroke: var(--on-fill); stroke-width: 1; }
+.pi-seeds { fill: color-mix(in srgb, var(--brass-mid) 70%, var(--oak)); }
+.pi-label { fill: var(--on-fill); stroke: var(--oak-ink); stroke-width: 0.5; }
+.pi-shine { fill: none; stroke: var(--on-fill); stroke-width: 1; stroke-linecap: round; opacity: 0.8; }
+/* Cath's plaque: her portrait framed as a brass coin */
+#screen-select > .top[data-masthead="gate"] .cath-btn-face {
+  box-shadow: 0 0 0 2px var(--brass), 0 0 0 3px var(--brass-lo);
+}
