@@ -432,6 +432,9 @@ const CLOTH_SHEEN = `{
   totalEmissiveRadiance += uCloth * ( 0.16 * top * vec3( 1.0, 0.95, 0.88 ) + 0.12 * clothWet * gl * vec3( 0.9, 0.93, 1.0 ) );
 }`;
 
+/** Plan item 319: each coat part's value against the class colour (the body 1). */
+export const COAT_TONE = { sleeve: 0.8, collar: 0.48, facing: 0.42 } as const;
+
 export function buildFrontCath(phone: boolean): FrontCath {
   const group = new THREE.Group();
   group.name = "front-cath";
@@ -606,6 +609,14 @@ export function buildFrontCath(phone: boolean): FrontCath {
   mats.push(hardwareMat);
   const coatMats: (THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial)[] = [coatMat];
   const coat0 = coatMat.color.clone();
+  // Plan item 319 (critique 2026-11-18: 'a one-tone grey coat, wants 3+ tones'): a tailored trench reads by its
+  // facings, so each part of the coat takes the class colour at its own value: the body (skirt) full, the sleeves a
+  // step down, the collar's undercollar and the lapels' facing (with the epaulettes, on coatMat) a clear step darker,
+  // so the lapels' break and the collar read as shapes against the chest. The belt stays black leather.
+  const coatTone = new Map<THREE.Material, number>([[coatMat, COAT_TONE.facing]]);
+  const toneCoat = (c: THREE.Color | null) => {
+    for (const m of coatMats) m.color.copy(c ?? coat0).multiplyScalar(coatTone.get(m) ?? 1);
+  };
   // The back light's rim (S9.2 "lit from behind"): a Fresnel edge in --neon-pink, strongest on the side facing
   // the light, with a cool cyan edge on the far side. The street's real lights add to it; the rim is what
   // makes her read as a silhouette against the neon at any framing.
@@ -774,6 +785,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const sleeveMat = coatMat.clone();
   if (sleeveNormal) sleeveMat.normalMap = sleeveNormal;
   coatMats.push(sleeveMat);
+  coatTone.set(sleeveMat, COAT_TONE.sleeve);
   rimify(sleeveMat, 1, 0, 0, 0, false, 0, "wool");
   mats.push(sleeveMat);
   // Plan item 271: the coat itself (its skirt carries the fold shade as vertex colours; the lapels and epaulettes,
@@ -1058,6 +1070,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
     const collarMat = coatMat.clone();
     collarMat.side = THREE.DoubleSide;
     coatMats.push(collarMat);
+    coatTone.set(collarMat, COAT_TONE.collar);
     rimify(collarMat, 1, 0, 0, 0, false, 0, "wool");
     mats.push(collarMat);
     const collarMesh = add(collar, collarMat, pelvis);
@@ -4017,6 +4030,7 @@ float reliefShade( vec2 uv ) {
     }
   }
 
+  toneCoat(null);
   return {
     inkParts: inked.length,
     group,
@@ -4218,7 +4232,7 @@ float reliefShade( vec2 uv ) {
       rimU.uCoatKey.value = COAT_KEY_TITLE - (COAT_KEY_TITLE - 0.15) * Math.min(1, w / 0.6);
     },
     coat(c) {
-      for (const m of coatMats) m.color.copy(c ?? coat0);
+      toneCoat(c ?? null);
     },
     coatMats,
     indoors(on) {
