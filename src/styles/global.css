@@ -4438,3 +4438,17 @@ html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: 
   .setup[data-phone-steps] .setup-table.setup-track { flex: 0 1 auto; }
   .setup[data-phone-steps] > button.setup-start { margin-top: 8px; }
 }
+
+/* Plan item 484: the Daily's market-day postcard on its end screen (drawn to a 1200x630 canvas, shown scaled). */
+.daily-postcard { grid-column: 1 / -1; justify-self: center; order: 10; width: 100%; display: grid; justify-items: center; gap: 8px; margin: 8px 0 0; }
+.daily-postcard canvas {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  aspect-ratio: 1200 / 630;
+  border-radius: var(--r-xs, 4px);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--ink) 22%, transparent);
+  rotate: -1deg;
+}
+.daily-postcard figcaption { display: flex; align-items: center; gap: 10px; }
+.daily-postcard-note:empty { display: none; }

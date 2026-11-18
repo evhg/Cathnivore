@@ -1,3 +1,4 @@
+import DailyPostcard from './DailyPostcard'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { useMedia } from './useMedia'
 import { BoardObject } from './BoardObjects'
@@ -1948,6 +1949,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             <RegionMap state={state} />
           </div>
         </section>
+        {/* Plan item 484: a Daily ends with a postcard to share; the text share stays as its fallback */}
+        {dailyStrip && <DailyPostcard state={state} daily={dailyStrip} grade={summary.grade} />}
         <div className="end-actions">
           {onChapterEnd ? (
             <button
