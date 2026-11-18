@@ -749,6 +749,7 @@ export class Renderer3D {
     }
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
+    this.homePanX = 0;
     this.resetView();
     // Plan item 215: an upright phone has a closer frame on the lane's busy half (the gate towards the field's
     // middle). Plan item 439: it opens on the whole field (the whole lane and Cath in view, no verge-filled close
@@ -805,9 +806,37 @@ export class Renderer3D {
       f.x += (dx / len) * 0.25;
       f.z += (dz / len) * 0.25;
     }
+    this.homePanX = this.leanToDepot(box);
     // The search moved the camera: put it back on the view the player has (item 439: the whole field by default).
     if (close) this.frameClose();
     else this.resetView();
+  }
+  /** Plan item 486: the whole-field view's sideways lean (world x) that brings the depot's `box` furthest into frame
+   *  while the field's edge columns keep 6 px inside the canvas; 0 when the depot is already half in. */
+  private leanToDepot(box: THREE.Box3): number {
+    const w = this.w;
+    this.camera.position.copy(this.camBase);
+    this.camera.lookAt(this.camTarget);
+    this.camera.updateMatrixWorld();
+    const cols = this.fieldSize.x, rows = this.fieldSize.y;
+    const xs = (pts: Array<[number, number, number]>) => pts.map(([x, y, z]) => (this.v1.set(x, y, z).project(this.camera).x * 0.5 + 0.5) * w);
+    // The field's left and right edges on screen, at its near and far rows (the near row is the widest).
+    const edge: Array<[number, number, number]> = [];
+    for (const z of [0, rows]) for (const x of [0, cols]) edge.push([x, this.height(Math.min(cols - 0.5, Math.max(0.5, x)), Math.min(rows - 0.5, Math.max(0.5, z))), z]);
+    const fx = xs(edge);
+    const spareL = Math.min(...fx) - 6, spareR = w - 6 - Math.max(...fx);
+    const dx = xs([[box.min.x, box.min.y, (box.min.z + box.max.z) / 2], [box.max.x, box.min.y, (box.min.z + box.max.z) / 2]]);
+    const d0 = Math.min(...dx), d1 = Math.max(...dx);
+    const inside = (Math.max(0, Math.min(w, d1) - Math.max(0, d0))) / Math.max(1, d1 - d0);
+    if (inside >= 0.5) return 0;
+    // Screen px to world x at the field's middle row.
+    const [a, b] = xs([[0, 0, rows / 2], [cols, 0, rows / 2]]);
+    const perPx = cols / Math.max(1, b! - a!);
+    // Content moves right (the view leans left) for a depot off the left edge, and the other way for the right.
+    const need = d0 < 0 ? -d0 : d1 - w;
+    const room = d0 < 0 ? spareR : spareL;
+    const shift = Math.max(0, Math.min(need, room));
+    return (d0 < 0 ? -shift : shift) * perPx;
   }
   /** Plan item 215: whether this view opens closer than the whole field (an upright phone). */
   get hasCloseFrame(): boolean {
@@ -1651,8 +1680,11 @@ export class Renderer3D {
 
   resetView(): void {
     this.zoom = 1;
-    this.pan.set(0, 0);
+    this.pan.set(this.homePanX, 0);
   }
+  /** Plan item 486: on an upright phone the whole-field view leans sideways toward the first gate's depot, by no more
+   *  than the verge beside the field (so every plot stays in frame), so its board and more of its shed show. */
+  private homePanX = 0;
 
   /** Plan item 191: a double-tap pushes in on the plot under it (a second double-tap, resetView, comes back). */
   pushTo(clientX: number, clientY: number): void {
@@ -1731,7 +1763,7 @@ export class Renderer3D {
     const k = 1 - 1 / this.zoom;
     const mx = (this.fieldSize.x / 2) * k;
     const mz = (this.fieldSize.y / 2) * k;
-    this.pan.x = Math.max(-mx, Math.min(mx, this.pan.x));
+    this.pan.x = Math.max(Math.min(-mx, this.homePanX), Math.min(Math.max(mx, this.homePanX), this.pan.x));
     this.pan.y = Math.max(-mz, Math.min(mz, this.pan.y));
   }
 
