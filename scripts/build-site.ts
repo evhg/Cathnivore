@@ -19,6 +19,7 @@ import { resolve } from 'node:path'
 import { build } from 'vite'
 import { siteServiceWorkerSource } from './siteServiceWorker'
 import { APPS, appsHtml, caseHtml, escapeHtml } from '../portfolio/src/apps'
+import { writeStudioLog } from './studio-log'
 import { cathSvg } from '../shared/cath/cath'
 import { SCREEN_POSE } from '../shared/cath/screenposes'
 
@@ -143,6 +144,8 @@ async function main(): Promise<void> {
         rollupOptions: { input: { main: resolve(root, 'portfolio/index.html'), ...writeCasePages() } },
       },
     })
+    // Plan item 491: the last 24 hours of build sessions for the studio track (subjects only).
+    console.log(`studio log: ${writeStudioLog(resolve(out, 'studio.json'))} sessions`)
   }
   if (want('landing')) {
     console.log('\n=== Games landing page ===')

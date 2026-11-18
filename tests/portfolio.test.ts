@@ -131,3 +131,35 @@ describe('plan item 454: the hero field goes still without a GPU', () => {
     for (const n of ['Apple M3 Max', 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)', 'Adreno (TM) 740', 'Apple GPU', '']) expect(softwareRenderer(n), n).toBe(false)
   })
 })
+
+// Plan item 491: the studio track's data, from git commits to sessions; subjects only.
+describe('studio log', async () => {
+  const { studioSessions, shortSubject, gameOf } = await import('../portfolio/src/studioLog')
+  const now = 1_800_000_000
+  const c = (minsAgo: number, subject: string, session: string, files: string[]) => ({ time: now - minsAgo * 60, subject, session, files })
+  const commits = [
+    c(50, 'Lane A: take build lock', 's1', ['.build-lock']),
+    c(40, 'Cathnivore: the producers talk back. More words here.', 's1', ['src/ui/Game.tsx', 'src/styles/table.css']),
+    c(30, 'Lane A: 489 done', 's1', ['docs/plan/two-week-plan.md']),
+    c(20, 'Hedgerow: lanterns at dusk', 's2', ['games/hedgerow/src/render.ts']),
+    c(15, 'Lane B 05:21 lock', 's2', ['.build-lock-b']),
+    c(10, 'Notes only', 's3', ['PROGRESS.md']),
+    c(60 * 25, 'Too old', 's4', ['src/a.ts']),
+  ]
+  const log = studioSessions(commits, now)
+  it('groups a session, tells its lane and game, and drops notes-only sessions and the old', () => {
+    expect(log.sessions).toHaveLength(2)
+    expect(log.sessions[0]).toMatchObject({ lane: 'A', game: 'cathnivore', subjects: ['Cathnivore: the producers talk back'] })
+    expect(log.sessions[1]).toMatchObject({ lane: 'B', game: 'hedgerow' })
+  })
+  it('carries no author, email or session link', () => {
+    const json = JSON.stringify(studioSessions([c(5, 'Fix by someone@example.com, see https://claude.ai/code/session_x', 'session_x', ['src/a.ts'])], now))
+    expect(json).not.toMatch(/@|https?:|session_x|author|email/i)
+    for (const s of log.sessions) expect(Object.keys(s).sort()).toEqual(['end', 'game', 'lane', 'start', 'subjects'])
+  })
+  it('cuts a subject at its first sentence and 140 characters', () => {
+    expect(shortSubject('One thing. Another.')).toBe('One thing')
+    expect(shortSubject('x'.repeat(10) + ' ' + 'y '.repeat(100)).length).toBeLessThanOrEqual(140)
+    expect(gameOf('games/cathode/src/a.ts')).toBe('nightshift')
+  })
+})
