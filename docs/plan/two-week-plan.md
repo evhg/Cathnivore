@@ -4528,7 +4528,7 @@ Progress (lane A, 2026-11-18 02:40, slice 1): the model in `sunlight.ts` (`dayPh
 - **Accept:** `#stage[data-day-phase]` 0-1; rounds 1 and 26 differ by 15+ dE over a 200x100 field sample and the shadow angle by 30+ degrees; `[data-lamps=on]` in the last third; `dayPhase` unit-tested (monotonic); 3D +2 draw calls or fewer; level tests unchanged; shots P and D, 2D and 3D, rounds 1, 13 and 26.
 - **Size:** 3
 
-## 486. [ ] Hedgerow phone 3D: a field you can read at 390 px *(handed back 2026-11-18 08:45 by lane A after slice 6)*
+## 486. [ ] Hedgerow phone 3D: a field you can read at 390 px *(lane B, in progress)*
 
 Progress (lane A, 2026-11-18 08:45, slices 5-6, ac13bb76, 78db875d): **the measure was wrong**: `path` holds only waypoints, so lane cells between corners counted as 'plots' and path2's lane was ignored; it now samples every cell of both lanes, leaving fords, ponds, flood cells, barns and oaks out (overlay check scratchpad m3/pts-*). On the fixed measure, Rivermead's phone lane at 5.4x (was 2.4x: a pale packed track, apart from both its dark tilled beds and pale stubble). P lane-to-plot: l5 2.26, l21 1.53-1.65 (run noise: vehicles and the day), l34 2.83-2.95, l40 1.78. The phone's whole-field view leans toward the first gate's depot by up to the verge's width (`leanToDepot`, every plot 6 px inside): l5's depot 0.32 -> 0.48 inside with its count plate; l34's second depot 0.37, l40 0.46. Left: l21's margin (try act 2's lane 0.55), hedge ink 2 px+, the coast's speckle, l5's milky morning glare (white bloom over the beds at P), phone draw calls (no mesh added in 5-6).
 
