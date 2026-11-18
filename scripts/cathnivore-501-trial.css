@@ -1,0 +1,16 @@
+/* Plan item 501: trial CSS (not shipped). Use: CSS="$(cat scripts/cathnivore-501-trial.css)" node scripts/cathnivore-495-measure.mjs
+   (a dist-site preview on :4180). Measured 2026-11-18: board 27.8% / 24.7%, producers 0.85 of Cath, Cath clear. */
+@media (min-width:1240px) and (min-height:760px){
+ .game-layout{grid-template-columns:clamp(272px,22vw,320px) minmax(0,1fr) 0!important}
+ .desktop-rail{position:fixed!important; top:14px; right:16px; width:84px; z-index:5}
+ .desktop-rail .hand-later{position:fixed!important; left:auto!important; right:28px; bottom:18px}
+ .drawer-rail{gap:4px!important; padding:4px!important}
+ .drawer-key{flex-direction:row!important; min-height:24px!important; padding:2px 6px!important; gap:4px!important; justify-content:flex-start}
+ .drawer-key svg{width:18px!important;height:18px!important}
+ .drawer-key-count{top:-5px!important; right:-5px!important; min-width:18px; height:18px; line-height:14px}
+ .table-head.with-table-cath{padding-right:96px}
+ .drawer-panel{top:100%!important; right:0!important; bottom:auto!important; height:70vh}
+}
+.game-scroll{--hand-h:152px!important} .table-hand{padding-bottom:2px!important}
+.table-head.with-table-cath .plan-strip-target-full[data-long] + .plan-strip-target-short{display:flex!important;flex-wrap:nowrap!important;gap:3px!important;max-height:none!important;-webkit-line-clamp:unset!important;overflow:visible!important}
+.table-head.with-table-cath .plan-strip-target-short .plan-chip{font-size:.75rem;padding-inline:3px}
