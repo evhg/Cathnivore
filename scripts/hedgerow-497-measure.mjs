@@ -1,0 +1,71 @@
+// Plan item 497: the 2D field's value structure, measured as item 486's 3D one is: levels 5, 21, 34 and 40 in 2D at
+// P and D, a shot plus the page positions of lane cells and the plots beside the lane (`cellCenter`). Read with
+// `python3 scripts/hedgerow-486-measure.py <dir>` (the lane-to-plot luminance, the item's bar: the lane 15%+ over plots).
+// Usage: a dist-site preview on :4175, then
+//   PLAYWRIGHT_CHROMIUM_PATH=... OUT=<dir> node scripts/hedgerow-497-measure.mjs && python3 scripts/hedgerow-486-measure.py <dir>
+import { chromium } from '@playwright/test'
+import { mkdirSync, writeFileSync } from 'node:fs'
+
+const base = process.env.BASE ?? 'http://localhost:4175'
+const out = process.env.OUT ?? 'e2e/screenshots/h497'
+const levels = (process.env.LEVELS ?? '5,21,34,40').split(',').map(Number)
+mkdirSync(out, { recursive: true })
+const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
+const stars = Object.fromEntries(Array.from({ length: 45 }, (_, i) => [String(i + 1), 3]))
+const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+const report = {}
+for (const [size, viewport] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, height: 900 }]]) {
+  for (const level of levels) {
+    const page = await browser.newPage({ viewport, deviceScaleFactor: 1 })
+    await page.goto(`${base}/hedgerow/?sandbox=1&2d`)
+    await page.evaluate(([s, t, l]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { [l]: true }, tips: t })), [stars, tips, level])
+    await page.goto(`${base}/hedgerow/?sandbox=1&2d&level=${level}`)
+    await page.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 120000 })
+    await page.waitForTimeout(2500)
+    const shot = `${out}/l${level}-${size}.png`
+    await page.screenshot({ path: shot })
+    report[`l${level}-${size}`] = await page.evaluate(() => {
+      const hg = window.hedgerow
+      const L = hg.game().level
+      const c = document.querySelector('#canvas').getBoundingClientRect()
+      // Every lane cell (path and path2 hold only waypoints; consecutive ones share a row or a column), both lanes.
+      // A ford (the first lane's stretch under water, in path distance) isn't lane ground.
+      const cells = []
+      const fordCells = []
+      for (const path of [L.path, L.path2].filter(Boolean)) {
+        const run = [path[0]]
+        for (let i = 1; i < path.length; i++) {
+          const [ax, ay] = path[i - 1], [bx, by] = path[i]
+          const n = Math.max(Math.abs(bx - ax), Math.abs(by - ay))
+          for (let t = 1; t <= n; t++) run.push([ax + Math.sign(bx - ax) * t, ay + Math.sign(by - ay) * t])
+        }
+        // the cell at index d is path distance d from the lane's first cell
+        run.forEach((cell, d) => {
+          if (path === L.path && (L.fords ?? []).some((f) => d >= f.from - 0.5 && d <= f.to + 0.5)) fordCells.push(cell)
+          cells.push(cell)
+        })
+      }
+      const key = ([x, y]) => `${x},${y}`
+      const lane = new Set(cells.map(key))
+      // Water (ponds, a flood set piece's cells, which can cover the lane as a ford), barns and oaks aren't plots.
+      const wet = new Set([...fordCells, ...(L.terrain?.water ?? []), ...(L.setPieces ?? []).flatMap((p) => (p.kind === 'flood' ? p.cells : []))].map(key))
+      const notPlot = new Set([...wet, ...[...(L.barns ?? []), ...(L.oaks ?? [])].map(key)])
+      const plots = new Map()
+      for (const [x, y] of cells) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const k = `${x + dx},${y + dy}`
+        if (!lane.has(k) && !notPlot.has(k) && x + dx >= 0 && y + dy >= 0 && x + dx < L.cols && y + dy < L.rows) plots.set(k, [x + dx, y + dy])
+      }
+      const px = ([x, y]) => { const p = hg.cellCenter(x, y); return p && [p.x, p.y] }
+      const inside = (r) => {
+        const w = Math.max(0, Math.min(c.width, r.x + r.w) - Math.max(0, r.x)), h = Math.max(0, Math.min(c.height, r.y + r.h) - Math.max(0, r.y))
+        return r.w * r.h > 0 ? (w * h) / (r.w * r.h) : 0
+      }
+      return { canvas: [c.left, c.top, c.width, c.height], lane: cells.filter((c) => !wet.has(key(c))).map(px), plots: [...plots.values()].map(px), depotsInside: [] }
+    })
+    report[`l${level}-${size}`].shot = shot
+    await page.close()
+    console.log(`l${level}-${size}`, JSON.stringify(report[`l${level}-${size}`].depotsInside.map((v) => +v.toFixed(2))))
+  }
+}
+writeFileSync(`${out}/measure.json`, JSON.stringify(report, null, 1))
+await browser.close()

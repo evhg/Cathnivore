@@ -1200,7 +1200,8 @@ export class Renderer {
           const d = dists[i]!;
           const p = enemyPoint(level, { dist: d, ...(ln.lane ? { lane: ln.lane } : {}) });
           const hd = headingAt(path, d);
-          const gy = p.y + 0.2;
+          // Plan item 497: staggered a touch across the lane (parked, not on rails)
+          const gy = p.y + 0.2 + (i % 2 ? 0.05 : -0.03) * (Math.abs(hd.dx) > Math.abs(hd.dy) ? 1 : 0);
           const q = qs[i]!;
           const sc = s * q * enemyScale(kind) * 0.55;
           const box = { x: X(p.x) - sc / 2, y: Y(gy) - sc, w: sc, h: sc, big: q > 1 };
@@ -1895,7 +1896,9 @@ export class Renderer {
     const key = `${game.level.id}:${game.wave}`;
     if (key !== this.queueKey) {
       this.queueKey = key;
-      this.queueMemo = gateQueue(waveSpawns(game, groups, game.wave + 1), isBig);
+      // Plan item 497: two at the gate in 2D (four stood as a rigid column of identical sprites); the depot's board and
+      // the count plate carry how many follow.
+      this.queueMemo = gateQueue(waveSpawns(game, groups, game.wave + 1), isBig, 2);
     }
     return this.queueMemo;
   }
