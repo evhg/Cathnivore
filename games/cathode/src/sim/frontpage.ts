@@ -60,7 +60,7 @@ const STORIES: Record<string, Story> = {
   },
   crispBoss: {
     kicker: "Business",
-    headline: "Water-Taxi Chief Steps Back ‘To Spend More Time Below The Waterline’",
+    headline: "Water-Taxi Chief Takes Early Retirement At Sea",
     dek: "Julian Crisp’s debts ‘forgiven in full’, a spokesman confirms. Fares unchanged.",
     caption: "Crisp Transit’s offices, where staff were ‘not available’.",
     classified: "FOR SALE: water taxi, one careful owner (deceased). Offers.",
