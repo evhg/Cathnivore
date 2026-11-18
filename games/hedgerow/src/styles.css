@@ -5972,3 +5972,19 @@ img.act-scene {
 @media (prefers-reduced-motion: reduce) {
   .act-ambient { display: none; }
 }
+/* Plan item 496: each act's country in depth: its far (top) edge softens into the act's air and its near (bottom)
+   edge deepens, so the road and stops in the middle carry the eye. One gradient over the painted ground, under the
+   scenery and the stops. */
+#screen-select .trail { isolation: isolate; }
+#screen-select .trail::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--paper) 32%, transparent) 0%,
+    transparent 26%,
+    transparent 72%,
+    color-mix(in srgb, var(--pasture-ink) 24%, transparent) 100%);
+}
