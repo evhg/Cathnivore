@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
-import { LAYOUTS, layoutConfig, type LayoutId } from '../content/layouts'
+import { LAYOUTS, type LayoutId } from '../content/layouts'
 import BoardMiniature from './BoardMiniature'
+import RegionMap from './Map'
+import { openingState, setupConfig, type SetupPicks } from './openingPreview'
 import AbilityPreview, { ABILITY_PREVIEW_MS } from './AbilityPreview'
 import type { GameConfig, ProducerId } from '../engine/types'
 import { earnedPins, pinForEvent, pinSvg, PINS, type CathPin } from '../../shared/cath/pins'
@@ -86,12 +88,16 @@ export default function Setup({ onStart }: Props) {
     openTimer.current = window.setTimeout(start, calm ? 180 : 520)
   }
 
+  // Plan item 502: the seed is rolled when the Setup opens (a typed one replaces it), so the opening table drawn
+  // under the map pick is the one Start deals. A non-numeric seed (e.g. a pasted non-digit string) must not
+  // silently coerce to a real seed (0) indistinguishable from actually typing "0": it falls back to the rolled one.
+  const [rolledSeed] = useState(() => Math.floor(Math.random() * 2 ** 31))
+  const parsedSeed = seedInput.trim() ? Number.parseInt(seedInput, 10) : NaN
+  const seed = Number.isFinite(parsedSeed) ? parsedSeed : rolledSeed
+  const picks: SetupPicks = { producers, difficulty, layout, marketEvent: marketEvent.id }
+
   function start(): void {
-    const parsed = seedInput.trim() ? Number.parseInt(seedInput, 10) : NaN
-    // A non-numeric seed (e.g. a pasted non-digit string) must not silently coerce to a real seed (0)
-    // indistinguishable from actually typing "0" — fall back to a fresh random seed instead.
-    const seed = Number.isFinite(parsed) ? parsed : Math.floor(Math.random() * 2 ** 31)
-    onStart({ producers, difficulty, ...layoutConfig(layout, seed), marketEvent: marketEvent.id }, seed, mode)
+    onStart(setupConfig(picks, seed), seed, mode)
   }
 
   const rail = useMedia('(min-width: 1100px)')
@@ -213,7 +219,8 @@ export default function Setup({ onStart }: Props) {
           </button>
         </div>
         {/* Plan item 461: on a phone the chosen map is one large board between two arrows; the names below pick it too. */}
-        {!rail && <MapStage layout={layout} onPick={setLayout} />}
+        {/* Plan item 502: the opening table you'll play, drawn from the picks; on a phone it is the map stage's board. */}
+        {rail ? <OpeningPreview picks={picks} seed={seed} /> : <MapStage layout={layout} onPick={setLayout} board={<OpeningPreview picks={picks} seed={seed} />} />}
         <div className="layout-picker" role="radiogroup" aria-label="Map">
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
             <label key={id} className="layout-tile" data-layout={id}>
@@ -225,7 +232,9 @@ export default function Setup({ onStart }: Props) {
           ))}
         </div>
         <label className="setup-seed-field" id="setup-seed-field">
-          <span>Seed (optional)</span>
+          <span>
+            Seed<span className="seed-optional"> (optional)</span>
+          </span>
           <input value={seedInput} onChange={(e) => setSeedInput(e.target.value)} placeholder="random" inputMode="numeric" />
         </label>
       </section>
@@ -391,8 +400,32 @@ const MAP_LINE: Record<LayoutId, string> = {
   delta: 'The Delta: the river splits it, love. Mind the two bridges.',
 }
 
+/**
+ * Plan item 502: the opening table for the picks: the game's own board (Map.tsx, read-only, as on the title) dealt
+ * by `createGame` for this seed. A pick remounts it, so Hollowell's pieces and the stalls settle in (CSS, 200 ms).
+ */
+function OpeningPreview({ picks, seed }: { picks: SetupPicks; seed: number }) {
+  const { producers, difficulty, layout, marketEvent } = picks
+  const key = `${layout}|${difficulty}|${producers.join(',')}|${seed}|${marketEvent}`
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` names every pick the state is built from
+  const state = useMemo(() => openingState(picks, seed), [key])
+  return (
+    <div
+      className="opening-preview"
+      aria-hidden="true"
+      data-opening-preview={key}
+      data-layout={layout}
+      data-difficulty={difficulty}
+      data-outlets={Object.values(state.regions).reduce((a, r) => a + (state.config.activeRegions.includes(r.id) ? r.outlets : 0), 0)}
+    >
+      <RegionMap key={key} state={state} />
+      <span className="opening-preview-caption">{LAYOUTS[layout].name}: {LAYOUTS[layout].blurb}</span>
+    </div>
+  )
+}
+
 /** Plan item 461: the phone's map step, the chosen board large between two arrows. */
-function MapStage({ layout, onPick }: { layout: LayoutId; onPick(id: LayoutId): void }) {
+function MapStage({ layout, onPick, board }: { layout: LayoutId; onPick(id: LayoutId): void; board: ReactNode }) {
   const ids = Object.keys(LAYOUTS) as LayoutId[]
   const at = ids.indexOf(layout)
   const step = (d: number) => onPick(ids[(at + d + ids.length) % ids.length]!)
@@ -402,7 +435,7 @@ function MapStage({ layout, onPick }: { layout: LayoutId; onPick(id: LayoutId): 
         <span aria-hidden="true">‹</span>
       </button>
       <div className="map-stage-board" aria-hidden="true">
-        <BoardMiniature key={layout} id={layout} />
+        {board}
         <span className="map-stage-name">{LAYOUTS[layout].name}</span>
         <span className="map-stage-blurb">{LAYOUTS[layout].blurb}</span>
       </div>

@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { LAYOUTS, type LayoutId } from '../src/content/layouts'
 
-// Plan item 101: each map on the Setup is a miniature of its real board, drawn from the layout's data, 120 px
-// wide or more on a desktop, and the desktop Setup still fits without scrolling.
+// Plan item 101: each map on the Setup is a miniature of its real board, drawn from the layout's data, and the
+// desktop Setup still fits without scrolling. Plan item 502: at D the picked map is drawn large as the opening table
+// (360 px+ wide at 1440x900, the game's own board), so the three picks are a column of small boards beside it: each
+// tile 120 px wide or more, its miniature still every region of the map.
 
 for (const [w, h] of [
   [1440, 900],
@@ -18,8 +20,10 @@ for (const [w, h] of [
       const mini = page.locator(`.layout-tile .board-mini[data-layout="${id}"]`)
       expect(Number(await mini.getAttribute('data-regions'))).toBe(Object.keys(LAYOUTS[id].hexes).length)
       await expect(mini.locator('[data-region]')).toHaveCount(Object.keys(LAYOUTS[id].hexes).length)
-      expect((await mini.boundingBox())!.width).toBeGreaterThanOrEqual(120)
+      expect((await page.locator(`.layout-tile[data-layout="${id}"]`).boundingBox())!.width).toBeGreaterThanOrEqual(120)
+      expect((await mini.boundingBox())!.width).toBeGreaterThanOrEqual(40)
     }
+    expect((await page.locator('[data-opening-preview]').boundingBox())!.width).toBeGreaterThanOrEqual(w === 1440 ? 360 : 300)
     // The Delta shows its river and its two bridges.
     await expect(page.locator('.board-mini[data-layout="delta"] .board-mini-river')).toHaveCount(LAYOUTS.delta.channels!.length)
     await expect(page.locator('.board-mini[data-layout="delta"] .board-mini-bridge')).toHaveCount(2)
@@ -29,13 +33,14 @@ for (const [w, h] of [
 }
 
 // Plan item 461: on a phone the map step is one large board between two arrows (it was three 44 px boards beside
-// their names); the three names under it are the radios, each one line or two, and the page never scrolls.
+// their names); the three names under it are the radios, each one line or two, and the page never scrolls. Plan item
+// 502: the large board is the opening table you'll play (the game's own board).
 test('the phone map is one large board, the names under it', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.locator('.setup-dot').nth(1).click()
-  const board = page.locator('.map-stage .board-mini')
+  const board = page.locator('.map-stage [data-opening-preview] .map')
   await expect(board).toHaveCount(1)
   const b = (await board.boundingBox())!
   expect(b.width).toBeGreaterThanOrEqual(200)

@@ -4475,3 +4475,62 @@ html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: 
 .setup .ability-preview svg { width: 92%; height: 92%; border: 0; box-shadow: none; background: none; border-radius: 0; }
 .setup .pair-portrait .ability-preview { width: 100px; height: 120px; border-radius: 50% / 46%; }
 @keyframes ability-preview-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Plan item 502: the opening table you'll play, drawn under the map pick from the game's own board (read-only, as on
+   the title). At D it fills step 2's left, laid on a cloth; the three maps stand as a column of folded cards beside
+   it, their blurbs moved to the preview's caption. On a phone it is the map stage's board. A pick remounts it:
+   Hollowell's pieces and the stalls settle in (200 ms, no overshoot); still under reduced motion. */
+.setup .opening-preview { position: relative; display: grid; justify-items: center; min-width: 0; }
+.setup .opening-preview .map { display: block; width: 100%; height: auto; }
+.setup .opening-preview .piece-tray { animation: opening-settle 200ms ease-out both; }
+.setup .opening-preview .ev-heap, .setup .opening-preview .ev-lanterns { animation: opening-settle 200ms ease-out both; }
+@keyframes opening-settle { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .setup .opening-preview .piece-tray, .setup .opening-preview .ev-heap, .setup .opening-preview .ev-lanterns { animation: none; }
+}
+html.no-animations .setup .opening-preview :is(.piece-tray, .ev-heap, .ev-lanterns) { animation: none; }
+.setup .opening-preview-caption { display: none; }
+.setup[data-phone-steps] .map-stage .opening-preview { width: 100%; animation: map-deal var(--dur-base, 280ms) var(--ease-settle, ease) both; }
+.setup[data-phone-steps] .map-stage .opening-preview .map { max-width: 260px; max-height: 236px; margin: 0 auto; }
+@media (prefers-reduced-motion: reduce) {
+  .setup[data-phone-steps] .map-stage .opening-preview { animation: none; }
+}
+html.no-animations .setup[data-phone-steps] .map-stage .opening-preview { animation: none; }
+@media (min-width: 1100px) {
+  .setup[data-steps] .setup-table { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); column-gap: 26px; }
+  .setup[data-steps] .setup-step[data-step='2'] .setup-seed {
+    display: grid; flex: 1 1 auto; min-height: 0;
+    grid-template-columns: minmax(0, 1fr) 126px; grid-template-rows: minmax(0, 1fr) auto; column-gap: 14px; align-items: start;
+  }
+  .setup[data-steps] .setup-seed .opening-preview {
+    grid-area: 1 / 1 / 3 / 2; align-self: stretch; padding: 6px 8px 8px; border-radius: 12px;
+    background:
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--clay) 10%, transparent) 0 14px, transparent 14px 28px),
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--clay) 10%, transparent) 0 14px, transparent 14px 28px),
+      var(--paper-2);
+    box-shadow: 0 10px 18px color-mix(in srgb, var(--ink) 20%, transparent), inset 0 -5px 0 color-mix(in srgb, var(--soil) 40%, transparent);
+  }
+  .setup[data-steps] .setup-seed .opening-preview .map { width: auto; height: clamp(180px, calc(100vh - 610px), 320px); max-width: 100%; }
+  .setup[data-steps] .opening-preview-caption {
+    display: block; margin-top: 2px; font-family: var(--font-voice); font-style: italic; font-size: var(--fs-small); line-height: 1.25; color: var(--ink); text-align: center;
+  }
+  .setup[data-steps] .setup-table .layout-picker { grid-area: 1 / 2; grid-template-columns: 1fr; gap: 10px; margin: 0; }
+  .setup[data-steps] .setup-table .layout-picker .layout-tile { padding: 6px 6px 7px; }
+  .setup[data-steps] .setup-table .layout-picker .board-mini { max-height: 54px; }
+  .setup[data-steps] .setup-table .layout-picker .layout-name { font-size: var(--fs-small); line-height: 1.15; }
+  .setup[data-steps] .setup-table .layout-picker .layout-blurb { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* The seed, behind Advanced, opens in step 2's heading row, left of the chip, so opening it never grows the step
+     or covers the board. */
+  .setup[data-steps] .setup-step[data-step='2'] { position: relative; }
+  .setup[data-steps] .setup-seed[data-advanced] .setup-seed-field {
+    position: absolute; top: 0; right: 110px; z-index: var(--z-raised); flex-direction: row; align-items: center; gap: 8px; margin: 0;
+  }
+  .setup[data-steps] .setup-seed[data-advanced] .seed-optional { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .setup[data-steps] .setup-seed[data-advanced] .setup-seed-field input { flex: none; width: 104px; min-width: 0; min-height: 32px; padding-block: 2px; }
+}
+@media (min-width: 1100px) and (max-height: 860px) {
+  .setup[data-steps] .setup-table .layout-picker { gap: 6px; }
+  .setup[data-steps] .setup-table .layout-picker .layout-tile { padding: 4px 6px 5px; }
+  .setup[data-steps] .setup-table .layout-picker .board-mini { max-height: 38px; }
+  .setup[data-steps] .setup-seed .opening-preview .map { height: clamp(180px, calc(100vh - 590px), 320px); }
+}

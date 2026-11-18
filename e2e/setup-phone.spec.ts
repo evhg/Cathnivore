@@ -80,10 +80,11 @@ test('the phone Setup is three steps on one screen: every control whole and clea
   for (const i of [0, 1]) expect(await abilities.nth(i).evaluate((el) => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1)).toBe(true)
   await expect(page.locator('.pair-line')).toContainText('Doubt cleared')
 
-  // Step 2: one large board between the arrows; the arrows and the names pick the map; Cath names it.
+  // Step 2: one large board between the arrows (plan item 502: the opening table you'll play); the arrows and the
+  // names pick the map; Cath names it.
   await page.getByRole('button', { name: /Next: Where you trade/ }).click()
   await expect(page.locator('.setup-dot').nth(1)).toHaveAttribute('aria-current', 'step')
-  const board = (await page.locator('.map-stage .board-mini').boundingBox())!
+  const board = (await page.locator('.map-stage [data-opening-preview] .map').boundingBox())!
   expect(board.width).toBeGreaterThanOrEqual(200)
   await expect(page.locator('.setup-cath-line')).toContainText('The Ring')
   await page.getByRole('button', { name: 'Next map' }).click()
