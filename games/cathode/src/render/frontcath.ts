@@ -1758,13 +1758,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.translate(0, my);
       // The corners: the smirk lifts her left (the viewer's right), a wink both, determined presses them level.
       // Plan item 319 slice 9: the smirk's lifted corner higher (0.0038 -> 0.0056): it read as a neutral line.
+      // Slice 89: both corners up a touch more (0.0018/0.0056 -> 0.0032/0.0078): still read blank and sombre.
       // Plan item 319 slice 85: determined keeps a trace of her half-smile (her left corner 0.0008 -> 0.0026): level
       // corners read sullen on the Ghost's and Butcher's picks (the bible's default is a confident half-smile).
-      const [lc, rc] = expr === "determined" ? [0.0006, 0.0026] : expr === "wink" ? [0.0028, 0.004] : [0.0018, 0.0056];
+      const [lc, rc] = expr === "determined" ? [0.0006, 0.0026] : expr === "wink" ? [0.0028, 0.004] : [0.0032, 0.0078];
       // Plan item 289: a little wider again (1.3 -> 1.42), so the rose mouth carries at title distance.
-      g.scale(1.42, expr === "determined" ? 1.18 : 1.45);
+      // Slice 89: the smirk wider still (1.42 -> 1.56): at title distance the mouth was a dot under the nose.
+      g.scale(expr === "smirk" ? 1.56 : 1.42, expr === "determined" ? 1.18 : 1.45);
       g.translate(0, -my);
-      g.fillStyle = "#b02a4c";
+      // Slice 89: a lighter, glossier rose (#b02a4c -> #c8405e, the upper #86203c -> #a02c48): item 306's skin light
+      // is rebuilt from the paint's luminance, so the darker rose drew as a brown smudge (the 11-18 17:10 critique).
+      g.fillStyle = "#c8405e";
       g.beginPath();
       g.moveTo(-0.0165, my + lc);
       g.bezierCurveTo(-0.009, my + 0.0058, -0.003, my + 0.0072, 0, my + 0.0048);
@@ -1773,7 +1777,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.closePath();
       g.fill();
       // Plan item 275: the upper lip turned from the light (deeper rose) under a lit edge along the cupid's bow.
-      g.fillStyle = "#86203c";
+      g.fillStyle = "#a02c48";
       g.beginPath();
       g.moveTo(-0.0165, my + lc);
       g.bezierCurveTo(-0.009, my + 0.0058, -0.003, my + 0.0072, 0, my + 0.0048);
@@ -1806,7 +1810,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         g.stroke();
       }
       // The gloss on the lower lip.
-      blob(0.003, my - 0.0032, 0.0062, 0.0017, "rgba(255,232,236,A)", 0.8);
+      blob(0.003, my - 0.0032, 0.0066, 0.0019, "rgba(255,236,240,A)", 0.95);
       g.restore();
     }
   };
