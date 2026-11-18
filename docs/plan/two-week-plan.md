@@ -4626,7 +4626,7 @@ Progress (lane A, 09:05): **slice 1** (one voice): while a producer answers from
 - **Accept:** the trail's centroid in the viewport's middle third at 1440x900 and 1280x800 with the fold kept (hedgerow-map's 'upTo' cases); Cath 110 px+ and overlapping no stop label (e2e boxes); 3+ `[data-ambient]` running, none under reduced motion; path-to-field contrast 3:1+; P unchanged or better; shots P and D, acts 1, 3, 6.
 - **Size:** 3
 
-## 497. [ ] Hedgerow 2D field: the lane leads and the towers own their plots
+## 497. [ ] Hedgerow 2D field: the lane leads and the towers own their plots *(lane B, in progress)*
 - **Why:** `plan1118a/hedge-l21-2d-D`, `hedge-l34-2d-D/P`: the field is evenly textured and lit, so lanes, plots and decor carry equal weight; placed towers (the Scarecrow) are small beside the field decor; queued vans stand as a rigid column of identical sprites at the depot. Item 486 does this for phone 3D; this is the 2D renderer.
 - **Build:** the 2D lane the brightest value on the field (packed pale track, a soft edge), decor pushed back in value; tower sprites drawn 1.4x the tile with a base shadow and an idle loop; the queue at the depot as a short staggered line (2 visible, a count plate for the rest) with rollout dust.
 - **Accept:** lane luminance 15%+ over plots on l5, l21, l34, l40 at P and D (a measure script like 486's); tower sprite bounding box 1.4x+ the tile width; no more than 2 queued vehicles drawn outside the lane; hedgerow 2D specs and key art fresh; shots P and D.
