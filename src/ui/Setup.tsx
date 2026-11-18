@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { LAYOUTS, layoutConfig, type LayoutId } from '../content/layouts'
 import BoardMiniature from './BoardMiniature'
+import AbilityPreview, { ABILITY_PREVIEW_MS } from './AbilityPreview'
 import type { GameConfig, ProducerId } from '../engine/types'
 import { earnedPins, pinForEvent, pinSvg, PINS, type CathPin } from '../../shared/cath/pins'
 import { MARKET_EVENTS, marketEventFor, type MarketEventId } from '../engine/marketEvent'
@@ -56,7 +57,19 @@ export default function Setup({ onStart }: Props) {
   const openTimer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(openTimer.current), [])
 
+  // Plan item 490: a producer's power plays on a tile in place of their portrait when the card is hovered, focused or
+  // picked (the recommended pair plays both); one stage at a time per producer, replayed by `n`.
+  const [preview, setPreview] = useState<{ ids: ProducerId[]; n: number } | null>(null)
+  const previewTimer = useRef(0)
+  useEffect(() => () => window.clearTimeout(previewTimer.current), [])
+  function playPower(ids: ProducerId[]): void {
+    setPreview((was) => (was && ids.every((id) => was.ids.includes(id)) ? was : { ids, n: (was?.n ?? 0) + 1 }))
+    window.clearTimeout(previewTimer.current)
+    previewTimer.current = window.setTimeout(() => setPreview(null), ABILITY_PREVIEW_MS)
+  }
+
   function toggleProducer(id: ProducerId): void {
+    if (!producers.includes(id)) playPower([id])
     setProducers((prev) => {
       if (prev.includes(id)) return prev.filter((p) => p !== id)
       if (prev.length >= 2) return [prev[1]!, id]
@@ -137,13 +150,13 @@ export default function Setup({ onStart }: Props) {
       <section className="settings-card setup-producers">
         <div className="setup-producers-head">
           <h2>Producers (pick 2)</h2>
-          <button type="button" className="setup-recommend" onClick={() => setProducers([...RECOMMENDED_PAIR])}>
+          <button type="button" className="setup-recommend" onClick={() => { setProducers([...RECOMMENDED_PAIR]); playPower([...RECOMMENDED_PAIR]) }}>
             Use recommended pair
           </button>
         </div>
         <div className="producer-grid">
           {ALL_PRODUCER_IDS.map((id) => (
-            <label key={id} className="producer-card" data-producer={id} data-seat={producers.includes(id) ? id : undefined}>
+            <label key={id} className="producer-card" data-producer={id} data-seat={producers.includes(id) ? id : undefined} onMouseEnter={rail ? () => playPower([id]) : undefined} onFocus={rail ? () => playPower([id]) : undefined}>
               <input
                 type="checkbox"
                 aria-label={`${PRODUCERS[id].name}, ${PRODUCERS[id].roleName}. ${PRODUCERS[id].roleAbility}${RECOMMENDED_PAIR.includes(id) ? ' Recommended.' : ''}`}
@@ -157,6 +170,7 @@ export default function Setup({ onStart }: Props) {
               </svg>
               <span className="pc-portrait" aria-hidden="true">
                 <Portrait character={id} size={112} />
+                {rail && preview?.ids.includes(id) && <AbilityPreview key={preview.n} producer={id} n={preview.n} />}
               </span>
               <span className="pc-name">{PRODUCERS[id].name}</span>
               {/* Plan item 80: on a phone the four are small toggles by first name; the picked pair are drawn big below. */}
@@ -186,7 +200,7 @@ export default function Setup({ onStart }: Props) {
             </label>
           ))}
         </div>
-        <PairPanel producers={producers} />
+        <PairPanel producers={producers} preview={rail ? null : preview} />
       </section>
   )
   const mapSection = (
@@ -467,7 +481,7 @@ function shortName(name: string): string {
 }
 
 /** Plan item 54: the picked pair's abilities in full, with Cath's line on how they cover each other. */
-function PairPanel({ producers }: { producers: ProducerId[] }) {
+function PairPanel({ producers, preview }: { producers: ProducerId[]; preview: { ids: ProducerId[]; n: number } | null }) {
   const [a, b] = producers
   return (
     <div className="pair-panel" aria-live="polite">
@@ -477,6 +491,7 @@ function PairPanel({ producers }: { producers: ProducerId[] }) {
             <p key={id} className="pair-ability" data-producer={id}>
               <span className="pair-portrait" aria-hidden="true">
                 <Portrait character={id} size={100} />
+                {preview?.ids.includes(id) && <AbilityPreview key={preview.n} producer={id} n={preview.n} />}
                 <span className="pair-plate">{PRODUCERS[id].name}</span>
               </span>
               <b>{PRODUCERS[id].roleName.split(', ')[1] ?? PRODUCERS[id].roleName}</b> {PRODUCERS[id].roleAbility}

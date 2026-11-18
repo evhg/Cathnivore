@@ -4456,3 +4456,22 @@ html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: 
 }
 .daily-postcard figcaption { display: flex; align-items: center; gap: 10px; }
 .daily-postcard-note:empty { display: none; }
+
+/* Plan item 490: a producer's power played on a tile of their home region, in place of their portrait for 1.7 s
+   (AbilityPreview.tsx): it fills the portrait's frame on its paper, the moment's own motion inside (stills under
+   reduced motion, as on the board). */
+.setup .producer-card .pc-portrait, .setup .pair-portrait { position: relative; }
+.ability-preview {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, var(--paper-hi), var(--paper-2));
+  animation: ability-preview-in var(--dur-quick) ease-out both;
+  pointer-events: none;
+}
+.setup .ability-preview svg { width: 92%; height: 92%; border: 0; box-shadow: none; background: none; border-radius: 0; }
+.setup .pair-portrait .ability-preview { width: 100px; height: 120px; border-radius: 50% / 46%; }
+@keyframes ability-preview-in { from { opacity: 0; } to { opacity: 1; } }
