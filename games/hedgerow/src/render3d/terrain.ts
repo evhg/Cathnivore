@@ -681,7 +681,11 @@ function fieldGround(act: number, c: THREE.Color, x: number, y: number, seed: nu
 /** Plan item 346: the farmhouse model's scale on the field (1.33 units tall, a little over a farmer). */
 export const FARMHOUSE_3D_SCALE = 1.6;
 
-export function buildGround(level: Level): Ground {
+/** Plan item 486: `phone` (an upright phone's frame, set at build): the lane's packed earth a shade darker and the
+ *  beds a shade lighter, so at 390 px the lane reads apart from the plots (lane-to-plot contrast 1.0-1.3 on the
+ *  darker acts before; `scripts/hedgerow-486-measure`). */
+export function buildGround(level: Level, opts: { phone?: boolean } = {}): Ground {
+  const phone = !!opts.phone;
   const light = actLight(level.id);
   const rand = rng(level.id * 7919 + 17);
   const group = new THREE.Group();
@@ -1009,7 +1013,7 @@ export function buildGround(level: Level): Ground {
         const turn = across ? 0 : Math.PI / 2;
         const jitter = deco();
         const fieldJitter = field ? (((fc * 73 + fr * 151 + level.id * 29) % 97) + 0.5) / 97 : jitter;
-        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar(0.92 + fieldJitter * 0.16);
+        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar((0.92 + fieldJitter * 0.16) * (phone ? 1.2 : 1));
         beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: tint });
         const joins = (dc: number, dr: number) => sameField(level, c, r, c + dc, r + dr);
         // The ticks at the field's outer corners only (each plot's quarter at a corner no plot of its field shares).
@@ -1263,7 +1267,12 @@ export function buildGround(level: Level): Ground {
     if (m) group.add(m);
   // The lane's own surface for the act (earth, boardwalk, tarmac, cobbles...).
   const laneAct = Math.max(0, Math.min(9, act));
-  for (const m of buildLanes(level, laneAct, heightAt, withCloudShadows, rng(level.id * 6271 + 5)).meshes) group.add(m);
+  for (const m of buildLanes(level, laneAct, heightAt, withCloudShadows, rng(level.id * 6271 + 5)).meshes) {
+    // Plan item 486: on a phone the lane's ribbon (its textured surface, drawn first of the see-through things) a shade
+    // darker, apart from the beds.
+    if (phone && m instanceof THREE.Mesh && m.renderOrder === -1) (m.material as THREE.MeshStandardMaterial).color.multiplyScalar(0.62);
+    group.add(m);
+  }
   const loose = laneStyle(laneAct).looseStones;
   // Stones and gravel along the lane's verges, a few kicked into the ruts (not on a paved or boarded lane).
   for (const path of [level.path, level.path2].filter(Boolean) as Array<Level["path"]>) {

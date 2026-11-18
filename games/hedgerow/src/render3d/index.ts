@@ -487,7 +487,8 @@ export class Renderer3D {
     this.world.clear();
     this.clearDynamic();
     const L = hasTwist(game.level, "night") && game.level.id <= 90 ? nightLight(actLight(game.level.id)) : actLight(game.level.id);
-    this.ground = buildGround(game.level);
+    // Plan item 486: an upright phone's ground is graded for the small frame (the lane apart from the beds).
+    this.ground = buildGround(game.level, { phone: this.w < 600 && this.h > this.w });
     this.world.add(this.ground.group);
     {
       // Plan item 480: the parcels pile beside the farmhouse door (left of it at the field's right edge) and the sale
