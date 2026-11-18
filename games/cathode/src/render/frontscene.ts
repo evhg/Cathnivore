@@ -97,6 +97,8 @@ export interface FrontScene {
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
   /** Her projected box; `body` leaves the umbrella out (plan item 159: what a menu plate must stay clear of). */
   figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
+  /** Plan item 498: each prop of the current class's set, its projected box in CSS px (empty off the pick). */
+  setPropBoxes(): Array<{ name: string; left: number; top: number; right: number; bottom: number }>;
   /** Plan item 258: the neon sign's projected box (its tubes), in CSS px. */
   neonBox(): { left: number; top: number; right: number; bottom: number };
   /** Plan item 117: her face's projected box (chin to crown, ear to ear), in CSS px. */
@@ -1063,6 +1065,27 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       });
       return { left, top, right, bottom };
     },
+    setPropBoxes() {
+      const cls = world.renderer.domElement.dataset.class;
+      if (!cls || !stoop.group.visible) return [];
+      const r = world.renderer.domElement.getBoundingClientRect();
+      stoop.group.updateMatrixWorld(true);
+      const out: Array<{ name: string; left: number; top: number; right: number; bottom: number }> = [];
+      for (const [name, b] of Object.entries(stoop.propBoxes(cls))) {
+        let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+        for (let i = 0; i < 8; i++) {
+          corner.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).applyMatrix4(stoop.group.matrixWorld).project(cam);
+          const x = r.left + ((corner.x + 1) / 2) * r.width;
+          const y = r.top + ((1 - corner.y) / 2) * r.height;
+          left = Math.min(left, x);
+          right = Math.max(right, x);
+          top = Math.min(top, y);
+          bottom = Math.max(bottom, y);
+        }
+        out.push({ name, left: Math.round(left), top: Math.round(top), right: Math.round(right), bottom: Math.round(bottom) });
+      }
+      return out;
+    },
     propBox() {
       const r = world.renderer.domElement.getBoundingClientRect();
       const f = scene.faceBox();
@@ -1217,6 +1240,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       if (cls) cath.look(null);
       if (cls) world.renderer.domElement.dataset.class = cls;
       else delete world.renderer.domElement.dataset.class;
+      // Plan item 498: the props on her class's set, for the pick's checks.
+      if (cls) world.renderer.domElement.dataset.setProps = stoop.propNames(cls).join(" ");
+      else delete world.renderer.domElement.dataset.setProps;
       if (instant) {
         wd.w = wd.target;
         key.color.copy(keyWant);

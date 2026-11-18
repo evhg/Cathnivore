@@ -8,13 +8,21 @@
 import * as THREE from "three";
 import { LAYER_NO_REFLECT } from "./reflection";
 import { SET_KEY } from "./frontsets";
+import { buildSetProps } from "./frontsetprops";
 
 export interface FrontStoop {
   readonly group: THREE.Group;
   /** `w` the pick's weight (0 on the title, 1 settled on the pick). */
   update(w: number, cls: string | null): void;
+  /** Plan item 498: the props each class's set shows (the stoop's own and the dressing round her). */
+  propNames(cls: string): string[];
+  /** Each dressing prop's box in the stoop's frame (`group`'s local space). */
+  propBoxes(cls: string): Record<string, THREE.Box3>;
   dispose(): void;
 }
+
+/** Plan item 498: how strongly the set's dressing glows in the class's key (emissive gain on its own colour). */
+const PROP_SELF = 0.35;
 
 /** A tungsten bulb's warm white (linear). */
 const BULB = new THREE.Color(1.0, 0.62, 0.3);
@@ -589,9 +597,38 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
     cash.rotation.x = -Math.PI / 2;
   }
 
+  // Plan item 498: and each class's set dressed round her (frontsetprops.ts), two draw calls a class.
+  // The set's key falls on them: each part glows faintly in its own colour times the class's key (the street's lights
+  // barely reach past the stoop, and unlit they read as black shapes on the painted set).
+  const propGlow = fade(new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }));
+  const names = new Map<string, string[]>();
+  const boxes = new Map<string, Record<string, THREE.Box3>>();
+  for (const [cls, g] of props) {
+    const b = buildSetProps(cls);
+    names.set(cls, b.names);
+    boxes.set(cls, b.boxes);
+    const key = new THREE.Color(SET_KEY[cls] ?? 0xffffff);
+    const propBody = fade(
+      new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.5,
+        metalness: 0.25,
+        emissive: new THREE.Color(1, 1, 1).lerp(key, 0.55).multiplyScalar(PROP_SELF),
+      }),
+    );
+    propBody.onBeforeCompile = (sh) => {
+      sh.fragmentShader = sh.fragmentShader.replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;");
+    };
+    propBody.customProgramCacheKey = () => "set-props-self";
+    put(g, new THREE.Mesh(geo(b.body), propBody), 0, 0, 0).name = `set-props-${cls}`;
+    if (b.glow) put(g, new THREE.Mesh(geo(b.glow), propGlow), 0, 0, 0).name = `set-glow-${cls}`;
+  }
+
   let shown = -1;
   return {
     group,
+    propNames: (cls) => names.get(cls) ?? [],
+    propBoxes: (cls) => boxes.get(cls) ?? {},
     update(w, cls) {
       for (const [c, g] of props) g.visible = c === cls;
       if (cls !== tintCls) {
