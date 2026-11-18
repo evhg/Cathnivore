@@ -5942,3 +5942,57 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
   .end-seal[data-stamp] { animation-name: seal-stamp-fade; }
   @keyframes seal-stamp-fade { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* Plan item 489: the producers talk back. After Cath's line settles, the producer the turn touched answers in a small
+   paper bubble edged in their colour: at a desktop table from above their head (its tail down to them), on an upright
+   phone from the counter bench over their busts. One at a time, 3.5 s (Game.tsx's sayProducerLine). It pops in; under
+   reduced motion it only fades. */
+.producer-line {
+  position: absolute;
+  z-index: var(--z-lift);
+  width: max-content;
+  max-width: 15rem;
+  padding: var(--sp-2) 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--cameo-ring, var(--wheat)) 55%, var(--rule));
+  box-shadow: inset 4px 0 0 var(--cameo-ring, var(--wheat)), 0 2px 0 var(--rule), 0 6px 14px rgb(var(--shadow-ink) / .22);
+  color: var(--ink);
+  font: italic 500 var(--fs-body)/1.25 var(--font-text);
+  text-wrap: pretty;
+  white-space: normal;
+  pointer-events: none;
+  transform-origin: 80% 100%;
+  animation: producer-line-say var(--dur-2) var(--ease-settle) both;
+}
+.producer-line.pc-mara { --cameo-ring: var(--p-mara); }
+.producer-line.pc-tomas { --cameo-ring: var(--p-tomas); }
+.producer-line.pc-ines { --cameo-ring: var(--p-ines); }
+.producer-line.pc-sol { --cameo-ring: var(--p-sol); }
+.producer-line::after {
+  content: "";
+  position: absolute;
+  right: 28px;
+  bottom: -8px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border-right: 1px solid color-mix(in srgb, var(--cameo-ring, var(--wheat)) 55%, var(--rule));
+  border-bottom: 1px solid color-mix(in srgb, var(--cameo-ring, var(--wheat)) 55%, var(--rule));
+  rotate: 45deg;
+}
+.table-producers-desk .producer-line { right: 22%; bottom: calc(100% + 4px); }
+.table-producers.counter-bench { position: relative; }
+.counter-bench .producer-line { right: 0; bottom: calc(100% + 10px); max-width: min(15rem, 72vw); }
+@keyframes producer-line-say {
+  from { opacity: 0; scale: .85; translate: 0 6px; }
+  to { opacity: 1; scale: 1; translate: 0 0; }
+}
+@keyframes producer-line-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .producer-line { animation-name: producer-line-fade; }
+}
+html.no-animations .producer-line { animation-name: producer-line-fade; }
+/* on a phone it lies over her line (placed in Game.tsx), the tail pointing right at the busts */
+.counter-bench .producer-line { display: flex; align-items: center; padding: 4px 10px; font-size: .9375rem; line-height: 1.18; transform-origin: 100% 50%; }
+.counter-bench .producer-line::after { right: -8px; top: calc(50% - 7px); bottom: auto; rotate: -45deg; }

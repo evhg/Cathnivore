@@ -60,6 +60,7 @@ import Scene from './Scene'
 import Portrait from './portraits/Portrait'
 import type { ProducerFace } from './portraits/producerFaces'
 import { producerMoods } from './producerMood'
+import { producerReply, type ProducerReply } from '../content/producerLines'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import CathCompanion, { CathDock } from './CathCompanion'
@@ -1476,6 +1477,21 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const moodRegionsRef = useRef(initial.regions)
   const moodTimerRef = useRef<number | undefined>(undefined)
   const [producerFaces, setProducerFaces] = useState<Partial<Record<ProducerId, ProducerFace>>>({})
+  // Plan item 489: one producer answers the turn's beat in their own voice, after Cath's line has settled (1.2 s),
+  // for 3.5 s, from their seat. One bubble at a time; a newer turn's reply replaces it.
+  const [producerLine, setProducerLine] = useState<(ProducerReply & { n: number }) | null>(null)
+  const producerLineTimers = useRef<number[]>([])
+  const producersRef = useRef(state.config.producers)
+  producersRef.current = state.config.producers
+  const sayProducerLine = useCallback((reply: ProducerReply | null) => {
+    if (!reply) return
+    producerLineTimers.current.forEach((t) => window.clearTimeout(t))
+    producerLineTimers.current = [
+      window.setTimeout(() => setProducerLine((was) => ({ ...reply, n: (was?.n ?? 0) + 1 })), 1200),
+      window.setTimeout(() => setProducerLine(null), 1200 + 3500),
+    ]
+  }, [])
+  useEffect(() => () => producerLineTimers.current.forEach((t) => window.clearTimeout(t)), [])
   // Plan item 467: Pell's pose for a few seconds after something happens to him at the table; otherwise he mirrors Cath.
   const [pellBeat, setPellBeat] = useState<PellPose | null>(null)
   const pellTimerRef = useRef<number | undefined>(undefined)
@@ -1534,13 +1550,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     // Plan item 80: the producers react too, for a few seconds.
     const moods = producerMoods(newEvents, moodRegionsRef.current)
+    if (newEvents.length > 0 && !state.result) {
+      sayProducerLine(producerReply(newEvents, moodRegionsRef.current, state.config.producers, state.round, state.round + state.pressureDeck.length))
+    }
     moodRegionsRef.current = state.regions
     if (Object.keys(moods).length > 0) {
       setProducerFaces(moods)
       window.clearTimeout(moodTimerRef.current)
       moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
     }
-  }, [state.log, state.regions, strikePose, beat, papersKey, pellReact])
+  }, [state.log, state.regions, state.config.producers, state.round, state.pressureDeck.length, state.result, strikePose, beat, papersKey, pellReact, sayProducerLine])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
   // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
   useEffect(() => {
@@ -1568,6 +1587,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           window.clearTimeout(moodTimerRef.current)
           moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
         }
+        // Plan item 489: and the producer it touched answers, as at a real one (a staged liberation of a region with no
+        // Stall yet goes to the first producer, so the moment always has its reply).
+        const team = producersRef.current
+        const said: GameEvent[] = d.kind === 'liberate' && !holder && team[0] ? [{ type: 'liberated', region: d.region, producer: team[0] }] : events
+        sayProducerLine(producerReply(said, moodRegionsRef.current, team, 2, 10))
       }
     }
     window.addEventListener('cathnivore-moment', on)
@@ -1578,7 +1602,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       window.removeEventListener('cathnivore-moment', on)
       delete w.cathnivorePell
     }
-  }, [strikePose, beat, pellReact])
+  }, [strikePose, beat, pellReact, sayProducerLine])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -3690,6 +3714,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {/* Plan item 374: at a desktop table each seat carries its producer's name on a plate in their colour. */}
                 {!phoneTableCath && <span className="table-producer-name">{PRODUCERS[id].name.split(' ')[0]}</span>}
                 {!phoneTableCath && <span className="producer-stack" />}
+                {producerLine?.producer === id && <ProducerLineBubble key={producerLine.n} reply={producerLine} />}
               </span>
             ))}
           </div>
@@ -3855,6 +3880,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <span className="table-producer-name" aria-hidden="true">{PRODUCERS[id].name.split(' ')[0]}</span>
               </button>
             ))}
+            {/* Plan item 489: the busts clip to their frames, so the reply hangs from the bench above them. */}
+            {producerLine && <ProducerLineBubble key={producerLine.n} reply={producerLine} />}
           </span>
         </CathDock>
       )}
@@ -4010,5 +4037,51 @@ function ShareResultButton({ text, withUrl = true }: { text: string; withUrl?: b
         {note}
       </p>
     </>
+  )
+}
+
+/** Plan item 489: a producer's reply, a small speech bubble from their seat (aria-hidden: Cath's line is the table's
+ *  announced voice; this is colour). Placed once it mounts: at a desktop table above their head, slid right clear of
+ *  every hex and inside the map; on an upright phone over Cath's settled dock line, its tail at their busts. */
+function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    const parent = el?.offsetParent
+    if (!el || !parent) return
+    const at = parent.getBoundingClientRect()
+    const dockLine = el.closest('.cath-dock')?.querySelector('.cath-dock-line')
+    if (el.closest('.counter-bench') && dockLine) {
+      const t = dockLine.getBoundingClientRect()
+      el.style.setProperty('left', `${t.left - at.left}px`)
+      el.style.setProperty('right', 'auto')
+      el.style.setProperty('top', `${t.top - at.top}px`)
+      el.style.setProperty('bottom', 'auto')
+      el.style.setProperty('width', `${t.width}px`)
+      el.style.setProperty('min-height', `${t.height}px`)
+      el.style.setProperty('max-width', 'none')
+      return
+    }
+    const map = el.closest('.map-wrap')?.getBoundingClientRect()
+    const me = el.getBoundingClientRect()
+    if (!map) return
+    let clear = map.left + 8
+    for (const hex of document.querySelectorAll('.region-hex polygon:first-of-type')) {
+      const h = hex.getBoundingClientRect()
+      if (h.width > 0 && h.top < me.bottom && me.top < h.bottom) clear = Math.max(clear, h.right + 8)
+    }
+    const room = map.right - 8 - clear
+    if (room < 150) return
+    const width = Math.min(240, room)
+    // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
+    const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
+    el.style.setProperty('left', `${left - at.left}px`)
+    el.style.setProperty('right', 'auto')
+    el.style.setProperty('width', `${width}px`)
+  }, [reply])
+  return (
+    <span ref={ref} className={`producer-line pc-${reply.producer}`} data-producer-line={reply.producer} data-beat={reply.beat} aria-hidden="true">
+      {reply.line}
+    </span>
   )
 }
