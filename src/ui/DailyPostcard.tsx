@@ -14,7 +14,7 @@ export default function DailyPostcard({ state, daily, grade }: { state: GameStat
     const canvas = ref.current
     if (!canvas) return
     let live = true
-    const svg = cathSvg({ framing: 'bust', expression: data.won ? 'delighted' : 'determined', width: 208, height: 208 })
+    const svg = cathSvg({ framing: 'bust', expression: data.won ? 'delighted' : 'determined', width: 280, height: 280 })
     const img = new Image()
     const paint = (face: HTMLImageElement | null) => live && drawPostcard(canvas, data, face)
     paint(null)

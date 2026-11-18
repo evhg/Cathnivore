@@ -501,6 +501,10 @@ h3 {
   width: 200px;
   height: 160px;
 }
+/* 2026-11-18: the halo below reaches 50px past the hero each side (and spins at 1.4x on a win), which scrolled a
+   390px phone's end screen 5px sideways. It fades out before its edge, so the screen clips it (clip, not hidden:
+   no scroll box, the sticky actions still stick). */
+.end-screen { overflow-x: clip; }
 .end-screen-hero > * { position: relative; z-index: var(--z-raised); }
 .end-screen-hero::before {
   content: '';

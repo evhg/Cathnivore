@@ -25,6 +25,8 @@ test('a Daily ends with a postcard that saves as an image', async ({ page }, tes
     return seen.size
   })
   expect(inked).toBeGreaterThan(8)
+  // the end screen never scrolls sideways (the hero's halo once pushed a 390px phone 5px wide)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0)
   await page.waitForTimeout(1500)
   if (process.env.SHOTS) await page.screenshot({ path: `e2e/screenshots/daily-postcard-${testInfo.project.name}.png`, fullPage: true })
   const save = card.getByRole('button', { name: 'Save image' })
