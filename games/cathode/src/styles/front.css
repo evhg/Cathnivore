@@ -1693,7 +1693,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .dossier.front-page { width: calc(var(--u) * 470); gap: calc(var(--u) * 5); padding: calc(var(--u) * 8) calc(var(--u) * 12) calc(var(--u) * 10); }
   .front-page .fp-title { font-size: var(--fs-3); }
   .front-page .fp-head { font-size: var(--fs-3); line-height: .98; }
-  .front-page .fp-body { grid-template-columns: calc(var(--u) * 150) minmax(0, 1fr); gap: calc(var(--u) * 10); }
+  /* the booking photo keeps its 140 px floor at 1440x900 (cathode-front: 187 u; 150 u read 112 px) */
+  .front-page .fp-body { grid-template-columns: calc(var(--u) * 187) minmax(0, 1fr); gap: calc(var(--u) * 10); }
   .front-page .fp-col { gap: calc(var(--u) * 5); }
   .dossier.front-page::before {
     content: ""; position: absolute; z-index: var(--z-lift); top: calc(var(--u) * -9); left: 50%;
