@@ -603,9 +603,13 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   // reading as one; the rim takes the light's colour.
   const RIM = ["#b4c4ff", "#c4f0dc", "#ffd08a", "#fff4d8", "#ff9ad4"][v]!;
   const GROUND = [
-    ["#5a6cb0", "#222a50", "#08090f"],
-    ["#a6cfc0", "#3d5c55", "#0c1312"],
-    ["#d6a868", "#5a3e22", "#120d08"],
+    // the vault's cold light a step brighter (was #5a6cb0 / #222a50: under item 505's List grade it read within 10% of the plaza)
+    ["#7590ea", "#2c3a7a", "#08090f"],
+    // the clinic's fluorescent a harsher near-white green (was #a6cfc0 / #3d5c55: under item 505's List grade it read
+    // within 10% of the plaza and the vault)
+    ["#d2f6e2", "#4f8270", "#0c1312"],
+    // the plaza's sodium a deeper orange (was #d6a868: under item 505's List grade it read within 10% of the clinic's mint)
+    ["#f2843a", "#6a2e10", "#120d08"],
     ["#f4ecd0", "#9a8a64", "#16130d"],
     ["#c45a92", "#4a1a36", "#0f070c"],
   ][v]!;
