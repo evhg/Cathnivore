@@ -22,7 +22,9 @@ async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, numbe
   if (mode === '3d') await page.waitForFunction(() => (window as unknown as { hedgerow: { camSettled(): boolean } }).hedgerow.camSettled(), null, { timeout: 180_000 })
   const at = await page.evaluate(() => {
     const hg = (window as unknown as { hedgerow: HG }).hedgerow
-    const [c, r] = hg.game()!.level.terrain!.water[0]!
+    const lv = hg.game()!.level
+    const mid = (lv.rows - 1) / 2
+    const [c, r] = [...lv.terrain!.water].sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid))[0]!
     return hg.cellCenter(c, r)
   })
   expect(at).not.toBeNull()
