@@ -6050,6 +6050,11 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
   .desktop-rail .hand-later { position: fixed; left: auto; right: 28px; bottom: 18px; }
   .table-head.with-table-cath { padding-right: 96px; }
   .game:has(.table-head.with-table-cath) .table-hand { --hand-foot: 6px; padding-bottom: 6px; }
+  /* the papers, the cloth and the hand 4 px apart (were 10): the cloth's 12 px are the hexes' (sized by height) */
+  .game:has(.table-head.with-table-cath) { row-gap: 4px; }
+  /* the event ticket pins in the cloth's top-left corner over Cath's line about it: the grown board leaves no gap
+     clear of the hexes beside Pell any more */
+  .event-ticket { right: auto; left: var(--sp-4); }
   .table-head.with-table-cath .plan-strip-target-full[data-long] + .plan-strip-target-short {
     display: flex;
     flex-wrap: nowrap;
