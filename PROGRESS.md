@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (02:51 11-18): items 485 done (3D day: sun swing/sink, dusk warmth, lit windows and depot neon, folk lanterns 2D/3D, deeper 2D dusk) and 487 done (plaque paintings). **Only 2 unclaimed plan items left (319, 471): the next lane A session plans first** (CLAUDE.md step 4: shoot every game at P and D, critique against VISION, add whole items). Next release 19:51 11-18, once E2E is green on the head.
+- Lane A (03:51 11-18): item 486 slice 4 (786f70f3): lane B's dim phone frame fixed (the day-pass's low sun had halved the ground's light; the key regains it), the 3D day ease finishes on slow devices; depot-in-frame acceptance cut (DECISIONS). 486 handed back. Open unclaimed: 319, 471, 486 (3): when one closes, the next lane A session plans first (CLAUDE.md step 4). Next release 19:51 11-18, once E2E is green on the head.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -42,6 +42,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-10-31 16:18 `35c3b5c`: gates 1-8 passed, live verified (deploy untagged, 403).
 
 ## Session log (newest first, last 15)
+- **2026-11-18 03:51 lane A session:** 486 slice 4 (786f70f3). hedgerow-dayphase (P, D; 2/2 alone, 3D dE 44.5), shadow3d (D), keyart-fresh and dayphase units, tsc, eslint; 486 measure runs m-before, m-a2..m-a5 (scratchpad); two depot-framing attempts measured and reverted. No full check. Lock released.
 - 2026-11-18 03:21 lane B: 486 slice 3; shadow3d, biome3d (P), keyart-fresh pass; measure runs h486d1/d2 (agree), h486e.
 - **2026-11-18 02:51 lane A session:** 485 slices 2-4 and done, 487 slice 3 and done. hedgerow-dayphase (2D P/D dE 18.6/19.9, new 3D case 28.8), shadow3d, depot3d, masthead/map/map-you (54), hedgerow unit tests (733), dayphase units, css lint, keyart-fresh after re-shooting Hedgerow. Shots scratchpad h485b-d, m487. No full check. Lock released.
 - 2026-11-18 02:21 lane B: 487 slices 1-2; hedgerow-masthead (new), map, level-card, map-you pass at P and D (56); css lint, keyart-fresh; shots mast1-3, mastP.
@@ -56,4 +57,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-17 21:51 lane A session:** E2E red checked (water: flake, green on 29e65d69). Item 480 slice 4 and done (2bad79ba); item 479 slices 3-4 (c0182989, 2614faa4). hedgerow-doorstep (new cart/sweep cases), hedgerow-showdown (new knockout cases; the lag check 6/6 alone after the in-place toggle), full `npm run check` green (315 files, 2750 tests), hedgerow-depot, hedgerow-water, keyart-fresh, css-lint pass; drawcalls measured PARCELS=0/9 at P and D. Shots scratchpad cart2, door3d2, sd-after4, ko. Lock released.
 - 2026-11-17 21:22 lane B: gate 7 cause found and fixed (Lighthouse A/B, 12 runs); full unit suite 315 files; title-opening, title-counter pass at P and D; hedgerow-water E2E red flagged for lane A.
 - **2026-11-17 19:51 lane A session (release):** E2E red diagnosed (classpose: lane B's; Hedgerow 3D camSettled: fixed 5fec96a7, depot3d/fleet3d/3dframe 14 pass at D). Release of 288fe527 failed gate 7 only (Lighthouse 83); cause narrowed to item 453's phone opening by A/B, not fixed. 480 slice 3 (e2e93425): hedgerow-doorstep e2e (P, D), doorstep and keyart-fresh units pass; shots scratchpad door3d. `main` untouched. Lock released.
-- 2026-11-17 20:22 lane B: 481 slice 2; cathode-skillpreview passes at P and D; keyart-fresh; posters and key art re-rendered.
