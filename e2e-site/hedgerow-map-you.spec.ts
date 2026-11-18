@@ -34,7 +34,8 @@ for (const vp of [
       }
       return { h: you.height, gap, hits, card: !!card }
     })
-    expect(r.h).toBeGreaterThanOrEqual(64)
+    // (plan item 496: 110 px+ on a desktop of 1100 px or more; 64 px+ elsewhere)
+    expect(r.h).toBeGreaterThanOrEqual(!hasTouch && vp.width >= 1100 ? 110 : 64)
     expect(r.gap).toBeLessThanOrEqual(8)
     expect(r.card).toBe(true)
     expect(r.hits).toBe(0)

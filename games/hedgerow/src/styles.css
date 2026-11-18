@@ -5112,6 +5112,12 @@ img.act-scene {
   #screen-select .node.next .you { right: calc(100% + 2px); width: 33px; height: 72px; }
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 2px); }
 }
+/* Plan item 496: a shorter desktop (1280x800) gave her the 80 px middle size, a pin beside the coin; she stands 120 px
+   there (the 172 px figure waits for 860 px of height, so the trail keeps its fold). */
+@media (min-width: 1100px) and (min-height: 700px) and (max-height: 859.98px) {
+  #screen-select .node.next .you { right: calc(100% - 22px); width: 54px; height: 120px; }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 22px); }
+}
 @media (min-width: 1100px) and (min-height: 860px) {
   /* plan item 250: 120 px at D; plan item 441: 172 px, so she reads as the map's guide beside her stop, not a pin */
   #screen-select .node.next .you { right: calc(100% - 32px); width: 78px; height: 172px; }
