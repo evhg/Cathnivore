@@ -2290,6 +2290,49 @@ export class Renderer3D {
     this.rosette.position.set(x + 0.2, y + 0.11, z + 0.14);
     this.rosette.visible = true;
   }
+  /** Plan item 492: her footprints in 3D as she walks the field: one instanced mesh of small dark ovals (one draw
+   *  call, kept in the scene), left and right about every 0.16 of a cell, each shrinking away over 1 s; none under
+   *  reduced motion. */
+  private prints3: { x: number; z: number; a: number; ang: number }[] = [];
+  private printFrom3: { x: number; z: number } | null = null;
+  private printLeft3 = false;
+  private printMesh: THREE.InstancedMesh | null = null;
+  footprints3d(): number {
+    return this.prints3.length;
+  }
+  private syncPrints(h: Game["hero"], walking: boolean, dt: number): void {
+    if (walking && !this.reducedMotion) {
+      if (!this.printFrom3 || Math.hypot(h.x - this.printFrom3.x, h.y - this.printFrom3.z) > 0.16) {
+        const ang = Math.atan2(h.ty - h.y, h.tx - h.x);
+        this.printLeft3 = !this.printLeft3;
+        const off = (this.printLeft3 ? 1 : -1) * 0.05;
+        this.prints3.push({ x: h.x - Math.sin(ang) * off, z: h.y + Math.cos(ang) * off, a: 0, ang });
+        if (this.prints3.length > 24) this.prints3.shift();
+        this.printFrom3 = { x: h.x, z: h.y };
+      }
+    } else if (!walking) this.printFrom3 = null;
+    for (const fp of this.prints3) fp.a += dt;
+    this.prints3 = this.prints3.filter((fp) => fp.a < 1);
+    if (!this.printMesh) {
+      const geo = new THREE.CircleGeometry(1, 10).scale(0.06, 0.028, 1).rotateX(-Math.PI / 2);
+      const mat = new THREE.MeshBasicMaterial({ color: "#2e1f12", transparent: true, opacity: 0.5, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+      this.printMesh = new THREE.InstancedMesh(geo, mat, 24);
+      this.printMesh.frustumCulled = false;
+      this.printMesh.renderOrder = 2;
+      this.scene.add(this.printMesh);
+    }
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const up = new THREE.Vector3(0, 1, 0);
+    this.prints3.forEach((fp, i) => {
+      const k = 1 - fp.a * fp.a;
+      m.compose(new THREE.Vector3(fp.x, this.height(fp.x, fp.z) + 0.036, fp.z), q.setFromAxisAngle(up, -fp.ang), new THREE.Vector3(k, 1, k));
+      this.printMesh!.setMatrixAt(i, m);
+    });
+    this.printMesh.count = this.prints3.length;
+    this.printMesh.visible = this.prints3.length > 0;
+    this.printMesh.instanceMatrix.needsUpdate = true;
+  }
   private syncHero(game: Game, dt: number, t: number): void {
     // Plan item 102: a warm key on her face when the camera comes in close to her (a lift of the face's own
     // material, not another scene light: no extra cost per pixel and no shader change as it fades).
@@ -2318,6 +2361,7 @@ export class Renderer3D {
     const elev = Math.atan2(this.camera.position.y - y, Math.hypot(this.camera.position.x - h.x, this.camera.position.z - h.y));
     c.rotation.x = -Math.min(0.55, Math.max(0, (elev - CATH_LEAN_FROM) * 1.1));
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
+    this.syncPrints(h, walking, dt);
     // Plan item 255: standing, she turns to face the camera (her figure is drawn for a lens on +z; an upright phone's
     // looks from her side, 44-120 deg off her face); walking she faces her path. The lean back stays toward the lens.
     {

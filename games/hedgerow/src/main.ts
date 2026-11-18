@@ -865,8 +865,8 @@ if (SANDBOX)
     cellPx3d: (col: number, row: number) => (renderer && is3D(renderer) ? renderer.cellToCanvas(col, row) : null),
     // Plan item 492: the 3D rosette at her feet (null in 2D).
     rosette3d: () => (renderer && is3D(renderer) ? renderer.rosette3d() : null),
-    // Plan item 492: her footprints on the 2D field now (null in 3D).
-    footprints: () => (renderer as { printCount?: number } | null)?.printCount ?? null,
+    // Plan item 492: her footprints on the field now (2D or 3D).
+    footprints: () => (renderer && is3D(renderer) ? renderer.footprints3d() : ((renderer as { printCount?: number } | null)?.printCount ?? null)),
     // Plan item 492: Cath one level up, as the layers popped would raise her (her level-up beat runs for real).
     heroUp: () => {
       const g = game;

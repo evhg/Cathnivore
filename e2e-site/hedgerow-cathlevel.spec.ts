@@ -68,3 +68,20 @@ test('3D: the rosette at her feet follows her level', async ({ page }) => {
   await page.evaluate(() => { const hg = (window as unknown as { hedgerow: H3 }).hedgerow; hg.heroUp(); hg.heroUp() })
   await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: H3 }).hedgerow.rosette3d()), { timeout: 60_000 }).toEqual({ level: 3, visible: true })
 })
+
+// Plan item 492 in 3D: walking, she leaves a trail of prints (counted: headless WebGL draws a frame every few seconds).
+test('3D: Cath leaves footprints as she walks', async ({ page }) => {
+  test.setTimeout(240_000)
+  const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate((t) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: { 1: 3, 2: 3 }, seenBefore: { 3: true }, tips: t })), tips)
+  await page.goto('/hedgerow/?sandbox=1&level=3')
+  await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow?: H3 }).hedgerow?.rosette3d?.() ?? null), { timeout: 180_000 }).not.toBeNull()
+  await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: HF }).hedgerow
+    const g = hg.game()!
+    hg.sendWave(g, true)
+    g.hero.tx = g.hero.x + 2.5
+  })
+  await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HF }).hedgerow.footprints()), { timeout: 60_000 }).toBeGreaterThan(1)
+})
