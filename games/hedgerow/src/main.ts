@@ -207,6 +207,7 @@ import { ringLayout } from "./buildring";
 import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
 import { holdsKnockout, KNOCKOUT_MS, renderStep } from "./knockout";
 import { doorstepCleared, doorstepLeak, doorstepRound, doorstepShown, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
+import { dayLamps, dayPhase } from "./sunlight";
 import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
 import { KITS } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
@@ -443,6 +444,15 @@ let knockoutUntil = 0;
 let knockoutLog: { start: number; end: number; frames: number[]; harvest: number } | null = null;
 /** Plan item 479: the level's last round is under way. */
 let showdown = false;
+/** Plan item 485: how far through the day the field is (`data-day-phase`, 0 morning to 1 dusk, by the round under
+ *  way or next up) and whether the lamps are lit (`data-lamps`). Cosmetic: the renderers read it, the rules never do. */
+function syncDay(g: Game): void {
+  const p = dayPhase(Math.max(1, g.phase === "build" ? g.wave + 1 : g.wave), g.level.waves.length);
+  const v = p.toFixed(2);
+  if (ui.stage.dataset.dayPhase !== v) ui.stage.dataset.dayPhase = v;
+  const lamps = dayLamps(p) ? "on" : "off";
+  if (ui.stage.dataset.lamps !== lamps) ui.stage.dataset.lamps = lamps;
+}
 /** Plan item 480: Hollowell's parcels on the farmhouse step, one per leak (`doorstep.ts`). */
 let doorstep: Doorstep = newDoorstep();
 /** Mirrors the step onto the stage: `data-doorstep` is the parcels on it, `data-saleboard` while the board is up. */
@@ -5459,6 +5469,7 @@ function frame(now: number): void {
   syncDepots(g);
   if (g.phase === "won" && doorstep.parcels) doorstepSwept(doorstep);
   syncDoorstep(g);
+  syncDay(g);
   drawGhost(g);
   drawDuel(g);
   if (!finished && !player && (g.phase === "won" || g.phase === "lost")) {

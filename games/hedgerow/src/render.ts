@@ -69,7 +69,7 @@ import {
   castShadow,
   setShadowSun,
 } from "./sprites";
-import { shadowDir, sunRgbFor } from "./sunlight";
+import { dayPhase, dayShadowDir, dayShadowLength, daySunRgb, dayWarmth } from "./sunlight";
 
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
 // Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
@@ -262,6 +262,9 @@ export class Renderer {
   shownOutlines: Array<{ col: number; row: number; width: number }> = [];
   private darkCanvas: HTMLCanvasElement | null = null;
   reducedMotion = false;
+  /** Plan item 485: the day's phase as drawn (eased toward the round's), and the level it belongs to. */
+  day = -1;
+  private dayLevel = 0;
   /** Plan item 480: the farmhouse step (parcels, the door card, the sale board), set by main.ts each frame. */
   doorstep: DoorstepView | null = null;
   /** Plan item 480: parcels in the air, from where each leak got through (cells), and their age in seconds. */
@@ -796,7 +799,16 @@ export class Renderer {
     const { ctx } = this;
     const { cellSize: s, offX, offY } = this.view;
     // Plan item 370: cast shadows fall away from this act's sun, as in the 3D view.
-    setShadowSun(shadowDir(game.level.id));
+    // Plan item 485: and the sun crosses the sky over the level, morning to dusk: the phase moves on as a round ends
+    // (the build phase shows the next round's light, so it never turns mid-wave), eased over 1.2 s, stepped under
+    // reduced motion; low sun, longer shadows.
+    const dayTo = dayPhase(Math.max(1, game.phase === "build" ? game.wave + 1 : game.wave), game.level.waves.length);
+    if (this.day < 0 || this.reducedMotion || game.level.id !== this.dayLevel) this.day = dayTo;
+    else this.day += Math.sign(dayTo - this.day) * Math.min(Math.abs(dayTo - this.day), dt / 1.2);
+    this.dayLevel = game.level.id;
+    const away = dayShadowDir(game.level.id, this.day);
+    const len = dayShadowLength(this.day);
+    setShadowSun({ x: away.x * len, y: away.y * len });
     this.clock += dt;
     this.cheer = Math.max(0, this.cheer - dt);
     this.gold.age += dt;
@@ -1604,7 +1616,7 @@ export class Renderer {
       ctx.setLineDash([]);
     }
 
-    this.sunGrade(W, H, shadowDir(level.id), sunRgbFor(level.id));
+    this.sunGrade(W, H, dayShadowDir(level.id, this.day), daySunRgb(level.id, this.day));
     this.ambient(W, H, s, t);
 
     // Boss bar.
@@ -2448,6 +2460,13 @@ export class Renderer {
     ctx.globalCompositeOperation = "soft-light";
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
+    // Plan item 485: past noon the evening comes on: a warm multiply that deepens the greens toward dusk
+    const warm = dayWarmth(this.day);
+    if (warm > 0) {
+      ctx.globalCompositeOperation = "multiply";
+      ctx.fillStyle = `rgba(255,158,96,${(0.38 * warm).toFixed(3)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
     ctx.restore();
     const v = ctx.createRadialGradient(cx, cy, Math.min(W, H) * 0.42, cx, cy, R * 1.05);
     v.addColorStop(0, "rgba(34,26,16,0)");

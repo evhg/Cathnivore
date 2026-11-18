@@ -24,3 +24,53 @@ export function shadowDir(levelId: number): { x: number; y: number } {
   const az = (sunAzFor(levelId) * Math.PI) / 180;
   return { x: -Math.cos(az), y: -Math.sin(az) };
 }
+
+// ---- Plan item 485: the day passes over the field, morning to dusk across a level ----
+// Cosmetic only. The act's azimuth above stays its noon; the day swings the sun about it, lengthens and warms the
+// shadows toward the ends, and lights the lamps in the last third.
+
+/** How far through the day round `round` (1-based) of `rounds` is: 0 the first round's morning, 1 the last's dusk. */
+export function dayPhase(round: number, rounds: number): number {
+  if (!(rounds > 1)) return 0;
+  return Math.min(1, Math.max(0, (round - 1) / (rounds - 1)));
+}
+
+/** The swing either side of the act's noon, in degrees. */
+export const DAY_SWING = 40;
+
+/** The sun's azimuth at a phase: the act's noon at 0.5, DAY_SWING before it in the morning, after it at dusk. */
+export function dayAzFor(levelId: number, phase: number): number {
+  return sunAzFor(levelId) + (Math.min(1, Math.max(0, phase)) - 0.5) * 2 * DAY_SWING;
+}
+
+/** The 2D shadow's direction at a phase (away from the day's sun). */
+export function dayShadowDir(levelId: number, phase: number): { x: number; y: number } {
+  const az = (dayAzFor(levelId, phase) * Math.PI) / 180;
+  return { x: -Math.cos(az), y: -Math.sin(az) };
+}
+
+/** The shadow's length as a multiple of noon's: 1 at noon, 1.8 at morning and dusk (a low sun). */
+export function dayShadowLength(phase: number): number {
+  const d = 2 * Math.abs(Math.min(1, Math.max(0, phase)) - 0.5);
+  return 1 + 0.8 * d * d;
+}
+
+/** How warm the light runs: 0 through the morning and noon, rising to 1 at dusk. */
+export function dayWarmth(phase: number): number {
+  const k = Math.min(1, Math.max(0, (phase - 0.5) / 0.5));
+  return k * k * (3 - 2 * k);
+}
+
+/** The farm's lamps (farmhouse windows, the depot's neon, the folk's lanterns) are lit in the day's last third. */
+export function dayLamps(phase: number): boolean {
+  return phase >= 2 / 3;
+}
+
+const DUSK = [255, 150, 92] as const;
+
+/** The day's sun colour as "r,g,b": the act's own, run toward a dusk orange by `dayWarmth` (at most 60% of the way). */
+export function daySunRgb(levelId: number, phase: number): string {
+  const base = sunRgbFor(levelId).split(",").map(Number);
+  const w = 0.6 * dayWarmth(phase);
+  return base.map((c, i) => Math.round(c + (DUSK[i]! - c) * w)).join(",");
+}
