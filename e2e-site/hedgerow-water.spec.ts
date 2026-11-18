@@ -10,6 +10,7 @@ import { expect, test, type Page } from '@playwright/test'
 // 2026-11-18: and not a cast shadow. Item 485's morning sun is low in the west, and Cath, standing west of that pond at
 // the level's start, laid her 1.8x shadow across its middle (3D 17,72,83, a correct render). The check samples five
 // spots across the pond (each a 9x9 median, so a glint or the lily pad can't decide it) and compares the most sunlit.
+// (Now nine, and only the water-like ones: see pondColour.)
 const LEVEL = 31
 type HG = { game(): { level: { rows: number; terrain?: { water: Array<[number, number]> } } } | null; cellCenter(c: number, r: number): { x: number; y: number } | null }
 
@@ -32,12 +33,23 @@ async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, numbe
     const lv = hg.game()!.level
     const mid = (lv.rows - 1) / 2
     const [c, r] = [...lv.terrain!.water].sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid))[0]!
-    return [[0, 0], [-0.22, 0], [0.22, 0], [0, -0.22], [0, 0.22]].map(([dc, dr]) => hg.cellCenter(c + dc!, r + dr!))
+    const o = [-0.25, 0, 0.25]
+    return o.flatMap((dr) => o.map((dc) => hg.cellCenter(c + dc, r + dr)))
   })
   expect(spots.every(Boolean)).toBe(true)
-  const shot = await page.screenshot()
-  const samples = await Promise.all(spots.map((at) => median(page, shot, at!)))
-  return samples.sort((a, b) => lab(b)[0] - lab(a)[0])[0]!
+  // (three frames 1.2 s apart: the 3D water's colour breathes on a slow sine, so one frame sampled a random phase of it)
+  const samples: Array<[number, number, number]> = []
+  for (let k = 0; k < (mode === '3d' ? 3 : 1); k++) {
+    if (k) await page.waitForTimeout(1200)
+    const shot = await page.screenshot()
+    samples.push(...(await Promise.all(spots.map((at) => median(page, shot, at!)))))
+  }
+  // 2026-11-18 (lane B): in 3D the pond stands a little above its cell's centre and its near bank carries reeds, so a
+  // spot can land on the bank (3D 61,114,80 on CI: green, not water). Only water-like spots count (blue at least 0.9 of
+  // green; reeds and grass are greener), then the most sunlit of them, as before.
+  const water = samples.filter(([, g, b]) => b >= g * 0.9)
+  expect(water.length, `no water among ${JSON.stringify(samples)}`).toBeGreaterThan(0)
+  return water.sort((a, b) => lab(b)[0] - lab(a)[0])[0]!
 }
 
 async function median(page: Page, shot: Buffer, at: { x: number; y: number }): Promise<[number, number, number]> {
