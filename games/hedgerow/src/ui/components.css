@@ -4820,10 +4820,11 @@ body:has(#dlg-pause[open]) .paused-note {
 @media (min-width: 900px) and (min-height: 521px) {
   .play .tray-wrap .tray .tray-tower img,
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(7)) .tray-tower img {
-    width: 56px;
-    height: 56px;
+    /* Plan item 527: 60 px (was 56), the same packet height: 4 px more drawn up into the corner row */
+    width: 60px;
+    height: 60px;
     /* drawn up into the corner row but left of the price tag, so a tall tower's top (the Scarecrow's hat) shows */
-    margin: -10px 0 -8px;
+    margin: -12px 0 -10px;
     translate: -12px 0;
   }
   /* four to a row (72 px packets, two-line names): the packet's height stays as item 361 drew it (a role line under

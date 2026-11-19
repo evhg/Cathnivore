@@ -2955,7 +2955,12 @@ function towerTray(p: HTMLElement, g: Game): void {
   tray.setAttribute("role", "group");
   tray.setAttribute("aria-label", "Towers: drag one onto a plot");
   const gap = soonestGap(g);
-  for (const kind of g.level.towers) {
+  // Plan item 527: the rack is grouped by what each tower does (slows, shoots, splash, earns, boosts), cheapest first
+  // within a group, so the bands' colours run together like a seed rack's rows.
+  const roster = [...g.level.towers].sort(
+    (a, b) => ROLE_ORDER.indexOf(towerRole(a)) - ROLE_ORDER.indexOf(towerRole(b)) || towerCost(g, a) - towerCost(g, b),
+  );
+  for (const kind of roster) {
     if (!towerAllowed(g.level, kind)) continue;
     const cost = towerCost(g, kind);
     const b = document.createElement("button");
@@ -3090,6 +3095,8 @@ function towerTray(p: HTMLElement, g: Game): void {
 }
 
 const ROLE_NAMES: Record<TowerRole, string> = { slow: "Slows", splash: "Splash", boost: "Boosts", income: "Earns", shot: "Shoots" };
+/** Plan item 527: the rack's group order. */
+const ROLE_ORDER: readonly TowerRole[] = ["slow", "shot", "splash", "income", "boost"];
 /** Small ink glyphs for each role (24-unit viewBox, stroked in currentColor). */
 const ROLE_GLYPHS: Record<TowerRole, string> = {
   slow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c3-6 6-6 9 0s6 6 9 0"/></svg>',
