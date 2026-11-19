@@ -239,7 +239,7 @@ export class Board {
     const root = el('g', { class: `cell ${cell.kind}${cell.reservoir ? ' reservoir' : ''}${cell.bridge ? ' bridge' : ''}${ground ? ` ground-${ground}` : ''}`, transform: `translate(${x.toFixed(2)} ${y.toFixed(2)})` }, parent)
     root.style.setProperty('--ring', String(Math.max(Math.abs(cell.q), Math.abs(cell.r), Math.abs(cell.q + cell.r))))
     // Plan item 90: each tile a solid piece casting its shadow on the valley, with a lit bevel inside its dark rim.
-    el('polygon', { class: 'tile-shadow', points: hexPoints(S * 0.965), transform: 'translate(1.5 4.5)' }, root)
+    el('polygon', { class: 'tile-shadow', points: hexPoints(S * 0.965), transform: 'translate(1 2)' }, root)
     // Plan item 264: the piece's thickness: its side, a darker band of the same earth under its face.
     el('polygon', { class: 'tile-side', points: hexPoints(S * 0.965), transform: `translate(0 ${TILE_SIDE})` }, root)
     el('polygon', { class: 'tile', points: hexPoints(S * 0.965) }, root)

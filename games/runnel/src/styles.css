@@ -1737,7 +1737,8 @@ body {
    further and softens. The tile itself stays put (the board is fitted to its tiles' boxes; raising one moved the
    board 11 px down at P). */
 .cell > .tile-shadow { transition: translate 220ms var(--ease-out, ease-out), filter 220ms; }
-.cell:is(.tip, .lesson-target) > .tile-shadow { translate: 1px 4px; filter: blur(2.5px); opacity: 0.9; }
+/* Plan item 516: the lifted tile's shadow stays within 2 px (the poster's flat light): it lifts by its blur, not a drop */
+.cell:is(.tip, .lesson-target) > .tile-shadow { translate: 0 0; filter: blur(2.5px); opacity: 0.9; }
 @media (prefers-reduced-motion: reduce) {
   .cell > .tile-shadow { transition: none; }
 }
