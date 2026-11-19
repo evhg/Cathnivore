@@ -4871,7 +4871,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D of portfolio, /games/, Runnel and the Hedgerow menu.
 - **Size:** 3
 
-## 525. [ ] Cathnivore table: the land stays warm under Hollowell, who sits on it as glossy plastic *(lane A, in progress)*
+## 525. [x] Cathnivore table: the land stays warm under Hollowell, who sits on it as glossy plastic *(done 2026-11-19 13:10, lane A, `0d2fbc6`, `3802af0`, key art `0faecf1`: land at saturate 1.6 (freed 1.7), no grey; Hollowell's hold a clear shrink-wrap (streak with a hard edge, glint, creases; dug in: taut edge, cold spot pool); Outlets chrome-rimmed; a 750 ms peel on liberation (a fade under reduced motion); wrap colours are tokens. Board saturation round 1 at D, seed 7: 0.241 -> 0.332 light (1.38x, 2% short of 1.4: pushing further turns the crop hexes lemon), 0.266 -> 0.359 dark; name plates unchanged (opaque paper); held vs freed apart by the wrap's highlights. board-control and moments specs rewritten to the new contract; shots P and D, light and dark, title and Setup, in scratchpad s525)*
 - **Why:** `cath-game-D` (plan1119c) 590-1220 x 110-710, `cath-game-P` 15-375 x 140-470, `cath-setup-D` 405-990 x 255-830, `cath-title-D` 865-1365 x 285-735: every occupied region sits under a grey-blue crackle wash, so the table reads cold and dull for most of a match. VISION 2 says the table is the most beautiful thing on screen. VISION's art direction sets the players' world as warm paper, ink and flat colour, and the corporations as glossy, plastic and over-lit: the wash greys the land instead of laying plastic over it.
 - **Build:** `src/ui` (the region renderer) and `src/styles`:
   - Each region keeps its warm palette and paper texture at full strength.
