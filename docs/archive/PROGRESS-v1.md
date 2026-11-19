@@ -4220,3 +4220,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-18 22:21 lane B: 506 slices 5-6 and done; render3d unit tests and keyart-fresh (168), Hedgerow growth/3dframe/closeframe/water/biome3d/shadow3d (P, D, 47 twice), 486 measure l5/21/34/40, drawcalls before/after.
 - 2026-11-18 23:21 lane B: E2E red fixed (two cathode-front specs, reproduced and passing locally; cathode-front + title-focal D 25 pass); 496 slice 4; hedgerow map/masthead/ambient/level-card (P, D, 62) pass.
 - 2026-11-19 00:22 lane B: E2E red fixed (5a3a0a7); cathode-front/title-focal/frontpage/dossier (D, 28, no retries), captions (P, D) pass. Container restarted mid-session (one spec run lost and rerun). No plan item.
+- 2026-11-19 01:21 lane B: 511 slices 1-3 and done; hedgerow-convoy (new), tray, round-chips, rack, rack-roles, level-card, critique79 Hedgerow (P, D, --retries=0) pass; shots 2D/3D at 1440, 1280, 844x390.
