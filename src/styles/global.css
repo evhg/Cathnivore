@@ -4716,3 +4716,177 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
   /* Plan item 507: a narrow desktop's nameplates keep the power's whole word (the stamp's picture steps out). */
   .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp svg { display: none; }
 }
+
+/* Plan item 533: at D every Setup choice is an object on the stall, not a form field. The mode is a place setting
+   (one seat or two, the picked one set with cups), the maps are folded paper maps (the picked one opened flat),
+   the difficulty three Hollowell memo slips stamped EASY / NORMAL / HARD (the picked one pinned, its numbers written
+   on the memo under them) and Cath's pins sit on a ribbon, the locked ones as empty outlines naming their week.
+   The radios stay radios, covering each object; nothing of this shows below D. */
+.setup .place-setting, .setup .memo-slip, .setup .difficulty-sheet .memo-head, .setup .difficulty-sheet .memo-stamp { display: none; }
+@media (min-width: 1100px) {
+  /* Mode: the place setting beside the card's words. */
+  .setup[data-steps] .setup-table[data-setup-table] .setup-mode .segmented.mode-picker label[data-place-card] {
+    flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; padding: 6px 8px 6px 6px;
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .setup-mode .segmented.mode-picker label[data-place-card] span.place-word { text-align: start; line-height: 1.1; }
+  .setup[data-steps] .setup-table[data-setup-table] .place-setting { display: block; flex: none; width: 46px; height: 26px; overflow: visible; }
+  .setup .place-setting .ps-cloth { fill: none; stroke: color-mix(in srgb, var(--clay) 45%, transparent); stroke-width: 1.5; stroke-dasharray: 3 2; }
+  .setup .place-setting .ps-plate { fill: var(--paper-hi); stroke: var(--ink); stroke-width: 1.3; }
+  .setup .place-setting .ps-well { fill: none; stroke: color-mix(in srgb, var(--ink) 35%, transparent); stroke-width: 1; }
+  .setup .place-setting .ps-cutlery { fill: none; stroke: var(--soil); stroke-width: 1.4; stroke-linecap: round; }
+  .setup .place-setting .ps-cup { opacity: 0; transform: translateY(3px); transition: opacity 180ms var(--ease-settle), transform 180ms var(--ease-settle); }
+  .setup .place-setting .ps-cup > path:first-child { fill: var(--clay); stroke: var(--ink); stroke-width: 1; stroke-linejoin: round; }
+  .setup .place-setting .ps-handle { fill: none; stroke: var(--ink); stroke-width: 1.1; }
+  .setup .place-setting .ps-steam { fill: none; stroke: color-mix(in srgb, var(--ink) 40%, transparent); stroke-width: 0.9; stroke-linecap: round; }
+  .setup label[data-place-card]:has(input:checked) .place-setting .ps-cup { opacity: 1; transform: none; }
+
+  /* Maps: folded paper maps, three panels creased; the picked one opened flat, lifted, its crease marks gone. */
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile {
+    border: 0; border-radius: 2px; --lay: 0deg;
+    background:
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--ink) 10%, transparent) 0 33.3%, color-mix(in srgb, var(--paper-hi) 60%, transparent) 33.3% 33.6%,
+        transparent 33.6% 66.6%, color-mix(in srgb, var(--ink) 10%, transparent) 66.6% 66.9%, color-mix(in srgb, var(--ink) 8%, transparent) 66.9%),
+      var(--mat-paper);
+    box-shadow: 0 0 0 1px var(--rule), 0 2px 3px color-mix(in srgb, var(--ink) 14%, transparent);
+    transform: perspective(500px) rotateY(-9deg) scale(0.97); transform-origin: 0 50%;
+    transition: transform 200ms var(--ease-settle), box-shadow 200ms var(--ease-settle);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile:hover { transform: perspective(500px) rotateY(-4deg) scale(0.985); }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile:has(input:checked) {
+    transform: translateY(-2px); background: var(--mat-paper);
+    box-shadow: 0 0 0 1px var(--rule), 0 0 0 3px var(--wheat), 0 8px 14px color-mix(in srgb, var(--ink) 22%, transparent);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile:has(input:focus-visible) { outline: var(--focus-w, 3px) solid var(--focus); outline-offset: 3px; }
+  /* the map's own hexes printed in its corner, ink-framed like a map's cartouche */
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .board-mini { filter: saturate(0.75); transition: filter 200ms var(--ease-settle); }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile:has(input:checked) .board-mini { filter: none; }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-name { font-family: var(--font-display); font-weight: 650; }
+
+  /* Difficulty: three memo slips stamped with their level; the picked one pinned and upright. */
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented { gap: 8px; padding-top: 6px; }
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented label.price-tag {
+    display: block; flex: 1 1 0; min-width: 0; height: 50px; min-height: 50px; padding: 0; clip-path: none; border-radius: 1px;
+    font-family: var(--font-text); font-style: normal; font-size: var(--fs-small); text-transform: none;
+    background: var(--mat-paper); color: var(--ink); filter: none;
+    box-shadow: 0 0 0 1px var(--rule), 0 2px 3px color-mix(in srgb, var(--ink) 16%, transparent);
+    transform: rotate(var(--hang, 0deg)) scale(0.96); transform-origin: 50% 0;
+    transition: transform 200ms var(--ease-settle), box-shadow 200ms var(--ease-settle);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag[data-tag='easy'] { --hang: -3deg; }
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag[data-tag='normal'] { --hang: 1.5deg; }
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag[data-tag='hard'] { --hang: 3deg; }
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented label.price-tag:hover { transform: rotate(var(--hang)) scale(0.99); }
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented label.price-tag:has(input:checked) {
+    transform: translateY(-3px); color: var(--ink); background: var(--mat-paper);
+    box-shadow: 0 0 0 1px var(--rule), 0 8px 12px color-mix(in srgb, var(--ink) 24%, transparent);
+  }
+  /* the pin through the picked slip's head */
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag::after {
+    content: ''; position: absolute; top: -5px; left: 50%; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--hollowell-highlight), var(--hollowell-lo) 60%, var(--hollowell-ink));
+    box-shadow: 1px 2px 2px color-mix(in srgb, var(--ink) 35%, transparent);
+    opacity: 0; transform: scale(0.4); transition: opacity 160ms var(--ease-settle), transform 160ms var(--ease-settle);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag:has(input:checked)::after { opacity: 1; transform: none; }
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag > span:not(.memo-slip) { position: absolute; inset: 0; overflow: hidden; font-size: 0; color: transparent; }
+  .setup[data-steps] .setup-table[data-setup-table] .memo-slip { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 5px 6px 6px; }
+  .setup[data-steps] .setup-table[data-setup-table] .memo-slip > span { position: static; inset: auto; display: block; width: auto; height: auto; padding: 0; transform: none; }
+  .setup[data-steps] .setup-table[data-setup-table] .memo-slip > .memo-slip-lines { flex: 1 1 auto; }
+  .setup[data-steps] .setup-table[data-setup-table] .memo-slip > .memo-slip-stamp { position: absolute; left: 50%; top: 62%; width: auto; height: auto; padding: 1px 5px; transform: translate(-50%, -50%) rotate(-8deg); }
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag[data-tag='hard'] .memo-slip > .memo-slip-stamp { transform: translate(-50%, -50%) rotate(-5deg); }
+  .setup .memo-slip-head {
+    justify-self: stretch; padding-bottom: 2px; border-bottom: 2px solid var(--hollowell); font-size: var(--fs-caption); font-weight: 800;
+    letter-spacing: 0.12em; line-height: 1; text-transform: uppercase; text-align: start; color: var(--hollowell-ink);
+  }
+  .setup .memo-slip-lines {
+    flex: 1 1 auto; margin-top: 4px;
+    background: repeating-linear-gradient(180deg, transparent 0 5px, color-mix(in srgb, var(--ink) 16%, transparent) 5px 6px);
+  }
+  .setup .memo-slip-stamp {
+    position: absolute; left: 50%; top: 62%; padding: 1px 5px; border: 2px solid var(--short-ink-shelf); border-radius: 3px;
+    background: color-mix(in srgb, var(--paper-hi) 75%, transparent); color: var(--short-ink-shelf);
+    font-size: var(--fs-caption); font-weight: 800; letter-spacing: 0.08em; line-height: 1.1; text-transform: uppercase; white-space: nowrap;
+    transform: translate(-50%, -50%) rotate(-8deg); opacity: 0.8;
+  }
+  .setup .price-tag:has(input:checked) .memo-slip-stamp { opacity: 1; }
+  .setup .price-tag[data-tag='hard'] .memo-slip-stamp { transform: translate(-50%, -50%) rotate(-5deg); }
+
+  /* The picked memo under the slips, pinned to the cloth: letterhead, stamp, the numbers written on its lines. */
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet {
+    position: relative; display: block; margin: 2px 0 0; padding: 8px 12px 8px; border-radius: 1px;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 calc(1.35em - 1px), color-mix(in srgb, var(--focus) 14%, transparent) calc(1.35em - 1px) 1.35em) 0 2.6em / 100% calc(100% - 2.6em) no-repeat,
+      var(--mat-paper);
+    box-shadow: 0 0 0 1px var(--rule), 0 6px 10px color-mix(in srgb, var(--ink) 16%, transparent);
+    transform: rotate(-0.8deg);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet::before {
+    content: ''; position: absolute; top: -6px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--hollowell-highlight), var(--hollowell-lo) 60%, var(--hollowell-ink));
+    box-shadow: 1px 2px 2px color-mix(in srgb, var(--ink) 35%, transparent);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet .memo-head {
+    display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 4px; padding-bottom: 3px; border-bottom: 2px solid var(--hollowell);
+    font-size: var(--fs-caption); font-weight: 800; letter-spacing: 0.05em; line-height: 1.1; text-transform: uppercase; white-space: nowrap; color: var(--hollowell-ink);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet .memo-stamp {
+    display: inline-block; margin: -4px 0 -2px; padding: 1px 6px; border: 2px solid var(--short-ink-shelf); border-radius: 3px;
+    color: var(--short-ink-shelf); font-size: var(--fs-caption); font-weight: 800; letter-spacing: 0.1em; line-height: 1.15; text-transform: uppercase;
+    transform: rotate(-10deg); opacity: 0.85; pointer-events: none;
+  }
+  /* The memo is Hollowell's: Cath's line on the level is said in her own bubble (her one voice), not written on it. */
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet .difficulty-line { display: none; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet dl { display: block; margin: 0; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet dl > div { display: block; position: relative; padding: 0 0 0 12px; font-size: var(--fs-small); line-height: 1.35; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet :is(dt, dd) { display: inline; padding: 0; font-size: var(--fs-small); line-height: 1.35; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet dt { font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--ink); }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet dt::after { content: ':'; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet dd { margin: 0 0 0 0.3em; font-family: var(--font-voice); font-style: italic; color: var(--ink); }
+  /* what differs from Normal: ticked in Hollowell's orange pencil */
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet .is-changed::before {
+    left: 0; top: 0.68em; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--hollowell);
+  }
+
+  /* Pins: enamel pins on a ribbon; a locked one an empty outline naming the week that awards it. */
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin { padding: 0; border: 0; background: none; box-shadow: none; transform: none; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin ul { position: relative; justify-content: space-around; gap: 4px; padding: 0 6px; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin ul::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 18px;
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--paper-hi) 18%, transparent) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, color-mix(in srgb, var(--clay) 80%, var(--paper-hi)), var(--clay) 45%, var(--clay-deep));
+    clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%, 8px 50%);
+    box-shadow: 0 2px 2px color-mix(in srgb, var(--ink) 20%, transparent);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li { position: relative; flex: 1 1 0; gap: 2px; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin svg { width: 38px; height: 38px; border: 0; background: var(--paper-hi); box-shadow: 0 2px 3px color-mix(in srgb, var(--ink) 35%, transparent); }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li[data-earned] svg { border: 3px solid var(--wheat); }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li:not([data-earned]) svg {
+    filter: none; opacity: 1; box-shadow: none; outline: 0;
+    background: color-mix(in srgb, var(--paper-hi) 80%, transparent); border: 2px dashed color-mix(in srgb, var(--ink) 55%, transparent);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li:not([data-earned]) svg > * { opacity: 0; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li[data-week]:not([data-earned]) svg { border-color: var(--short-ink-shelf); border-style: dashed; border-width: 2.5px; outline: 0; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin .pin-when {
+    position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal;
+    max-width: 100%; white-space: normal; text-wrap: balance;
+    font-size: var(--fs-caption); line-height: 1.1; text-align: center; color: var(--ink);
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li[data-week] .pin-when { color: var(--short-ink-shelf); }
+}
+@media (min-width: 1100px) and (max-height: 860px) {
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented label.price-tag { height: 46px; min-height: 46px; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet { padding: 6px 10px; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet .memo-head { margin-bottom: 2px; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet :is(dt, dd) { font-size: var(--fs-caption); line-height: 1.3; }
+  .setup[data-steps] .setup-table[data-setup-table] .difficulty-sheet dl > div { font-size: var(--fs-caption); line-height: 1.3; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin svg { width: 30px; height: 30px; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin ul::before { top: 7px; height: 16px; }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .setup .place-setting .ps-cup,
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile,
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented label.price-tag,
+  .setup[data-steps] .setup-table[data-setup-table] .price-tag::after { transition: opacity 120ms linear; }
+}

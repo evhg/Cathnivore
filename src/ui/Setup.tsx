@@ -110,7 +110,9 @@ export default function Setup({ onStart }: Props) {
       {/* Plan item 204: at D each mode is a tent place card standing on a ledge, the picked one upright, the other
           laid flat; the phone keeps its chairs. */}
       <div className="segmented mode-picker">
-        <label data-place-card="solo">
+        <label data-place-card="solo" data-setup-choice="mode">
+          {/* Plan item 533: at D each mode is a place setting laid at the stall, the picked one set with cups. */}
+          <PlaceSetting seats={1} />
           <span className="place-word" aria-hidden="true">You and an AI</span>
           <span className="mode-name">
             <input type="radio" name="mode" aria-label="Solo (with an AI teammate)" checked={mode === 'solo'} onChange={() => setMode('solo')} /> Solo
@@ -122,7 +124,8 @@ export default function Setup({ onStart }: Props) {
             <Seat who={producers[1] ?? 'tomas'} tag="AI" ai={true} />
           </span>
         </label>
-        <label data-place-card="hotseat">
+        <label data-place-card="hotseat" data-setup-choice="mode">
+          <PlaceSetting seats={2} />
           <span className="place-word" aria-hidden="true">Two at the table</span>
           <span className="mode-name">
             <input type="radio" name="mode" aria-label="Hot-seat (two humans)" checked={mode === 'hotseat'} onChange={() => setMode('hotseat')} /> Hot-seat
@@ -143,7 +146,9 @@ export default function Setup({ onStart }: Props) {
       </h2>
       <div className="segmented">
         {(['easy', 'normal', 'hard'] as const).map((d) => (
-          <label key={d} className="price-tag" data-tag={d}>
+          <label key={d} className="price-tag" data-tag={d} data-setup-choice="difficulty">
+            {/* Plan item 533: at D each level is a Hollowell memo slip stamped with its word; the picked one is pinned. */}
+            <MemoSlip level={d} />
             <span>
               <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
               {d}
@@ -165,7 +170,7 @@ export default function Setup({ onStart }: Props) {
         </div>
         <div className="producer-grid">
           {ALL_PRODUCER_IDS.map((id) => (
-            <label key={id} className="producer-card" data-producer={id} data-seat={producers.includes(id) ? id : undefined} onMouseEnter={rail ? () => playPower([id]) : undefined} onFocus={rail ? () => playPower([id]) : undefined}>
+            <label key={id} className="producer-card" data-setup-choice="producer" data-producer={id} data-seat={producers.includes(id) ? id : undefined} onMouseEnter={rail ? () => playPower([id]) : undefined} onFocus={rail ? () => playPower([id]) : undefined}>
               <input
                 type="checkbox"
                 aria-label={`${PRODUCERS[id].name}, ${PRODUCERS[id].roleName}. ${PRODUCERS[id].roleAbility}${RECOMMENDED_PAIR.includes(id) ? ' Recommended.' : ''}`}
@@ -229,7 +234,7 @@ export default function Setup({ onStart }: Props) {
         {rail ? <OpeningPreview picks={picks} seed={seed} showcase={preview} /> : <MapStage layout={layout} onPick={setLayout} />}
         <div className="layout-picker" role="radiogroup" aria-label="Map">
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
-            <label key={id} className="layout-tile" data-layout={id}>
+            <label key={id} className="layout-tile" data-layout={id} data-setup-choice="map">
               <input type="radio" name="layout" checked={layout === id} onChange={() => setLayout(id)} />
               <BoardMiniature id={id} />
               <span className="layout-name">{LAYOUTS[id].name}</span>
@@ -498,12 +503,47 @@ function PinTin({ week }: { week: MarketEventId }) {
             <li key={pin} data-pin={pin} data-earned={has || undefined} data-week={ev === week || undefined}>
               <svg viewBox="-16 -16 32 32" aria-hidden="true" dangerouslySetInnerHTML={{ __html: pinSvg(pin) }} />
               <span className="pin-name">{PINS[pin].name}</span>
-              <span className="pin-when">{has ? 'Earned' : ev === week ? 'Win this week' : MARKET_EVENTS[ev].name}</span>
+              <span className="pin-when">{has ? 'Earned' : ev === week ? 'This week' : MARKET_EVENTS[ev].name}</span>
             </li>
           )
         })}
       </ul>
     </div>
+  )
+}
+
+/** Plan item 533: a mode at D as a place setting on the stall: a plate, fork and knife per seat, and a cup each,
+ * which only shows (CSS) on the picked one. */
+function PlaceSetting({ seats }: { seats: 1 | 2 }) {
+  const xs = seats === 1 ? [30] : [17, 45]
+  const r = seats === 1 ? 11 : 9
+  return (
+    <svg className="place-setting" viewBox="0 0 60 34" aria-hidden="true" focusable="false">
+      <path className="ps-cloth" d="M3 27h54" />
+      {xs.map((x) => (
+        <g key={x}>
+          <path className="ps-cutlery" d={`M${x - r - 4} ${17 - r + 2}v${2 * r - 2}M${x - r - 5.5} ${17 - r + 2}v4M${x - r - 2.5} ${17 - r + 2}v4M${x + r + 4} ${17 - r + 2}v${2 * r - 2}`} />
+          <ellipse className="ps-plate" cx={x} cy={17} rx={r} ry={r * 0.62} />
+          <ellipse className="ps-well" cx={x} cy={17} rx={r * 0.58} ry={r * 0.36} />
+          <g className="ps-cup">
+            <path d={`M${x + r - 1} ${7}h7l-1 6h-5Z`} />
+            <path className="ps-handle" d={`M${x + r + 6} ${8.5}a2 2 0 0 1 0 3.2`} />
+            <path className="ps-steam" d={`M${x + r + 2} ${5}q1-1.5 0-3M${x + r + 4.5} ${5}q1-1.5 0-3`} />
+          </g>
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+/** Plan item 533: a difficulty at D as one of Hollowell's memo slips, the level stamped across it in red. */
+function MemoSlip({ level }: { level: GameConfig['difficulty'] }) {
+  return (
+    <span className="memo-slip" aria-hidden="true">
+      <span className="memo-slip-head">Memo</span>
+      <span className="memo-slip-lines" />
+      <span className="memo-slip-stamp">{level}</span>
+    </span>
   )
 }
 
@@ -602,7 +642,11 @@ function DifficultySheet({ difficulty }: { difficulty: GameConfig['difficulty'] 
   if (s.extraHomeStalls) rows.push(['Home', `+${s.extraHomeStalls} Stall to start`, true])
   if (difficulty === 'hard') rows.push(['Pastures', '1 Doubt each', true])
   return (
-    <div className="difficulty-sheet" aria-live="polite">
+    <div className="difficulty-sheet" aria-live="polite" data-level={difficulty}>
+      {/* Plan item 533: at D the sheet is the picked memo, pinned: Hollowell's letterhead and the level's stamp. */}
+      <p className="memo-head" aria-hidden="true">
+        <span>Hollowell memo</span> <span className="memo-stamp">{difficulty}</span>
+      </p>
       <p className="difficulty-line">“{DIFFICULTY_LINE[difficulty]}”</p>
       <dl>
         {rows.map(([k, v, changed]) => (

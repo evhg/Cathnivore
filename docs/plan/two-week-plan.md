@@ -5039,7 +5039,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 533. [ ] Cathnivore desktop Setup: every choice an object on the stall, not a form field *(lane A, in progress)*
+## 533. [x] Cathnivore desktop Setup: every choice an object on the stall, not a form field *(done 2026-11-19 18:10 lane A: the mode two place settings (one plate or two, cups set on the picked one), the maps folded paper maps (three creased panels; the picked one opened flat, lifted, wheat-ringed), the difficulty three Hollowell memo slips stamped EASY / NORMAL / HARD (the picked one pinned and upright) over the picked memo with its numbers written a line each under a Hollowell letterhead and stamp (Cath's quote moved off Hollowell's memo: her bubble says it), Cath's pins on a clay ribbon, a locked one a dashed outline naming its week. Every `[data-setup-choice]` holds art, its input invisible over it; fits 1280x800 and 1440x900 at every level; new setup-objects spec (illustration per choice, pin/lift by 250 ms, memo lines, ribbon, keyboard); setup-*, layouts, board-diorama, accessibility pass (P, D, --retries=0); P unchanged. Shots scratchpad before-/a4-*)*
 - **Why:** `cath-setup-D` (plan1119e) 95-375 x 110-800: around item 502/507's opening table, the left column is a stack of form controls:
   - two tab buttons (105-255 x 115-215);
   - three list rows with tiny hex thumbnails (105-370 x 258-435);
