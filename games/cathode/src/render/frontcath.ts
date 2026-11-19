@@ -234,6 +234,11 @@ const NOSE_LIGHT = 0.12;
 const NOSE_CAST = 0.24;
 // A lower climb than the key's own (0.75 / 0.67 / NOSE_KEY_X): at the key's height the shadow hid under the tip.
 const NOSE_CAST_SLOPE = 0.45;
+/** Plan item 319 slice 74: the side-swept fringe's line on the forehead (skull metres, x her left), parting to temple. */
+const FRINGE: ReadonlyArray<readonly [number, number]> = [[-0.008, 0.062], [-0.036, 0.053], [-0.058, 0.036]];
+/** Plan item 319 slice 96: its shadow on the forehead: how far below its centre line (m: the lock is about 3 cm wide, so
+ * its lower edge lies 13-16 mm below), its widest stroke, its depth. */
+const FRINGE_SHADE = { drop: 0.017, width: 0.012, alpha: 0.26 };
 
 /** Merges non-indexed copies of geometries that share position and normal attributes. */
 function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
@@ -1590,6 +1595,25 @@ export function buildFrontCath(phone: boolean): FrontCath {
               h.stroke();
             }
           }
+          // Plan item 319 slice 96: the side-swept fringe (slice 74, `FRINGE`) casts its shadow on the forehead: it
+          // rides 5 mm off the skin, and the bare forehead under it lit right up to its edge, so the lock read as
+          // pasted on (the 11-19 16:55 critique: 'the forehead ends in a hard edge against the hair'). A soft warm
+          // shade a few millimetres under its line, deepest at the parting where it lies flattest.
+          {
+            const fr = FRINGE.map(([x, y]) => {
+              const nx = x / 0.072;
+              const ny = y / 0.098;
+              const n = V(nx, ny, Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny))).normalize();
+              return [0.072 * (Math.atan2(n.z, -n.x) - Math.PI / 2), 0.098 * Math.asin(n.y)] as const;
+            });
+            for (let w = FRINGE_SHADE.width; w > 0.0015; w -= 0.0015) {
+              h.strokeStyle = `rgba(92,52,44,${(FRINGE_SHADE.alpha * (1 - w / FRINGE_SHADE.width) + 0.03).toFixed(3)})`;
+              h.lineWidth = w;
+              h.beginPath();
+              fr.forEach(([x, y], i) => (i ? h.lineTo(x, y - FRINGE_SHADE.drop) : h.moveTo(x, y - FRINGE_SHADE.drop)));
+              h.stroke();
+            }
+          }
           h.globalCompositeOperation = "destination-in";
           const fade = h.createLinearGradient(0, 0.012, 0, 0.03);
           fade.addColorStop(0, "rgba(0,0,0,0)");
@@ -2234,9 +2258,7 @@ float reliefShade( vec2 uv ) {
       const sk = (x: number, y: number, lift: number) => V(x, y, Math.max(skullZ(x, Math.min(y, 0.05)), 0.04) + lift);
       strand([
         capShape(0.84, 0.05, 0.02).applyMatrix4(capPlace),
-        sk(-0.008, 0.062, 0.005),
-        sk(-0.036, 0.053, 0.005),
-        sk(-0.058, 0.036, 0.005),
+        ...FRINGE.map(([x, y]) => sk(x, y, 0.005)),
         V(-0.073, 0.006, 0.05),
       ], -1, 1.15, 0.25, false);
     }
