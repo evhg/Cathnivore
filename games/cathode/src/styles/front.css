@@ -1381,7 +1381,9 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .front-page .fp-mast { grid-column: 1 / -1; padding-bottom: 2px; border-bottom: 1px solid var(--news-ink); } /* px-ok */
   .front-page .fp-title { font-size: var(--fs-1); }
   .front-page .fp-date, .front-page .fp-dek, .front-page .fp-classified, .front-page .dossier-no, .front-page .dossier-kicker { display: none; }
-  .front-page .fp-head { grid-column: 1 / -1; font-size: var(--fs-1); line-height: 1.05; }
+  /* plan item 512: a size up, so the story outranks the case file's 13 px lines under it (condensed at the same
+     size it read smaller than 'Tomas Reed') */
+  .front-page .fp-head { grid-column: 1 / -1; font-size: var(--fs-3); line-height: 1; }
   .front-page .fp-body { display: contents; }
   .front-page .fp-photo { grid-row: auto; height: 70px; } /* px-ok: the photo 64 px or more (plan item 379) */
   .front-page .fp-col, .front-page .fp-file { display: grid; align-content: start; }
@@ -1391,7 +1393,7 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
 /* a short phone (375x667): the band under the menu is about 126 px, so the headline stands beside the photo with
    the name under it, and the place and tag step back (the menu hint carries them) */
 @media (max-width: 600px) and (orientation: portrait) and (max-height: 720px) {
-  .front-page .fp-head { grid-column: 2; grid-row: 2; }
+  .front-page .fp-head { grid-column: 2; grid-row: 2; font-size: var(--fs-1); line-height: 1.05; }
   .dossier.front-page { row-gap: 2px; padding-block: 3px 4px; } /* px-ok */
   .front-page .fp-photo { grid-column: 1; grid-row: 2 / span 2; height: 66px; } /* px-ok: 64 px or more (item 379) */
   .front-page .fp-col { grid-column: 2; grid-row: 3; }

@@ -13,6 +13,9 @@ async function liberate(page: Page) {
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
   await page.waitForFunction(() => typeof (window as unknown as { cathnivoreMoment?: unknown }).cathnivoreMoment === 'function')
+  // The deal's own beat (round 1's pair opener, 1.2 s after the table opens) replaces a reply staged before it: let
+  // the opening speak first (on 2026-11-19's market the staged reply lost that race every time).
+  await page.waitForTimeout(2500)
   await page.evaluate(() => (window as unknown as { cathnivoreMoment: (k: string, r: string) => void }).cathnivoreMoment('liberate', 'kingsmarket'))
   const line = page.locator('[data-producer-line][data-beat=liberated]')
   await expect(line).toBeVisible({ timeout: 5000 })
@@ -41,7 +44,8 @@ for (const [width, height] of sizes) {
     if (cath) expect(meets(box, cath), 'her bubble').toBe(false)
     // Plan item 495: one voice at a time: her line steps back while the producer speaks, and comes back after.
     await expect(page.locator('.table-cath-line[data-hushed]')).toHaveCount(1)
-    expect(await page.locator('.table-cath-line').evaluate((e) => parseFloat(getComputedStyle(e).opacity))).toBeLessThan(0.5)
+    // Item 512: it steps back in ink (--ink-muted, about 5.9:1 on the bubble), not opacity, so it still reads at AA.
+    expect(await page.locator('.table-cath-line').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(110, 98, 90)')
     const map = (await page.locator('.map-wrap').boundingBox())!
     expect(box.x).toBeGreaterThanOrEqual(map.x)
     expect(box.x + box.width).toBeLessThanOrEqual(map.x + map.width + 1)

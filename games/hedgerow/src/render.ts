@@ -1970,6 +1970,17 @@ export class Renderer {
     ctx.fill();
     ctx.fillStyle = "#ff7a1a";
     ctx.fillRect(r.x + 3, r.y + r.h - 3, r.w - 6, 2);
+    // Plan item 512: beside the lead, the gap that clears its drawn body left the tag floating apart from it (over the
+    // sea at D l21); a short leader in the tag's ink ties it to its vehicle.
+    const lx0 = r.x + r.w <= lead.x ? r.x + r.w : r.x >= lead.x + lead.w ? lead.x + lead.w * 0.85 : NaN;
+    const lx1 = r.x + r.w <= lead.x ? lead.x + lead.w * 0.15 : r.x;
+    if (!Number.isNaN(lx0) && lx1 - lx0 > 2) {
+      ctx.fillStyle = "#1e2b34";
+      ctx.fillRect(lx0, r.y + r.h / 2 - 1, lx1 - lx0, 2);
+      ctx.beginPath();
+      ctx.arc(r.x + r.w <= lead.x ? lx1 : lx0, r.y + r.h / 2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.fillStyle = "#f4fbfb";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

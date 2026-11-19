@@ -2979,7 +2979,10 @@ html.no-animations .cath-companion .cameo {
     transition: opacity var(--dur-quick) ease-out, scale var(--dur-quick) ease-out;
   }
   /* Plan item 495: one voice at a time; while a producer answers, her line steps back and comes in again after. */
-  .table-cath-line[data-hushed] { opacity: .38; scale: .96; transform-origin: 50% 100%; }
+  /* Plan item 512: it steps back in ink, not opacity (.38 left her words at about 2.4:1 on the bubble), so the
+     quiet line still reads at AA. */
+  .table-cath-line[data-hushed] { scale: .96; transform-origin: 50% 100%; box-shadow: none; }
+  .table-cath-line[data-hushed], .table-cath-line[data-hushed] * { color: var(--ink-muted); }
   /* The tail points down at her mouth. */
   .table-cath-line::after {
     content: "";
@@ -4494,15 +4497,16 @@ html.no-animations .table-cath-line { animation: none; }
   align-items: center;
   gap: 2px;
   width: 100%;
-  padding: 0 4px 0 2px;
+  padding: 0 6px 0 2px;
   border-radius: var(--r-xs);
   background: color-mix(in srgb, var(--paper-hi) 92%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wood-lo) 55%, transparent), 0 2px 0 var(--wood-lo);
   color: var(--ink);
 }
 .partner-mat-stores .mat-art { width: 24px; height: auto; aspect-ratio: 64 / 60; flex: none; }
-.partner-mat-count { font-weight: 760; font-size: var(--fs-small); }
-.partner-mat-stores .farm-income { margin-left: auto; font-size: var(--fs-label); font-weight: 700; color: var(--ink); } /* plan item 273: it read faint on the small chip */
+.partner-mat-count { font-weight: 760; font-size: var(--fs-body); line-height: 1; }
+/* plan item 273: it read faint on the small chip; item 512: a step up (12 px read cramped beside a 14 px count) */
+.partner-mat-stores .farm-income { margin-left: auto; font-size: var(--fs-small); font-weight: 700; color: var(--ink); }
 .partner-mat-slots { grid-area: slots; display: flex; gap: 3px; margin: 0; padding: 0; list-style: none; }
 .partner-slot {
   width: 20px;
