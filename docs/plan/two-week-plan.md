@@ -4974,7 +4974,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D, 2D and 3D.
 - **Size:** 3
 
-## 530. [ ] /games/ phone: each game a full-width poster with Cath in its role
+## 530. [ ] /games/ phone: each game a full-width poster with Cath in its role *(lane A, in progress)*
 - **Why:**
   - `games-P` (plan1119d) 20-370 x 625-844: the four games are two 170 px cards side by side, the art cut to about 170x115 thumbnails, the blurbs three lines.
   - Every card wears the same small Cath sticker at its edge (150-185 and 330-365 x 680-735), and no Play shows in the first screen.
@@ -4994,7 +4994,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D.
 - **Size:** 2
 
-## 531. [ ] Cathnivore desktop: Hollowell's plan as his glossy corporate plaque, its targets lit on the board *(lane A, in progress)*
+## 531. [x] Cathnivore desktop: Hollowell's plan as his glossy corporate plaque, its targets lit on the board *(done 2026-11-19 16:10 lane A, `06a665cc`, `d32d82fe`: at D the three moves sit on one polished-graphite plaque with an over-lit gloss and chrome rim, running on under Pell's medallion (docked); a chrome tab under it reads 'Hollowell Quarterly Plan' and, while a move is hovered, focused or pinned, quotes its slogan in his voice (`planSlogans.ts`, by card id, naming its first target) signed G. Pell; every word on the plaque 13 px+ (chips and stage tag were 12.5) at AA light and dark (axe); the hexes a looked-at move hits are outlined in Hollowell orange (were wheat, like your own targeting), phone too. Board box unchanged at 1440x900 and 1280x800 (measured); plan-plaque (new), plan-cards, plan-strip, papers-placard, desktop-no-scroll, plan-corp, rival pass; shots scratchpad s531 (b-/a-/o- D, Dd, D1280, P))*
 - **Why:**
   - `cath-game-D` (plan1119d) 565-1165 x 15-85: Hollowell's three moves (Squeeze, Expand, Scout) are pale-blue tickets with about 11 px lines ('Arms next round') and pip dots. They read as UI chips, not the antagonist.
   - His portrait (1185-1310 x 12-145) stands apart from them.
