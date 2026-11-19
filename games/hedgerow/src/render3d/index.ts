@@ -60,6 +60,7 @@ import { FolkMeshes, inkFigure } from "./folk";
 import { clearUnder, shadowUpright } from "./upright";
 import { Doorstep3D } from "./doorstep";
 import type { DoorstepView } from "../doorstepart";
+import { driverFace } from "../fleetfaces";
 
 interface TowerView {
   obj: THREE.Group;
@@ -3762,7 +3763,13 @@ export class Renderer3D {
         el.className = "queue-name";
         el.dataset.lane = String(ln.lane ?? 0);
         el.setAttribute("aria-hidden", "true");
-        el.textContent = ENEMIES[ln.leads[0]!].name;
+        // Plan item 529: led by its driver's face, as the 2D tag is.
+        // (an image, so the tag's text stays its name alone)
+        const face = document.createElement("img");
+        face.className = "queue-driver";
+        face.alt = "";
+        face.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(driverFace(ln.leads[0]!))}`;
+        el.append(face, ENEMIES[ln.leads[0]!].name);
         this.overlayEl.append(el);
         this.queueNames.push({ el, model: this.queueModels.length });
       }

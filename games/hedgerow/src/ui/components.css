@@ -5034,6 +5034,9 @@ body:has(#dlg-pause[open]) .paused-note {
   pointer-events: none;
   will-change: transform, opacity;
 }
+/* Plan item 529: the tag leads with its driver's face, a round mugshot inside its left end */
+.queue-name { display: inline-flex; align-items: center; gap: 5px; padding-left: 2px; }
+.queue-driver { flex: none; width: 1.45em; height: 1.45em; overflow: hidden; border-radius: 50%; background: color-mix(in srgb, var(--kraft) 55%, var(--paper-hi)); }
 
 /* Plan item 431: no side-panel text under 13 px at D (the role words, the round ticket's labels, the twist tag and
    the 'more seeds' note were 12): the panel's labels take the rack's 13 px. */
