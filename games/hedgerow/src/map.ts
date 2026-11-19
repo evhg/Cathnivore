@@ -1957,7 +1957,7 @@ function walkThenOpen(list: HTMLElement, to: HTMLElement, go: () => void): void 
 }
 
 /** Plan item 124: her map figure, head to boots, in a pose (`data-pose` for the e2e). */
-function setPose(you: HTMLElement, pose: "clasped" | "wave" | "walk"): void {
+function setPose(you: HTMLElement, pose: "clasped" | "hip" | "wave" | "walk"): void {
   you.dataset.pose = pose;
   you.innerHTML = cathSvg({ framing: "full", expression: pose === "wave" ? "delighted" : "smirk", pose });
 }
@@ -2606,7 +2606,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         me.className = "you";
         me.setAttribute("aria-hidden", "true");
         // Plan item 124: full length, standing on the road beside her stop (she was a floating head over it).
-        setPose(me, "clasped");
+        // Plan item 524: a hand on her hip, waiting at her stop.
+        setPose(me, "hip");
         me.dataset.side = b.dataset.side;
         const tag = document.createElement("span");
         tag.className = "start-tag";
@@ -2737,7 +2738,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     window.setTimeout(() => {
       if (!you.isConnected) return;
       setPose(you, "wave");
-      window.setTimeout(() => you.isConnected && setPose(you, "clasped"), 2200);
+      window.setTimeout(() => you.isConnected && setPose(you, "hip"), 2200);
     }, 1350);
   }
 }

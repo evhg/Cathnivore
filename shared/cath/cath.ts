@@ -21,8 +21,8 @@ export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
 export type CathFraming = 'face' | 'bust' | 'half' | 'full'
 /** Her arms (plan item 23). 'clasped' is the classic hands-at-the-waist pose; each screen picks its own. */
-export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'walk' | 'can' | 'flag'
-export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed', 'can', 'flag']
+export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'walk' | 'can' | 'flag' | 'hip'
+export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed', 'can', 'flag', 'hip']
 
 export interface CathOptions {
   expression?: CathExpression
@@ -247,7 +247,7 @@ export function cathSvg(options: CathOptions = {}): string {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" data-pose="${pose}" data-framing="${framing}" ${a11y}>
 ${defs(id)}
-${framing === 'full' ? `<g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
+${framing === 'full' ? `<g class="cath-figure"><g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
 ${headOpen}<g class="cath-hair-back">${hairBack(id)}</g>${headClose}
 ${slimOpen}<g class="cath-body">${outfit === 'field' && framing === 'full' ? fieldOutfit(id, true) : OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>${slimClose}
 ${headOpen}<g class="cath-head">
@@ -259,7 +259,7 @@ ${hairFront(id)}
 ${accessories(id, outfit)}
 ${options.pin ? `<g class="cath-pin" transform="translate(164 74) scale(1.5)">${pinSvg(options.pin)}</g>` : ''}
 </g>${headClose}
-${slimOpen}<g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>${slimClose}
+${slimOpen}<g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>${slimClose}${framing === 'full' ? '</g>' : ''}
 </svg>`
 }
 
@@ -1205,6 +1205,14 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
       // Plan item 272: Hedgerow's lane: a pennant held up on its pole, the other hand at rest.
       return layer === 'back'
         ? restLeft + lanePennant() + sleeve('M264 298 Q292 278 298 248 Q304 216 308 192', 24, cl, 'M307 200 Q308 194 308 188') + hand('fist', 310, 172, 12, cl)
+        : ''
+    case 'hip':
+      // Plan item 524: a hand on her hip, the elbow out in a triangle (the stance a full-length figure reads as
+      // confident in), the other hand in her pocket.
+      return layer === 'back'
+        ? restLeft +
+            sleeve('M266 300 Q306 326 320 366 Q308 398 274 420', 24, cl, 'M282 414 Q278 417 273 421') +
+            hand('rest', 264, 426, -112, cl)
         : ''
     case 'crossed':
       // Arms folded: the far forearm tucked under, the near one on top with its hand on her other arm.

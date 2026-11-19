@@ -61,3 +61,16 @@ describe('pose attributes', () => {
     expect(cathSvg()).toContain('data-pose="clasped"')
   })
 })
+
+// Plan item 524: a hand-on-hip pose, and at full length the whole figure in one group the idle rocks about her soles.
+describe('full-length stance', () => {
+  it('has a hip pose with the elbow out past her coat', () => {
+    const s = cathSvg({ framing: 'full', pose: 'hip' })
+    expect(s).toContain('data-pose="hip"')
+    expect(s).toContain('Q306 326 320 366')
+  })
+  it('wraps the full figure for the weight-shift idle; the bust has none', () => {
+    expect(cathSvg({ framing: 'full', animate: true })).toContain('class="cath-figure"')
+    expect(cathSvg({ framing: 'bust', animate: true })).not.toContain('cath-figure')
+  })
+})

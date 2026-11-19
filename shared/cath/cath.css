@@ -23,6 +23,20 @@
   animation: cath-tilt 9s ease-in-out infinite;
 }
 
+/* Plan item 524: at full length she shifts her weight from foot to foot, the whole figure rocking about her soles
+   (shared/cath/cath.ts FULL_SOLES). */
+.cath-animate .cath-figure {
+  transform-box: view-box;
+  transform-origin: 203px 936px;
+  animation: cath-shift 8s ease-in-out infinite;
+}
+
+@keyframes cath-shift {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-0.7deg) translateX(-1px); }
+  65% { transform: rotate(0.5deg) translateX(1px); }
+}
+
 @keyframes cath-blink {
   0%, 95.5%, 100% { opacity: 0; }
   96.5%, 98% { opacity: 1; }
@@ -48,7 +62,8 @@
   .cath-animate .cath-lids,
   .cath-animate .cath-hair-front,
   .cath-animate .cath-body,
-  .cath-animate .cath-head {
+  .cath-animate .cath-head,
+  .cath-animate .cath-figure {
     animation: none;
   }
 }

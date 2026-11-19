@@ -385,7 +385,7 @@ for (const upTo of [3, 23]) {
       return { h: r.height, pose: (you as HTMLElement).dataset.pose, full: !!you.querySelector('svg.cath .cath-lower'), hits }
     })
     expect(m.full, JSON.stringify(m)).toBe(true)
-    expect(m.pose).toBe('clasped')
+    expect(m.pose).toBe('hip') // plan item 524
     expect(m.h).toBeGreaterThanOrEqual(hasTouch ? 64 : (page.viewportSize()!.height >= 860 ? 110 : 76))
     expect(m.hits).toEqual([])
     // Saturation of each landmark's own ink: the HSV saturation of every fill and stroke its shapes paint, after the
