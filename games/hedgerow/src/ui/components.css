@@ -5156,11 +5156,12 @@ body:has(#dlg-pause[open]) .paused-note {
     padding: 0 5px 0 2px;
     border-radius: 9px;
     background: var(--card);
-    box-shadow: 0 0 0 1.5px var(--line), inset 0 -4px 0 color-mix(in srgb, var(--seg, var(--line)) 85%, transparent);
+    /* no ring: the panel is a ruled ledger (item 460), so a segment is marked only by its livery band */
+    box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--seg, var(--line)) 85%, transparent);
   }
   .play .panel .ticket-chips.convoy .preview-chip.boss {
     background: var(--mat-plastic);
-    box-shadow: 0 0 0 1.5px var(--line), inset 0 -4px 0 var(--corp);
+    box-shadow: inset 0 -4px 0 var(--corp);
   }
   .play .panel .ticket-chips.convoy .chip-icon {
     flex: none;
