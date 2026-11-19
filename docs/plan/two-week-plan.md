@@ -4994,7 +4994,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D.
 - **Size:** 2
 
-## 531. [ ] Cathnivore desktop: Hollowell's plan as his glossy corporate plaque, its targets lit on the board
+## 531. [ ] Cathnivore desktop: Hollowell's plan as his glossy corporate plaque, its targets lit on the board *(lane A, in progress)*
 - **Why:**
   - `cath-game-D` (plan1119d) 565-1165 x 15-85: Hollowell's three moves (Squeeze, Expand, Scout) are pale-blue tickets with about 11 px lines ('Arms next round') and pip dots. They read as UI chips, not the antagonist.
   - His portrait (1185-1310 x 12-145) stands apart from them.
