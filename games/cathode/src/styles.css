@@ -3119,7 +3119,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-weapon-art {
     border-radius: calc(var(--u) * 3);
     background:
-      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .06) 0 1px, transparent 1.5px) 0 0 / 5px 5px, /* px-ok: felt nap */
+      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .06) 0 1px, transparent 1.5px) 0 0 / 5px 5px, /* px-ok: the hide's grain */
       linear-gradient(180deg, color-mix(in srgb, var(--green) 38%, var(--night)), color-mix(in srgb, var(--green) 24%, var(--night)));
   }
   /* the trees as rubber stamps */
@@ -3184,7 +3184,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-dossier] .cp-weapon-nums { grid-column: 2; grid-row: 3; margin: 2px 0 0; } /* px-ok */
   .cp-sheet[data-dossier] .cp-weapon-art {
     background:
-      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .05) 0 1px, transparent 1.5px) 0 0 / 5px 5px, /* px-ok: felt nap */
+      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .05) 0 1px, transparent 1.5px) 0 0 / 5px 5px, /* px-ok: the hide's grain */
       radial-gradient(56% 70% at 50% 48%, color-mix(in srgb, var(--ink) 32%, var(--night)), color-mix(in srgb, var(--ink) 9%, var(--night)) 72%, color-mix(in srgb, var(--ink) 3%, var(--night)));
     box-shadow: inset 0 0 0 1px rgb(var(--ink-rgb) / .1); /* px-ok */
   }
@@ -3231,7 +3231,13 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-casefile][data-dossier]::after { border-color: color-mix(in srgb, var(--card-ink-2) 70%, var(--print-paper)); }
   /* the gun a print clipped to the page: a white border drawn outside the frame, tilted a touch */
   .cp-sheet[data-casefile][data-dossier] .cp-weapon-art.cp-case {
-    background: var(--night-2);
+    /* Plan item 538: the gun lies on a dark leather gun mat under the case-table lamp (it was a navy void): the lamp's
+       warm pool on the hide, its grain, the mat's edges falling into shade. */
+    background:
+      radial-gradient(58% 70% at 46% 34%, rgb(var(--amber-rgb) / .24), rgb(var(--amber-rgb) / .06) 62%, transparent 80%),
+      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .05) 0 1px, transparent 1.5px) 0 0 / 4px 4px, /* px-ok: the hide's grain */
+      radial-gradient(120% 100% at 50% 40%, transparent 55%, rgb(var(--black-rgb) / .45)),
+      linear-gradient(180deg, color-mix(in srgb, var(--cork-lo) 78%, var(--night)), color-mix(in srgb, var(--cork-lo) 46%, var(--night)));
     box-shadow:
       0 0 0 calc(var(--u) * 5) var(--print-paper),
       0 calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 2) rgb(var(--black-rgb) / .35);
@@ -3306,7 +3312,13 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   /* The lit gun is a print clipped to the page: a white border, a deep foot, tilted, a steel clip over its top. */
   .cp-sheet[data-casefile] .cp-weapon-art.cp-case {
     /* The border is drawn in shadows, outside the view, so the gun keeps its 360 x 150 px+ frame (item 313). */
-    background-color: var(--night-2);
+    /* Plan item 538: the gun lies on a dark leather gun mat under the case-table lamp (it was a navy void): the lamp's
+       warm pool on the hide, its grain, the mat's edges falling into shade. */
+    background:
+      radial-gradient(58% 70% at 46% 34%, rgb(var(--amber-rgb) / .24), rgb(var(--amber-rgb) / .06) 62%, transparent 80%),
+      radial-gradient(circle at 30% 30%, rgb(var(--white-rgb) / .05) 0 1px, transparent 1.5px) 0 0 / 4px 4px, /* px-ok: the hide's grain */
+      radial-gradient(120% 100% at 50% 40%, transparent 55%, rgb(var(--black-rgb) / .45)),
+      linear-gradient(180deg, color-mix(in srgb, var(--cork-lo) 78%, var(--night)), color-mix(in srgb, var(--cork-lo) 46%, var(--night)));
     box-shadow:
       0 0 0 calc(var(--u) * 8) var(--print-paper),
       0 calc(var(--u) * 12) calc(var(--u) * 16) calc(var(--u) * 6) rgb(var(--black-rgb) / .4);
@@ -3314,6 +3326,8 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
     transform: rotate(1.2deg);
   }
   .cp-sheet[data-casefile] .cp-case-lamp { display: none; }
+  /* and casts a soft shadow onto the mat */
+  .cp-sheet[data-casefile] .cp-case.is-lit .cp-gun { filter: drop-shadow(0 calc(var(--u) * 9) calc(var(--u) * 7) rgb(var(--black-rgb) / .6)); }
   /* A steel paperclip over the print's top edge: the wire's outer loop and the inner loop inside it. */
   .cp-sheet[data-casefile] .cp-weapon { position: relative; }
   .cp-sheet[data-casefile] .cp-weapon::before,
