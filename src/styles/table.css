@@ -5589,6 +5589,9 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .cath-dock-btn, .cath-dock-bust { width: 52px; height: 52px; }
   .map-wrap .cath-dock-line { padding: 4px 8px; line-height: 1.16; }
   .game:has(.map-wrap .cath-dock) .action-tray .active-producer { padding-block: 5px 6px; }
+  /* plan item 519: a three-line name (Buy Satellite Forecast) ran its glyphs' 2 px pad past the 103 px card: its lines
+     set 0.05 tighter give it those 2 px (the painted window keeps half the face) */
+  .action-tray .actions .action-item[data-hand-card] > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-label { line-height: 1; }
 }
 
 /* Plan item 368 slice 4: the Saving for pile names its cards. Under the face-up card each tucked card shows only its
