@@ -1557,6 +1557,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
 @media (max-width: 899.98px) and (min-height: 600px) and (orientation: portrait) {
   /* Plan item 398: flatter and lower, straddling the photo's foot, so the stamp no longer sits on the face's mouth */
   .mug-stamp { bottom: 2%; right: 1%; padding: 0 calc(var(--u) * 2); border-width: calc(var(--u) * 1.5); letter-spacing: 0; rotate: -5deg; translate: 0 18%; z-index: var(--z-lift-2); }
+  /* plan item 518: set tight so the longest district (MARKET, 65 px on a 64 px print) stays inside its print's edge */
+  .mug-stamp { max-width: calc(100% - 4%); padding: 0 calc(var(--u) * 1.5); font-stretch: var(--wdth-tight); }
   .mug { transition: scale 220ms cubic-bezier(.2, .8, .2, 1), rotate 220ms ease; }
   .mug:focus { outline: none; }
   .mug:is(:hover, :focus) { z-index: var(--z-lift-4); scale: 1.1; rotate: 0deg; }
