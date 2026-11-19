@@ -4792,7 +4792,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** rim 6 px or less in the hedge colour; shadow offset 2 px or less; dry tile ground within ΔE 15 of the valley field beside it (measured); channels 3:1+ against the ground; tap targets 44 px+; runnel valley, board, greened, lesson, win, scale pass; key art re-shot; shots P, D.
 - **Size:** 2
 
-## 517. [ ] /games/ desktop: Cath the centre of the booth
+## 517. [ ] /games/ desktop: Cath the centre of the booth *(lane B, in progress)*
 - **Why:** `games-D` (plan1119a): Cath (275-375 x 120-300) about 180 px tall in the top-left corner while the chalkboard (580-1145 x 100-455) dominates the hero; VISION calls her the centrepiece of the landing page.
 - **Build:** `site/` hero from 1100 px: Cath full length centre-left behind the counter (the shared `shared/cath/` art), the chalkboard a hanging sign beside her at 35% of the width or less; the four games' cards unchanged below.
 - **Accept:** at 1440x900 Cath 380 px+ tall, her centre within the middle 50% of the width; the chalkboard 35% or less of the width; all four Play buttons above 900; P unchanged; site specs and axe pass; key art unaffected; shots P, D, 1280x800.
