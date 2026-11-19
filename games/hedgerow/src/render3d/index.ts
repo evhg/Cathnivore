@@ -1971,6 +1971,8 @@ export class Renderer3D {
     }
     const lean = ud.lean as THREE.Object3D | undefined;
     if (lean) lean.rotation.x = -this.steepTilt();
+    // Plan item 515: the scarecrow sways in the breeze on its pole (off under reduced motion)
+    if (lean && tw.kind === "scarecrow") lean.rotation.z = this.reducedMotion ? 0 : Math.sin(t * 1.3 + tw.id) * 0.045;
     const kick = v.fired < 0.15 ? Math.sin((v.fired / 0.15) * Math.PI) : 0;
     // Plan item 19: every tower breathes when idle and squashes as it lets go (as in 2D).
     if (!this.reducedMotion) {

@@ -7,6 +7,7 @@
 // Static detail is merged per material at the end of every builder (`bake`), so a richly detailed tower is
 // still only a handful of draw calls; anything the renderer animates is left as its own object.
 
+import { towerRole, type TowerRole } from "../roles";
 import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -381,8 +382,12 @@ const SPEC_RING = ["#e0503a", "#3f8fe0"];
 const PLINTH_TOP = "#a3967d";
 
 /** The plinth every tower stands on; its rim shows the tier (wood, silver, gold) or the specialisation (glowing). */
-function plinth(tier: number, spec: 0 | 1 | null): THREE.Group {
-  const g = group(cyl(0.4, 0.44, 0.08, matte(C.stoneDark, 0.95), 0, 0, 0, 12), cyl(0.37, 0.4, 0.012, matte(PLINTH_TOP, 0.95), 0, 0.075, 0, 12));
+/** Plan item 515: the plinth's top in its tower's role colour (the rack's bands: Shoots clay, Splash wheat, Slows
+ * pasture, Earns marks-gold, Boosts oak), so a built tower says what it does from across the field; still one material. */
+const ROLE_TOP: Record<TowerRole, string> = { shot: "#d0644a", splash: "#e3b54e", slow: "#79a84f", income: "#b8862c", boost: "#9a6a40" };
+
+function plinth(tier: number, spec: 0 | 1 | null, role?: TowerRole): THREE.Group {
+  const g = group(cyl(0.4, 0.44, 0.08, matte(C.stoneDark, 0.95), 0, 0, 0, 12), cyl(0.37, 0.4, 0.012, matte(role ? ROLE_TOP[role] : PLINTH_TOP, 0.95), 0, 0.075, 0, 12));
   // Named, so bake() merges it on its own: the renderer lays it first when the tower is built.
   g.name = "plinth";
   const rim =
@@ -526,7 +531,7 @@ export function buildTower(kind: TowerKind, tier: number, specIn: 0 | 1 | null, 
   // A path tower (Hedgerow 2 M4): its tier 3 may wear an old specialisation's body; addPathParts adds a part
   // for every tier bought and the tier 3's silhouette.
   const spec = path ? pathSpecLook(kind, path) : specIn;
-  root.add(plinth(tier, path ? null : spec));
+  root.add(plinth(tier, path ? null : spec, towerRole(kind)));
   const body = new THREE.Group();
   body.position.y = 0.08;
   root.add(body);
