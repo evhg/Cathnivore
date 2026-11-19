@@ -101,6 +101,9 @@ export default function Setup({ onStart }: Props) {
   }
 
   const rail = useMedia('(min-width: 1100px)')
+  // Plan item 513, slice 4: an upright phone hangs the week's event on the opening board as the game's own pennant
+  // (Game's .event-ticket), so its 62 px flyer card's height goes to the board.
+  const pennant = useMedia('(max-width: 599px) and (orientation: portrait)')
   const modeSection = (
     <section className="settings-card setup-mode">
       <h2>Mode</h2>
@@ -352,7 +355,7 @@ export default function Setup({ onStart }: Props) {
         </div>
       </header>
 
-      {eventFlyer}
+      {!pennant && eventFlyer}
 
       <nav className="setup-dots" aria-label="Setup steps">
         {STEP_WORDS.map((w, i) => (
@@ -366,6 +369,15 @@ export default function Setup({ onStart }: Props) {
       {/* Plan item 513: the opening table you'll play, the screen's largest thing on every step: a producer's power
           plays on it over their home region, and a map or difficulty pick redraws it in place. */}
       <div className="setup-board-stage" data-board-stage>
+        {pennant && (
+          <p className="setup-event-pennant" data-event={marketEvent.id}>
+            <span className="sr-only">Market event: </span>
+            <b>{marketEvent.name}</b>
+            <span className="setup-event-rule">
+              {marketEvent.cheap.map(capitalise).join(' & ')} kit 1 Mark off<span className="sr-only"> this week</span>
+            </span>
+          </p>
+        )}
         <OpeningPreview picks={picks} seed={seed} showcase={preview} />
       </div>
 
