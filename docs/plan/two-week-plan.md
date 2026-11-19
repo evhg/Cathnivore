@@ -4910,7 +4910,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D.
 - **Size:** 2
 
-## 527. [ ] Hedgerow in a level: the tower shop as a rack of seed packets, and a coach line that reads the level
+## 527. [ ] Hedgerow in a level: the tower shop as a rack of seed packets, and a coach line that reads the level *(lane B, in progress)*
 - **Why:**
   - **The shop:** `hedge-l21-2d-D` (plan1119c) 900-1280 x 85-350, `hedge-l34-2d-D` 965-1345 x 85-365 and `hedge-l21-3d-D` 1105-1415 x 85-350 show a spreadsheet-like grid of small cells: about 40 px icons, price chips on top, 'Shoots/Splash' captions. With the round card, the coach and the coming-up table, the right column competes with the field.
   - **The coach:** its line is the same at level 21 and 34 ('Build a Scarecrow... Tap a plot to build', `hedge-l21-2d-P` 95-365 x 700-745).
