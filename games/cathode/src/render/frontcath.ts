@@ -223,6 +223,17 @@ const FACE_RELIEF: ReadonlyArray<readonly [number, number, number, number, numbe
 /** How strongly the relief's slope (a soft top light) and its dips (cavity) shade the face. */
 const RELIEF_SLOPE = 0.75;
 const RELIEF_CAVITY = 2.2;
+/**
+ * Plan item 319 slice 95: the nose's key shade. The key comes from the lens's left (her right, -x on the skull), so
+ * the nose's +x flank and its underside turn from it. `NOSE_KEY_X` is the skull's z/x scale (its slopes in metres).
+ */
+const NOSE_KEY_X = 0.088 / 0.072;
+const NOSE_SHADE = 0.5;
+const NOSE_LIGHT = 0.12;
+/** The nose's cast shadow: its depth, and the key's climb (height per unit across the skull) it is marched along. */
+const NOSE_CAST = 0.24;
+// A lower climb than the key's own (0.75 / 0.67 / NOSE_KEY_X): at the key's height the shadow hid under the tip.
+const NOSE_CAST_SLOPE = 0.45;
 
 /** Merges non-indexed copies of geometries that share position and normal attributes. */
 function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
@@ -1868,6 +1879,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
     ).join("\n");
     const fn = `float rb( vec2 p, vec2 c, vec2 r ) { vec2 d = ( p - c ) / r; float q = 1.0 - min( 1.0, dot( d, d ) ); return q * q; }
 float faceRelief( vec2 p ) { float r = 0.0; ${terms} return r; }
+float noseH( vec2 p ) {
+  vec2 q = p;
+  if ( q.y < 0.0 ) {
+    float k = -q.y;
+    float ks = k < 0.15 ? k * k / 0.3 : k - 0.075;
+    q.x *= 1.0 - 0.56 * ( 1.25 * pow( k, 1.1 ) - 0.25 * k * k * k );
+    q.y = -k + 0.2 * ks;
+  }
+  float nr2 = dot( vec2( q.x / 0.12, ( q.y + 0.2 ) / ( q.y < -0.2 ? 0.34 : 0.26 ) ), vec2( q.x / 0.12, ( q.y + 0.2 ) / ( q.y < -0.2 ? 0.34 : 0.26 ) ) );
+  return nr2 < 1.0 ? 0.13 * pow( 1.0 - nr2, 2.6 ) : 0.0;
+}
 float reliefShade( vec2 uv ) {
   float th = ( 1.0 - uv.y ) * PI, ph = uv.x * PI2;
   float st = sin( th );
@@ -1876,7 +1898,23 @@ float reliefShade( vec2 uv ) {
   const float e = 0.004;
   float fy = ( faceRelief( p + vec2( 0.0, e ) ) - faceRelief( p - vec2( 0.0, e ) ) ) / ( 2.0 * e );
   float s = 1.0 - ${f(RELIEF_SLOPE)} * clamp( fy, -0.6, 0.8 ) + ${f(RELIEF_CAVITY)} * min( 0.0, faceRelief( p ) );
-  return mix( 1.0, clamp( s, 0.78, 1.15 ), front );
+  // Plan item 319 slice 95: the nose's planes. Its ridge is only two or three of the skull's columns wide, so its
+  // normals barely turned from the key and it read as a painted line on a flat mask; its slope is evaluated here
+  // (the skull's own nose and jaw formulas) and lit by the key: the flank away from it and the underside go into shade.
+  vec2 gx = vec2( e, 0.0 ), gy = vec2( 0.0, e );
+  float nx = ( noseH( p + gx ) - noseH( p - gx ) ) / ( 2.0 * e );
+  float ny = ( noseH( p + gy ) - noseH( p - gy ) ) / ( 2.0 * e );
+  float nl = 0.45 * nx * ${f(NOSE_KEY_X)} - 0.5 * ny;
+  s *= 1.0 + ${f(NOSE_SHADE)} * clamp( nl, -0.6, 0.0 ) + ${f(NOSE_LIGHT)} * clamp( nl, 0.0, 0.5 );
+  // Its cast shadow, a portrait's loop light: marched toward the key over the nose's height field, a soft shade falls
+  // below and beside the nose on the side away from the key.
+  float h0 = noseH( p ), occ = 0.0;
+  for ( int i = 1; i <= 6; i++ ) {
+    float t = 0.03 * float( i );
+    occ = max( occ, noseH( p + t * vec2( -0.67, 0.74 ) ) - h0 - t * ${f(NOSE_CAST_SLOPE)} );
+  }
+  s *= 1.0 - ${f(NOSE_CAST)} * smoothstep( 0.0, 0.025, occ );
+  return mix( 1.0, clamp( s, 0.74, 1.15 ), front );
 }`;
     faceMat.onBeforeCompile = (sh, r) => {
       rim(sh, r);
