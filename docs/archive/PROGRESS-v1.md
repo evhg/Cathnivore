@@ -4214,3 +4214,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-18 16:21 lane B: 486 slice 7 and done; measure h486f1-2, h486g; shadow3d, biome3d, 3dframe (P, D, 37), keyart-fresh pass.
 - 2026-11-18 17:21 lane B: 495 closed (short, logged); planning 501-506; 501 slice 1 (measure only, the script extended); no product code changed.
 - **2026-11-18 17:51 lane A session:** 319 slice 90. classpick and classpose (D, 11) pass; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad i319.
+- 2026-11-18 19:21 lane B: 501 slices 3-4 (rail keys at the head row's end, Expand chips whole); board-scale(s), desktop-no-scroll, drawer-tabs, table-hand/-producers/-cath, plan-strip, gantry-slate, action-hand, hand-shelf (P, D, 44+) pass, two load flakes pass alone; CSS lint. Handed back.
