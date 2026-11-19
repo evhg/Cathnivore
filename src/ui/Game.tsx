@@ -281,6 +281,8 @@ const TABLE_CATH_QUERY = '(min-width: 1240px) and (min-height: 760px)'
 // Plan item 131: on an upright phone she stands at the table too, at its lower-left corner, and the header strip goes.
 // Plan item 225: her bubble carries the suggestion too only where the table is tall enough for both lines (at
 // 1280x800 the two-part bubble rose over the plan strip); shorter desktops keep the suggestion in the rail.
+/** Plan item 535: how long her line holds the bubble on a shorter desktop table before her tip takes its place. */
+const CATH_TIP_DELAY_MS = 4000
 const TABLE_CATH_TALL_QUERY = '(min-width: 1240px) and (min-height: 880px)'
 const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 640px) and (orientation: portrait)'
 
@@ -905,6 +907,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const phoneTableCath = useMedia(PHONE_TABLE_CATH_QUERY)
   const tableCath = deskTableCath || phoneTableCath
   const bubbleSuggest = useMedia(TABLE_CATH_TALL_QUERY)
+  // Plan item 535: a shorter desktop table queues her tip after her line in the one bubble (see the bubble below).
+  const [tipTurnRaw, setTipTurn] = useState(false)
+  const tipQueue = deskTableCath && !bubbleSuggest
+  useEffect(() => {
+    setTipTurn(false)
+    if (!tipQueue) return
+    const t = window.setTimeout(() => setTipTurn(true), CATH_TIP_DELAY_MS)
+    return () => window.clearTimeout(t)
+  }, [cathReaction.line, tipQueue])
+  const tipTurn = tipQueue && tipTurnRaw
   // Plan item 149: the same sizes hold the hand of cards at the table's edge.
   const handOnTable = deskTableCath
   // Plan item 302: on a phone every playable card stays in reach. The row still swipes, but each card is sticky on
@@ -3180,7 +3192,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         )
       ) : (
         <>
-          {!(handOnTable && bubbleSuggest) && suggestLine}
+          {/* Plan item 535: with Cath at the table her tips are said only from her bubble (one voice). */}
+          {!handOnTable && suggestLine}
           {/* Plan item 320: on a phone too each playable card's picture is its painted window, full-bleed over the face's top half. */}
           {!handOnTable && (isDesktop ? playableCards : <ArtSceneContext.Provider value="wide">{playableCards}</ArtSceneContext.Provider>)}
           {/* Plan item 83: what this turn can play comes first; what it can't afford yet follows as priced strips. */}
@@ -3750,9 +3763,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             aria-label="Cath"
           >
             {/* Plan item 495: one voice at a time: while a producer answers from their seat, her line steps back. */}
-            <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line} data-hushed={producerLine ? '' : undefined}>
-              {cathReaction.line}
-              {bubbleSuggest && suggestBody && (
+            {/* Plan item 535: on a shorter table (the two-part bubble rose over the plan strip, item 225) her bubble is a
+                queue: her line, then after a beat her tip in its place, so she never speaks from the rail as well. */}
+            <p className="table-cath-line voice" aria-live="polite" key={cathReaction.line + (tipTurn ? '|tip' : '')} data-hushed={producerLine ? '' : undefined} data-tip-turn={tipTurn || undefined}>
+              {tipTurn && suggestBody ? null : cathReaction.line}
+              {(bubbleSuggest || tipTurn) && suggestBody && (
                 <span className="suggest-line table-cath-suggest" data-testid="suggest-line">
                   {suggestBody}
                 </span>

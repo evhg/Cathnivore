@@ -5074,16 +5074,16 @@ html.no-animations .game-layout .table-hand .action-item { animation: none; }
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  /* Plan item 337: Cath's tip, at reading contrast (the faint caption was a placeholder), signed. */
+  /* Plan item 535: a chalked column label under the sketch (Cath's tip moved to her bubble: the ledger is figures). */
   .ledger-sketch-note {
     flex: none;
     max-width: 92%;
-    font: italic var(--fs-body)/1.25 var(--font-voice);
+    font: 700 var(--fs-caption)/1.25 var(--font-text);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     text-align: center;
-    text-wrap: balance;
-    color: color-mix(in srgb, var(--wood-ink) 92%, transparent);
+    color: color-mix(in srgb, var(--wood-ink) 80%, transparent);
   }
-  .ledger-sketch-note .ledger-sign { display: block; text-align: right; font-style: normal; font-weight: 600; }
 }
 @media (min-width: 1024px) {
   .actions-sheet .round-ledger-roll .receipt[data-kind="opening"] .receipt-why { color: color-mix(in srgb, var(--wood-ink) 70%, transparent); }

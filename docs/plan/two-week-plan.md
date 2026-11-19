@@ -5083,7 +5083,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots D, with P unchanged.
 - **Size:** 2
 
-## 535. [ ] Cathnivore desktop table: Cath speaks once, and the ledger shows the round *(lane A, in progress)*
+## 535. [ ] Cathnivore desktop table: Cath speaks once, and the ledger shows the round *(handed back 2026-11-19 18:25 by lane A after slice 1)* *(slice 1, 2026-11-19 lane A: the ledger's 'Sell early, love' tip is gone (a chalked 'Takings to come' label under Bea's sketch), and her tips are said only from her bubble: on a short desktop table (under 880 px, where item 225 kept the bubble one part) the tip is queued 4 s after her line in its place, not in the rail (`CATH_TIP_DELAY_MS`, `data-tip-turn`). New table-one-voice spec (at most one Cath line at 1440x900 and 1280x800, ledger lines 6 words or under, a sell inked within 250 ms); suggest-move updated; ledger-ink, turn-show, boardroom pass (P, D, --retries=0). Checked: each buy and sell already writes its ledger line (item 244), and Harvest lands on it. **Left:** the event note: her first line already names the week's event and the Dry Spell ticket is already pinned small (135x80); decide whether the ticket waits folded until her first line moves on, or close the point as met; shots P and D)*
 - **Why:** `cath-game-D` (plan1119e): Cath's voice is in three places at once:
   - her bubble (352-552 x 200-378) with the event line and a tip;
   - the left rail's Ledger chalkboard (35-315 x 645-800) with a second signed tip ('Sell early, love... — C.');
