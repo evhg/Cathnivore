@@ -5102,7 +5102,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D.
 - **Size:** 2
 
-## 536. [ ] NIGHT SHIFT desktop title: the menu set as part of the morning paper's world *(lane A, in progress)*
+## 536. [ ] NIGHT SHIFT desktop title: the menu set as part of the morning paper's world *(handed back 2026-11-19 18:25 by lane A, not started in code: too little session left for its slow 3D specs. Pointers: the menu is `#menu .menu-item` in games/cathode/index.html (Continue's 'No case open' is `#continue-why`), wired in main.ts ~480 (`cont.disabled = !hasSave()`) and ~624, with the focus model in src/ui/menu.ts, whose header pins item 159's design: 'a disabled slot keeps its row (CONTINUE stays reserved without a save)'. Hiding Continue reverses that; update e2e-site/cathode-front.spec.ts (lines ~22-26 expect 5 items and a disabled Continue; ~300-303 the 'No case open' why), cathode-office.spec.ts ~35, tests/cathode-menu.test.ts ~80 (`slotHint` 'NO CASE OPEN') and frontcopy.ts's slotHint/dossierFor; log the reversal in DECISIONS)*
 - **Why:** `ns-title-D` (plan1119e) 30-275 x 275-540: around the crafted Ledger front page, the List's polaroids and the neon street, the menu is four uppercase words in a dim translucent box. 'CONTINUE No case open' is a grey dead row. VISION 1 (nothing default), VISION 3 (no dead clicks).
 - **Build:** `games/cathode/src/ui` (the title menu) and its CSS in `var(--u)`:
   - The menu becomes the paper's index column or a case board's tag stack, on newsprint or card, with a red grease-pencil underline under the focused item.
