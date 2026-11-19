@@ -246,10 +246,10 @@ function RegionTextureDefs() {
  */
 function ShrinkWrap({ x, y, tight }: { x: number; y: number; tight: boolean }) {
   const R = HEX_R
-  const k = tight ? 1 : 0.7
+  const k = tight ? 1 : 0.55
   return (
     <>
-      <polygon className="wrap-film" points={hexPoints(x, y, R * GAP_SCALE * 0.97)} fill="url(#wrap-film)" opacity={tight ? 1 : 0.75} />
+      <polygon className="wrap-film" points={hexPoints(x, y, R * GAP_SCALE * 0.97)} fill="url(#wrap-film)" opacity={tight ? 1 : 0.5} />
       <path
         className="wrap-streak"
         d={`M ${x - R * 0.8},${y + R * 0.1} L ${x - R * 0.06},${y - R * 0.8} L ${x + R * 0.06},${y - R * 0.76} L ${x - R * 0.72},${y + R * 0.22} Z`}
@@ -1054,7 +1054,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               points={hexPoints(x, y, HEX_R * GAP_SCALE - 3.5)}
               fill="none"
               stroke="white"
-              strokeOpacity={0.3}
+              strokeOpacity={0.22}
               strokeWidth={2}
               pointerEvents="none"
             />
