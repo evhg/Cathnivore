@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (07:51 11-19): item 510 done (slice 2, the flats over the shop and a neighbour in her window; P t 8 spread 1.29x, deviation logged). 319 is next for lane A (unclaimed).
+- Lane A (08:51 11-19): planned 519-523 (plan1119b); 523 and 522 done; 521 slice 1 (handed back); 519 handed back with measurements. Full `npm run check` passed (2802). 319 is still open for lane A.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 08:51 lane A session:** planning 519-523; 523 done (D Daily tag two lines; Daily board clear of Cath at 1280); 522 slices 1-2 and done (locked goals whole, envelopes for padlocks); 521 slice 1 (counter tower per vehicle). title-*, daily-*, campaign*, chapter-resume (P, D), hedgerow level-card/map/map-you (P, D, 54) with --retries=0; hedgerow-counterline unit; css lint; full `npm run check` passed (2802). Shots plan1119b, scratchpad t523*, c522*, h521*. Lock released.
 - 2026-11-19 08:21 lane B: 514 slice 4: found the class sets hidden behind the street facade (2.1 m back); moved to 1.25 m and painted a window/shutter/curtain and two practicals into each; per-class flat gains hold face over set 1.3+; 25/25 class-pick specs pass with --retries=0.
 - **2026-11-19 07:51 lane A session:** 510 slice 2 and done. cathode-title-ambient (3 sizes + reduced motion), cathode-title-focal, cathode-front, cathode-title-diorama (D, 32, --retries=0) pass; keyart-fresh after re-rendering posters twice (over lane B's 514 slice 3, conflicted on rebase); title perf 201 calls; tsc, eslint. No full check. Shots scratchpad sp/b0, sp/a1-a3. Lock released.
 - 2026-11-19 07:21 lane B: 514 slice 3, face over set 1.31-1.44 for all five classes (Ghost face key 4.6, Butcher 3.3, their halos softer); classpick/setprops/armoury/testfire pass with --retries=0 (24/24); posters and key art re-rendered after a binary conflict with lane A.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-19 02:22 lane B: 515 slices 1-2; 3dframe, closeframe, shadow3d, attack (P, D, --retries=0), render3d/roles unit tests (257), drawcalls unchanged; shots h515*.
 - **2026-11-19 01:51 lane A session:** planning 513-518; 513 slice 1. setup-phone, setup-opening (new case), setup-maps, setup-focal (P, D, 26); css lint; tsc, eslint. No full check. Lock released. Shots plan1119a, scratchpad s513.
 - 2026-11-19 01:21 lane B: 511 slices 1-3 and done; hedgerow-convoy (new), tray, round-chips, rack, rack-roles, level-card, critique79 Hedgerow (P, D, --retries=0) pass; shots 2D/3D at 1440, 1280, 844x390.
-- **2026-11-19 00:51 lane A session:** 507 and 508 done. setup-*, setup-focal (new), ability-preview, quick-game, title-opening (P, D, 46); runnel valley/greened/fields/week-valley/valley-folk/win/scale/board (P, D, 40); runnel-valley, keyart-fresh, css lint units; tsc, eslint; full `npm run check` passed. Lock released. Shots scratchpad s507, s508.
