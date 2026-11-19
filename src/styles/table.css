@@ -2358,6 +2358,10 @@ html.no-animations .cath-companion .cameo {
   .event-ticket { right: calc(var(--sp-2) + 127px); max-width: 132px; text-wrap: balance; }
   .game-layout .map-wrap > .map-key { top: 60px; }
 }
+/* plan item 540: at 1280+ the drawer tabs are 44 px each (their stack ends about 165 px down): the key drops under them */
+@media (min-width: 1280px) and (min-height: 760px) {
+  .game-layout .map-wrap > .map-key { top: 84px; }
+}
 .map-key-word { display: none; }
 /* Plan item 378: a lone "i" between the event note and the producers read as nobody's button. At a desktop table it is
    a labelled tab under Pell's plate, the key's own word beside its "i". */
@@ -4378,6 +4382,14 @@ html.no-animations .table-cath-line { animation: none; }
     padding-top: var(--sp-2);
     box-shadow: inset 0 1px 0 var(--ink-a15);
   }
+  /* Plan item 540: before the first line lands the ledger is its heading and opening balance only (it was a tall dark
+     slate reading 'Takings to come'); the room goes to the shelf above, and the page grows with its first line. */
+  .actions-sheet .round-ledger[data-empty] { flex: 0 0 auto; margin-top: auto; }
+  /* (in a narrow column the opening line wraps its words rather than cutting 'Opening bal…') */
+  .actions-sheet .round-ledger[data-empty] .receipt[data-kind="opening"] { height: auto; min-height: 22px; }
+  .actions-sheet .round-ledger[data-empty] .receipt[data-kind="opening"] .receipt-why { line-height: 1.25; padding-block: 2px; white-space: normal; text-overflow: clip; }
+  .actions-sheet .round-ledger[data-empty] .round-ledger-roll { flex: 0 0 auto; }
+  .actions-sheet .round-ledger[data-empty][data-empty] .ledger-sketch { display: none; }
   .round-ledger-title { margin: 0 0 6px; color: var(--ink-muted); }
   .actions-sheet .round-ledger[data-room="no"] { visibility: hidden; }
   .round-ledger [hidden] { display: revert; visibility: hidden; }
@@ -6115,6 +6127,17 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
   /* (the words carry the tabs: at 84 px an icon left MARKET without room for its own) */
   .desktop-rail .drawer-key svg { display: none; }
   .desktop-rail .drawer-key-count { top: -6px; right: -6px; min-width: 18px; height: 18px; line-height: 14px; }
+  /* plan item 540: the three drawer fronts are real tab targets (they were 26 px slips): 44 px tall, each its icon over
+     its word, the brass pull at the right */
+  .desktop-rail .drawer-key {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1px;
+    min-height: 44px;
+    padding: 3px 14px 3px 6px;
+  }
+  .desktop-rail .drawer-key svg { display: block; width: 20px; height: 20px; flex: none; }
   .desktop-rail .drawer-panel { top: calc(100% + var(--sp-2)); right: 0; bottom: auto; height: min(70vh, 640px); }
   .desktop-rail .hand-later { position: fixed; left: auto; right: 28px; bottom: 18px; }
   /* plan item 528: the pile sat over the hand's last card (1345-1410 x 795-885 at 1440x900): the hand ends short of it */
@@ -6140,12 +6163,16 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dial { display: none; }
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) { position: relative; grid-template-areas: "art head eff eff" "tgt tgt tgt tgt"; }
   /* its stage tag a tab on the card's top-left corner, so the chips have the whole line */
-  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dateline { position: absolute; left: -4px; top: -6px; }
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dateline { position: absolute; left: auto; right: 0; top: 0; }
+  /* plan item 540: the tab hangs inside the card's top-right corner (it rode over the card's top edge, -6 px, and
+     collided with the rail); the (i) below it is raised only to the tab's foot */
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) { padding-top: 10px; }
+  .game:has(.table-head.with-table-cath) .plan-strip[data-corp] .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage { height: 15px; padding-block: 0; line-height: 15px; border-radius: 0 4px 0 4px; }
   /* plan item 532: as a corner tab the lone numeral read as a stray 'I': the tab says 'Stage I' (the word was hidden
      to save width in the line, which the tab no longer takes) */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage-word { display: inline; font-size: var(--fs-label); text-transform: uppercase; letter-spacing: .04em; }
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage { white-space: nowrap; gap: 3px; grid-auto-flow: column; }
-  .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% - 8px); }
+  .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% - 4px); }
   /* the chips' line runs on under the raised (i) into the card's right padding: at 1280 'Shingle Bay' and
      'Saltmarsh' are 150 px against the 135 px between the paddings (plan-cards) */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-target-short { margin-right: -16px; }

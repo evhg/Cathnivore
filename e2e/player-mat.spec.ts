@@ -98,8 +98,9 @@ for (const scheme of ['light', 'dark'] as const) {
 }
 
 // Plan item 287: the stall's goods move when their counts do (a sale: the coins hop, the crate sinks), starting
-// within 250 ms; and the empty slate holds Bea's chalk sketch instead of a blank block, clear of every line.
-test('the stall goods animate on change and the empty slate holds a sketch at 1440x900', async ({ page }, testInfo) => {
+// within 250 ms. Plan item 540: before the first line the ledger is its heading and opening balance (80 px or less,
+// no sketch); it grows with its first line, and any sketch then stays clear of every line.
+test('the stall goods animate on change and the empty ledger stays small at 1440x900', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only')
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
@@ -109,16 +110,16 @@ test('the stall goods animate on change and the empty slate holds a sketch at 14
   await page.mouse.move(5, 5)
 
   const ledger = page.locator('.actions-sheet .round-ledger')
-  await expect(ledger).toHaveAttribute('data-sketch', 'yes')
+  await expect(ledger).toHaveAttribute('data-empty', 'true')
+  const emptyH = await ledger.evaluate((e) => e.getBoundingClientRect().height)
+  expect(emptyH, 'empty ledger height').toBeLessThanOrEqual(80)
+  await expect(ledger.locator('.ledger-sketch')).toBeHidden()
   const clear = () =>
     page.evaluate(() => {
       const sketch = document.querySelector('.actions-sheet .ledger-sketch')!.getBoundingClientRect()
       const lines = [...document.querySelectorAll('.actions-sheet .receipt:not([data-gone])')].map((e) => e.getBoundingClientRect())
       return { h: sketch.height, clear: lines.every((l) => l.bottom <= sketch.top + 0.5) }
     })
-  const before = await clear()
-  expect(before.h, 'sketch height').toBeGreaterThan(60)
-  expect(before.clear, 'sketch clear of the lines').toBe(true)
 
   const mat = page.locator('.desktop-col-left [data-player-mat]')
   const marks = mat.locator('.mat-store').nth(1)
@@ -131,6 +132,8 @@ test('the stall goods animate on change and the empty slate holds a sketch at 14
   await expect(mat.locator('.mat-store').first().locator('.mat-art-slot[data-bump="down"]')).toBeAttached()
   await expect(marks.locator('.ledger-value')).toHaveText(String(was + 1))
   await page.waitForTimeout(600)
+  await expect(ledger).not.toHaveAttribute('data-empty', /.*/)
+  expect(await ledger.evaluate((e) => e.getBoundingClientRect().height), 'the ledger grows with its first line').toBeGreaterThan(emptyH)
   const after = await clear()
   if (after.h > 0) expect(after.clear, 'sketch clear of the lines after a move').toBe(true)
 })

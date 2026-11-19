@@ -78,7 +78,7 @@ export default function RoundLedger({ state }: { state: GameState }) {
 
   const signed = (n: number) => `${n > 0 ? '+' : '−'}${Math.abs(n)}`
   return (
-    <section ref={ref} className="round-ledger" aria-label="Ledger: this game's moves, Marks, Trust and land">
+    <section ref={ref} className="round-ledger" data-empty={receipts.length === 0 || undefined} aria-label="Ledger: this game's moves, Marks, Trust and land">
       <h3 className="round-ledger-title label">
         Ledger <span className="round-ledger-col" aria-hidden="true">Marks</span>
       </h3>
