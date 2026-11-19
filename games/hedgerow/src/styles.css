@@ -5082,6 +5082,22 @@ img.act-scene {
   .lcard-enemies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px 0 0; border-left: 0; border-top: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); }
   .enemy-portrait { width: 42px; height: 42px; }
   .enemy-portrait img { width: 34px; height: 34px; }
+  /* Plan item 521 (slice 2): each vehicle a small 'wanted' card pinned to the sheet: a slip of the sheet's paper ruled
+     in the soil's ink, a touch off square, its name whole (it wrapped to 'Cargo quadcop...'). */
+  .level-card.open .lcard-enemies li {
+    align-items: start;
+    padding: 5px 6px 5px 5px;
+    border: 1.5px solid color-mix(in srgb, var(--soil) 45%, transparent);
+    border-radius: 4px;
+    background: var(--paper-hi);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--ink) 14%, transparent);
+    rotate: -0.6deg;
+  }
+  .level-card.open .lcard-enemies li:nth-child(even) { rotate: 0.6deg; }
+  .level-card.open .lcard-foe b { white-space: normal; overflow-wrap: anywhere; text-wrap: balance; }
+}
+@media (max-width: 899.98px) and (prefers-reduced-motion: reduce) {
+  .level-card.open .lcard-enemies li { rotate: none; }
 }
 /* Plan item 98: on a portrait phone the map's tools are a fixed tab bar at the foot (N4); the sheet was cut by it.
    The map's own bottom padding (the bar's height) counts toward the sticky inset, so 8 px clears the bar. */
