@@ -332,3 +332,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-19 12:55 lane A: E2E red on a503d52 judged infra (3 site shards failed apt installs of browser fonts, no spec ran); 13c14c5's run covers the same code.
 - 2026-11-19 13:20 lane A (524): the mid-thigh coat is the field blazer's own path carried on (`JACKET_LONG`) at full framing only, not a skirt piece under it (a separate skirt read as two garments, with two hems and two sets of pockets).
 - 2026-11-19 13:20 lane A (524): kept item 305's cream trousers for now; the spec's "slim dark trousers" waits for the leg redraw, since near-black legs read as a stalk at small sizes.
+- 2026-11-19 13:21 lane B (E2E red): kept 519 slice 3's 'a tap on a partly-shown card brings it into view' and changed the two specs that tapped an edge card blind; the producer bubble's measured placement moved to custom properties rather than relaxing the csp spec.
