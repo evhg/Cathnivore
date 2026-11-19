@@ -863,13 +863,16 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
 
   const svgRef = useRef<SVGSVGElement>(null)
   // Plan item 63: the hex's radius on screen, so each tile's piece tray is sized to what the player sees.
-  const [hexPx, setHexPx] = useState(72)
+  // Gate 7 (2026-11-19): null until measured. The first pass (before paint) leaves out everything sized from it (the
+  // trays, landmarks, ground marks and badges), so the board isn't built twice, once at a guess, before its first paint.
+  const [hexPx, setHexPx] = useState<number | null>(null)
   useLayoutEffect(() => {
     const svg = svgRef.current
     if (!svg) return
     const measure = () => {
-      const k = svg.getScreenCTM()?.a ?? 0
-      if (!k) return
+      const k = svg.getScreenCTM?.()?.a ?? 0
+      // Unmeasurable (hidden, or no layout as in jsdom): the old 72 px guess until a resize brings a real size.
+      if (!k) return setHexPx((v) => v ?? 72)
       setHexPx(Math.round(HEX_R * fit.k * k * 2) / 2)
     }
     measure()
@@ -942,7 +945,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         const glow = targeting && highlighted.has(id)
         // Plan item 63: the tile's piece tray (`pieceLayout`), sized to the hex as it renders on screen; the landmark
         // takes the first flank spot clear of its slots.
-        const tray = pieceLayout(
+        const tray = hexPx === null ? null : pieceLayout(
           {
             outlets: r.outlets,
             buyouts: r.buyouts,
@@ -958,7 +961,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         // Plan item 144: the event's dressing keeps to the hex's foot, but steps aside (and down in size) when the
         // stalls, pushed down the tile by Hollowell's stacks, reach there; it never meets a piece or the landmark.
         const dress =
-          marketEvent === 'glut' || marketEvent === 'festival'
+          tray && (marketEvent === 'glut' || marketEvent === 'festival')
             ? (() => {
                 const spot = pickSpot(tray.rects)
                 const taken = spot ? [...tray.rects, boxAt(spot, spot.scale)] : tray.rects
@@ -968,6 +971,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         // Plan item 76: the region's own ground, where the pieces and the landmark leave the face clear; plan item 417:
         // a freed tile's stalls keep clear of LiberatedLife's cottage and bunting too.
         const ground = (() => {
+          if (!tray) return []
           const spot = pickSpot(tray.rects)
           const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
           return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, control)
@@ -1129,8 +1133,8 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 map's art, on the first flank of the tile its pieces leave clear. Plan item 341: over the plastic film, so a
                 held region's landmark keeps its full ink. */}
             {(() => {
-              const spot = pickSpot(tray.rects)
-              if (!spot) return null
+              const spot = tray && hexPx !== null ? pickSpot(tray.rects) : null
+              if (!spot || hexPx === null) return null
               const grip = gripStage(r)
               const edge = atTheEdge(r)
               return (
@@ -1148,7 +1152,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               atRisk={!r.liberated && r.outlets + 2 * r.buyouts > stalls.reduce((a, [, n]) => a + n, 0)}
               liberated={r.liberated}
             />
-            {squeezeTargets.includes(id) && (
+            {tray && squeezeTargets.includes(id) && (
               <g className="threat-badge" transform={`translate(${x}, ${y + BADGE.y0}) scale(${tray.badgeK.toFixed(3)}) translate(-30, 0)`}>
                 <rect x={0} y={0} width={60} height={14} rx={7} fill="var(--clay-deep)" />
                 <text x={30} y={10.2} textAnchor="middle" className="badge-text">
@@ -1156,7 +1160,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 </text>
               </g>
             )}
-            {expandTargets.includes(id) && !squeezeTargets.includes(id) && (
+            {tray && expandTargets.includes(id) && !squeezeTargets.includes(id) && (
               <g className="threat-badge" transform={`translate(${x}, ${y + BADGE.y0}) scale(${tray.badgeK.toFixed(3)}) translate(-28, 0)`}>
                 <rect x={0} y={0} width={56} height={14} rx={7} fill="var(--wheat)" />
                 <text x={28} y={10.2} textAnchor="middle" className="badge-text badge-text-dark">
@@ -1168,7 +1172,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             {/* Plan item 63: the tile's piece tray (`pieceLayout`), sized to the hex as it renders on screen: Hollowell's
                 stacks in a row across the middle, the producers' miniatures along the bottom, the name plate and any
                 threat badge kept clear. Each piece slides to its slot when the tray changes. */}
-            {(() => {
+            {tray && (() => {
               const s = tray.scale
               const icons = { outlets: ['o', r.outlets], buyouts: ['b', r.buyouts], doubt: ['d', r.doubt] } as const
               return (
@@ -1353,7 +1357,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
       {aim && active.includes(aim.region) && (() => {
         const { x, y } = hexCenter(aim.region, layout)
         // Chips keep a readable 13 px on screen whatever the board's scale (units per screen pixel).
-        const u = HEX_R / Math.max(24, hexPx)
+        const u = HEX_R / Math.max(24, hexPx ?? 72)
         const fs = 13 * u
         const h = 22 * u
         const gap = 4 * u
