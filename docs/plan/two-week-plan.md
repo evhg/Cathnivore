@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-19T17:23:49Z
 
 
 
@@ -5037,5 +5036,95 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `cath-setup-D` (238-365 x 670-700): '2 Outlets, 1 / Buyout' breaks the number from its noun; (115-345 x 575-612) the quote leaves 'win.' alone on its line.
 - `portfolio-D` (100-700 x 840-885): the stats row sits about 10 px under the timeline's hour labels, so the two read as one cramped row.
 - `hedge-menu-P` (265-385 x 510-545): 'Brand Ambassador' is the only map label on two lines, its pill about 5 px from the screen's edge.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 533. [ ] Cathnivore desktop Setup: every choice an object on the stall, not a form field
+- **Why:** `cath-setup-D` (plan1119e) 95-375 x 110-800: around item 502/507's opening table, the left column is a stack of form controls:
+  - two tab buttons (105-255 x 115-215);
+  - three list rows with tiny hex thumbnails (105-370 x 258-435);
+  - Easy/Normal/Hard tags with radio dots (105-365 x 505-550);
+  - a key/value table (PUBLIC TRUST / LOST LAND / KINGSMARKET, 105-365 x 565-710);
+  - three grey pin discs (105-235 x 750-790).
+  
+  VISION 1: nothing looks like a default form or a plain list.
+- **Build:** `src/ui/Setup.tsx` and the Setup CSS from 1100 px:
+  - **Mode:** two place settings at the stall (one seat or two, the picked one set with cups).
+  - **Map:** three folded paper maps showing their real hex outlines, the picked one opened.
+  - **Difficulty:** three Hollowell memos stamped EASY / NORMAL / HARD, the picked one pinned with its trust and land written on it.
+  - **Pins:** Cath's pins as enamel pins on a ribbon, the locked ones as empty outlines with a hint.
+  - **Semantics:** radiogroups stay radiogroups.
+- **Accept:**
+  - No radio dots or plain list rows at D: each `[data-setup-choice]` holds an illustration.
+  - The picked option lifts or pins within 250 ms.
+  - The difficulty numbers sit inside the memo art, not a two-column table.
+  - Keyboard and axe pass.
+  - The setup-* specs pass.
+  - Shots P (unchanged) and D.
+- **Size:** 2
+
+## 534. [ ] Portfolio desktop: Cath hosts the gallery, her line in a real speech bubble
+- **Why:** `portfolio-D` (plan1119e):
+  - Cath stands on a dark puck pedestal (1240-1415 x 540-575) floating apart from the prints.
+  - Her line is a flat bordered rectangle (752-1225 x 555-597) that reads as an empty input, about 100 px from her with no tail.
+  - The prints are small (about 285x178 each, 640-1225 x 158-533) with flat black pill labels.
+  
+  VISION 5 (characters with presence), VISION 1 (a focal point).
+- **Build:** `portfolio/src` (hero, styles, main):
+  - The prints hang as a lit gallery wall, framed, about 1.3x the area, with brass name plates.
+  - Cath stands on the gallery floor beside them, her shadow on the wall; the puck goes.
+  - Her line becomes a speech bubble with a tail to her.
+  - Hovering or focusing a print turns her to point at it (`shared/cath`'s point pose), and the bubble names the game.
+- **Accept:**
+  - The bubble's tail starts within 40 px of her head box.
+  - Each print is 340 px+ wide at 1440x900, and the hero stays above the fold.
+  - Hover or focus changes her `data-pose` and the line within 250 ms (a fade under reduced motion).
+  - Portfolio specs pass; key art fresh.
+  - Shots D, with P unchanged.
+- **Size:** 2
+
+## 535. [ ] Cathnivore desktop table: Cath speaks once, and the ledger shows the round
+- **Why:** `cath-game-D` (plan1119e): Cath's voice is in three places at once:
+  - her bubble (352-552 x 200-378) with the event line and a tip;
+  - the left rail's Ledger chalkboard (35-315 x 645-800) with a second signed tip ('Sell early, love... — C.');
+  - the Dry Spell note (362-497 x 97-177) beside them.
+  
+  Item 495 promised one voice at a time. The ledger, the round's money story, carries prose. VISION 1 (hierarchy), VISION 2 (panels support the table).
+- **Build:** `src/ui` (the Ledger and Cath's line queue) and `src/styles`:
+  - The ledger becomes this round's receipt: the opening balance, then each Mark earned or spent as a stamped line as it happens, Harvest's payout (item 476) landing on it.
+  - Her tips go only through her bubble's queue.
+  - The event note folds into her first line at round start, then pins small.
+- **Accept:**
+  - At most one Cath-written line visible at any moment (e2e).
+  - Each buy or sell adds a ledger line within 250 ms (e2e).
+  - The ledger shows only figures and line items (no sentence over 6 words).
+  - The table, dock and turn-show specs pass.
+  - Shots P and D.
+- **Size:** 2
+
+## 536. [ ] NIGHT SHIFT desktop title: the menu set as part of the morning paper's world
+- **Why:** `ns-title-D` (plan1119e) 30-275 x 275-540: around the crafted Ledger front page, the List's polaroids and the neon street, the menu is four uppercase words in a dim translucent box. 'CONTINUE No case open' is a grey dead row. VISION 1 (nothing default), VISION 3 (no dead clicks).
+- **Build:** `games/cathode/src/ui` (the title menu) and its CSS in `var(--u)`:
+  - The menu becomes the paper's index column or a case board's tag stack, on newsprint or card, with a red grease-pencil underline under the focused item.
+  - 'Continue' shows only when a case is open, as a clipped tag naming it.
+  - Focus moves the underline in 120-200 ms with a paper or typewriter tick.
+  - Coordinate with item 526's phone frame.
+- **Accept:**
+  - With no save, Continue is absent (e2e).
+  - The menu's ground is opaque paper or card, not a translucent box.
+  - The underline follows the keys within 200 ms (a fade under reduced motion).
+  - cathode-type and css lint hold; cathode-front and cathode-frontpage pass.
+  - Posters re-rendered if the title scene's sources change.
+  - Shots P and D.
+- **Size:** 1
+
+## 537. [ ] The bugs from the 2026-11-19 17:35 critique, fixed as one batch *(lane B, in progress)*
+- `hedge-l34-2d-D` (165-260 x 205-225): the 'Box Lorry' lane tag is drawn under the upper Hollowell depot, only its foot showing.
+- `portfolio-D`: the studio strip's '43 sessions in the last 24 hours' (282-695 x 728-745) contradicts the stat '24 Build sessions a day' (213-375 x 865-890) now there are two lanes.
+- `portfolio-D` (1290-1365 x 400-555) / `runnel-D` (445-505 x 715-835): Cath's cream trousers are skin-toned with knee lines, so at this size her legs read bare. Use a darker trouser tone (item 524's figure).
+- `hedge-menu-D` (1138-1192 x 500-675): the vehicle rows' driver face, vehicle and tower badge crowd each other and the row's left edge.
+- `cath-campaign-P` (288-358 x 165-188): Cath's crates overlap the map frame's top edge, her figure cut by them.
+- `runnel-P` (95-300 x 790-805): the footer hint 'Tap a tile to turn it, hold to pin it.' shows under Cath's lesson bubble saying the same.
+- `cath-setup-D` (995-1140 x 565-775): the 'This week at the market' sign covers Cath's torso and arm.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
