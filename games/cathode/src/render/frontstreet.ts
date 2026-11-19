@@ -5,7 +5,10 @@
 // - its OPEN sign, a small cyan tube on its own failing ballast (out of step with LUNA's);
 // - a passer-by under an umbrella who walks past the window about every 12 s, a silhouette against its light;
 // - a car's headlights, off frame at the street's mouth, sweeping across the cobbles and up the far wall every 11 s.
-// All of it unlit or vertex-coloured, no new real lights (the pool's lights stay hers and the lamp's): six draw calls.
+// - the flats over the shop (slice 2, for the upright phone frame, where the wall over the lamp was black): two storeys
+//   of windows left of the lamp, a reading lamp behind a curtain, a television's blue flicker, a neighbour who crosses
+//   her lit window about every 14 s;
+// All of it unlit or vertex-coloured, no new real lights (the pool's lights stay hers and the lamp's): nine draw calls.
 // Under reduced motion nothing moves: the passer-by and the sweep are gone, the sign holds lit.
 
 import * as THREE from "three";
@@ -28,6 +31,144 @@ const PASSER_WALK_S = 7.5;
 /** The headlight sweep: 1.8 s across, once every 11 s. */
 export const SWEEP_S = 11;
 const SWEEP_DUR = 1.8;
+
+/** The neighbour upstairs: crosses her window in 3.2 s, once every 14 s. */
+export const NEIGHBOUR_S = 14;
+const NEIGHBOUR_CROSS_S = 3.2;
+
+/** The neighbour's place across her window at t: 0..1 while crossing, else -1. */
+export function neighbourAt(t: number): number {
+  const u = (((t + 4.5) % NEIGHBOUR_S) + NEIGHBOUR_S) % NEIGHBOUR_S;
+  return u < NEIGHBOUR_CROSS_S ? u / NEIGHBOUR_CROSS_S : -1;
+}
+
+/** The television's light: a restless cool flicker, cut and colour changes, never dark. */
+export function tvLevel(t: number, still: boolean): number {
+  if (still) return 0.8;
+  const cut = Math.floor(t / 1.7);
+  const base = 0.55 + 0.45 * Math.abs(Math.sin(cut * 12.9898) * 43758.5453 % 1);
+  return base * (0.86 + 0.14 * Math.sin(t * 23.0) * Math.sin(t * 7.3));
+}
+
+/**
+ * The flats' windows on the wall over the shop, as one painted sheet (transparent between them). Windows in metres
+ * from the sheet's bottom-left: `x0`, `x1`, `y0`, `y1`, and what's lit behind each.
+ */
+export const FLAT_W = 5.0;
+export const FLAT_H = 3.0;
+export const FLAT_WINDOWS = [
+  // First floor (left to right as you face the wall: the far end first; the last one stands over the lamp's arm).
+  { x0: 0.25, x1: 1.05, y0: 0.15, y1: 1.15, kind: "tv" },
+  { x0: 2.0, x1: 2.8, y0: 0.15, y1: 1.15, kind: "warm" },
+  { x0: 3.9, x1: 4.85, y0: -0.2, y1: 1.25, kind: "neighbour" },
+  // Second floor.
+  { x0: 0.25, x1: 1.05, y0: 1.85, y1: 2.8, kind: "warm" },
+  { x0: 2.0, x1: 2.8, y0: 1.85, y1: 2.8, kind: "dark" },
+  { x0: 3.9, x1: 4.7, y0: 1.85, y1: 2.8, kind: "warm" },
+] as const;
+
+function flatsTexture(): THREE.CanvasTexture {
+  const PX = 80;
+  const c = document.createElement("canvas");
+  c.width = Math.round(FLAT_W * PX);
+  c.height = Math.round(FLAT_H * PX);
+  const g = c.getContext("2d");
+  if (g) {
+    let s = 7;
+    const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const X = (m: number) => m * PX;
+    const Y = (m: number) => c.height - m * PX;
+    for (const w of FLAT_WINDOWS) {
+      const x = X(w.x0), y = Y(w.y1), ww = X(w.x1 - w.x0), hh = X(w.y1 - w.y0);
+      // A stone sill and lintel, catching a little of the street's light.
+      g.fillStyle = "#3a3634";
+      g.fillRect(x - 6, Y(w.y0) - 2, ww + 12, 8);
+      g.fillStyle = "#24211f";
+      g.fillRect(x - 4, y - 7, ww + 8, 7);
+      if (w.kind === "dark") {
+        // An unlit room: the glass holds a faint cool reflection of the street.
+        const gl = g.createLinearGradient(x, y, x + ww, y + hh);
+        gl.addColorStop(0, "#14181e");
+        gl.addColorStop(0.5, "#252b34");
+        gl.addColorStop(1, "#101216");
+        g.fillStyle = gl;
+        g.fillRect(x, y, ww, hh);
+      } else if (w.kind === "tv") {
+        // A dim room, its back wall blue-grey (the set's flicker is its own layer), half-drawn blind.
+        g.fillStyle = "#1c2430";
+        g.fillRect(x, y, ww, hh);
+        g.fillStyle = "#56606a";
+        for (let k = 0; k < 7; k++) g.fillRect(x, y + k * 6, ww, 4);
+      } else {
+        // A lit room seen through sheer curtains: a warm lamp's glow low on the left, the curtains gathered at the sides.
+        const r = g.createRadialGradient(x + ww * 0.35, y + hh * 0.7, 2, x + ww * 0.35, y + hh * 0.7, hh * 0.9);
+        r.addColorStop(0, "#ffd9a0");
+        r.addColorStop(0.5, "#d89a5c");
+        r.addColorStop(1, "#6a4228");
+        g.fillStyle = r;
+        g.fillRect(x, y, ww, hh);
+        g.fillStyle = "rgba(255,236,210,0.28)";
+        g.fillRect(x, y, ww * 0.22, hh);
+        g.fillRect(x + ww * 0.8, y, ww * 0.2, hh);
+        g.fillStyle = "rgba(90,50,30,0.35)";
+        for (let k = 0; k < 4; k++) g.fillRect(x + ww * (0.04 + k * 0.05), y, 2, hh);
+        for (let k = 0; k < 4; k++) g.fillRect(x + ww * (0.82 + k * 0.045), y, 2, hh);
+        if (w.kind === "warm" && w.y0 > 1) {
+          // A pot plant on the sill.
+          g.fillStyle = "#1e1a16";
+          g.fillRect(x + ww * 0.62, Y(w.y0) - 16, 14, 14);
+          g.beginPath();
+          g.ellipse(x + ww * 0.62 + 7, Y(w.y0) - 24, 13, 10, 0, 0, Math.PI * 2);
+          g.fill();
+        }
+      }
+      // The frame: a cross of glazing bars.
+      g.fillStyle = "#14110f";
+      g.fillRect(x, y, ww, 3);
+      g.fillRect(x, y + hh - 3, ww, 3);
+      g.fillRect(x, y, 3, hh);
+      g.fillRect(x + ww - 3, y, 3, hh);
+      g.fillRect(x + ww / 2 - 2, y, 4, hh);
+      g.fillRect(x, y + hh * 0.42, ww, 3);
+      // Rain on the glass.
+      g.fillStyle = "rgba(10,14,20,0.2)";
+      for (let k = 0; k < 10; k++) g.fillRect(x + rnd() * ww, y + rnd() * hh, 2, 4 + rnd() * 10);
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/** The neighbour's head and shoulders, dark against her curtain; the plane slides it across the window. */
+function neighbourTexture(): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 152;
+  const g = c.getContext("2d");
+  if (g) {
+    g.fillStyle = "rgba(34,20,16,0.82)";
+    g.beginPath();
+    g.ellipse(64, 54, 17, 21, 0, 0, Math.PI * 2);
+    g.fill();
+    // Hair up in a knot.
+    g.beginPath();
+    g.ellipse(70, 30, 10, 9, 0, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(30, 152);
+    g.quadraticCurveTo(32, 92, 64, 86);
+    g.quadraticCurveTo(96, 92, 98, 152);
+    g.closePath();
+    g.fill();
+    // A mug held up.
+    g.fillRect(84, 100, 14, 16);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.ClampToEdgeWrapping;
+  return t;
+}
 
 /** The OPEN tube: lit, with a short fault of dark beats once every 9.1 s (LUNA's comes every 7.3 s). */
 export function openLevel(t: number, still: boolean): number {
@@ -254,8 +395,63 @@ export function buildFrontStreet(shop: ShopAt, groundAt: (x: number, z: number) 
   open.renderOrder = 3;
   group.add(open);
 
+  // ---- the flats over the shop, left of the lamp (slice 2) ----
+  // The sheet's left edge (as you face the wall) at `along` -8.6, its foot 3 m up: the first floor over the dock.
+  const FLAT_A = -8.6 + FLAT_W / 2, FLAT_Y = 3.0;
+  const flatsTex = flatsTexture();
+  const flatsMat = new THREE.MeshBasicMaterial({ map: flatsTex, color: new THREE.Color(0.62, 0.6, 0.58), transparent: true, alphaTest: 0.02, fog: false });
+  const flats = new THREE.Mesh(new THREE.PlaneGeometry(FLAT_W, FLAT_H), flatsMat);
+  flats.name = "front-flats";
+  flats.position.copy(at(FLAT_A, FLAT_Y + FLAT_H / 2, 0.02));
+  flats.rotation.y = shop.yaw;
+  group.add(flats);
+  const winAt = (w: (typeof FLAT_WINDOWS)[number], o: number) =>
+    at(FLAT_A - FLAT_W / 2 + (w.x0 + w.x1) / 2, FLAT_Y + (w.y0 + w.y1) / 2, o);
+  // The television's light on the room's back wall and blind.
+  const tvWin = FLAT_WINDOWS.find((w) => w.kind === "tv")!;
+  const tvColor = new THREE.Color(0.22, 0.42, 0.85);
+  const tvMat = new THREE.MeshBasicMaterial({ color: tvColor.clone(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const tv = new THREE.Mesh(new THREE.PlaneGeometry(tvWin.x1 - tvWin.x0 - 0.06, tvWin.y1 - tvWin.y0 - 0.06), tvMat);
+  tv.position.copy(winAt(tvWin, 0.03));
+  tv.rotation.y = shop.yaw;
+  tv.renderOrder = 3;
+  group.add(tv);
+  // The neighbour: her silhouette slides across the window (the texture's offset, clamped, so the frame clips her).
+  const nWin = FLAT_WINDOWS.find((w) => w.kind === "neighbour")!;
+  const nTex = neighbourTexture();
+  const nMat = new THREE.MeshBasicMaterial({ map: nTex, transparent: true, depthWrite: false, fog: false });
+  const neighbour = new THREE.Mesh(new THREE.PlaneGeometry(nWin.x1 - nWin.x0 - 0.06, nWin.y1 - nWin.y0 - 0.06), nMat);
+  neighbour.name = "front-neighbour";
+  neighbour.position.copy(winAt(nWin, 0.03));
+  neighbour.rotation.y = shop.yaw;
+  neighbour.renderOrder = 3;
+  neighbour.visible = false;
+  group.add(neighbour);
+  // The lit windows' light on the wet brick round them (the street's mirror leaves these out).
+  const glowMat = new THREE.MeshBasicMaterial({ map: null, color: new THREE.Color(0.15, 0.085, 0.04), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const glows: THREE.Mesh[] = [];
+  for (const w of FLAT_WINDOWS) {
+    if (w.kind !== "warm" && w.kind !== "neighbour") continue;
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry((w.x1 - w.x0) * 2.4, (w.y1 - w.y0) * 2.0), glowMat);
+    gl.position.copy(winAt(w, 0.015));
+    gl.rotation.y = shop.yaw;
+    gl.renderOrder = 2;
+    glows.push(gl);
+  }
+  if (glows.length) {
+    const merged = mergeGeometries(glows.map((m) => { m.updateMatrix(); return m.geometry.applyMatrix4(m.matrix); }), false)!;
+    for (const m of glows) m.geometry.dispose();
+    const glow = new THREE.Mesh(merged, glowMat);
+    glow.name = "front-flat-glow";
+    glow.renderOrder = 2;
+    glow.layers.set(LAYER_NO_REFLECT);
+    group.add(glow);
+  }
+
   // The window's light on the wet pavement in front of it.
   const soft = softTexture();
+  glowMat.map = soft;
+  glowMat.needsUpdate = true;
   const decal = (color: THREE.Color) =>
     new THREE.MeshBasicMaterial({ map: soft, color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   const spillMat = decal(new THREE.Color(0.32, 0.46, 0.52));
@@ -296,18 +492,23 @@ export function buildFrontStreet(shop: ShopAt, groundAt: (x: number, z: number) 
   group.add(floorBeam, wallBeam);
   const bp = new THREE.Vector3();
 
-  for (const o of [open, spill, floorBeam, wallBeam]) o.layers.set(LAYER_NO_REFLECT);
+  for (const o of [open, spill, floorBeam, wallBeam, tv, neighbour]) o.layers.set(LAYER_NO_REFLECT);
   // On a phone the walker keeps out of the mirror too (the street's own people do there).
   if (phone) walker.layers.set(LAYER_NO_REFLECT);
 
   return {
     group,
     movers(still) {
-      return still ? [] : ["passer", "headlights", "neon"];
+      return still ? [] : ["passer", "headlights", "neon", "neighbour"];
     },
     update(t, still) {
       const lv = openLevel(t, still);
       openMat.color.copy(tubeColor).multiplyScalar(lv);
+      tvMat.color.copy(tvColor).multiplyScalar(tvLevel(t, still));
+      // The neighbour upstairs, left to right across her window as the street sees it.
+      const nu = still ? -1 : neighbourAt(t);
+      neighbour.visible = nu >= 0;
+      if (nu >= 0) nTex.offset.x = 1 - 2 * (nu * nu * (3 - 2 * nu));
       // The passer-by.
       const u = still ? -1 : passerAt(t);
       walker.visible = u >= 0;
@@ -339,7 +540,9 @@ export function buildFrontStreet(shop: ShopAt, groundAt: (x: number, z: number) 
       shopMat.map?.dispose();
       openTex.dispose();
       soft.dispose();
-      for (const m of [shopMat, openMat, spillMat, walkerMat, floorBeamMat, wallBeamMat]) m.dispose();
+      flatsTex.dispose();
+      nTex.dispose();
+      for (const m of [shopMat, openMat, spillMat, walkerMat, floorBeamMat, wallBeamMat, flatsMat, tvMat, nMat, glowMat]) m.dispose();
     },
   };
 }

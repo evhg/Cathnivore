@@ -2,7 +2,8 @@ import { expect, test } from './own-gpu'
 
 // Plan item 510: the street behind her on the title is alive. A lit Hollowell shop across the street, a passer-by under
 // an umbrella walking past it, a car's headlights sweeping the cobbles and the shop's stuttering OPEN tube: the canvas
-// names its running movers in [data-ambient], and under reduced motion none runs.
+// names its running movers in [data-ambient], and under reduced motion none runs. Slice 2: the flats over the shop, a
+// neighbour crossing her lit window (seen in the upright phone frame).
 
 type O = { visible: boolean; position: { x: number; z: number } }
 type W = { cathodeFront?: { ready: boolean; scene(): { setTime(t: number): void; world: { scene: { getObjectByName(n: string): O | undefined } } } | null } }
@@ -30,7 +31,7 @@ for (const vp of sizes) {
         s.setTime(t)
         const o = (n: string) => s.world.scene.getObjectByName(n)!
         const p = o('front-passer')
-        return { passer: p.visible ? p.position.x : null, sweep: o('front-sweep').visible }
+        return { passer: p.visible ? p.position.x : null, sweep: o('front-sweep').visible, neighbour: o('front-neighbour').visible }
       }, t)
     const a = await at(7.5), b = await at(8.5), c = await at(10.4)
     // The passer-by walks (on the street at 7.5 s and 8.5 s, a metre or more apart), the headlights cross at 10.4 s.
@@ -38,6 +39,9 @@ for (const vp of sizes) {
     expect(b.passer, JSON.stringify({ a, b })).not.toBeNull()
     expect(Math.abs(a.passer! - b.passer!), JSON.stringify({ a, b })).toBeGreaterThan(1)
     expect(c.sweep, JSON.stringify(c)).toBe(true)
+    // The neighbour upstairs crosses her window at 10.4 s, and is out of it at 7.5 s.
+    expect(movers).toContain('neighbour')
+    expect([a.neighbour, c.neighbour], JSON.stringify({ a, c })).toEqual([false, true])
   })
 }
 
@@ -56,7 +60,7 @@ test('under reduced motion nothing on the title street moves', async ({ page }) 
     const out: boolean[] = []
     for (const t of [7.5, 8.5, 10.4]) {
       s.setTime(t)
-      out.push(s.world.scene.getObjectByName('front-passer')!.visible, s.world.scene.getObjectByName('front-sweep')!.visible)
+      for (const n of ['front-passer', 'front-sweep', 'front-neighbour']) out.push(s.world.scene.getObjectByName(n)!.visible)
     }
     return out
   })
