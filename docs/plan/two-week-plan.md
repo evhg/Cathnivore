@@ -4820,7 +4820,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 519. [ ] Cathnivore phone game: the table the hero, Cath reacting over it
+## 519. [ ] Cathnivore phone game: the table the hero, Cath reacting over it *(lane A, in progress)*
 - **Why:** `cath-game-P` (plan1119b): the board takes about 44% of the height (8-382 x 100-475) under three stacked strips (the resources 0-58, the Squeeze/Expand/Scout strip 62-100, the event label); a producer/line band (485-600) and the hand (615-775) below it; the third card cramped and the fourth a 40 px sliver at the edge (350-390 x 620-775); Cath a 64 px static face (10-78 x 490-560) while at D she poses to every event (VISION 2: the table is the hero; 5: Cath reacts). Checked: item 405's hand dock and the '9 more' tab (512) kept as they are unless they block the accept.
 - **Build:** `src/ui/Game.tsx` and the game CSS below 720 px: the threat strip as plaques on the board's top edge, not a row above it; Cath's line as a speech bubble from a bust (her `cathPose` and the companion's expression) that pops over the board's corner for about 1.2 s on each reaction and rests small; the hand a row where every card on screen is whole (title in its box), the rest one swipe away.
 - **Accept:** at 390x844 the board's box is 55%+ of the viewport height; no hand card cut by the viewport edge and every visible card's title inside its card (bounding boxes); the reaction bust 110 px+ tall, its `data-expression` changing within 300 ms of a Squeeze and of a purchase, fades only under reduced motion; D unchanged; phone-hand-held, plan-strip, desktop-no-scroll, quick-game pass; shots P, D and 375x667.
