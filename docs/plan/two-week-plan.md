@@ -4974,7 +4974,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D, 2D and 3D.
 - **Size:** 3
 
-## 530. [ ] /games/ phone: each game a full-width poster with Cath in its role *(lane A, in progress)*
+## 530. [x] /games/ phone: each game a full-width poster with Cath in its role *(done 2026-11-19 16:30 lane A, `534d4071`, `5e0f3e70`: at 390x844 the posters are a scroll-snapped shelf (`site/src/shelf.ts`), each 346 px across with a sliver of the next, the art full width (16:8.2), the hook (two lines, clamped) beside Play; the first poster's Play ends at 835 (the hero's CTA gap 24 -> 12, the shelf 8 px under the meta line); pager dots follow a swipe or the arrow keys (focus moves poster to poster), and the waving mini Cath dresses for the snapped poster; Hedgerow's Cath holds up a seed packet (new shared `packet` pose), so the four poses are basket, can, packet and NIGHT SHIFT's key-art Cath, at P and D. games-shelf (new), games-cards, games-cath, games-hero-cath (its dressing check swipes the shelf now), games-stall, games-todayboard, poster-play, games-backdrop pass at P and D; cath-poses and keyart-fresh pass; shots scratchpad g530 (b-/a- P, D, P-hedge))*
 - **Why:**
   - `games-P` (plan1119d) 20-370 x 625-844: the four games are two 170 px cards side by side, the art cut to about 170x115 thumbnails, the blurbs three lines.
   - Every card wears the same small Cath sticker at its edge (150-185 and 330-365 x 680-735), and no Play shows in the first screen.

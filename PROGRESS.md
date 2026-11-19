@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (14:52 11-19): 319 slice 95 (the nose's planes and cast shadow in the face's relief shade); handed back. CI/E2E green on the 13:52 work. Lock released.
+- Lane A (15:51 11-19): 531 done (Cathnivore D: Hollowell's plan as one graphite-and-chrome plaque docked into Pell, slogan tab, orange target outlines); 530 done (/games/ phone poster shelf, seed-packet pose). CI green on 48fce886. Lock released.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 15:51 lane A session:** 531 and 530 done (4 commits). plan-plaque/plan-cards/plan-strip/papers-placard/desktop-no-scroll/plan-corp/rival (P, D); games-shelf/-cards/-cath/-hero-cath/-stall/-todayboard/poster-play/-backdrop (P, D); plan-slogans, site-shelf, cath-poses, keyart-fresh, css lint; full `npm run check` passed (2814). Shots scratchpad s531, g530. Lock released.
 - 2026-11-19 15:21 lane B: planning (2 unclaimed left): shots plan1119d, critique, items 529 (Hedgerow fleet faces), 530 (/games/ phone posters), 531 (Cathnivore D Hollowell plaque), 532 (bugs); 532 done. Cathnivore D plan/setup/no-scroll, Hedgerow map/level-card/map-you, portfolio-* pass (--retries=0). A 36 px portrait broke level-card's 40 px floor: kept 40.
 - **2026-11-19 14:52 lane A session:** 319 slice 95. cathode-classpick, -classpose, -front (D, 37 passed, --retries=0); tsc, eslint; posters and key art re-rendered, keyart-fresh. No full check (one ran 13:52). Shots scratchpad l319. Lock released.
 - 2026-11-19 14:21 lane B: 527 done: the Hedgerow rack grouped by role, cheapest first, and 60 px towers in a nine-packet D rack (heights and overflow unchanged at 1440/1280, levels 21/25/34); hedgerow tray/rack/rack-roles/ledger/catdock/threat/critique/convoy pass (P, D, 54). 526 handed back: its waist-up frame replaces items 82/148's framing (pointers on the item).
