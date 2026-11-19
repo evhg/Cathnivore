@@ -5197,7 +5197,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - The table, dock, ledger and turn-show specs pass; shots D (and P unchanged).
 - **Size:** 2
 
-## 541. [ ] Cathnivore phone table: the whole hand as a fan, and more board *(lane A, in progress)*
+## 541. [x] Cathnivore phone table: the whole hand as a fan, and more board *(done 2026-11-19 23:18, lane A, 0f56c502..: the critique judged webdriver's plain row (item 302); a real phone already holds every playable card as item 405's fan, so `npm run shots` and `plan-shots.mjs` now shoot `?e2eHandFan=1`. Sell's coins 28 px in the lifted card with 44 px-tall targets, its gain chip clear of 'Sell' (it cut the word's top); the 'i' is a 26 px dot in a 44 px target (components.css). `e2e/phone-hand-targets.spec.ts`. Decided, not built: the board is width-bound at 390 (three hexes across: about 330 px of hexes), so folding Cath's strip can't make it 400 px tall; the price badge stays on the window's left edge, the one part of a fanned strip that shows; the 'N more' key is the not-yet pile (unplayable cards), as on desktop)*
 - **Why:** `cath-game-P` (plan1119e):
   - Only two and a half cards show (8-390 x 615-775), behind a '9+ more' button.
   - The Graft card's cost badge sits over its art (15-110 x 690-720).
