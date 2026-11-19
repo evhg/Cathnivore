@@ -5178,7 +5178,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D in 3D (see CLAUDE.md for 3D shots).
 - **Size:** 3
 
-## 540. [x] Cathnivore desktop table: one clean top rail, the whole hand on screen, an empty ledger that stays small *(done 2026-11-19 23:25, lane A, 0c6f4acd: Expand's 'Stage I' tab hangs inside its card's top-right corner (it rode 6 px over the card's top); Market/Plan/Log 44 px tabs, each its icon over its word, the map key dropped under them; the empty Ledger is its heading and opening line (68 px, was 155 px of dark slate) at the column foot over Undo, growing with its first line; the hand measured whole (bottoms 885 at 1440x900, 785 at 1280x800). Hollowell's medallion checked and kept: clear of the Scout card at both sizes (1187 vs 1167; 1040 vs 1029), its hang below the rail is item 282's design. `e2e/desktop-top-rail.spec.ts`, `player-mat.spec.ts` updated; shots D and L before/after; P unchanged (desktop-only rules))*
+## 540. [x] Cathnivore desktop table: one clean top rail, the whole hand on screen, an empty ledger that stays small *(done 2026-11-19 23:00, lane A, 0c6f4acd: Expand's 'Stage I' tab hangs inside its card's top-right corner (it rode 6 px over the card's top); Market/Plan/Log 44 px tabs, each its icon over its word, the map key dropped under them; the empty Ledger is its heading and opening line (68 px, was 155 px of dark slate) at the column foot over Undo, growing with its first line; the hand measured whole (bottoms 885 at 1440x900, 785 at 1280x800). Hollowell's medallion checked and kept: clear of the Scout card at both sizes (1187 vs 1167; 1040 vs 1029), its hang below the rail is item 282's design. `e2e/desktop-top-rail.spec.ts`, `player-mat.spec.ts` updated; shots D and L before/after; P unchanged (desktop-only rules))*
 - **Why:** `cath-game-D` (plan1119e): the chrome competes with the table (VISION 2, 'the table is the hero').
   - The 'STAGE I' tab collides with the Expand card's top edge (773-835 x 10-28).
   - Hollowell's portrait ring overlaps the Scout card and spills below the rail (1180-1310 x 10-150).
@@ -5197,7 +5197,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - The table, dock, ledger and turn-show specs pass; shots D (and P unchanged).
 - **Size:** 2
 
-## 541. [ ] Cathnivore phone table: the whole hand as a fan, and more board
+## 541. [ ] Cathnivore phone table: the whole hand as a fan, and more board *(lane A, in progress)*
 - **Why:** `cath-game-P` (plan1119e):
   - Only two and a half cards show (8-390 x 615-775), behind a '9+ more' button.
   - The Graft card's cost badge sits over its art (15-110 x 690-720).
@@ -5211,13 +5211,13 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - The campaign, hotseat, cath-pop and quick-game specs pass; shots P.
 - **Size:** 2
 
-## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(handed back 2026-11-19 23:40 by lane A: Setup point done; left: Hedgerow's shop role lines, letterbox, phone top band and coming-up columns, the campaign bunting)* *(handed back 2026-11-19 22:55 by lane B: five points done or checked (marked below); left: Hedgerow's shop role lines, letterbox, phone top band and coming-up columns, the Setup banner, the campaign bunting)*
+## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(handed back 2026-11-19 23:08 by lane A: Setup point done; left: Hedgerow's shop role lines, letterbox, phone top band and coming-up columns, the campaign bunting)* *(handed back 2026-11-19 22:55 by lane B: five points done or checked (marked below); left: Hedgerow's shop role lines, letterbox, phone top band and coming-up columns, the Setup banner, the campaign bunting)*
 - `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge. **Checked 22:50 lane B, kept:** whole at 1328-1438 in the 30 s live frame, off screen in the t=8 frame; it rides the title's camera drift, so a nudge moves the clip, not fixes it.
 - `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px.
 - `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars.
 - `hedge-l21-3d-P` (y 75-105): the Hollowell '216 NEXT' pill and the 'CLOSER' button crowd the top band.
 - Hedgerow, both renderers (D 1110-1420 x 590-660): the coming-up columns in about 11 px grey; the coloured bars under them at y 690 read as a broken element.
-- `cath-setup-P` (60-335 x 232-250): the 'Dry Spell … 1 Mark off' banner nearly overflows; the producer power text about 10-11 px (y 715-760). **Fixed 23:35 lane A:** the pair's power text at the caption size (13 px, was 12); still no scroll at 390x844 (Start ends 834). The banner checked and kept: whole inside its ribbon (60-330 of 390).
+- `cath-setup-P` (60-335 x 232-250): the 'Dry Spell … 1 Mark off' banner nearly overflows; the producer power text about 10-11 px (y 715-760). **Fixed 23:05 lane A:** the pair's power text at the caption size (13 px, was 12); still no scroll at 390x844 (Start ends 834). The banner checked and kept: whole inside its ribbon (60-330 of 390).
 - `cath-setup-D` (140-340 x 448-500): step 3's heading wraps to two lines, unlike steps 1 and 2. **Fixed 2026-11-19 22:45 lane B:** 'Hollowell's push', one line (plan1119f).
 - `cath-campaign-P` (120-380 x 522-535): the chapter thumbnails' red pins collide with the next card's edge. **Fixed 22:50 lane B:** the locked tab's wax seal sits inside its own corner (right 4 px, was -5) (plan1119g).
 - `cath-campaign-D` (350-880 x 0-180): the 1-6 bunting floats unattached over dead space.
