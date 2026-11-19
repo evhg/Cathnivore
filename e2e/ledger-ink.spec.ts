@@ -34,6 +34,15 @@ test('the ledger writes a line per move, and its Marks column meets the mat', as
   expect((await lines.locator('.receipt-why').allTextContents()).map((t) => t.trim())).toEqual(want)
   // The third move ends the round: Hollowell's turn, a closing line with a doodle, and the Harvest on the page.
   await expect(page.locator('.actions-sheet .round-ledger .receipt[data-kind="round"] .receipt-doodle')).toHaveCount(1, { timeout: 60_000 })
-  const last = page.locator('.actions-sheet .round-ledger .receipt[data-producer="mara"]').last()
-  await expect.poll(async () => Number(await last.getAttribute('data-marks')) === (await matMarks()), { timeout: 30_000 }).toBe(true)
+  // The mat shows whoever's turn it is (the AI partner may already be up): compare that producer's newest line.
+  await expect
+    .poll(
+      async () => {
+        const who = (await page.locator('.producer-sheet').first().innerText()).split(/\s+/)[0]!.toLowerCase()
+        const last = page.locator(`.actions-sheet .round-ledger .receipt[data-producer="${who}"]`).last()
+        return Number(await last.getAttribute('data-marks')) === (await matMarks())
+      },
+      { timeout: 30_000 },
+    )
+    .toBe(true)
 })
