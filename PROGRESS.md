@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (01:51 11-19): planned 513-518 from fresh shots (`e2e/screenshots/plan1119a`, subagent critique); 513 slice 1 (`61e47103`), handed back. Open unclaimed: 319, 471, 510, 513-518.
+- Lane A (02:51 11-19): E2E red on 61e47103 fixed (`2ad1e69f`: Hedgerow level 25's convoy wraps when Coming up is dropped; hedgerow-critique gap 107 -> 76). 513 slice 2 (`c9bee86a`), handed back. Open unclaimed: 319, 471, 496, 510, 513, 514, 516-518.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 02:51 lane A session:** E2E red fixed (hedgerow-critique, convoy, tray, round-chips P/D, critique166/177, level-card, rack, critique79 Hedgerow); 513 slice 2 (setup-*, quick-game P, D; css lint, critical-css). Full `npm run check` run. Lock released. Shots scratchpad e2efix, s513b.
 - 2026-11-19 02:22 lane B: 515 slices 1-2; 3dframe, closeframe, shadow3d, attack (P, D, --retries=0), render3d/roles unit tests (257), drawcalls unchanged; shots h515*.
 - **2026-11-19 01:51 lane A session:** planning 513-518; 513 slice 1. setup-phone, setup-opening (new case), setup-maps, setup-focal (P, D, 26); css lint; tsc, eslint. No full check. Lock released. Shots plan1119a, scratchpad s513.
 - 2026-11-19 01:21 lane B: 511 slices 1-3 and done; hedgerow-convoy (new), tray, round-chips, rack, rack-roles, level-card, critique79 Hedgerow (P, D, --retries=0) pass; shots 2D/3D at 1440, 1280, 844x390.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-18 20:21 lane B: 501 slice 5 and done; 506 slices 1-2; Cathnivore table specs (P, D, 50), Hedgerow growth/3dframe/closeframe/water/biome3d/shadow3d (P, D, 47), CSS lint pass.
 - **2026-11-18 19:51 lane A session (release):** gates 1-6 passed on fad5313b (2798 unit tests), gate 7 failed and fixed; 503 done. title-attract (new, P, D), title-table/-sky/-fit/-opening/title (P, D), title-beat unit, css lint, critical-css; Lighthouse A/B runs (scratchpad lh-*). Lock released.
 - 2026-11-18 19:21 lane B: 501 slices 3-4 (rail keys at the head row's end, Expand chips whole); board-scale(s), desktop-no-scroll, drawer-tabs, table-hand/-producers/-cath, plan-strip, gantry-slate, action-hand, hand-shelf (P, D, 44+) pass, two load flakes pass alone; CSS lint. Handed back.
-- **2026-11-18 18:51 lane A session:** 502 done, 504 slices 1-2. setup-*, quick-game (Play again flaked once under load, 3/3 alone), layouts, board-diorama, ability-preview specs (D, P); opening-preview unit (new), css lint, cathode-type; cathode-classpick spec; tsc, eslint. No full check. Lock released. Shots scratchpad s502, s504.
