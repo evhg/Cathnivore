@@ -5102,7 +5102,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D.
 - **Size:** 2
 
-## 536. [ ] NIGHT SHIFT desktop title: the menu set as part of the morning paper's world
+## 536. [ ] NIGHT SHIFT desktop title: the menu set as part of the morning paper's world *(lane A, in progress)*
 - **Why:** `ns-title-D` (plan1119e) 30-275 x 275-540: around the crafted Ledger front page, the List's polaroids and the neon street, the menu is four uppercase words in a dim translucent box. 'CONTINUE No case open' is a grey dead row. VISION 1 (nothing default), VISION 3 (no dead clicks).
 - **Build:** `games/cathode/src/ui` (the title menu) and its CSS in `var(--u)`:
   - The menu becomes the paper's index column or a case board's tag stack, on newsprint or card, with a red grease-pencil underline under the focused item.
