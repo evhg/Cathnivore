@@ -68,7 +68,7 @@ export const APPS: PortfolioApp[] = [
     stack: ['TypeScript', 'three.js', 'React', 'WebAudio', 'Playwright', 'Vercel'],
     facts: [
       ['Games', '4'],
-      ['Build sessions', '24 a day'],
+      ['Build sessions', '48 a day'],
       ['Quality gates', '8 per release'],
     ],
   },

@@ -1238,7 +1238,7 @@ export class Renderer {
                 // ...and off Cath's figure.
                 const hp = this.heroPx();
                 const cath = { x: X(game.hero.x) - hp.w / 2, y: Y(game.hero.y) - hp.h, w: hp.w, h: hp.h + s * 0.3 };
-                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath], behind, plots(), this.driverImg(kind));
+                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath, ...this.depotBoxes], behind, plots(), this.driverImg(kind));
                 if (r) shown.names.push(r);
               },
             });
@@ -1910,6 +1910,8 @@ export class Renderer {
   shownQueue: { leads: Rect[]; plates: Rect[]; names: Rect[] } | null = null;
   /** Plan item 157: the lanes (0, 1) whose gate has a depot on screen, which shows the count. */
   depotLanes = new Set<number>();
+  /** Plan item 537: the 2D depots' boxes (main.ts places them over the canvas), for the name tag to keep off. */
+  depotBoxes: Rect[] = [];
   /** Plan item 403: lanes whose depot stands on the lane's mouth, and how far along the lane its queue starts (cells). */
   depotMouths = new Map<number, number>();
   private queueAge = 0;

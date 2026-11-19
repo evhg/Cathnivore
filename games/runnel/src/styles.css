@@ -5054,3 +5054,7 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .stage .cell.ground-field:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))); }
   .stage .cell.ground-meadow:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))); }
 }
+
+/* Plan item 537: while Cath's first-field lesson points at a tile, her bubble says how to play, so the footer hint
+   stands down (it repeated 'Tap a tile to turn it' under her). It keeps its line, so nothing moves when it returns. */
+body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }

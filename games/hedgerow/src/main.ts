@@ -5212,7 +5212,7 @@ function syncDepots(g: Game): void {
   if (!show) {
     layer0?.remove();
     depotKey = "";
-    if (renderer && !is3D(renderer)) (renderer as Renderer).depotLanes.clear();
+    if (renderer && !is3D(renderer)) { (renderer as Renderer).depotLanes.clear(); (renderer as Renderer).depotBoxes = []; }
     return;
   }
   // The mood: each time a round is over (the round counter moves on and the field is between rounds), compare the
@@ -5363,6 +5363,9 @@ function syncDepots(g: Game): void {
   }
   r.depotLanes = new Set(spots.map((sp) => sp.lane));
   r.depotMouths = mouths;
+  // Plan item 537: the depots' boxes in the canvas's CSS px, so the queue's name tag keeps off them (it lay under the
+  // upper depot at D l34).
+  r.depotBoxes = spots.map((sp) => ({ x: sp.x + stage.left - canvas.left, y: sp.y + stage.top - canvas.top, w: sp.size, h: sp.size }));
   // Toggled in place, not rebuilt: rebuilding the depots' SVG in the round's call frame delayed that frame.
   if (layer0) for (const el of layer0.querySelectorAll<HTMLElement>(".depot")) el.toggleAttribute("data-showdown", standOut);
   const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;

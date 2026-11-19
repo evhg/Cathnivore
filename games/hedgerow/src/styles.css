@@ -5005,6 +5005,9 @@ img.act-scene {
 /* Plan item 529: the vehicle's driver, a small mugshot on the portrait's top-left (the counter badge has its foot) */
 .lcard-driver { position: absolute; left: -6px; top: -5px; width: 22px; height: 22px; overflow: hidden; border-radius: 50%; background: color-mix(in srgb, var(--kraft) 55%, var(--paper-hi)); box-shadow: 0 0 0 1.5px var(--paper-hi), 0 0 0 2.5px var(--kraft); }
 .lcard-driver svg { display: block; width: 100%; height: 100%; }
+/* plan item 537: on the D card's docked rows the face, the vehicle and the counter badge crowded one 40 px portrait: the
+   face shows on the phone sheet, the field guide, the Almanac and the lane tags instead */
+@media (min-width: 900px) { #screen-select li.act.act-has-card .lcard-driver { display: none; } }
 @media (min-width: 900px) {
   /* at D the counter is the tower's badge on the portrait (its words stay for screen readers) */
   #screen-select li.act .level-card .lcard-enemies .enemy-portrait img.lcard-counter-badge {
