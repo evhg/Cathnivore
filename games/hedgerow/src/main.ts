@@ -1825,7 +1825,7 @@ function fitPreview(p: HTMLElement): void {
       if (on && el.matches(".ticket-note, .ticket-title") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
     }
   };
-  p.classList.remove("shop-tight");
+  p.classList.remove("shop-tight", "convoy-wrap");
   const gone: string[] = [];
   for (const sel of PREVIEW_SPARE) {
     if (!over()) break;
@@ -1840,6 +1840,13 @@ function fitPreview(p: HTMLElement): void {
   for (const sel of gone.slice(0, -1).reverse()) {
     drop(sel, false);
     if (over()) drop(sel, true);
+  }
+  // Plan item 511's convoy keeps one row so the card above has room; with the card gone a round of more types than
+  // the row holds (level 25's five) wraps instead of scrolling its last segment off the ticket, if the column has room.
+  const convoy = p.querySelector<HTMLElement>(".ticket-chips.convoy");
+  if (convoy && convoy.scrollWidth > convoy.clientWidth + 1) {
+    p.classList.add("convoy-wrap");
+    if (over()) p.classList.remove("convoy-wrap");
   }
 }
 const refit = () => {

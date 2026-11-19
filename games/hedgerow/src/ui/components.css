@@ -5142,6 +5142,11 @@ body:has(#dlg-pause[open]) .paused-note {
     gap: 3px;
     padding: 2px 4px 3px 0;
   }
+  .play .panel.convoy-wrap .ticket-chips.convoy {
+    /* the Coming up card dropped for room: every vehicle type shows, on a second row if need be (fitPreview) */
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
   .play .panel .ticket-chips.convoy .preview-chip {
     flex: var(--share, 1) 0 auto;
     min-width: 0;
