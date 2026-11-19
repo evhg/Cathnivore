@@ -231,7 +231,7 @@ export function cathSvg(options: CathOptions = {}): string {
 ${defs(id)}
 ${framing === 'full' ? `<g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
 ${headOpen}<g class="cath-hair-back">${hairBack(id)}</g>${headClose}
-<g class="cath-body">${OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
+<g class="cath-body">${outfit === 'field' && framing === 'full' ? fieldOutfit(id, true) : OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
 ${headOpen}<g class="cath-head">
 ${neck(id)}
 ${NECKWEAR[outfit](id)}
@@ -674,6 +674,27 @@ C266 262 240 256 217 250
 L200 404
 L183 250 Z`
 
+/** Plan item 524: at full length the field blazer carries on to mid-thigh (it stopped at the waist, which left her
+ *  legs 60% of her height, a paper doll's): the same body flaring gently past the hips to a hem at 606, split up the
+ *  front below the button so the trousers show as she stands. */
+const JACKET_LONG = JACKET.replace(
+  `${'C132 440 125 472 123 495'}
+Q122 501 129 501
+L271 501
+Q278 501 277 495
+C275 472 268 440 262 406`,
+  `C130 440 122 478 118 516
+C114 552 110 582 108 598
+Q107 606 115 606
+L192 606
+L200 566
+L208 606
+L285 606
+Q293 606 292 598
+C290 582 286 552 282 516
+C278 478 270 440 262 406`,
+)
+
 /** A garment body with its cel shading: fill, an optional texture, the shadow side, the shadow the locks
  *  cast on it, and a rim light along the lit edge. */
 function garment(id: string, key: string, d: string, fill: string, line: string, shadow: string, texture = ''): string {
@@ -689,7 +710,7 @@ ${band(`${id}-${key}sh`, d, 34, 0, shadow, 0.5)}
 ${band(`${id}-${key}rim`, d, -3, 2, C.rim, 0.55)}`
 }
 
-function fieldOutfit(id: string): string {
+function fieldOutfit(id: string, long = false): string {
   // A tailored olive blazer (sloped shoulders, nipped waist, notched lapels, one button) over a cream silk
   // blouse, with a fine gold chain and a small leaf pendant. The collar stands up behind her neck.
   const lapel = (f: 1 | -1) => {
@@ -710,7 +731,7 @@ ${brush([187, 263], [192, 265], [197, 267], 0.2, 1, 0.2, C.skinDeep, ' opacity="
 <path fill="url(#${id}-leaf)" stroke="${C.leafDeep}" stroke-width="0.9" d="M200 274 C195 279 196 286 200 289 C204 286 205 279 200 274 Z"/>
 <path fill="none" stroke="${C.leafLight}" stroke-width="0.6" d="M200 276 L200 287"/>
 <circle cx="201.6" cy="279" r="0.9" fill="${C.white}" opacity="0.8"/>
-${garment(id, 'jk', JACKET, `url(#${id}-olive)`, C.oliveLine, C.oliveDeep, 'twill')}
+${garment(id, 'jk', long ? JACKET_LONG : JACKET, `url(#${id}-olive)`, C.oliveLine, C.oliveDeep, 'twill')}
 ${brush([140, 300], [146, 360], [134, 500], 0.4, 2.4, 0.4, C.oliveDeep, ' opacity="0.8"')}
 ${brush([260, 300], [254, 360], [266, 500], 0.4, 2.2, 0.4, C.oliveDeep, ' opacity="0.6"')}
 <path ${stitch} d="M132 272 C122 292 120 318 124 344 M268 272 C278 292 280 318 276 344"/>
@@ -718,7 +739,12 @@ ${brush([148, 344], [136, 356], [140, 374], 0.3, 2.2, 0.3, C.oliveDeep, ' opacit
 ${brush([252, 344], [264, 356], [260, 374], 0.3, 2, 0.3, C.oliveDeep, ' opacity="0.5"')}
 ${brush([176, 424], [172, 460], [178, 500], 0.3, 1.8, 0.3, C.oliveDeep, ' opacity="0.7"')}
 ${brush([224, 424], [228, 460], [222, 500], 0.3, 1.8, 0.3, C.oliveDeep, ' opacity="0.6"')}
-<path fill="${C.oliveShade}" stroke="${C.oliveLine}" stroke-width="1.3" stroke-linejoin="round" d="M134 448 L168 452 L167 462 L135 458 Z M266 448 L232 452 L233 462 L265 458 Z"/>
+${long
+    ? `<path fill="${C.oliveShade}" stroke="${C.oliveLine}" stroke-width="1.3" stroke-linejoin="round" d="M128 520 L170 523 L169 534 L127 531 Z M272 520 L230 523 L231 534 L273 531 Z"/>
+<path fill="none" stroke="${C.oliveLine}" stroke-width="1.4" stroke-linecap="round" d="M200 423 L200 566"/>
+<path ${stitch} d="M114 598 L190 598 M210 598 L286 598"/>
+${brush([200, 470], [199, 520], [200, 560], 0.3, 1.4, 0.3, C.rim, ' opacity="0.4"')}`
+    : `<path fill="${C.oliveShade}" stroke="${C.oliveLine}" stroke-width="1.3" stroke-linejoin="round" d="M134 448 L168 452 L167 462 L135 458 Z M266 448 L232 452 L233 462 L265 458 Z"/>`}
 <path fill="${C.oliveDeep}" opacity="0.8" transform="translate(-3 4)" d="${lapel(1)}"/>
 <path fill="${C.oliveDeep}" opacity="0.6" transform="translate(-3 4)" d="${lapel(-1)}"/>
 <path fill="url(#${id}-lapel)" stroke="${C.oliveLine}" stroke-width="1.6" stroke-linejoin="round" d="${lapel(1)}"/>
