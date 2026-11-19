@@ -31,7 +31,7 @@ import { buildFrontStreet } from "./frontstreet";
 /** Plan item 514: the pick's warm face key a little stronger where the set around her is as bright as her face, so
  * her face stays the frame's bright point (its mean 1.3x+ the set's, `scripts/cathode-514-face.mjs`): settled at
  * 1440x900 the Ghost's lit skyline read her face 1.00x, the Butcher's locker 0.93x, the Fixer's bench 1.12x. */
-const FACE_GAIN: Partial<Record<string, number>> = { ghost: 3, butcher: 3, fixer: 2.6 };
+const FACE_GAIN: Partial<Record<string, number>> = { ghost: 4.6, butcher: 3.3, fixer: 2.6 };
 
 export interface FrontSceneOptions {
   quality: Quality;

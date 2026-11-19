@@ -32,6 +32,9 @@ const HALO_BACK = 1.0;
 const HALO_A = 0.55;
 /** The flats' HDR gain over their painted colour. */
 const FLAT_GAIN = 3.2;
+// Plan item 514: the halo behind her washes the whole set round her in the key's colour; the Ghost's cyan and the
+// Butcher's red were brighter there than her face, so theirs is softer (her face 1.3x+ the set).
+const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.3, butcher: 0.35 };
 
 type Paint = (g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number) => void;
 
@@ -85,8 +88,8 @@ const ghost: Paint = (g, X, Y, s) => {
   const r = rng(11);
   g.fillStyle = vgrad(g, Y(FH), Y(0.8), [
     [0, "#020a10"],
-    [0.6, "#08303c"],
-    [1, "#1a6878"],
+    [0.6, "#062530"],
+    [1, "#114652"],
   ]);
   g.fillRect(0, 0, X(FW / 2), Y(0));
   // Three ranks of towers, the far ones paler in the haze.
@@ -182,7 +185,7 @@ const butcher: Paint = (g, X, Y, s) => {
   for (let y = 0; y < FH; y += t) g.fillRect(0, Y(y), X(FW / 2), 2 * s);
   for (let x = -FW / 2; x < FW / 2; x += t) g.fillRect(X(x), 0, 2 * s, Y(0));
   // A red-lit band of the key across the middle.
-  glow(g, X(0.2), Y(2.4), 260 * s, "rgba(255,30,80,A)", 0.35);
+  glow(g, X(0.2), Y(2.4), 260 * s, "rgba(255,30,80,A)", 0.27);
   // The rail and its hooks, the sides of meat on them.
   g.fillStyle = "#0c0102";
   g.fillRect(0, Y(3.45), X(FW / 2), 7 * s);
@@ -211,7 +214,7 @@ const butcher: Paint = (g, X, Y, s) => {
   // The cold: fog pooled at the floor and the locker's steel door frame round the stoop.
   g.fillStyle = vgrad(g, Y(1.5), Y(0), [
     [0, "rgba(235,180,215,0)"],
-    [1, "rgba(235,180,215,0.42)"],
+    [1, "rgba(235,180,215,0.3)"],
   ]);
   g.fillRect(0, Y(1.5), X(FW / 2), Y(0) - Y(1.5));
   g.fillStyle = "#3a2a2c";
@@ -545,7 +548,7 @@ export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number
         st.group.visible = a > 0.001;
         st.flat.opacity = a;
         st.pool.opacity = 0.32 * a;
-        st.halo.opacity = HALO_A * a;
+        st.halo.opacity = (HALO_CLASS[c] ?? HALO_A) * a;
       }
       if (cls) first = false;
       if (!cls || pick < 0.001) first = true;
