@@ -5013,7 +5013,18 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots D, light and dark, with P unchanged.
 - **Size:** 2
 
-## 532. [ ] The bugs from the 2026-11-19 15:35 critique, fixed as one batch *(lane B, in progress)*
+## 532. [x] The bugs from the 2026-11-19 15:35 critique, fixed as one batch *(done 2026-11-19 15:58, lane B, `2b435e3`.
+  **Fixed:**
+  - `hedge-menu-D`'s vehicle portraits sit 3 px inside their slips with 8 px to the words (rows and the act-1 card's 895 unchanged; the portraits stay 40 px, level-card's floor).
+  - `cath-setup-D`'s '2 Outlets, 1 Buyout' keeps each number with its noun, and the quote is balanced.
+  - `cath-game-D`'s 'I' is the Expand memo's pressure-stage tab: it now reads 'Stage I' on one line.
+  - `portfolio-D`'s stats sit 8 px clear of the hour labels.
+
+  **Checked, kept:**
+  - `hedge-l21-3d-P`'s Radio Mast under the brass 'more' tab is the long roster's designed peek (the tab pages it along).
+  - `hedge-menu-P`'s 'Brand Ambassador' is a long name on two lines, its pill clear of the edge.
+
+  Specs: plan-cards, plan-strip, desktop-no-scroll, setup-* (D) and hedgerow-map, -level-card, -map-you, portfolio-* (P, D) pass with --retries=0.)*
 - `hedge-menu-D` (1137-1192 x 498-675): the vehicle icons overflow each briefing row's left edge, and the habit text starts flush against them.
 - `hedge-l21-3d-P` (278-345 x 735-762): 'Radio Mast' is cut to 'Radio Mas' and its price sits half under the rack's 'more' arrow.
 - `cath-game-D` (772-792 x 12-27): a black 'I' tag on the Expand ticket's top edge (a key hint?). Check, and give all three the same treatment or none.
