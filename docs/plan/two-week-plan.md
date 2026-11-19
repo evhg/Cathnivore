@@ -4871,7 +4871,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D of portfolio, /games/, Runnel and the Hedgerow menu.
 - **Size:** 3
 
-## 525. [ ] Cathnivore table: the land stays warm under Hollowell, who sits on it as glossy plastic
+## 525. [ ] Cathnivore table: the land stays warm under Hollowell, who sits on it as glossy plastic *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1119c) 590-1220 x 110-710, `cath-game-P` 15-375 x 140-470, `cath-setup-D` 405-990 x 255-830, `cath-title-D` 865-1365 x 285-735: every occupied region sits under a grey-blue crackle wash, so the table reads cold and dull for most of a match. VISION 2 says the table is the most beautiful thing on screen. VISION's art direction sets the players' world as warm paper, ink and flat colour, and the corporations as glossy, plastic and over-lit: the wash greys the land instead of laying plastic over it.
 - **Build:** `src/ui` (the region renderer) and `src/styles`:
   - Each region keeps its warm palette and paper texture at full strength.
