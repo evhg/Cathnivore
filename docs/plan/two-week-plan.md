@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-18T23:55Z
 
 
 
@@ -4721,3 +4720,48 @@ Progress (lane B, 2026-11-18 21:05, slices 1-2, `d60b716`, `d46a409`): (1) the n
 - **Build:** `crops.ts`: each act's bed crop dense instanced rows (3-4 drills a plot, stem tufts with a head band in the 2D fieldkit's colours, a vertex-shader sway; two instanced meshes, two draw calls; parting round a tower's footprint); `terrain.ts`: every water body one sky-tinted fresnel ramp with shallows, so a reed pool reads as water (hedgerow-water's 2D/3D check kept).
 - **Accept:** the lilac/grey share inside the bed plots at D l21 down 50%+ (a mask script); every water body's mean luminance within 25% of the river's; +2 draw calls or fewer and fps unchanged on a Hedgerow perf read; 486's measure holds (P l21 1.6+); 3dframe, water, closeframe pass; key art re-shot; shots P and D of l21, l34, act 1.
 - **Size:** 2
+
+Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, D 1440x900, every game), two subagent critiques against VISION.md (features only, then bugs), each checked against items 440-506; checked again here. Dropped: a NIGHT SHIFT 'Walk in' departure (item 192 already trails her out of the pick into the street, 449 her shoulder; only the pick-to-loading handoff is left, too small for an item). Both critiques put item 319 (her 3D face and hair) first in line: it stays open and first.
+
+## 507. [ ] Cathnivore desktop Setup: the opening table you'll play as the focal point
+- **Why:** `cath-setup-D`: item 502's opening board (110-490 x 520-845) is about 9% of the frame; the three steps pull equally with about 16 text blocks at rest; Start (1075-1345 x 790-860) sits apart under Cath; the page reads as a form on gingham (VISION 1-2). Checked 67/195/239/367 (one table in three steps, kept), 490 (power previews), 502 (the preview itself), 461 (phone, unchanged).
+- **Build:** `src/ui/Setup.tsx` and its CSS from 1100 px: the opening board centre-left as the table, about 2.5x its area; the producers a portrait strip along the table's top edge (portrait, name, power chip; rules on hover or focus, 490's preview playing on the board); map and difficulty as tags hung from the table's edge; Start the stall sign at the board's foot. Cath and her held poster keep their place; three steps stay as an order of reading, not three boxes.
+- **Accept:** the preview 30%+ of 1440x900 and 25%+ of 1280x800; at rest at most 3 visible text blocks over 12 words; Start's box within 120 px of the board and whole on screen; no scroll at 1440x900, 1280x800; P unchanged; setup-*, setup-opening, ability-preview, quick-game pass; shots P, D, 1280x800.
+- **Size:** 2
+
+## 508. [ ] Runnel: the valley in poster colour, its empty quarters lived in
+- **Why:** `runnel-D` (380-1420 x 20-880): the patchwork is one khaki-sepia wash, neighbouring fields a few percent apart; the right strip (1240-1410 x 120-700) and foreground (560-1400 x 740-880) are bare stripes; `runnel-P` (0-390 x 200-680) the same wash (VISION: a farmers'-market poster, flat colour with texture). Checked 77/142/151/252 (patchwork, week, folk, props), 229/298 (weather grading), 389 (one scale), 499 (the valley recedes behind the board in play at D: kept, so the palette is judged at rest and after the solve, and the in-play haze keeps it below the tiles).
+- **Build:** `games/runnel/src/valley.ts` (`valleyLayers`), `ground.ts`, `season.ts`: the off-board fields from a 6-8 hue crop palette set by season (rapeseed, barley, kale, plough umber, lavender, pasture), hedgerow trees with crowns, a farmhouse cluster or orchard and grazing in the empty quarters (`valleyfolk.ts`). Keep 466's dry grooves and 229's rain rules.
+- **Accept:** with the valley at full colour (solved, `?shotsolve`), mean OKLCH chroma of non-tile valley pixels 1.5x+ today's at P and D; 5+ hue bins with 3%+ each; tiles 3:1+ against the ground round them; in play at D the valley still less saturated than the tiles (499); no empty 200x200 off-board region at D; runnel specs pass; key art re-shot (keyart-fresh).
+- **Size:** 2
+
+## 509. [ ] Portfolio phone: Cath whole beside the headline, the studio's pulse above the fold
+- **Why:** `portfolio-P`: the top 0-520 is a dark text block on a gradient; Cath is about 70x115 px (240-310 x 525-640), cut at the knees by the mosaic's top edge, standing on nothing; the studio track (491) shows only at D (VISION 1, the bible: Cath presents). Checked 303/339/350/404/445/454 (445's 2x2 mosaic above the fold kept), 491.
+- **Build:** `portfolio/src/hero.ts`, `styles.css`, `studio.ts` at 720 px or less: tighter headline and body; Cath full length on her dais beside the headline, pointing down at the work; a one-line pulse over the mosaic (lane dots and 'Last shipped ...', from 491's data, hidden when it's empty); the mosaic pulled up.
+- **Accept:** at 390x844 her whole figure, feet included, 180 px+ tall with nothing over her; the mosaic's first row from y 560 or above (644 now) and whole above the fold; the pulse line above the fold; D unchanged (pixel diff under 1%); e2e:site passes; shots P and D, both themes.
+- **Size:** 1
+
+## 510. [ ] NIGHT SHIFT title: a living street behind her
+- **Why:** `ns-title-D` 1110-1440 x 0-900 and 0-400 x 0-260: a static dark brick wall with one lamp wedge and LUNA; `ns-title-P` (2x) 560-780 x 60-1000 a flat dark wall. Item 473 kept 'no new shopfronts (a later critique can ask again)': this one asks (VISION 3-4: the scene alive). Checked 187 (idle push), 331, 473, 494, 505 (her face the brightest thing: must hold).
+- **Build:** `render/frontdiorama.ts`: two lit shopfronts across the street at depth (one a glossy Hollowell shop), and from `streetlife.ts`/`traffic.ts`/`frontneon.ts`/`frontwet.ts`: a passer-by under an umbrella about every 12 s, a headlight sweep across the wet cobbles (reflected), one stuttering neon; posters re-rendered (`scripts/cathode-poster.mjs`).
+- **Accept:** 3+ `[data-ambient]` movers on the live title at 390x844, 1440x900, 844x390, none under reduced motion; the luminance spread of the street behind her 1.5x+ today's; `cathode-title-focal` passes (her face brightest); cathode-perf alone within budget; keyart-fresh, cathode-front pass; shots P, D, L.
+- **Size:** 2
+
+## 511. [ ] Hedgerow: the round's convoy as a picture, not x-counts
+- **Why:** `hedge-l21-3d-D` (1190-1410 x 385-450): 'This round' names no vehicles and '×20' wraps alone onto a second line; Coming up (1115-1415 x 585-700) is three tickets of 13 px text beside the richest diorama on the site (VISION 1-2). Checked 348/403 (Coming up's forecast and ticket design), 392 (Cath's plate), 460 (one ledger row: kept).
+- **Build:** one shared panel component for both renderers: the round as a convoy strip, each type's sprite 28 px+ in its count's proportion, the count under it, the name on hover or focus (and in its accessible name); Coming up's tickets each with the round's lead vehicle drawn and its twist's icon.
+- **Accept:** every vehicle type in the round named or labelled, no wrapped orphan, at 1440x900, 1280x800 and 844x390, 2D and 3D; sprites 28 px+ at D, 20 px+ at P; ticket text 13 px+ at AA contrast; rack, tray, round-chips, level specs pass; shots before/after.
+- **Size:** 2
+
+## 512. [ ] The bugs from the 2026-11-19 00:05 critique, fixed as one batch *(lane A, in progress)*
+- `cath-game-D` (355-550 x 205-380): Cath's past lines pale grey on cream, under AA.
+- `cath-game-D` (90-310 x 280-308): the partner's-farm figures ('2+1', '3+2') about 11 px, boxed and cramped.
+- `cath-setup-P` (170-372 x 728-770, 15-375 x 785-832): 'Next: Where you trade' and Start read as two competing calls at the foot (check 461's one primary first).
+- `games-P` (30-270 x 820-844): the cards' Play buttons cut at the fold.
+- `cath-game-P` (300-370 x 595-612): the '9 more' tab over the hand's fourth card's top edge.
+- `cath-campaign-P` (95-295 x 815-844): 'Back to Title' cut by the bottom edge, no safe-area padding.
+- `hedge-l21-2d-D` (175-305 x 340-358): the 'Lifestyle influencer' tag floats over the sea, apart from its van (325-370 x 345-375).
+- `hedge-l34-2d-D` (120-250 x 725-835): the second depot over the river bank at the board's foot, cut by the frame (check 246/380).
+- `ns-title-P` (2x, 35-390 x 1015-1100): the Ledger's 'Tomas Reed / The Harbour' set larger than its headline.
+- **Accept:** each point fixed or checked and noted here; shots P and D.
+- **Size:** 1
