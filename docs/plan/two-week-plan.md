@@ -4838,7 +4838,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 the opened sheet shows Cath's line and 3+ vehicle cards, each naming a counter tower, Play still in reach without scrolling; at D the cards fit the card with no overflow at 1440x900 and 1280x800; hedgerow level-card, map, map-you specs pass; shots P and D.
 - **Size:** 2
 
-## 522. [ ] Cathnivore campaign: chapters you can read whole, a spotlit map
+## 522. [ ] Cathnivore campaign: chapters you can read whole, a spotlit map *(lane A, in progress)*
 - **Why:** `cath-campaign-D` (1030-1377 x 140-880): the chapter list is a stack of alike cards with plain lock circles, chapters 5 and 6's copy ends in '...'; `cath-campaign-P` (12-380 x 520-580): the chapters are six tiny thumbnails. Checked 325 (Cath's pose per chapter: kept).
 - **Build:** `src/ui/CampaignScreen.tsx`/`CampaignMap.tsx`: the selected chapter as an opener panel (its scene on the map spotlit, its stakes in full, a seal), locked chapters as sealed envelopes with one teaser line, not a lock disc; on the phone the selected chapter's panel large under the map.
 - **Accept:** no chapter text ends in an ellipsis at D (1440x900 and 1280x800); selecting a chapter changes the map's spotlit regions (a class on them, spec); at 390x844 the selected panel is 160 px+ tall with Cath in it; tutorial and campaign specs pass; shots P and D.
