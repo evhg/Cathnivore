@@ -4955,7 +4955,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 529. [ ] Hedgerow: Hollowell's fleet gets faces, a first-sighting reveal, and a Fleet page in the Almanac
+## 529. [ ] Hedgerow: Hollowell's fleet gets faces, a first-sighting reveal, and a Fleet page in the Almanac *(lane B, in progress)*
 - **Why:**
   - In `hedge-menu-D` (plan1119d) 1137-1410 x 498-675, the level's vehicles are alike list rows: round clip-art icons running past each row's edge.
   - In a level, the satire is a text tag on a generic van: `hedge-l21-2d-D` 175-370 x 340-375 ('Lifestyle influencer' on a pink van); `hedge-l34-2d-D` 265-330 x 240-258 and 340-440 x 708-726.
