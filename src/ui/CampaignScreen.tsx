@@ -107,9 +107,12 @@ function Medallion({ n, state }: { n: number; state: 'done' | 'current' | 'locke
         </svg>
       ) : state === 'locked' ? (
         <svg viewBox="-20 -20 40 40">
+          {/* Plan item 522: a locked stop is a letter not yet opened (the chapter's card shows it under its flap, item
+              435): a small envelope closed with the co-op's wax, not a padlock. */}
           <circle r={16} className="cmp-disc" />
-          <rect x={-6} y={-2} width={12} height={9} rx={2} className="cmp-lock" />
-          <path d="M-3.5 -2 V-5 a3.5 3.5 0 0 1 7 0 V-2" className="cmp-lock-loop" />
+          <rect x={-11} y={-7.5} width={22} height={15} rx={1.5} className="cmp-env" />
+          <path d="M-11 -7 L0 2 L11 -7" className="cmp-env-flap" />
+          <circle cy={2} r={4.2} className="cmp-env-wax" />
         </svg>
       ) : (
         <span className="cmp-number">{n}</span>

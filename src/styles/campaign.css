@@ -339,14 +339,24 @@
   stroke-width: 2;
 }
 
-.cmp-lock {
-  fill: var(--ink-muted);
+/* Plan item 522: the locked stop's envelope and its wax (the clay wax on the locked chapter's postcard, item 279). */
+.cmp-env {
+  fill: var(--paper-on-fixed-fill);
+  stroke: var(--ink-muted);
+  stroke-width: 1.4;
 }
 
-.cmp-lock-loop {
+.cmp-env-flap {
   fill: none;
   stroke: var(--ink-muted);
-  stroke-width: 2.2;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.cmp-env-wax {
+  fill: var(--clay-deep);
+  stroke: color-mix(in srgb, var(--clay-deep) 60%, var(--ink-on-fixed-fill));
+  stroke-width: 0.8;
 }
 
 .cmp-number {

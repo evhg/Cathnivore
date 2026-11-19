@@ -7,6 +7,8 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   )
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaign' }).click()
+  // The pointer left where Campaign was clicked lands on chapter 1's regions on the D map (onPoint): park it.
+  await page.mouse.move(2, 2)
   const fig = page.locator('.cmp-cath')
   await expect(fig).toBeVisible()
   const phone = page.viewportSize()!.width <= 600
