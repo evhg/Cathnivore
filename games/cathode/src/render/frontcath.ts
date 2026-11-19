@@ -231,16 +231,20 @@ function mergeGeos(list: THREE.BufferGeometry[]): THREE.BufferGeometry {
   for (const p of parts) n += p.attributes.position!.count;
   const pos = new Float32Array(n * 3);
   const nor = new Float32Array(n * 3);
+  // Plan item 319 slice 91: a colour attribute (the hood's fold shade) survives the merge; parts without one are white.
+  const col = parts.some((p) => p.attributes.color) ? new Float32Array(n * 3).fill(1) : null;
   let o = 0;
   for (const p of parts) {
     if (!p.attributes.normal) p.computeVertexNormals();
     pos.set(p.attributes.position!.array as Float32Array, o * 3);
     nor.set(p.attributes.normal!.array as Float32Array, o * 3);
+    if (col && p.attributes.color) col.set(p.attributes.color.array as Float32Array, o * 3);
     o += p.attributes.position!.count;
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
   g.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
+  if (col) g.setAttribute("color", new THREE.BufferAttribute(col, 3));
   return g;
 }
 
@@ -3723,25 +3727,42 @@ float reliefShade( vec2 uv ) {
   }
   {
     // Ghost: the hood up, a deep cowl round the back and top of her head, open at the face, falling to the collar.
-    const hood = new THREE.SphereGeometry(1, seg(28), seg(18), Math.PI - 0.62, Math.PI + 1.24, 0, 2.5);
+    const hood = new THREE.SphereGeometry(1, seg(44), seg(26), Math.PI - 0.62, Math.PI + 1.24, 0, 2.5);
     // Plan item 260: cloth, not a shell (it read as a space helmet): folds fall from the crown and deepen toward the
     // collar, the back rises to a soft point, and the front edge sags a little off the brow.
+    // Plan item 319 slice 91 (critique 11-18 17:10, point 5: 'the hood a smooth helmet shell'): the folds were 4.5%
+    // of the radius and squared toward the hem, so above the ears the shell stayed smooth. Now cloth hangs from the
+    // crown: a centre seam ridge from brow to nape, broad folds radiating from the crown that open by the temples
+    // (soft ridges, narrow creases), and the lower hood bells out over the jaw where the weight pulls it.
+    // Outward only, so no fold cuts into the hair beneath.
     {
       const p = hood.attributes.position as THREE.BufferAttribute;
+      const uv = hood.attributes.uv as THREE.BufferAttribute;
+      const shade = new Float32Array(p.count * 3);
       for (let i = 0; i < p.count; i++) {
         const x = p.getX(i);
         const y = p.getY(i);
         const z = p.getZ(i);
         const polar = Math.acos(THREE.MathUtils.clamp(y, -1, 1)); // 0 at the crown
         const az = Math.atan2(x, z); // 0 at her front (the opening), ±π at the back
-        const down = polar / 2.5;
-        const fold = 1 + (0.045 * Math.sin(az * 5 + polar * 1.6) + 0.025 * Math.sin(az * 9 + 1.3)) * down * down;
+        const front = Math.max(0, Math.cos(az));
+        // The face opening's edges stay on the sphere, where the rolled brim sits.
+        const edge = THREE.MathUtils.smoothstep(Math.min(uv.getX(i), 1 - uv.getX(i)), 0, 0.14);
+        const open = THREE.MathUtils.smoothstep(polar, 0.3, 1.5); // the folds open out from the crown
+        const crease = Math.pow(Math.abs(Math.sin(az * 3 + polar * 0.7 + 0.5)), 0.45); // 0 in a crease, ~1 on a ridge
+        const fine = Math.pow(Math.abs(Math.sin(az * 6.5 - polar * 0.9 + 1.7)), 0.6);
+        const bell = THREE.MathUtils.smoothstep(polar, 1.3, 2.5) * (1 - 0.6 * front);
+        const seam = Math.exp(-Math.pow(x / 0.05, 2)) * THREE.MathUtils.smoothstep(polar, 0.15, 0.5) * 0.018;
+        const fold = 1 + (open * (0.075 * crease + 0.03 * fine) * (1 - 0.5 * front) + bell * 0.07 + seam) * edge;
+        // The creases sit in their own shade (the dark wool hid the folds' relief under the street's soft light).
+        const ao = 1 - open * edge * ((1 - crease) * 0.62 + (1 - fine) * 0.2) * (1 - 0.3 * front);
+        shade[i * 3] = shade[i * 3 + 1] = shade[i * 3 + 2] = ao;
         const back = Math.max(0, -Math.cos(az));
         const point = Math.exp(-Math.pow((polar - 0.75) / 0.35, 2)) * back * 0.14;
-        const front = Math.max(0, Math.cos(az));
         const sag = front * Math.exp(-Math.pow((polar - 0.5) / 0.4, 2)) * 0.05;
         p.setXYZ(i, x * fold, y * fold + point * 0.5 - sag, z * fold - point * 0.7 + sag * 0.6);
       }
+      hood.setAttribute("color", new THREE.BufferAttribute(shade, 3));
       hood.computeVertexNormals();
     }
     hood.scale(0.112, 0.13, 0.118);
@@ -3786,7 +3807,7 @@ float reliefShade( vec2 uv ) {
       cowl.computeVertexNormals();
     }
     cowl.translate(0, 0, -0.025);
-    const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x24262c, roughness: 0.85, metalness: 0, side: THREE.DoubleSide }));
+    const hoodMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x3a3c46, roughness: 0.85, metalness: 0, side: THREE.DoubleSide, vertexColors: true }));
     rimify(hoodMat as THREE.MeshStandardMaterial, 0.9, 0, 0, 0, false, 0, "wool", 0.35);
     // Plan item 247: a rolled brim round the face opening (the hood's cut edge read as a paper shell): a soft tube
     // down one edge of the opening, over the brow and down the other, a little proud of the cloth.
@@ -3795,7 +3816,7 @@ float reliefShade( vec2 uv ) {
       hoodCrown(new THREE.Vector3(-Math.cos(phi) * Math.sin(theta) * 0.112, Math.cos(theta) * 0.13 + 0.012, Math.sin(phi) * Math.sin(theta) * 0.118 - 0.01).multiplyScalar(1.03));
     for (let i = 0; i <= 8; i++) rimPts.push(onHood(Math.PI - 0.62, 2.45 - (i / 8) * 2.2));
     for (let i = 0; i <= 8; i++) rimPts.push(onHood(0.62, 0.25 + (i / 8) * 2.2));
-    const rim = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts), seg(40), 0.009, 6, false);
+    const rim = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts), seg(40), 0.012, 8, false); // slice 91: a fuller roll (was 0.009)
     extra("ghost", headPivot, [[[hood, cowl, rim], hoodMat]]);
     // Gunslinger: a wide-brimmed hat, the brim curled up at the sides and the crown pinched, tipped forward.
     const brim = new THREE.LatheGeometry([0.07, 0.11, 0.15, 0.175, 0.19].map((r, i) => new THREE.Vector2(r, [0, 0.002, 0.004, 0.012, 0.03][i]!)), seg(32));
