@@ -22,6 +22,8 @@ test('Hot-seat: two full turns, undo, and reload mid-turn resume an identical st
     // click lands on the button's moving coordinates (CI 2026-11-15: the first graft after 'I'm ready' never landed).
     const button = page.getByRole('button', { name: /^Graft:/ })
     await expect(button).toBeEnabled()
+    // Plan item 519: on a phone a card only partly in the row is brought into view by a tap, never played blind
+    await button.evaluate((b) => b.closest('.action-item')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' }))
     await button.dispatchEvent('click')
     await expect
       .poll(async () => (await page.getByText('Pass the device').isVisible()) || (await page.locator('.active-producer').innerText()) !== before, { timeout: 10_000 })

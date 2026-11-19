@@ -4098,13 +4098,12 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
     const dockLine = el.closest('.cath-dock')?.querySelector('.cath-dock-line')
     if (el.closest('.counter-bench') && dockLine) {
       const t = dockLine.getBoundingClientRect()
-      el.style.setProperty('left', `${t.left - at.left}px`)
-      el.style.setProperty('right', 'auto')
-      el.style.setProperty('top', `${t.top - at.top}px`)
-      el.style.setProperty('bottom', 'auto')
-      el.style.setProperty('width', `${t.width}px`)
-      el.style.setProperty('min-height', `${t.height}px`)
-      el.style.setProperty('max-width', 'none')
+      // Custom properties, read by table.css's [data-placed]: the CSP suite allows only those on a style attribute.
+      el.style.setProperty('--pl-left', `${t.left - at.left}px`)
+      el.style.setProperty('--pl-top', `${t.top - at.top}px`)
+      el.style.setProperty('--pl-w', `${t.width}px`)
+      el.style.setProperty('--pl-h', `${t.height}px`)
+      el.dataset.placed = 'dock'
       return
     }
     const map = el.closest('.map-wrap')?.getBoundingClientRect()
@@ -4120,9 +4119,9 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
     const width = Math.min(240, room)
     // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
     const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
-    el.style.setProperty('left', `${left - at.left}px`)
-    el.style.setProperty('right', 'auto')
-    el.style.setProperty('width', `${width}px`)
+    el.style.setProperty('--pl-left', `${left - at.left}px`)
+    el.style.setProperty('--pl-w', `${width}px`)
+    el.dataset.placed = 'map'
   }, [reply])
   return (
     <span ref={ref} className={`producer-line pc-${reply.producer}`} data-producer-line={reply.producer} data-beat={reply.beat} aria-hidden="true">

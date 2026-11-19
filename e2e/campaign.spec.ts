@@ -79,6 +79,9 @@ test('chapter 3 "Growing Season": dismissing the round-5 reveal then reloading b
     }
     // Clicked on the element itself, not at its centre: in the desktop hand (plan item 149) the fan's next card can
     // overlap Graft's middle, and a forced click there played Open Stall instead.
+    // Plan item 519: on a phone a card only partly in the row is brought into view by a tap, never played blind, so
+    // the card is scrolled whole first.
+    await graftButton.evaluate((b) => b.closest('.action-item')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' }))
     await graftButton.dispatchEvent('click')
   }
   async function dismissEnemyTurnIfShown() {

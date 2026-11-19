@@ -6064,6 +6064,10 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
 /* on a phone it lies over her line (placed in Game.tsx), the tail pointing right at the busts */
 .counter-bench .producer-line { display: flex; align-items: center; padding: 4px 10px; font-size: .9375rem; line-height: 1.18; transform-origin: 100% 50%; }
 .counter-bench .producer-line::after { right: -8px; top: calc(50% - 7px); bottom: auto; rotate: -45deg; }
+/* Placed by ProducerLineBubble from its measurements (custom properties: no real property on a style attribute,
+   for the CSP); the doubled class outranks the seat rules above, as the inline style it replaces did. */
+.producer-line.producer-line[data-placed="dock"] { left: var(--pl-left); right: auto; top: var(--pl-top); bottom: auto; width: var(--pl-w); min-height: var(--pl-h); max-width: none; }
+.producer-line.producer-line[data-placed="map"] { left: var(--pl-left); right: auto; width: var(--pl-w); }
 
 /* Plan item 495 slice 2: from 1240 px (was 1400) the readings fold beside tomorrow's papers, so the board takes the
    status bar's row back (1280x800: board 16% -> 22% of the window). The row is about 160 px narrower there, so Pell's
