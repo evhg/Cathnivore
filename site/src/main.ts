@@ -1,3 +1,4 @@
+import { mountShelf } from './shelf'
 import '../../shared/ui/base.css'
 import './fonts.css'
 import './tokens.css'
@@ -107,11 +108,16 @@ if (miniCath) {
       const r = p.getBoundingClientRect()
       return line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0
     }
+    // Plan item 530: on a phone the posters are a sideways shelf, all on one row: the one snapped in is in view.
+    const shelf = posters[0]!.parentElement
+    const at = shelf?.dataset.index
+    if (at !== undefined && shelf!.scrollWidth > shelf!.clientWidth + 1) return dress(posters[Number(at)] ?? posters[0]!)
     dress(posters.reduce((a, b) => (dist(b) < dist(a) ? b : a)))
   }
   if (posters.length) {
     inView()
     addEventListener('scroll', () => (frame ||= requestAnimationFrame(inView)), { passive: true })
+    posters[0]!.parentElement?.addEventListener('scroll', () => (frame ||= requestAnimationFrame(inView)), { passive: true })
     for (const p of posters) {
       p.addEventListener('focus', () => dress(p))
       p.addEventListener('pointerenter', () => dress(p))
@@ -337,3 +343,4 @@ startPosterPlay(
 
 // Plan item 243: at D the hero is Cath's stall, drawn round its measured layout.
 mountBooth()
+mountShelf()

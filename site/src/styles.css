@@ -2096,3 +2096,63 @@ body {
   .hero[data-booth] .hero-text { max-width: 440px; }
   .hero[data-booth] .hero-text .title { font-size: clamp(3rem, 5.4vw, 5rem); }
 }
+
+/* Plan item 530: on a phone the four games are a swiped shelf of full-width posters (were two 170 px cards a row,
+   their art cut to thumbnails): each poster 340 px+ across with a sliver of the next showing, snapping one at a
+   time; the art over the whole width, Cath in that game's role on it, the hook beside Play at its foot; pager dots
+   under the shelf. The hero above tightens so the first poster's Play is on the first screen. */
+.hero-dots { display: none; }
+@media (max-width: 599.98px) {
+  .hero-games {
+    display: flex;
+    gap: 12px;
+    box-sizing: border-box;
+    width: 100vw;
+    min-width: 0;
+    max-width: 100vw;
+    margin: 8px 0 0 -20px;
+    padding: 0 20px 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 20px;
+    scrollbar-width: none;
+  }
+  .hero-games::-webkit-scrollbar { display: none; }
+  .hero-game {
+    flex: 0 0 calc(100vw - 44px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    scroll-snap-align: start;
+  }
+  .hero-game-art { grid-column: 1 / -1; aspect-ratio: 16 / 8.2; }
+  .stall-hero .hero-text > .cta-row { margin-top: 12px; }
+  .hero-game-cath { width: 22%; }
+  .hero-game-text { padding: 8px 4px 8px 12px; }
+  .hero-game-hook {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .hero-game-play { margin: 8px 12px 8px 4px; padding: 11px 18px; }
+  .hero-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .hero-dots i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--cream) 35%, transparent);
+    transition: width 200ms var(--ease-out), background-color 200ms var(--ease-out);
+  }
+  .hero-dots i[data-on] { width: 20px; border-radius: 4px; background: var(--gold-hi); }
+}
+@media (max-width: 599.98px) and (prefers-reduced-motion: reduce) {
+  .hero-dots i { transition: none; }
+}

@@ -47,10 +47,10 @@ for (const [w, h] of [
     expect(m.bottom).toBeLessThanOrEqual(h)
     expect(m.hits, JSON.stringify(m)).toEqual([])
     expect(m.poster).toBeLessThan(h)
-    // she dresses for the poster in view: Cathnivore's first, Hedgerow's once its row is scrolled up, NIGHT SHIFT's
-    // when its poster is focused
+    // she dresses for the poster in view: Cathnivore's first, Hedgerow's once the shelf is swiped to it (plan item
+    // 530: the phone's posters are a sideways shelf), NIGHT SHIFT's when its poster is focused
     await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'field')
-    await page.evaluate(() => window.scrollTo(0, document.querySelector('.hero-game-hedgerow')!.getBoundingClientRect().top + scrollY - 200))
+    await page.locator('.hero-games').evaluate((el) => el.scrollTo({ left: (el.querySelector('.hero-game-hedgerow') as HTMLElement).offsetLeft - (el.querySelector('.hero-game') as HTMLElement).offsetLeft, behavior: 'instant' }))
     await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'wax', { timeout: 2000 })
     await page.locator('.hero-game-nightshift').focus()
     await expect(page.locator('#hero-cath-mini')).toHaveAttribute('data-outfit', 'trench', { timeout: 2000 })
