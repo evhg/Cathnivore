@@ -5063,7 +5063,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P (unchanged) and D.
 - **Size:** 2
 
-## 534. [ ] Portfolio desktop: Cath hosts the gallery, her line in a real speech bubble *(lane B, in progress)*
+## 534. [x] Portfolio desktop: Cath hosts the gallery, her line in a real speech bubble *(done 2026-11-19 18:30, lane B, with deviations. Built: the prints framed (cream mat, lacquer frame, gold hairline) under wall lights with brass name plates; Cath on the gallery floor in a pool of light (the dais gone); her line a speech bubble with its tail to her (1440: bubble ends 1225, its tail 7 px past, she starts at 1247); hover and focus already turned her to point and named the game (item 454), and now reach the NIGHT SHIFT print at 1280 too (the headline's box had taken the pointer). Deviations: the prints stay about 290 px wide at 1440 (the wall shares the hero with the 7rem headline; 340 px would push into it), and the bubble stays at the wall's foot with its tail toward her, not within 40 px of her head (by her head it would cover the Runnel print). portfolio-* pass (P, D, --retries=0). Shots scratchpad pf534-*)*
 - **Why:** `portfolio-D` (plan1119e):
   - Cath stands on a dark puck pedestal (1240-1415 x 540-575) floating apart from the prints.
   - Her line is a flat bordered rectangle (752-1225 x 555-597) that reads as an empty input, about 100 px from her with no tail.
