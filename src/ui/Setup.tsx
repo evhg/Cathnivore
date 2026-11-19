@@ -5,7 +5,7 @@ import BoardMiniature from './BoardMiniature'
 import RegionMap from './Map'
 import { openingState, setupConfig, type SetupPicks } from './openingPreview'
 import AbilityPreview, { ABILITY_PREVIEW_MS } from './AbilityPreview'
-import type { GameConfig, ProducerId } from '../engine/types'
+import type { GameConfig, ProducerId, RegionId } from '../engine/types'
 import { earnedPins, pinForEvent, pinSvg, PINS, type CathPin } from '../../shared/cath/pins'
 import { MARKET_EVENTS, marketEventFor, type MarketEventId } from '../engine/marketEvent'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
@@ -176,7 +176,8 @@ export default function Setup({ onStart }: Props) {
               </svg>
               <span className="pc-portrait" aria-hidden="true">
                 <Portrait character={id} size={112} />
-                {rail && preview?.ids.includes(id) && <AbilityPreview key={preview.n} producer={id} n={preview.n} />}
+                {/* Plan item 507: at D the power plays on the opening board instead, over their home region; a home off this map plays here. */}
+                {rail && preview?.ids.includes(id) && !layoutHas(layout, PRODUCERS[id].home) && <AbilityPreview key={preview.n} producer={id} n={preview.n} />}
               </span>
               <span className="pc-name">{PRODUCERS[id].name}</span>
               {/* Plan item 80: on a phone the four are small toggles by first name; the picked pair are drawn big below. */}
@@ -220,7 +221,7 @@ export default function Setup({ onStart }: Props) {
         </div>
         {/* Plan item 461: on a phone the chosen map is one large board between two arrows; the names below pick it too. */}
         {/* Plan item 502: the opening table you'll play, drawn from the picks; on a phone it is the map stage's board. */}
-        {rail ? <OpeningPreview picks={picks} seed={seed} /> : <MapStage layout={layout} onPick={setLayout} board={<OpeningPreview picks={picks} seed={seed} />} />}
+        {rail ? <OpeningPreview picks={picks} seed={seed} showcase={preview} /> : <MapStage layout={layout} onPick={setLayout} board={<OpeningPreview picks={picks} seed={seed} />} />}
         <div className="layout-picker" role="radiogroup" aria-label="Map">
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
             <label key={id} className="layout-tile" data-layout={id}>
@@ -382,6 +383,11 @@ export default function Setup({ onStart }: Props) {
   )
 }
 
+/** Plan item 507: whether a region is on a map (a producer's power plays over their home on the opening board). */
+function layoutHas(layout: LayoutId, region: RegionId): boolean {
+  return region in LAYOUTS[layout].hexes
+}
+
 const STEP_WORDS = ["Who's at the stall", 'Where you trade', 'How hard'] as const
 
 /** Plan item 461: a step's foot on a phone: on to the next one (a swipe does the same). */
@@ -404,7 +410,7 @@ const MAP_LINE: Record<LayoutId, string> = {
  * Plan item 502: the opening table for the picks: the game's own board (Map.tsx, read-only, as on the title) dealt
  * by `createGame` for this seed. A pick remounts it, so Hollowell's pieces and the stalls settle in (CSS, 200 ms).
  */
-function OpeningPreview({ picks, seed }: { picks: SetupPicks; seed: number }) {
+function OpeningPreview({ picks, seed, showcase }: { picks: SetupPicks; seed: number; showcase?: { ids: ProducerId[]; n: number } | null }) {
   const { producers, difficulty, layout, marketEvent } = picks
   const key = `${layout}|${difficulty}|${producers.join(',')}|${seed}|${marketEvent}`
   // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` names every pick the state is built from
@@ -418,7 +424,11 @@ function OpeningPreview({ picks, seed }: { picks: SetupPicks; seed: number }) {
       data-difficulty={difficulty}
       data-outlets={Object.values(state.regions).reduce((a, r) => a + (state.config.activeRegions.includes(r.id) ? r.outlets : 0), 0)}
     >
-      <RegionMap key={key} state={state} />
+      <RegionMap
+        key={key}
+        state={state}
+        showcase={showcase?.ids.filter((id) => state.config.activeRegions.includes(PRODUCERS[id].home)).map((id) => ({ producer: id, region: PRODUCERS[id].home, key: showcase.n }))}
+      />
       <span className="opening-preview-caption">{LAYOUTS[layout].name}: {LAYOUTS[layout].blurb}</span>
     </div>
   )

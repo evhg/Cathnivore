@@ -119,6 +119,8 @@ interface Props {
   aim?: { region: RegionId; chips: { text: string; sign: '+' | '-' | '!' }[]; going?: ('o' | 'b' | 'd')[] }
   /** Plan item 451: a card just played into this region lands with a stamp and a puff of paper dust (`key` replays it). */
   stamp?: { region: RegionId; key: number }
+  /** Plan item 507: the Setup's opening board plays a producer's power over their home region before they're picked. */
+  showcase?: AbilityMomentView[]
   /** Plan item 451: a card is being aimed (pressed, dragged or armed): the hexes it can't go to darken, not fade. */
   aiming?: boolean
   /** Plan item 451: the pointer entered (a region id) or left (null) a hex it could pick, so an armed card shows
@@ -697,7 +699,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, aiming, onHoverRegion }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, aiming, onHoverRegion, showcase }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1296,6 +1298,14 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         const { x, y } = hexCenter(ability.region, layout)
         return <AbilityMoment key={ability.key} view={ability} x={x} y={y} r={HEX_R * GAP_SCALE} />
       })()}
+      {showcase?.filter((m) => active.includes(m.region)).map((m) => {
+        const { x, y } = hexCenter(m.region, layout)
+        return (
+          <g key={`${m.producer}-${m.key}`} className="ability-showcase" data-ability-preview={m.producer} data-played="">
+            <AbilityMoment view={m} x={x} y={y} r={HEX_R * GAP_SCALE} />
+          </g>
+        )
+      })}
       {aim && active.includes(aim.region) && (() => {
         const { x, y } = hexCenter(aim.region, layout)
         // Chips keep a readable 13 px on screen whatever the board's scale (units per screen pixel).

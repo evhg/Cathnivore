@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test'
 
 // Plan item 490: on the Setup each producer's power plays out on a tile of their home region before you pick: a
 // hover or focus at D, a pick on a phone, and the recommended pair plays both. Inside step 1, no page scroll.
-test('at D a hovered or focused producer plays their power in their portrait', async ({ page }, testInfo) => {
+// Plan item 507: at D the power plays on the opening board, over the producer's home region (the nameplate's portrait
+// is too small for it); a home off the chosen map plays in the portrait as before.
+test('at D a hovered or focused producer plays their power on the opening board', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop setup table')
   await page.goto('/')
   await page.getByText('Quick Game').click()
@@ -10,10 +12,13 @@ test('at D a hovered or focused producer plays their power in their portrait', a
   const ines = page.locator('[data-ability-preview=ines][data-played]')
   await expect(ines).toBeVisible({ timeout: 1200 })
   await expect(ines.locator('[data-ability=second-opinion]')).toHaveCount(1)
+  await expect(page.locator('.opening-preview [data-ability-preview=ines]')).toHaveCount(1)
   const box = (await ines.boundingBox())!
-  const step = (await page.locator('.setup-step[data-step="1"]').boundingBox())!
-  expect(box.x).toBeGreaterThanOrEqual(step.x)
-  expect(box.y + box.height).toBeLessThanOrEqual(step.y + step.height)
+  const home = (await page.locator('.opening-preview [data-region="rivermead"]').first().boundingBox())!
+  expect(box.x + box.width / 2).toBeGreaterThanOrEqual(home.x)
+  expect(box.x + box.width / 2).toBeLessThanOrEqual(home.x + home.width)
+  expect(box.y + box.height / 2).toBeGreaterThanOrEqual(home.y)
+  expect(box.y + box.height / 2).toBeLessThanOrEqual(home.y + home.height)
   // it gives the portrait back
   await expect(page.locator('[data-ability-preview]')).toHaveCount(0, { timeout: 3000 })
   // the keyboard: focusing Sol's toggle plays hers
