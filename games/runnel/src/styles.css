@@ -3882,12 +3882,25 @@ body[data-mode='practice'] #week-slot {
   .vl-f-wheat { fill: color-mix(in srgb, var(--vl-wheat) var(--vk), var(--paper)); }
   .vl-f-fallow { fill: color-mix(in srgb, var(--vl-fallow) var(--vk), var(--paper)); }
   .vl-f-grass { fill: color-mix(in srgb, var(--vl-meadow) var(--vk), var(--paper)); }
+  /* Plan item 508: the poster crops; autumn's cover crops wear the colours of their summer cousins. */
+  .vl-f-rapeseed, .vl-f-mustard { fill: color-mix(in srgb, var(--vl-rapeseed) var(--vk), var(--paper)); }
+  .vl-f-lavender, .vl-f-phacelia { fill: color-mix(in srgb, var(--vl-lavender) var(--vk), var(--paper)); }
+  .vl-f-kale { fill: color-mix(in srgb, var(--vl-kale) var(--vk), var(--paper)); }
+  .vl-f-plough { fill: color-mix(in srgb, var(--vl-plough) var(--vk), var(--paper)); }
   /* Plan item 308: when the board is solved every field in the valley greens over, a wave from the far rows to the
      near ones (each field's delay bucket from valley.ts), the crop rows still drawn over the new green. */
   .vl-f { transition: fill 650ms var(--ease-out, ease-out); }
   #valley-paint[data-greened] .vl-f { fill: color-mix(in srgb, var(--wet-field) var(--vk), var(--paper)); }
   /* (the crop rows deepen a shade past the fields, lush rather than merely green: under a golden-hour sky the crops
      start darker, and greening them only to the field green left them barely changed) */
+  /* Plan item 508: the flowering crops and the kale keep their own colours when the water comes (a valley greened to
+     one green lost the poster); the plough, stubble, fallow and grass green over. */
+  #valley-paint[data-greened] :is(.vl-f-rapeseed, .vl-f-mustard) { fill: color-mix(in srgb, var(--vl-rapeseed) var(--vk), var(--paper)); }
+  #valley-paint[data-greened] :is(.vl-f-lavender, .vl-f-phacelia) { fill: color-mix(in srgb, var(--vl-lavender) var(--vk), var(--paper)); }
+  #valley-paint[data-greened] .vl-f-kale { fill: color-mix(in srgb, var(--vl-kale) var(--vk), var(--paper)); }
+  #valley-paint[data-greened] .vl-f-wheat { fill: color-mix(in srgb, var(--vl-wheat) var(--vk), var(--paper)); }
+  /* the grass and fallow green to two greens, not one, so the patchwork still reads field by field */
+  #valley-paint[data-greened] :is(.vl-f-grass, .vl-f-fallow) { fill: color-mix(in srgb, color-mix(in srgb, var(--wet-field) 70%, var(--vl-meadow)) var(--vk), var(--paper)); }
   #valley-paint[data-greened] .vl-f-crop { fill: color-mix(in srgb, color-mix(in srgb, var(--wet-field) 76%, var(--tile-rim)) var(--vk), var(--paper)); }
   #valley-paint[data-greened] .vl-w1 { transition-delay: 90ms; }
   #valley-paint[data-greened] .vl-w2 { transition-delay: 180ms; }

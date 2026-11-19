@@ -295,7 +295,7 @@ function paintValley(daily: string): void {
   if (!slot || slot.dataset.seed === seed) return
   const sky = lesson ? { time: 'golden' as const, weather: 'clear' as const } : boardSky(seed)
   slot.dataset.seed = seed
-  slot.innerHTML = valleyLayers(seed, sky.weather)
+  slot.innerHTML = valleyLayers(seed, sky.weather, seasonOf(/^daily-/.test(seed) ? seed.slice(6) : today))
   const stage = slot.closest<HTMLElement>('.stage')
   for (const [k, v] of Object.entries(lightVars(sceneLight(sky)))) stage?.style.setProperty(k, v)
 }

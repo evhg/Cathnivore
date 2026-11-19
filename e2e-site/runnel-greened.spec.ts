@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 308: a solved board greens the valley's fields over: the tan fields (wheat, fallow) turn 30 degrees or more
-// of hue toward the wet-field green, the pale green crops deepen (in a wave; under reduced motion a single fade).
+// Plan item 308: a solved board greens the valley's fields over: the tan fallow turns 30 degrees or more of hue toward
+// the wet-field green, the pale green crops deepen (in a wave; under reduced motion a single fade). Plan item 508: the
+// stubble and the season's poster crops (rapeseed or mustard, lavender or phacelia, kale) keep their own hue, so the
+// solved valley stays a patchwork of the farming year rather than one green.
 const rgb = (c: string): [number, number, number] => {
   const v = (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number) as [number, number, number]
   return c.startsWith('color(') ? v : (v.map((x) => x / 255) as [number, number, number])
@@ -24,7 +26,14 @@ test('a solved board greens the valley over', async ({ page }) => {
   await page.goto('/runnel/?shotsolve')
   await page.locator('[data-last]').waitFor()
   const fills = () =>
-    page.locator('#valley-paint .vl-f-crop, #valley-paint .vl-f-wheat, #valley-paint .vl-f-fallow').evaluateAll((els) => els.map((e) => ({ crop: e.classList.contains('vl-f-crop'), fill: getComputedStyle(e).fill })))
+    page
+      .locator('#valley-paint .vl-f')
+      .evaluateAll((els) =>
+        els.map((e) => ({
+          kind: e.classList.contains('vl-f-crop') ? 'crop' : e.classList.contains('vl-f-fallow') ? 'fallow' : /vl-f-(wheat|rapeseed|mustard|lavender|phacelia|kale)\b/.test(e.getAttribute('class') ?? '') ? 'kept' : 'other',
+          fill: getComputedStyle(e).fill,
+        })),
+      )
   const before = await fills()
   expect(before.length).toBeGreaterThan(0)
   await expect(page.locator('#valley-paint')).not.toHaveAttribute('data-greened', '')
@@ -32,13 +41,17 @@ test('a solved board greens the valley over', async ({ page }) => {
   await expect(page.locator('#valley-paint')).toHaveAttribute('data-greened', '')
   await page.waitForTimeout(800)
   const after = await fills()
-  for (const [i, { crop, fill }] of after.entries()) {
+  expect(before.some((f) => f.kind === 'kept'), 'a poster crop or stubble on the board').toBe(true)
+  for (const [i, { kind, fill }] of after.entries()) {
     const was = before[i]!.fill
-    if (crop) {
+    const shift = Math.abs(hue(fill) - hue(was))
+    if (kind === 'crop') {
       expect(light(was) - light(fill), `crop ${i}: ${was} -> ${fill}`).toBeGreaterThanOrEqual(0.15)
-    } else {
-      const shift = Math.abs(hue(fill) - hue(was))
+    } else if (kind === 'fallow') {
       expect(Math.min(shift, 360 - shift), `field ${i}: ${was} -> ${fill}`).toBeGreaterThanOrEqual(30)
+    } else if (kind === 'kept') {
+      // (at D the in-play haze over the valley lifts as well, which moves a hue up to about 20 degrees)
+      expect(Math.min(shift, 360 - shift), `kept ${i}: ${was} -> ${fill}`).toBeLessThanOrEqual(25)
     }
   }
 })

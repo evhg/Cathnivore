@@ -5,6 +5,7 @@
 
 import { hashString } from './engine'
 import type { Sky, TimeOfDay } from './sky'
+import type { Season } from './season'
 
 export interface SceneLight {
   skyTop: string
@@ -17,9 +18,14 @@ export interface SceneLight {
   wheat: string
   fallow: string
   hedge: string
+  /** Plan item 508: the poster crops (rapeseed or autumn mustard, lavender or phacelia, kale, the plough's umber). */
+  rapeseed: string
+  lavender: string
+  kale: string
+  plough: string
 }
 
-const BASE: Record<TimeOfDay, SceneLight> = {
+const BASE: Record<TimeOfDay, Omit<SceneLight, PosterCrop>> = {
   // A cool, pale morning: dew on the grass, the sky still cream at the horizon.
   morning: {
     skyTop: '#c4e2f4', skyLow: '#fbeccf', far: '#b7c99f', near: '#9fba7c', meadow: '#c3d696', meadowLow: '#adc580',
@@ -54,8 +60,19 @@ function overcast(c: string, amount: number, dim: number): string {
   return toHex([r, g, b].map((v) => (v + (grey - v) * amount) * (1 - dim)))
 }
 
+type PosterCrop = 'rapeseed' | 'lavender' | 'kale' | 'plough'
+/** Plan item 508: a farmers'-market poster's crop colours at midday, each pulled toward the hour's own fallow light. */
+const POSTER: Record<PosterCrop, string> = { rapeseed: '#e3c233', lavender: '#a08cbf', kale: '#4e8270', plough: '#8c5b3a' }
+const POSTER_LIGHT: Record<TimeOfDay, number> = { morning: 0.12, noon: 0, golden: 0.22, dusk: 0.38 }
+function mixHex(a: string, b: string, t: number): string {
+  const x = hex(a), y = hex(b)
+  return toHex(x.map((v, i) => v + (y[i]! - v) * t))
+}
+
 export function sceneLight(sky: Pick<Sky, 'time' | 'weather'>): SceneLight {
-  const base = BASE[sky.time]
+  const hour = BASE[sky.time]
+  const base: SceneLight = { ...hour } as SceneLight
+  for (const k of Object.keys(POSTER) as PosterCrop[]) base[k] = mixHex(POSTER[k], hour.fallow, POSTER_LIGHT[sky.time])
   if (sky.weather === 'clear' || sky.weather === 'breeze') return { ...base }
   // Plan item 229: rain softens the colour, it doesn't take it away (0.5 grey and 10% dark turned the valley to slate).
   // Plan item 298: a *light* drizzle with sunbreaks: the land keeps most of the hour's colour (0.3 grey read as a wash
@@ -112,17 +129,31 @@ export function lightVars(light: SceneLight): Record<string, string> {
     '--vl-sky-top': light.skyTop, '--vl-sky-low': light.skyLow, '--vl-far': light.far, '--vl-near': light.near,
     '--vl-meadow': light.meadow, '--vl-meadow-low': light.meadowLow, '--vl-crop': light.crop,
     '--vl-wheat': light.wheat, '--vl-fallow': light.fallow, '--vl-hedge': light.hedge,
+    '--vl-rapeseed': light.rapeseed, '--vl-lavender': light.lavender, '--vl-kale': light.kale, '--vl-plough': light.plough,
   }
 }
 
-const KINDS = ['crop', 'wheat', 'grass', 'fallow', 'crop', 'grass'] as const
+/**
+ * Plan item 508: the fields the valley grows, by season, so the patchwork reads as a poster of a farming year (it was
+ * one khaki wash of crop, wheat, grass and fallow): spring's rapeseed and kale, summer's wheat and lavender, autumn's
+ * plough, stubble and its cover crops (mustard and phacelia), winter's plough and kale.
+ */
+const KINDS: Record<Season, readonly string[]> = {
+  spring: ['rapeseed', 'crop', 'grass', 'kale', 'plough', 'rapeseed', 'grass', 'crop'],
+  summer: ['wheat', 'lavender', 'crop', 'grass', 'wheat', 'rapeseed', 'fallow', 'grass'],
+  autumn: ['plough', 'wheat', 'kale', 'grass', 'mustard', 'phacelia', 'plough', 'grass'],
+  winter: ['plough', 'kale', 'grass', 'fallow', 'plough', 'grass', 'kale'],
+}
+/** Kinds drawn without furrows (grass and the flowering crops read as a flat sheet of colour). */
+const FLAT = new Set(['grass', 'rapeseed', 'mustard', 'lavender', 'phacelia'])
 
 /**
  * The valley's painted layers (sky, far and near hills melting into the meadow, a patchwork of fields with furrows,
  * hedgerows along their edges, a few trees, Cath's footpath down to Bea's garden), seeded by the board.
  * Rows grow taller toward the foot, as fields do when the ground comes nearer.
  */
-export function valleyLayers(seed: string, weather: Sky['weather']): string {
+export function valleyLayers(seed: string, weather: Sky['weather'], season: Season = 'summer'): string {
+  const kinds = KINDS[season]
   const rnd = (k: number) => (hashString(`${seed}:valley:${k}`) % 10000) / 10000
   // Plan item 389: the valley seen from the board's own top-down angle: rows of even depth under a thin horizon band
   // (the ground from 118 of 1000), not a perspective that grew from 80 to 210 toward the foot.
@@ -133,6 +164,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
   const puddles: string[] = []
   const slope = (row: number, x: number) => rows[row]! + (rnd(row) - 0.5) * 40 * (x / 1000 - 0.5)
   let n = 0
+  let prevKind = ''
   for (let r = 0; r < rows.length - 1; r++) {
     // Cut the row into 3-5 fields with seeded widths and slanted dividers.
     const count = 3 + Math.floor(rnd(100 + r) * 3)
@@ -144,7 +176,10 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
     parts.push(`<g opacity="${[0.82, 0.9, 0.95, 1, 1][r]}">`)
     for (let i = 0; i < count; i++) {
       const xa = cuts[i]!, xb = cuts[i + 1]!
-      const kind = KINDS[Math.floor(rnd(400 + n) * KINDS.length)]!
+      // Neighbours differ: a field never repeats the one to its left.
+      let kind = kinds[Math.floor(rnd(400 + n) * kinds.length)]!
+      if (i > 0 && kind === prevKind) kind = kinds[(kinds.indexOf(kind) + 1 + Math.floor(rnd(410 + n) * (kinds.length - 1))) % kinds.length]!
+      prevKind = kind
       const pts = [
         [xa, slope(r, xa)], [xb, slope(r, xb)], [xb + lean, slope(r + 1, xb + lean)], [xa + lean, slope(r + 1, xa + lean)],
       ].map(([x, y]) => `${x!.toFixed(0)},${y!.toFixed(0)}`).join(' ')
@@ -152,7 +187,7 @@ export function valleyLayers(seed: string, weather: Sky['weather']): string {
       // right), as a delay bucket 0-9 (styles.css).
       const wave = Math.min(9, r * 2 + Math.floor((i * 2) / count))
       parts.push(`<polygon class="vl-f vl-f-${kind} vl-w${wave}" points="${pts}"/>`)
-      if (kind !== 'grass') {
+      if (!FLAT.has(kind)) {
         const pat = rnd(500 + n) < 0.5 ? 'vl-rows-h' : rnd(600 + n) < 0.5 ? 'vl-rows-d' : 'vl-rows-a'
         parts.push(`<polygon class="vl-furrow" fill="url(#${pat})" points="${pts}"/>`)
       }
