@@ -4217,3 +4217,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-18 19:21 lane B: 501 slices 3-4 (rail keys at the head row's end, Expand chips whole); board-scale(s), desktop-no-scroll, drawer-tabs, table-hand/-producers/-cath, plan-strip, gantry-slate, action-hand, hand-shelf (P, D, 44+) pass, two load flakes pass alone; CSS lint. Handed back.
 - 2026-11-18 20:21 lane B: 501 slice 5 and done; 506 slices 1-2; Cathnivore table specs (P, D, 50), Hedgerow growth/3dframe/closeframe/water/biome3d/shadow3d (P, D, 47), CSS lint pass.
 - 2026-11-18 21:21 lane B: 506 slices 3-4; render3d unit tests (162), Hedgerow growth/3dframe/closeframe/water/biome3d/shadow3d (P, D, 47 and 41), keyart-fresh pass; 486 measure on l5/21/34/40.
+- 2026-11-18 22:21 lane B: 506 slices 5-6 and done; render3d unit tests and keyart-fresh (168), Hedgerow growth/3dframe/closeframe/water/biome3d/shadow3d (P, D, 47 twice), 486 measure l5/21/34/40, drawcalls before/after.

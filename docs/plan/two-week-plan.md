@@ -4773,7 +4773,7 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** at 390x844 the board is the largest element and 330 px+ wide on every step; each producer drawn once; one primary button; no vertical gap over 24 px between blocks; a pick redraws the board under 250 ms; no scroll at 390x844 and 375x667 (step 1 may scroll at 375x667 only if it did before); D unchanged; setup-*, setup-opening, setup-focal, quick-game pass; shots P, 375x667, D.
 - **Size:** 2
 
-## 514. [ ] NIGHT SHIFT class pick: textured rooms, not a grey blockout *(lane B, in progress)*
+## 514. [ ] NIGHT SHIFT class pick: textured rooms, not a grey blockout *(handed back 2026-11-19 07:00 by lane B after slice 2, `88a35b1`: `scripts/cathode-514-face.mjs` (settled 8 s frame; 05:45's 3 s numbers were wrong) reads face over set ghost 1.21, butcher 1.25, gunslinger 1.31, wirewitch 1.44, fixer 1.34 with the per-class face key (`FACE_GAIN` in frontscene.ts; posters and key art re-rendered); ghost and butcher still under 1.3 (the Ghost's set is a bright skyline: darken its flat a little rather than push the key further). Left: those two, a rain-streaked window behind the Ghost, a curtain or shutter per class, two practicals a set, perf, shots P/D/L)*
 
 Earlier hand-back (lane B, 05:55): *(handed back 2026-11-19 05:55 by lane B after slice 1: next, the face ratio: `frontscene.ts`'s `faceKey` is one warm light at 2.2 (phone 2.0) for every class while each set's coloured key tints her (the Wirewitch's violet darkest); a per-class gain read from `world.renderer.domElement.dataset.class` (as line ~1081 does) is the lever, but frontscene.ts is a title-poster source: re-render the posters (`scripts/cathode-poster.mjs`) in the same slice or keyart-fresh fails)*
 
