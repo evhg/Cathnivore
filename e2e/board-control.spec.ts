@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 417: who holds each region shows in the land itself. Every region carries `data-control` (held,
-// contested or free); held ground (Hollowell dug in) is greyed toward tarmac, at least 30% less saturated than freed
-// ground (sampled from the pixels with the pieces hidden); a freed region draws 2+ stalls; a change cross-fades in
-// 400-1200 ms.
-test('held land greys, freed land warms and holds stalls', async ({ page }) => {
+// Plan item 417: who holds each region shows on the land. Every region carries `data-control` (held, contested or
+// free); a freed region draws 2+ stalls; a change cross-fades in 400-1200 ms. Plan item 525: held ground keeps its
+// colour under Hollowell's shrink-wrap (item 417 greyed it).
+test('held land is wrapped in plastic, freed land warms and holds stalls', async ({ page }) => {
   await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=5')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
@@ -34,43 +33,19 @@ test('held land greys, freed land warms and holds stalls', async ({ page }) => {
   }
   // Held ground carries Hollowell's signboard where the pieces leave room (a crowded tile may have none).
   expect(await page.locator('.map-wrap .region-hex[data-control="held"] .held-sign').count()).toBeGreaterThanOrEqual(1)
-  await page.addStyleTag({
-    content:
-      '*, *::before, *::after { animation: none !important; transition: none !important; } .piece-tray, .board-landmark, .pressure-ring, .threat-badge, .liberated-life, .free-stalls, .region-label, .map-wrap text, .map-wrap .region-hex > g:not(.land-layer):not(.held-sheen), .table-producer, .table-cath, .cath-bubble { visibility: hidden !important; }',
-  })
-  await page.waitForTimeout(300)
-  const sat = async (control: string) => {
-    const vals: number[] = []
-    for (const g of await page.locator(`.map-wrap .region-hex[data-control="${control}"]`).all()) {
-      const b = (await g.locator('polygon').first().boundingBox())!
-      // The middle of the tile: its face, inside the frame and the name plate.
-      const clip = { x: b.x + b.width * 0.25, y: b.y + b.height * 0.3, width: b.width * 0.5, height: b.height * 0.45 }
-      const png = await page.screenshot({ clip })
-      vals.push(
-        await page.evaluate(async (b64) => {
-          const img = new Image()
-          img.src = `data:image/png;base64,${b64}`
-          await img.decode()
-          const c = document.createElement('canvas')
-          c.width = img.width
-          c.height = img.height
-          const x = c.getContext('2d')!
-          x.drawImage(img, 0, 0)
-          const d = x.getImageData(0, 0, c.width, c.height).data
-          let s = 0
-          for (let i = 0; i < d.length; i += 4) {
-            const mx = Math.max(d[i]!, d[i + 1]!, d[i + 2]!)
-            const mn = Math.min(d[i]!, d[i + 1]!, d[i + 2]!)
-            s += mx === 0 ? 0 : (mx - mn) / mx
-          }
-          return s / (d.length / 4)
-        }, png.toString('base64')),
-      )
-    }
-    return vals.reduce((a, v) => a + v, 0) / vals.length
+  // Plan item 525 (replacing item 417's grey): held land keeps its warm palette at full strength (no filter greys it)
+  // and Hollowell's hold is shrink-wrap laid over it, which reads by its highlights in greyscale; freed land wears none.
+  const sats = await page.locator('.map-wrap .region-hex .land-layer').evaluateAll((es) =>
+    es.map((e) => {
+      const m = /saturate\(([\d.]+)\)/.exec(getComputedStyle(e).filter)
+      return m ? Number(m[1]) : 1
+    }),
+  )
+  for (const v of sats) expect(v).toBeGreaterThanOrEqual(1)
+  for (const g of await page.locator('.map-wrap .region-hex[data-control="held"]').all()) {
+    await expect(g.locator('.shrink-wrap[data-wrap="tight"] .wrap-glint').first()).toBeAttached()
   }
-  const held = await sat("held")
-
-  const free = await sat('free')
-  expect(held, `held ${held.toFixed(3)} vs free ${free.toFixed(3)}`).toBeLessThanOrEqual(free * 0.7)
+  for (const g of await page.locator('.map-wrap .region-hex[data-control="free"]').all()) {
+    expect(await g.locator('.shrink-wrap').count()).toBe(0)
+  }
 })

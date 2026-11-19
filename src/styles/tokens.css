@@ -65,6 +65,11 @@
   --corp-acrylic: #F6FAFC;
   --corp-acrylic-lo: #D9E4EA;
   --corp-chrome: #8E9CA6;
+  /* Plan item 525: Hollowell's shrink-wrap over the land: near-clear film, a cold highlight, an over-lit spot */
+  --wrap-film: #EAF6FF;
+  --wrap-shine: #FFFFFF;
+  --wrap-edge: #F4FBFF;
+  --wrap-spot: #F2FAFF;
   --corp-slate: #1E2B34;
   /* Plan item 366: the gantry's backlit billboards (desktop): a cool lit face, well off the warm paper */
   --corp-lightbox: #DDEEF8;
@@ -275,6 +280,14 @@
     --corp-acrylic: #CDD6DC;
     --corp-acrylic-lo: #AAB7BF;
     --corp-chrome: #66737C;
+  --wrap-film: #DCEBF5;
+  --wrap-shine: #B3C3CD;
+  --wrap-edge: #A8B9C4;
+  --wrap-spot: #CFE3F0;
+    --wrap-film: #DCEBF5;
+    --wrap-shine: #B3C3CD;
+    --wrap-edge: #A8B9C4;
+    --wrap-spot: #CFE3F0;
     --corp-lightbox: #C9DCE8;
     --corp-lightbox-lo: #A7BECD;
     --newsprint: #C2B9A8;        /* aged grey-cream: still an object, no longer the brightest thing on the table */

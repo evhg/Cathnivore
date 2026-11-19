@@ -144,8 +144,9 @@ function RegionTextureDefs() {
     <defs>
       {/* Plan item 144: the Dry Spell's cracked earth, laid over every region's ground. */}
       <pattern id="ev-cracks" width={46} height={46} patternUnits="userSpaceOnUse">
-        <rect width={46} height={46} fill="#e9c36a" opacity={0.26} />
-        <path d="M2 10l9 4 4 10 10 3 6 9M15 24l-6 9M25 27l8-6 9 2M31 36l-2 9" fill="none" stroke="var(--ink)" strokeWidth={1.4} opacity={0.5} strokeLinecap="round" />
+        <rect width={46} height={46} fill="#e9c36a" opacity={0.12} />
+        {/* Plan item 525: the drought's cracks a dry brown, not a grey ink crackle over the land */}
+        <path d="M2 10l9 4 4 10 10 3 6 9M15 24l-6 9M25 27l8-6 9 2M31 36l-2 9" fill="none" stroke="var(--clay-deep)" strokeWidth={1.3} opacity={0.38} strokeLinecap="round" />
       </pattern>
       {/* Pasture: short diagonal strokes. STYLE.md 3.2 specifies "8% ink," but a 2026-09-28 gate-8 review
           (2 subagents, phone + desktop) found the region textures were reading as flat, uniform grey in
@@ -196,17 +197,29 @@ function RegionTextureDefs() {
         <stop offset="1" className="gloss-candor-base" />
       </linearGradient>
       <linearGradient id="tile-light" x1="0.15" y1="0" x2="0.75" y2="1">
-        <stop offset="0" stopColor="white" stopOpacity={0.34} />
+        <stop offset="0" stopColor="white" stopOpacity={0.18} />
         <stop offset="0.42" stopColor="white" stopOpacity={0} />
         <stop offset="0.62" stopColor="black" stopOpacity={0} />
         <stop offset="1" stopColor="black" stopOpacity={0.16} />
       </linearGradient>
-      {/* Plan item 417: held ground's tarmac: a cool grey sheet, lighter where the light catches its gloss. */}
-      <linearGradient id="held-tarmac" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#b9c2c9" stopOpacity={0.42} />
-        <stop offset="0.55" stopColor="#8d979f" stopOpacity={0.36} />
-        <stop offset="1" stopColor="#6f7a83" stopOpacity={0.42} />
+      {/* Plan item 525: Hollowell's hold is shrink-wrap laid over warm land, not a grey sheet under it: a clear film
+          that catches the light in one long streak, and an over-lit cold spot where his pieces stand. Stop colours are
+          tokens (table.css: the CSP allows no inline style). */}
+      <linearGradient id="wrap-film" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" className="wrap-film-hi" />
+        <stop offset="0.38" className="wrap-film-clear" />
+        <stop offset="0.62" className="wrap-film-clear" />
+        <stop offset="1" className="wrap-film-lo" />
       </linearGradient>
+      <linearGradient id="wrap-streak" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" className="wrap-streak-0" />
+        <stop offset="0.5" className="wrap-streak-1" />
+        <stop offset="1" className="wrap-streak-0" />
+      </linearGradient>
+      <radialGradient id="wrap-spot" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" className="wrap-spot-in" />
+        <stop offset="1" className="wrap-spot-out" />
+      </radialGradient>
       <radialGradient id="tile-paint" cx="0.4" cy="0.38" r="0.7">
         <stop offset="0" stopColor="white" stopOpacity={0.14} />
         <stop offset="0.7" stopColor="white" stopOpacity={0} />
@@ -226,6 +239,40 @@ function RegionTextureDefs() {
 // STYLE.md 6's exact game pieces, drawn as small self-contained SVG groups so `Map` can place one per
 // slot in the enemy-piece row / Stall row without repeating their geometry inline.
 
+/**
+ * Plan item 525: Hollowell's shrink-wrap over a hex: a clear film (a whisper of tint), one long specular streak across
+ * the face and a short second one, creases where it is pulled round the corners, and, when tight, a bright taut
+ * edge. It reads in greyscale by its highlights, not by greying the land under it.
+ */
+function ShrinkWrap({ x, y, tight }: { x: number; y: number; tight: boolean }) {
+  const R = HEX_R
+  const k = tight ? 1 : 0.7
+  return (
+    <>
+      <polygon className="wrap-film" points={hexPoints(x, y, R * GAP_SCALE * 0.97)} fill="url(#wrap-film)" opacity={tight ? 1 : 0.75} />
+      <path
+        className="wrap-streak"
+        d={`M ${x - R * 0.8},${y + R * 0.1} L ${x - R * 0.06},${y - R * 0.8} L ${x + R * 0.06},${y - R * 0.76} L ${x - R * 0.72},${y + R * 0.22} Z`}
+        fill="url(#wrap-streak)"
+        opacity={k}
+      />
+      {/* the streak's hard leading edge: the line that says 'plastic' at a glance, in colour or greyscale */}
+      <path className="wrap-glint" d={`M ${x - R * 0.8},${y + R * 0.1} L ${x - R * 0.06},${y - R * 0.8}`} stroke="var(--wrap-shine)" strokeWidth={1.8} strokeLinecap="round" opacity={0.85 * k} />
+      <path className="wrap-glint" d={`M ${x + R * 0.28},${y + R * 0.66} L ${x + R * 0.7},${y + R * 0.2}`} stroke="var(--wrap-shine)" strokeWidth={2.2} strokeLinecap="round" opacity={0.75 * k} />
+      <path
+        className="wrap-crease"
+        d={`M ${x - R * 0.86},${y - R * 0.04} l ${R * 0.12},${R * 0.05} M ${x + R * 0.42},${y - R * 0.76} l ${R * 0.06},${R * 0.12} M ${x + R * 0.84},${y + R * 0.1} l ${-R * 0.13},${R * 0.03} M ${x - R * 0.4},${y + R * 0.78} l ${R * 0.04},${-R * 0.12}`}
+        stroke="var(--wrap-shine)"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+        fill="none"
+        opacity={0.65 * k}
+      />
+      {tight && <polygon className="wrap-edge" points={hexPoints(x, y, R * GAP_SCALE * 0.94)} fill="none" stroke="var(--wrap-shine)" strokeWidth={1.8} strokeLinejoin="round" opacity={0.7} />}
+    </>
+  )
+}
+
 // Plan item 425: Hollowell's pieces are glossy miniatures standing on the land, not stickers: each is a little
 // moulded object (the Outlet a storefront, the Buyout a hoarding on legs, Doubt a speech bubble on a stake) with
 // one specular highlight, a moulded side in the faction's deep tone and no ink outline. Each keeps item 172's
@@ -244,8 +291,9 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
         <rect x={0.6} y={4} width={10.8} height={8} />
       </g>
       <polygon points={OUTLET_ROOF} className="corp-face" fill="url(#hollowell-gloss)" />
-      {/* the shop's body and its fascia with the H */}
+      {/* the shop's body and its fascia with the H; plan item 525: a chrome rim round the moulding */}
       <rect x={0.6} y={4} width={10.8} height={8} fill="url(#hollowell-gloss)" />
+      <rect className="corp-chrome-rim" x={0.6} y={4} width={10.8} height={8} fill="none" stroke="var(--corp-chrome)" strokeWidth={0.45} />
       <rect x={0.6} y={4} width={10.8} height={2.1} fill="var(--hollowell-ink)" />
       <path d="M 5,4.5 v 1.2 M 7,4.5 v 1.2 M 5,5.1 h 2" stroke="var(--corp-acrylic)" strokeWidth={0.55} strokeLinecap="round" fill="none" />
       {/* the striped awning, scalloped along its lip */}
@@ -1020,14 +1068,13 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art land-layer">
               <TerrainArt type={def.type} id={id} />
             </g>
+            {/* Plan item 525: the land keeps its colour; Hollowell's hold sits on it as plastic. Held ground (dug in) is
+                wrapped tight, with a cold spot pool over-lighting it; contested ground with his Outlets on it carries a
+                looser film (below). */}
             {control === 'held' && (
-              <g className="held-sheen" data-control-sheen="held" pointerEvents="none">
-                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="url(#held-tarmac)" />
-                <path
-                  d={`M ${x - HEX_R * 0.78},${y + HEX_R * 0.05} L ${x - HEX_R * 0.05},${y - HEX_R * 0.78} L ${x + HEX_R * 0.2},${y - HEX_R * 0.7} L ${x - HEX_R * 0.66},${y + HEX_R * 0.3} Z`}
-                  fill="#fff"
-                  opacity={0.22}
-                />
+              <g className="held-sheen shrink-wrap" data-control-sheen="held" data-wrap="tight" pointerEvents="none">
+                <ShrinkWrap x={x} y={y} tight />
+                <ellipse className="wrap-spot" cx={x + HEX_R * 0.18} cy={y - HEX_R * 0.12} rx={HEX_R * 0.42} ry={HEX_R * 0.3} fill="url(#wrap-spot)" />
               </g>
             )}
             {/* Plan item 417: Hollowell's signboard stands over its tarmac, in full gloss. */}
@@ -1040,7 +1087,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 Squeezed wilts (greyed, the crops drooping) until the next. */}
             {/* Plan item 267: as a cold band just inside the hex's edge, not a wash over the whole of it, so held land
                 keeps its colour (the wash left held hexes hazy beside a freed one). */}
-            {gripStage(r) >= 2 && <polygon className="grip-glaze" data-grip-glaze={gripStage(r)} points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.9)} fill="none" stroke="var(--sea)" strokeWidth={HEX_R * 0.12} strokeLinejoin="round" opacity={gripStage(r) >= 3 ? 0.42 : 0.3} pointerEvents="none" />}
+            {gripStage(r) >= 2 && <polygon className="grip-glaze" data-grip-glaze={gripStage(r)} points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.9)} fill="none" stroke="var(--wrap-edge)" strokeWidth={gripStage(r) >= 3 ? 2.6 : 1.8} strokeDasharray={gripStage(r) >= 3 ? undefined : '18 6'} strokeLinejoin="round" opacity={0.7} pointerEvents="none" />}
             {wilted.has(id) && !r.liberated && <polygon className="grip-wilt" data-wilt="true" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="var(--ink)" opacity={0.14} pointerEvents="none" />}
             {r.liberated && (
               <polygon
@@ -1067,18 +1114,15 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               </g>
             )}
 
-            {r.outlets > 0 && (
-              <g className="plastic-film" pointerEvents="none" key={`film${r.outlets}`}>
-                <polygon
-                  points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)}
-                  fill="#dff3ff"
-                  opacity={Math.min(0.06 + r.outlets * 0.03, 0.16)}
-                />
-                <path
-                  d={`M ${x - HEX_R * 0.7},${y - HEX_R * 0.2} L ${x - HEX_R * 0.15},${y - HEX_R * 0.75} L ${x + HEX_R * 0.05},${y - HEX_R * 0.7} L ${x - HEX_R * 0.6},${y + HEX_R * 0.05} Z`}
-                  fill="#fff"
-                  opacity={0.35}
-                />
+            {r.outlets > 0 && control !== 'held' && (
+              <g className="plastic-film shrink-wrap" data-wrap="loose" pointerEvents="none" key={`film${r.outlets}`}>
+                <ShrinkWrap x={x} y={y} tight={false} />
+              </g>
+            )}
+            {/* Plan item 525: freed land peels its wrap off (600-900 ms; a fade under reduced motion). */}
+            {fx[id] === 'lib' && (
+              <g className="wrap-peel" data-peel="true" pointerEvents="none">
+                <ShrinkWrap x={x} y={y} tight />
               </g>
             )}
             {/* Plan item 55: the region's own landmark (the mill, the light, the market cross...), from the campaign

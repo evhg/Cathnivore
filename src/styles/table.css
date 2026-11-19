@@ -5775,14 +5775,40 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
 .closeup-land .land-layer {
   transition: filter 750ms ease-in-out;
 }
-.region-hex[data-control='held'] .land-layer,
-.closeup-land[data-control='held'] .land-layer {
-  filter: saturate(0.45) brightness(0.97);
+/* Plan item 525: the land stays warm whoever holds it (item 417 greyed held ground; the table read cold for most of a
+   match): every region runs its palette at full strength, freed land a touch warmer still. Hollowell's hold is the
+   shrink-wrap laid on top (Map.tsx `ShrinkWrap`). */
+.region-hex .land-layer,
+.closeup-land .land-layer {
+  filter: saturate(1.6);
 }
 .region-hex[data-control='free'] .land-layer,
 .closeup-land[data-control='free'] .land-layer {
-  filter: saturate(1.18) sepia(0.06);
+  filter: saturate(1.7) sepia(0.04);
 }
+.wrap-film-hi { stop-color: var(--wrap-film); stop-opacity: 0.16; }
+.wrap-film-clear { stop-color: var(--wrap-film); stop-opacity: 0.03; }
+.wrap-film-lo { stop-color: var(--wrap-film); stop-opacity: 0.1; }
+.wrap-streak-0 { stop-color: var(--wrap-shine); stop-opacity: 0; }
+.wrap-streak-1 { stop-color: var(--wrap-shine); stop-opacity: 0.5; }
+.wrap-spot-in { stop-color: var(--wrap-spot); stop-opacity: 0.34; }
+.wrap-spot-out { stop-color: var(--wrap-spot); stop-opacity: 0; }
+/* a liberation peels the wrap up off the tile's top corner and away, 750 ms; under reduced motion it only fades */
+.wrap-peel {
+  transform-box: fill-box;
+  transform-origin: 85% 0%;
+  animation: wrap-peel 750ms cubic-bezier(.4, 0, .6, 1) both;
+}
+@keyframes wrap-peel {
+  0% { opacity: 1; transform: none; }
+  60% { opacity: 0.85; transform: translate(6%, -9%) rotate(-7deg) scale(0.9, 0.7); }
+  100% { opacity: 0; transform: translate(12%, -18%) rotate(-12deg) scale(0.7, 0.35); }
+}
+@keyframes wrap-fade { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .wrap-peel { animation-name: wrap-fade; }
+}
+html.no-animations .wrap-peel { display: none; }
 .held-sheen {
   animation: held-sheen-in 750ms ease-in-out both;
 }

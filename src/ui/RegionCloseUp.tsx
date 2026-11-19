@@ -65,7 +65,7 @@ export default function RegionCloseUp({ state, region, onClose, actions = [] }: 
             <g className="land-layer">
               <GroundArt type={type} id={region} clip={`${uid}-cu`} />
             </g>
-            {control === 'held' && <polygon className="held-sheen" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} fill="var(--corp-chrome)" opacity={0.22} />}
+            {control === 'held' && <polygon className="held-sheen" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} fill="var(--wrap-film)" opacity={0.16} stroke="var(--wrap-shine)" strokeWidth={3} strokeOpacity={0.6} />}
             <RegionGroundArt marks={regionGround(region, type, PIECE_ROW, control)} />
             <g className="terrain-art land-layer">
               <TerrainArt type={type} id={region} />
