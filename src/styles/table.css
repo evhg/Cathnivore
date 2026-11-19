@@ -6087,6 +6087,8 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
   .desktop-rail .drawer-key-count { top: -6px; right: -6px; min-width: 18px; height: 18px; line-height: 14px; }
   .desktop-rail .drawer-panel { top: calc(100% + var(--sp-2)); right: 0; bottom: auto; height: min(70vh, 640px); }
   .desktop-rail .hand-later { position: fixed; left: auto; right: 28px; bottom: 18px; }
+  /* plan item 528: the pile sat over the hand's last card (1345-1410 x 795-885 at 1440x900): the hand ends short of it */
+  :root:has(.desktop-rail .hand-later) .game-layout .table-hand { padding-right: 76px; }
   .table-head.with-table-cath { padding-right: 96px; }
   .game:has(.table-head.with-table-cath) .table-hand { --hand-foot: 6px; padding-bottom: 6px; }
   /* the papers, the cloth and the hand 4 px apart (were 10): the cloth's 12 px are the hexes' (sized by height) */
