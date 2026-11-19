@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (04:51 11-19): item 510 slice 1 (fcb54260: the title's far wall a lit Hollowell shop, a passer-by, a headlight sweep, an OPEN tube, a café on the facade); handed back with P and the t 8 framing left. Ran over time (lock released 06:05).
+- Lane A (06:51 11-19): item 319 slices 91 (the Ghost's hood drapes as cloth) and 92 (her left sleeve's turned cuff and elbow folds); handed back with the faint elbow folds, the face's modelling and the far jaw corner left. 510 is open again from the 04:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 06:51 lane A session:** 319 slices 91-92. cathode-classpick, cathode-classpose (D, --retries=0, 12 passed) after each slice; keyart-fresh after re-rendering posters and key art twice (once over lane B's 514 slice 2 posters, which conflicted on rebase); tsc, eslint. No full check. Shots scratchpad j319. Lock released.
 - 2026-11-19 06:21 lane B: 514 slice 2; cathode-setprops/classpose/title-focal/classpick (P, D, --retries=0; the weapon-highlight case timed out under load, passes alone), keyart-fresh pass.
 - **2026-11-19 04:51 lane A session:** 510 slice 1. cathode-title-ambient (new, 3 sizes + reduced motion), cathode-title-focal (D, --retries=0) pass; keyart-fresh after re-rendering posters and key art; title perf 197 calls; tsc, eslint. cathode-front/-title-diorama not run (stopped for time). No full check. Shots scratchpad s510 (b0 poster before, a2-a5 live after).
 - 2026-11-19 05:21 lane B: 518 and 496 done, 514 slice 1; setup/quick-game, hedgerow map/map-you/masthead/ambient/level-card, cathode-setprops/classpose (P, D, --retries=0) pass.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-19 00:22 lane B: E2E red fixed (5a3a0a7); cathode-front/title-focal/frontpage/dossier (D, 28, no retries), captions (P, D) pass. Container restarted mid-session (one spec run lost and rerun). No plan item.
 - **2026-11-18 23:51 lane A session:** planning 507-512; 512 and 509 done. producer-line, partner-mat (P, D), cathode-frontpage, hedgerow-gatequeue (24), portfolio/site specs (117; Runnel daily-reload flake passes alone); css lint, cathode-type, keyart-fresh after re-shooting Hedgerow; tsc, eslint. No full check. Lock released. Shots b512, a509.
 - 2026-11-18 23:21 lane B: E2E red fixed (two cathode-front specs, reproduced and passing locally; cathode-front + title-focal D 25 pass); 496 slice 4; hedgerow map/masthead/ambient/level-card (P, D, 62) pass.
-- **2026-11-18 22:51 lane A session:** 505 slices 2-3 and done. cathode-title-focal (new, D 2), frontpage, listwall, list-strike (P, D), cathode-front face/logotype/dossier/List (P, D); keyart-fresh after re-rendering posters and key art; paper-cover D 0.3%; css lint, cathode-type, eslint, tsc. No full check. Lock released. Shots scratchpad s505.
