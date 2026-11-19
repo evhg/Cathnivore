@@ -345,14 +345,24 @@ function ProgressBunting({ chapters, completed }: { chapters: Chapter[]; complet
   const n = chapters.length
   const W = 600
   const won = chapters.filter((c) => completed.includes(c.id)).length
-  const sag = (t: number) => 10 + 34 * 4 * t * (1 - t)
+  // Plan item 542: the string is tied off behind the Campaign sign and the tally slate, at their middle height (its
+  // ends ran up off the top of the screen, so the flags hung from nothing); it runs past the box (overflow visible)
+  // and the flags hang on the same curve.
+  const X0 = -60
+  const X1 = W + 50
+  const END = 50
+  const DIP = 30
+  const sag = (x: number) => {
+    const u = (x - X0) / (X1 - X0)
+    return END + DIP * 4 * u * (1 - u)
+  }
   return (
     <svg className="cmp-pennants" viewBox={`0 0 ${W} 96`} role="img" aria-label={`${won} of ${n} chapters won`} data-won={won}>
-      <path className="cmp-pennants-line" d={`M0 10 Q${W / 2} 78 ${W} 10`} />
+      <path className="cmp-pennants-line" d={`M${X0} ${END} Q${(X0 + X1) / 2} ${END + 2 * DIP} ${X1} ${END}`} />
       {chapters.map((c, i) => {
         const t = (i + 0.5) / n
         const x = t * W
-        const y = sag(t)
+        const y = sag(x)
         const isWon = completed.includes(c.id)
         return (
           <g key={c.id} className={isWon ? `cmp-pennant is-won is-${PENNANT_DYES[i % PENNANT_DYES.length]}` : 'cmp-pennant'} transform={`translate(${x} ${y})`} data-chapter={c.id}>

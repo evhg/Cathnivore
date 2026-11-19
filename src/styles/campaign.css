@@ -1675,6 +1675,10 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   .cmp-header > .cmp-header-text h1 { color: var(--wood-ink); font-size: 2.75rem; text-shadow: 0 2px 0 var(--wood-lo); }
   .cmp-header > .cmp-header-text .cmp-progress { margin: 0; }
   .cmp-pennants { display: block; width: 100%; height: auto; max-height: 104px; margin-top: -24px; overflow: visible; }
+  /* plan item 542: the string's ends tuck behind the sign and the slate */
+  .cmp-pennants { position: relative; z-index: var(--z-base); }
+  .cmp-header > .cmp-header-text,
+  .cmp-header > .cmp-ledger { position: relative; z-index: var(--z-raised); }
   .cmp-pennants-line { fill: none; stroke: var(--kraft-lo); stroke-width: 2; }
   /* an unwon chapter's flag is undyed calico, a won one takes its dye */
   .cmp-pennant-cloth {
