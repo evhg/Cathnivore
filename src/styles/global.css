@@ -4511,6 +4511,16 @@ html.no-animations .setup .opening-preview :is(.piece-tray, .ev-heap, .ev-lanter
   .setup[data-phone-steps] .setup-next, .setup[data-phone-steps] .setup-panel > .pin-tin { display: none; }
   .setup[data-phone-steps] .setup-panel { gap: 8px; padding-bottom: 2px; }
   .setup[data-phone-steps] .setup-mode .mode-art svg { max-height: 40px; }
+  /* Slice 2: the height goes to the board. The mode is a two-way toggle of words (the chairs drew the pair a second
+     time: each producer once, on the chips), and the week's event runs as one paragraph under its name. */
+  .setup[data-phone-steps] .setup-mode { padding-top: 0; }
+  .setup[data-phone-steps] .segmented.mode-picker span.mode-art { display: none; }
+  .setup[data-phone-steps] .segmented.mode-picker label { display: flex; justify-content: center; padding: 6px 8px 10px; }
+  .setup[data-phone-steps] .segmented.mode-picker span.mode-name { text-align: center; }
+  .setup[data-phone-steps] .mode-name small { display: inline; }
+  .setup[data-phone-steps] .market-event { padding: 5px 12px; }
+  .setup[data-phone-steps] .market-event h2 { display: inline; margin: 0; }
+  .setup[data-phone-steps] .market-event-deal { display: inline; margin-left: 4px; }
 }
 /* A short phone (an SE's 667 px): the steps may shrink and scroll inside their panel, so Start stays whole. */
 @media (max-width: 599px) and (orientation: portrait) and (max-height: 740px) {

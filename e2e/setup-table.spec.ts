@@ -65,7 +65,8 @@ test('the phone Setup is a laid table too, nothing overlapping, the table ending
   await expect(table).toBeVisible()
   const largest = await page.evaluate(() => {
     const area = (e: Element) => { const r = e.getBoundingClientRect(); return r.width * r.height }
-    return [...document.querySelectorAll('main.setup *')].sort((a, b) => area(b) - area(a))[0]?.hasAttribute('data-setup-table')
+    // Plan item 513: the opening board's stage is the screen's largest thing (it was the table, item 195).
+    return [...document.querySelectorAll('main.setup *')].sort((a, b) => area(b) - area(a))[0]?.hasAttribute('data-board-stage')
   })
   expect(largest).toBe(true)
   await expect(table.locator('[data-seat]')).toHaveCount(2)

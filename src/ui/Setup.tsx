@@ -274,7 +274,7 @@ export default function Setup({ onStart }: Props) {
       )}
       {/* Plan item 204: at D the rule is a stamped line on the flyer; on a phone the two run on as one line. */}
       <p className="market-event-deal">
-        <span className="market-event-rule" data-stamp>{marketEvent.cheap.join(' and ')} Improvements cost 1 Mark less this week.</span>{' '}
+        <span className="market-event-rule" data-stamp>{capitalise(marketEvent.cheap.join(' and '))} Improvements cost 1 Mark less this week.</span>{' '}
         <span className="market-event-pin">Win during it to earn Cath's pin: {marketEvent.cosmetic}{earnedPins().includes(pinForEvent(marketEvent.id)!) ? ' (earned)' : ''}.</span>
       </p>
     </section>
@@ -395,6 +395,9 @@ export default function Setup({ onStart }: Props) {
 function layoutHas(layout: LayoutId, region: RegionId): boolean {
   return region in LAYOUTS[layout].hexes
 }
+
+/** The event's rule starts its sentence (a phone runs it inline after the name, where ::first-letter can't reach). */
+const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 const STEP_WORDS = ["Who's at the stall", 'Where you trade', 'How hard'] as const
 
