@@ -1484,9 +1484,15 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // turns into the hair rather than ending at it as a hard pale edge (the critique: 'a plate').
         blob(0.074 * sx, -0.012, 0.01, 0.048, "rgba(112,64,58,A)", 0.34);
         blob(0.05 * sx, -0.068, 0.02, 0.012, "rgba(130,76,68,A)", 0.06); // along the jaw (slice 75: 0.15 -> 0.06)
-        blob(0.009 * sx, -0.006, 0.004, 0.016, "rgba(150,92,80,A)", 0.22); // either side of the nose
+        // Plan item 319 slice 93: the face's planes at title distance (the critique's 'flat mask'): the shade either
+        // side of the nose deeper where it meets the eye's inner corner, and the cheekbone's light a ridge that runs
+        // up and out toward the temple, with the cheek's hollow under it, so the face turns at the cheekbone.
+        blob(0.009 * sx, -0.006, 0.0055, 0.017, "rgba(146,86,74,A)", 0.4); // either side of the nose
+        blob(0.011 * sx, 0.006, 0.0045, 0.007, "rgba(140,84,74,A)", 0.34); // the eye's inner corner, by the bridge
         blob(0.026 * sx, 0.027, 0.016, 0.005, "rgba(255,226,210,A)", 0.3); // the brow bone
-        blob(0.034 * sx, -0.006, 0.012, 0.006, "rgba(255,230,214,A)", 0.28); // top of the cheekbone
+        blob(0.034 * sx, -0.006, 0.012, 0.006, "rgba(255,232,216,A)", 0.44); // top of the cheekbone
+        blob(0.046 * sx, 0.0, 0.012, 0.006, "rgba(255,234,218,A)", 0.38); // the cheekbone's ridge, toward the temple
+        blob(0.044 * sx, -0.025, 0.018, 0.008, "rgba(140,76,66,A)", 0.3); // the hollow under it
       }
       blob(0, 0.0, 0.004, 0.02, "rgba(255,232,218,A)", 0.4); // the bridge of the nose
       blob(0, 0.05, 0.02, 0.016, "rgba(255,230,214,A)", 0.22); // the forehead
@@ -3837,29 +3843,67 @@ float reliefShade( vec2 uv ) {
     const rim = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts), seg(40), 0.012, 8, false); // slice 91: a fuller roll (was 0.009)
     extra("ghost", headPivot, [[[hood, cowl, rim], hoodMat]]);
     // Gunslinger: a wide-brimmed hat, the brim curled up at the sides and the crown pinched, tipped forward.
-    const brim = new THREE.LatheGeometry([0.07, 0.11, 0.15, 0.175, 0.19].map((r, i) => new THREE.Vector2(r, [0, 0.002, 0.004, 0.012, 0.03][i]!)), seg(32));
+    // Plan item 319 slice 93: built smooth. The brim was a five-ring lathe with a knife edge (on a phone 19 sides,
+    // its outline a polygon at the pick) and the crown a two-row cylinder pinched into a hard V. Now the brim's
+    // profile is eleven rings ending in a bound edge that rolls over, and the crown a domed lathe with a soft
+    // centre dent and two pinches; the lathe's seam column shares one normal, so no line runs down her front.
+    const latheSmooth = (geo: THREE.BufferGeometry, rows: number) => {
+      geo.computeVertexNormals();
+      const n = geo.attributes.normal as THREE.BufferAttribute;
+      const cols = n.count / rows;
+      for (let j = 0; j < rows; j++) {
+        const a = j;
+        const b = (cols - 1) * rows + j;
+        const v = new THREE.Vector3(n.getX(a) + n.getX(b), n.getY(a) + n.getY(b), n.getZ(a) + n.getZ(b)).normalize();
+        n.setXYZ(a, v.x, v.y, v.z);
+        n.setXYZ(b, v.x, v.y, v.z);
+      }
+      n.needsUpdate = true;
+    };
+    // [radius, the brim's rise before the side curl, a lift that the curl doesn't scale (the bound edge's roll)]
+    const brimProfile: Array<[number, number, number]> = [
+      [0.07, 0, 0], [0.085, 0.0008, 0], [0.1, 0.0016, 0], [0.115, 0.0024, 0], [0.13, 0.0032, 0], [0.145, 0.0042, 0],
+      [0.16, 0.0062, 0], [0.172, 0.0095, 0], [0.181, 0.0145, 0], [0.187, 0.021, 0], [0.191, 0.027, 0],
+      [0.1935, 0.03, 0.0025], [0.193, 0.03, 0.0055], [0.1895, 0.03, 0.0068], [0.186, 0.029, 0.005],
+    ];
+    const brim = new THREE.LatheGeometry(brimProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg(64));
     {
       // The sides curl up more than the front and back.
       const p = brim.attributes.position as THREE.BufferAttribute;
+      const rows = brimProfile.length;
       for (let i = 0; i < p.count; i++) {
+        const [r, y, lift] = brimProfile[i % rows]!;
         const x = p.getX(i);
         const z = p.getZ(i);
-        const r = Math.hypot(x, z);
-        const side = (x / Math.max(r, 1e-6)) ** 2;
-        p.setY(i, p.getY(i) * (0.2 + 1.6 * side) + Math.max(0, r - 0.12) * 0.25 * side);
+        const side = (x / Math.max(Math.hypot(x, z), 1e-6)) ** 2;
+        p.setY(i, y * (0.2 + 1.6 * side) + Math.max(0, r - 0.12) * 0.25 * side + lift);
         p.setZ(i, z * 0.92);
       }
-      brim.computeVertexNormals();
+      latheSmooth(brim, rows);
     }
-    const crown = new THREE.CylinderGeometry(0.068, 0.088, 0.1, seg(24), 2);
+    // The crown: a soft taper to a domed top, then a long dent down the middle and a pinch either side at the front.
+    const crownProfile: Array<[number, number]> = [
+      [0.088, 0], [0.086, 0.015], [0.083, 0.03], [0.08, 0.045], [0.077, 0.06], [0.074, 0.072], [0.07, 0.082],
+      [0.063, 0.09], [0.052, 0.096], [0.038, 0.1], [0.022, 0.102], [0.001, 0.103],
+    ];
+    const crown = new THREE.LatheGeometry(crownProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg(48));
     {
       const p = crown.attributes.position as THREE.BufferAttribute;
-      for (let i = 0; i < p.count; i++) if (p.getY(i) > 0.04) p.setY(i, p.getY(i) - 0.018 * Math.max(0, 1 - Math.abs(p.getX(i)) / 0.03));
-      crown.computeVertexNormals();
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        const z = p.getZ(i);
+        const up = Math.max(0, (y - 0.05) / 0.053) ** 1.5;
+        // The centre dent, front to back, deepest a little forward of the middle.
+        const dent = Math.exp(-((x / 0.026) ** 2)) * (0.85 + 0.15 * Math.tanh(z / 0.04)) * 0.022 * up;
+        // The front pinches: either side of the dent's front end, pressed in toward the middle.
+        const pinch = Math.exp(-(((Math.abs(x) - 0.045) / 0.022) ** 2) - (((z - 0.06) / 0.03) ** 2)) * up;
+        p.setXYZ(i, x * (1 - 0.18 * pinch), y - dent, z - 0.008 * pinch);
+      }
+      latheSmooth(crown, crownProfile.length);
     }
     crown.scale(1, 1, 0.9);
-    crown.translate(0, 0.05, 0);
-    const band = new THREE.CylinderGeometry(0.087, 0.089, 0.018, seg(24), 1, true);
+    const band = new THREE.CylinderGeometry(0.087, 0.089, 0.018, seg(48), 1, true);
     band.scale(1, 1, 0.9);
     band.translate(0, 0.012, 0);
     // A low rim on the hat: at full gain the brim's underside, edge-on to the lens, took the sign's Fresnel as a pale blue plate.
