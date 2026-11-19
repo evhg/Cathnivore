@@ -4747,7 +4747,7 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** 3+ `[data-ambient]` movers on the live title at 390x844, 1440x900, 844x390, none under reduced motion; the luminance spread of the street behind her 1.5x+ today's; `cathode-title-focal` passes (her face brightest); cathode-perf alone within budget; keyart-fresh, cathode-front pass; shots P, D, L.
 - **Size:** 2
 
-## 511. [ ] Hedgerow: the round's convoy as a picture, not x-counts
+## 511. [ ] Hedgerow: the round's convoy as a picture, not x-counts *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (1190-1410 x 385-450): 'This round' names no vehicles and '×20' wraps alone onto a second line; Coming up (1115-1415 x 585-700) is three tickets of 13 px text beside the richest diorama on the site (VISION 1-2). Checked 348/403 (Coming up's forecast and ticket design), 392 (Cath's plate), 460 (one ledger row: kept).
 - **Build:** one shared panel component for both renderers: the round as a convoy strip, each type's sprite 28 px+ in its count's proportion, the count under it, the name on hover or focus (and in its accessible name); Coming up's tickets each with the round's lead vehicle drawn and its twist's icon.
 - **Accept:** every vehicle type in the round named or labelled, no wrapped orphan, at 1440x900, 1280x800 and 844x390, 2D and 3D; sprites 28 px+ at D, 20 px+ at P; ticket text 13 px+ at AA contrast; rack, tray, round-chips, level specs pass; shots before/after.
