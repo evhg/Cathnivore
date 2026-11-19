@@ -617,6 +617,17 @@ button {
 .app:has(.play:not([hidden])) {
   max-width: none;
 }
+/* Plan item 542: on a screen wider than the play frame (1200 px) the bars either side were dead cream; the field
+   sits in its hedge: deep hedge green, darker toward the screen's edges, with the oak's grain faint in it. */
+@media (min-width: 1240px) {
+  html:has(.play:not([hidden])),
+  html:has(.play:not([hidden])) body {
+    background:
+      radial-gradient(ellipse 70% 90% at 50% 45%, color-mix(in srgb, var(--pasture-ink) 72%, var(--paper)), transparent 75%),
+      var(--woodgrain),
+      color-mix(in srgb, var(--pasture-ink) 88%, var(--oak-ink));
+  }
+}
 .play {
   gap: 8px;
   max-width: 1200px;

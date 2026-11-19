@@ -5213,8 +5213,8 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 
 ## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(lane A, in progress)* *(handed back 2026-11-19 22:55 by lane B: five points done or checked (marked below); left: Hedgerow's shop role lines, letterbox, phone top band and coming-up columns, the Setup banner, the campaign bunting)*
 - `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge. **Checked 22:50 lane B, kept:** whole at 1328-1438 in the 30 s live frame, off screen in the t=8 frame; it rides the title's camera drift, so a nudge moves the clip, not fixes it.
-- `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px.
-- `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars.
+- `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px. **Checked 23:25 lane A, kept:** that rack is `shop-tight`, the fit chain's fallback when the column overruns (item 431 chose the 40 px tower and the corner role glyph over the word); the word back would make the chain drop the Coming-up card.
+- `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars. **Fixed 23:25 lane A:** from 1240 px wide the page round the play frame is the hedge (deep hedge green, a lighter glow behind the frame, the oak's grain), so the bars frame the field.
 - `hedge-l21-3d-P` (y 75-105): the Hollowell '216 NEXT' pill and the 'CLOSER' button crowd the top band.
 - Hedgerow, both renderers (D 1110-1420 x 590-660): the coming-up columns in about 11 px grey; the coloured bars under them at y 690 read as a broken element.
 - `cath-setup-P` (60-335 x 232-250): the 'Dry Spell … 1 Mark off' banner nearly overflows; the producer power text about 10-11 px (y 715-760). **Fixed 23:05 lane A:** the pair's power text at the caption size (13 px, was 12); still no scroll at 390x844 (Start ends 834). The banner checked and kept: whole inside its ribbon (60-330 of 390).
