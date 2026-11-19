@@ -282,6 +282,17 @@ const TOON_PHYSICAL = THREE.ShaderChunk.lights_physical_pars_fragment.replace(
   "float dotNL = inkBand( saturate( dot( geometryNormal, directLight.direction ) ) );",
 );
 const TOON_WOOL = TOON_PHYSICAL.replace("inkBand(", "inkBandWool(");
+/**
+ * Plan item 319 slice 97: skin wraps the street's direct light (light scatters under it), so a light from her side no
+ * longer draws its terminator as a hard line down the middle of her lower face: the chin's front is nearly flat to the
+ * lens, so a side light's n.l changed sign across its midline (a lit half and a shaded half split at the nose's tip at
+ * the D pick). The wrap moves the turn round past the face's side, where the planes and the far jaw take it.
+ */
+const SKIN_WRAP = 0.6;
+const SKIN_PHYSICAL = THREE.ShaderChunk.lights_physical_pars_fragment.replace(
+  "float dotNL = saturate( dot( geometryNormal, directLight.direction ) );",
+  `float dotNL = saturate( ( dot( geometryNormal, directLight.direction ) + ${SKIN_WRAP.toFixed(2)} ) / ${(1 + SKIN_WRAP).toFixed(2)} );`,
+);
 
 /**
  * Plan item 254: the ink line, an inverted hull. Each outlined part draws once more, back faces only, pushed out
@@ -749,7 +760,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // cheek into flat triangles with a hard dark wedge under the jaw (critique 17:15); the face takes it smooth.
         // Slice 18: nor on the rest of her skin (neck, ears): banded, the neck's turn drew a hard vertical seam under
         // the smoothly lit jaw.
-        .replace("#include <lights_physical_pars_fragment>", glint > 0 || skin > 0 ? "#include <lights_physical_pars_fragment>" : edge === "wool" ? TOON_WOOL : TOON_PHYSICAL)
+        .replace("#include <lights_physical_pars_fragment>", glint > 0 || skin > 0 ? SKIN_PHYSICAL : edge === "wool" ? TOON_WOOL : TOON_PHYSICAL)
         .replace(
           "#include <emissivemap_fragment>",
           `#include <emissivemap_fragment>
