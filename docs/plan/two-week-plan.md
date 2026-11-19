@@ -5211,7 +5211,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - The campaign, hotseat, cath-pop and quick-game specs pass; shots P.
 - **Size:** 2
 
-## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch
+## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(lane B, in progress)*
 - `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge.
 - `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px.
 - `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars.
