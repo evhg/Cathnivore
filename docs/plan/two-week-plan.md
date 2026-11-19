@@ -5063,7 +5063,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P (unchanged) and D.
 - **Size:** 2
 
-## 534. [ ] Portfolio desktop: Cath hosts the gallery, her line in a real speech bubble
+## 534. [ ] Portfolio desktop: Cath hosts the gallery, her line in a real speech bubble *(lane B, in progress)*
 - **Why:** `portfolio-D` (plan1119e):
   - Cath stands on a dark puck pedestal (1240-1415 x 540-575) floating apart from the prints.
   - Her line is a flat bordered rectangle (752-1225 x 555-597) that reads as an empty input, about 100 px from her with no tail.
