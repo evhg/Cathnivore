@@ -235,8 +235,8 @@ export function cathSvg(options: CathOptions = {}): string {
     : 'aria-hidden="true" focusable="false"'
   const cls = `cath cath-${expression} cath-${outfit} cath-pose-${pose}${options.animate ? ' cath-animate' : ''}${options.className ? ` ${options.className}` : ''}`
   const size = `${options.width ? ` width="${options.width}"` : ''}${options.height ? ` height="${options.height}"` : ''}`
-  // Plan item 442: at full length her head (and the hair round it) is drawn at 0.84 about the collar, so she stands
-  // about six heads tall, a grown woman's figure (it was 1:4.9, a chibi's); the bust and half framings keep the big,
+  // Plan items 442 and 524: at full length her head (and the hair round it) is drawn at FULL_HEAD about the collar, so
+  // with the longer legs she stands about 7.5 heads tall (it was 1:4.9, a chibi's, then six heads); the bust and half framings keep the big,
   // readable face. An outer group, so the head's own CSS tilt and the hair's sway still apply.
   const headOpen = framing === 'full' ? `<g transform="translate(200 262) scale(${FULL_HEAD}) translate(-200 -262)">` : ''
   const headClose = framing === 'full' ? '</g>' : ''
