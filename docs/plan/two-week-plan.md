@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-19T15:24:56Z
 
 
 
@@ -4953,5 +4952,73 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `cath-title-P` (168-186 x 425-452): Cath's waving hand overlaps the board preview's top-left hex.
 - `cath-game-D` (1345-1410 x 795-885): the '8 NOT YET' deck overlaps the last hand card (Injunction) rather than sitting beside it.
 - `games-D` (340-1010 x 630-740): the same Cath cut-out appears on three cards and in the booth. Give each card its own pose: item 524's poses, or the bust's expressions until then.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 529. [ ] Hedgerow: Hollowell's fleet gets faces, a first-sighting reveal, and a Fleet page in the Almanac
+- **Why:**
+  - In `hedge-menu-D` (plan1119d) 1137-1410 x 498-675, the level's vehicles are alike list rows: round clip-art icons running past each row's edge.
+  - In a level, the satire is a text tag on a generic van: `hedge-l21-2d-D` 175-370 x 340-375 ('Lifestyle influencer' on a pink van); `hedge-l34-2d-D` 265-330 x 240-258 and 340-440 x 708-726.
+  - VISION's art direction asks for a farmers'-market poster wandered into a political cartoon; VISION 5 asks for characters you remember. The villains have no drivers and no moment.
+- **Build:** `games/hedgerow/src`:
+  - **Fleet card:** each vehicle type gets a glossy card: a caricature driver in the cab (the influencer with a ring light, the courier with a headset, and so on), the van in Hollowell livery, a one-line slogan, and its habit (map.ts `threatLine`) as icons.
+  - **First sighting:** the first time a type enters the lane in a save, a 'New on the lane' card slides in (about 900 ms; a fade under reduced motion) and the round holds until a tap. Seen types are kept in the save, with a migration and a test.
+  - **Almanac:** a 'Fleet' page collects the cards.
+  - **Reuse:** the briefing rows and the lane tags use the card's thumbnail.
+- **Accept:**
+  - Every vehicle type has card art (a unit test over `ENEMIES`).
+  - The reveal shows once per type per save, and old saves load (a migration test).
+  - The Fleet page lists the types met and greys the rest.
+  - The briefing rows' icons sit inside their rows, 8 px+ from the words.
+  - The hedgerow level-card, map, tray and critique specs pass.
+  - Shots P and D, 2D and 3D.
+- **Size:** 3
+
+## 530. [ ] /games/ phone: each game a full-width poster with Cath in its role
+- **Why:**
+  - `games-P` (plan1119d) 20-370 x 625-844: the four games are two 170 px cards side by side, the art cut to about 170x115 thumbnails, the blurbs three lines.
+  - Every card wears the same small Cath sticker at its edge (150-185 and 330-365 x 680-735), and no Play shows in the first screen.
+  - At D, the same sticker repeats on three cards (`games-D` 340-400, 650-705, 955-1010 x 630-735).
+  - VISION 1 (designed, not laid out) and the character bible (she is the host, posed in each game).
+- **Build:** `site/`:
+  - On a phone, a scroll-snapped shelf of full-width game posters, each 340 px+ wide.
+  - Each poster carries its key art, Cath in the game's role from `shared/cath/`'s poses (item 524: the apron and basket for Cathnivore, the watering can for Runnel, a seed packet for Hedgerow, the umbrella for NIGHT SHIFT), its line and Play, with pager dots.
+  - The phone hero tightens so the first poster's Play is above the fold.
+  - At D, the same per-game poses replace the repeated sticker.
+- **Accept:**
+  - At 390x844 each poster is 340 px+ wide, and the first poster's Play is whole without scrolling.
+  - No two cards share a Cath pose (a DOM check of `data-pose`).
+  - Swipe and the arrow keys both work, and the dots follow (e2e).
+  - Blurbs are 2 lines or fewer at 390.
+  - The /games/ site specs pass; key art is fresh.
+  - Shots P and D.
+- **Size:** 2
+
+## 531. [ ] Cathnivore desktop: Hollowell's plan as his glossy corporate plaque, its targets lit on the board
+- **Why:**
+  - `cath-game-D` (plan1119d) 565-1165 x 15-85: Hollowell's three moves (Squeeze, Expand, Scout) are pale-blue tickets with about 11 px lines ('Arms next round') and pip dots. They read as UI chips, not the antagonist.
+  - His portrait (1185-1310 x 12-145) stands apart from them.
+  - VISION's art direction: the corporations glossy, plastic, over-lit and clinical, the contrast being the joke. VISION 5: characters with presence.
+  - **Checked:** the phone's placard is already item 414's acrylic rail, and a tap marks the move's hexes (papers-placard).
+- **Build:** `src/ui` (the plan strip) and `src/styles`:
+  - At D the three memos become one acrylic-and-chrome plaque under an over-lit gradient, with Hollowell's portrait docked into its end and a corporate sans label ('Quarterly Plan').
+  - Each move gets a card with its target's name and a slogan in his voice.
+  - Hovering or focusing a card outlines its target hexes in Hollowell orange (the phone's tap-to-mark, at D).
+  - Corporate tokens go in `tokens.css`.
+- **Accept:**
+  - At D the move text is 13 px+ at AA.
+  - Focusing a card marks exactly its target regions (e2e against the rules' targets).
+  - The board's box is unchanged at 1440x900 and 1280x800 (desktop-no-scroll, plan-cards, plan-strip, papers-placard pass).
+  - ui-css-lint passes.
+  - Shots D, light and dark, with P unchanged.
+- **Size:** 2
+
+## 532. [ ] The bugs from the 2026-11-19 15:35 critique, fixed as one batch
+- `hedge-menu-D` (1137-1192 x 498-675): the vehicle icons overflow each briefing row's left edge, and the habit text starts flush against them.
+- `hedge-l21-3d-P` (278-345 x 735-762): 'Radio Mast' is cut to 'Radio Mas' and its price sits half under the rack's 'more' arrow.
+- `cath-game-D` (772-792 x 12-27): a black 'I' tag on the Expand ticket's top edge (a key hint?). Check, and give all three the same treatment or none.
+- `cath-setup-D` (238-365 x 670-700): '2 Outlets, 1 / Buyout' breaks the number from its noun; (115-345 x 575-612) the quote leaves 'win.' alone on its line.
+- `portfolio-D` (100-700 x 840-885): the stats row sits about 10 px under the timeline's hour labels, so the two read as one cramped row.
+- `hedge-menu-P` (265-385 x 510-545): 'Brand Ambassador' is the only map label on two lines, its pill about 5 px from the screen's edge.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
