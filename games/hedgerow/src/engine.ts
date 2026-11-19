@@ -293,6 +293,8 @@ export interface EnemySpec {
   /** Bubble wrap: single-target shots do only WRAP_LEAK of their damage until something area-wide (splash,
    * a piercing shot, a gust, a pie) pops it. Thorns, poison and Cath hit it in full. */
   shield?: number;
+  /** A short name for tight labels (the round ticket's lead pill); the full name stays as its hover and spoken text. */
+  short?: string;
 }
 
 export const ENEMIES: Record<EnemyKind, EnemySpec> = {
@@ -302,7 +304,7 @@ export const ENEMIES: Record<EnemyKind, EnemySpec> = {
   courier: { name: "Scooter courier", hp: 40, speed: 0.9, bounty: 3, leak: 1 },
   hatchback: { name: "Hatchback", hp: 60, speed: 1.2, bounty: 5, leak: 1 },
   pickup: { name: "Pickup", hp: 110, speed: 1.4, bounty: 8, leak: 1 },
-  sprinter: { name: "Same-Day van", hp: 80, speed: 1.6, bounty: 8, leak: 1 },
+  sprinter: { name: "Same-Day van", short: "Same-Day", hp: 80, speed: 1.6, bounty: 8, leak: 1 },
   lorry: { name: "Box Lorry", hp: 170, speed: 0.9, bounty: 12, leak: 2 },
   quad: { name: "Cargo quadcopter", hp: 60, speed: 1.5, bounty: 6, leak: 1, flying: true },
   wrapped: { name: "Bubble-wrapped van", hp: 90, speed: 0.85, bounty: 9, leak: 1, shield: 1 },

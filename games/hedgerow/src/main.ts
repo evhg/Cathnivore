@@ -2499,7 +2499,11 @@ function fieldIntel(g: Game): HTMLElement {
       // Plan item 403: a round without a trait names its lead on the same pill, edged in that vehicle's livery
       // (it was bare text beside its neighbours' pills).
       word.style.setProperty("--trait", trait ? PROPERTIES[trait].colour : livery(lead));
-      word.textContent = trait ? PROPERTIES[trait].name : ENEMIES[lead].name;
+      // 2026-11-19 critique (item 518): the lead's short name where it has one, so 'Same-Day van' doesn't wrap to two
+      // lines in 3D's 90 px ticket beside one-line neighbours; the full name is its hover text and the round's card.
+      const short = !trait ? ENEMIES[lead].short : undefined;
+      word.textContent = trait ? PROPERTIES[trait].name : (short ?? ENEMIES[lead].name);
+      if (short) word.title = ENEMIES[lead].name;
       // Plan item 511: a trait's pill leads with its icon (the vehicles' own prop artwork), so the ticket reads at a glance
       if (trait) word.prepend(img(propIcon(trait), "trait-icon"));
       b.append(bar, count, word);
