@@ -3344,3 +3344,11 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 @media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
   .cp.cp-swap .cp-sheet[data-casefile] > * { animation: fade-in 220ms ease-out; }
 }
+
+/* Plan item 518: on an upright phone her line is spoken as the stage's subtitle just over the column, so the column's
+   copy of it fades while she speaks (it was shown twice for those 3.2 s, and held in shots); it stays in the page for
+   screen readers, and comes back when the subtitle goes. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp[data-speaking] .cp-line { opacity: 0; transition: opacity 160ms ease; }
+  .cp .cp-line { transition: opacity 260ms ease; }
+}
