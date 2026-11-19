@@ -5124,3 +5124,56 @@ body:has(#dlg-pause[open]) .paused-note {
   pointer-events: none;
   will-change: transform;
 }
+
+/* Plan item 511: at D the round is a convoy: one strip across the ticket, a segment a vehicle type as wide as its share
+   of the round (never narrower than its sprite and count), its sprite and count over a band in the vehicle's livery.
+   No name wraps or runs off the card: the name is the segment's accessible name and its title on hover. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .panel .ticket-chips.convoy {
+    /* one line always (the 3D column, 214 px, wrapped '×20 Pickup' alone); a round of more types than fit scrolls */
+    flex-wrap: nowrap;
+    gap: 3px;
+    padding: 2px 4px 3px 0;
+  }
+  .play .panel .ticket-chips.convoy .preview-chip {
+    flex: var(--share, 1) 0 auto;
+    min-width: 0;
+    max-width: none;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 5px 0 2px;
+    border-radius: 9px;
+    background: var(--card);
+    box-shadow: 0 0 0 1.5px var(--line), inset 0 -4px 0 color-mix(in srgb, var(--seg, var(--line)) 85%, transparent);
+  }
+  .play .panel .ticket-chips.convoy .preview-chip.boss {
+    background: var(--mat-plastic);
+    box-shadow: 0 0 0 1.5px var(--line), inset 0 -4px 0 var(--corp);
+  }
+  .play .panel .ticket-chips.convoy .chip-icon {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    box-shadow: none;
+  }
+  .play .panel .ticket-chips.convoy .chip-n {
+    font: 900 var(--fs-small) / 1 var(--font-ui);
+    white-space: nowrap;
+  }
+  .play .panel .ticket-chips.convoy :is(.chip-tag, .chip-props, .chip-x) {
+    display: none;
+  }
+  .play .panel .ticket-chips.convoy .chip-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .play .panel .ticket-chips.convoy .preview-chip:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+}

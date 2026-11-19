@@ -2026,19 +2026,30 @@ function wavePreview(p: HTMLElement, g: Game): void {
     notes.push(line(rule, "twist-line"));
   }
   const row = document.createElement("ul");
-  row.className = "preview-row ticket-chips";
+  // Plan item 511: the round as a convoy at D: a strip with one segment a vehicle type, as wide as its share of the
+  // round, its sprite over its count on a band in its livery; the name in its accessible name and on hover or focus.
+  row.className = "preview-row ticket-chips convoy";
   // It can scroll sideways on a phone: keyboard users can reach it too.
   row.tabIndex = 0;
   row.setAttribute("aria-label", fleet ? "Vehicles in this round" : "Vehicles in this wave");
+  const convoyTotal = [...seen.values()].reduce((a, v) => a + v.count, 0) || 1;
   for (const { kind, pm, count } of seen.values()) {
     const li = document.createElement("li");
     li.className = "preview-chip" + (isBig(kind) ? " boss" : "");
     const name = fleet ? vehicleName(kind, pm) : ENEMIES[kind].name;
     li.title = `${count} × ${name}`;
+    li.tabIndex = 0;
+    li.setAttribute("aria-label", `${count} ${name}`);
+    li.style.setProperty("--share", (count / convoyTotal).toFixed(3));
+    li.style.setProperty("--seg", livery(kind));
     li.append(img(enemyIcon(kind), "chip-icon"));
     const c = document.createElement("span");
     c.className = "chip-n";
-    c.textContent = `×${count}`;
+    // the '×' its own span: the D convoy drops it to fit a 3D column, the phone's badges keep it
+    const x = document.createElement("span");
+    x.className = "chip-x";
+    x.textContent = "×";
+    c.append(x, String(count));
     const nm = document.createElement("span");
     nm.className = "chip-name";
     nm.textContent = ` ${name}`;
