@@ -5180,7 +5180,19 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: nowrap;
   }
   .play .panel .ticket-chips.convoy .preview-chip:focus-visible {
+    /* inside the segment: the row scrolls, so a ring outside it was clipped */
     outline: 2px solid var(--focus);
-    outline-offset: 2px;
+    outline-offset: -3px;
+  }
+  /* on keyboard focus the segment says its vehicle's name in place of the count (the count is in its name too) */
+  .play .panel .ticket-chips.convoy .preview-chip:focus-visible .chip-n {
+    display: none;
+  }
+  .play .panel .ticket-chips.convoy .preview-chip:focus-visible .chip-name {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+    font: 700 var(--fs-label) / 1.1 var(--font-ui);
   }
 }

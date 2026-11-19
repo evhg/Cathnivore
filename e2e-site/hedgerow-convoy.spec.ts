@@ -36,6 +36,14 @@ for (const [w, h] of [[1440, 900], [1280, 800], [844, 390]] as const) {
       expect(c.right, `${c.label} inside the ticket`).toBeLessThanOrEqual(r.right)
       expect(c.icon, `${c.label} sprite`).toBeGreaterThanOrEqual(w >= 900 ? 28 : 20)
     }
-    if (w >= 900) expect(r.scrolls).toBe(false)
+    if (w >= 900) {
+      expect(r.scrolls).toBe(false)
+      // on keyboard focus a segment says its vehicle's name
+      await chips.first().focus()
+      await page.keyboard.press('Tab')
+      await page.keyboard.press('Shift+Tab')
+      const shown = await page.evaluate(() => (document.activeElement?.querySelector('.chip-name') as HTMLElement | null)?.getBoundingClientRect().width ?? 0)
+      expect(shown, 'the focused segment shows its name').toBeGreaterThan(30)
+    }
   })
 }
