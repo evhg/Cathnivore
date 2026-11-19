@@ -4927,7 +4927,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D of levels 21 and 34, 2D and 3D.
 - **Size:** 2
 
-## 528. [ ] The bugs from the 2026-11-19 12:30 critique, fixed as one batch
+## 528. [ ] The bugs from the 2026-11-19 12:30 critique, fixed as one batch *(lane B, in progress)*
 - `ns-title-D` (585-855 x 858-866): a stray thin rule floats under The List's cards.
 - `hedge-l21-2d-P`/`hedge-l34-2d-P` (0-390 x 55-200): a milky haze over the top of the 2D field. It may be the day's light (item 485): check it, or soften it.
 - `hedge-l21-3d-D` (115-225 x 500-790): the 3D Cath and farmer stand about twice the scale of the beds and house. Item 515 measured them at 1.34 world units: check, and note the decision.
