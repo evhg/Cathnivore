@@ -4608,6 +4608,13 @@ body:has(#dlg-pause[open]) .paused-note {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.round-chip-btn .round-trait .trait-icon {
+  /* plan item 511: the trait's icon at the pill's head, the word's height and a little more */
+  width: 16px;
+  height: 16px;
+  margin-right: 3px;
+  vertical-align: -3px;
+}
 .round-chip-btn .round-lead {
   /* Plan item 403: the same pill as a trait's (edged in the lead's livery), not bare text */
   /* Plan item 378: a vehicle's name wraps onto a second line rather than ending "Same-Day…" */

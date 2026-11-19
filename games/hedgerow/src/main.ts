@@ -2491,6 +2491,8 @@ function fieldIntel(g: Game): HTMLElement {
       // (it was bare text beside its neighbours' pills).
       word.style.setProperty("--trait", trait ? PROPERTIES[trait].colour : livery(lead));
       word.textContent = trait ? PROPERTIES[trait].name : ENEMIES[lead].name;
+      // Plan item 511: a trait's pill leads with its icon (the vehicles' own prop artwork), so the ticket reads at a glance
+      if (trait) word.prepend(img(propIcon(trait), "trait-icon"));
       b.append(bar, count, word);
       b.onclick = () => open(openRound === b.dataset.key ? null : b.dataset.key!);
       chips.push(b);
