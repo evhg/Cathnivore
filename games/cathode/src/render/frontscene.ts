@@ -28,6 +28,11 @@ import { buildFrontWet } from "./frontwet";
 import { buildFrontDiorama, SODIUM } from "./frontdiorama";
 import { buildFrontStreet } from "./frontstreet";
 
+/** Plan item 514: the pick's warm face key a little stronger where the set around her is as bright as her face, so
+ * her face stays the frame's bright point (its mean 1.3x+ the set's, `scripts/cathode-514-face.mjs`): settled at
+ * 1440x900 the Ghost's lit skyline read her face 1.00x, the Butcher's locker 0.93x, the Fixer's bench 1.12x. */
+const FACE_GAIN: Partial<Record<string, number>> = { ghost: 3, butcher: 3, fixer: 2.6 };
+
 export interface FrontSceneOptions {
   quality: Quality;
   intensity: "full" | "reduced";
@@ -558,7 +563,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Plan item 456: the noir toe is the title's; on the pick it eases out with the wardrobe, so the class coats keep
     // their colours apart (under it butcher-fixer read dE 6.7, was 16.7).
     world.setToe?.(TITLE_TOE * (1 - wd.w));
-    faceKey.intensity = (phone ? 2.0 : 2.2) * wd.w;
+    faceKey.intensity = (phone ? 2.0 : 2.2) * wd.w * (FACE_GAIN[world.renderer.domElement.dataset.class ?? ""] ?? 1);
     if (wd.w > 0.002 && !keyRemove && world.liveLight) {
       keyRemove = world.liveLight(key);
       faceKeyRemove = world.liveLight(faceKey);
