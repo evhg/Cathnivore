@@ -5083,7 +5083,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots D, with P unchanged.
 - **Size:** 2
 
-## 535. [ ] Cathnivore desktop table: Cath speaks once, and the ledger shows the round
+## 535. [ ] Cathnivore desktop table: Cath speaks once, and the ledger shows the round *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1119e): Cath's voice is in three places at once:
   - her bubble (352-552 x 200-378) with the event line and a tip;
   - the left rail's Ledger chalkboard (35-315 x 645-800) with a second signed tip ('Sell early, love... — C.');
