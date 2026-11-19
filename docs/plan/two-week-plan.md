@@ -5039,7 +5039,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 533. [ ] Cathnivore desktop Setup: every choice an object on the stall, not a form field
+## 533. [ ] Cathnivore desktop Setup: every choice an object on the stall, not a form field *(lane A, in progress)*
 - **Why:** `cath-setup-D` (plan1119e) 95-375 x 110-800: around item 502/507's opening table, the left column is a stack of form controls:
   - two tab buttons (105-255 x 115-215);
   - three list rows with tiny hex thumbnails (105-370 x 258-435);
