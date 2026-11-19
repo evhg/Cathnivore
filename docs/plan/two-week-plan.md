@@ -4842,7 +4842,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** no chapter text ends in an ellipsis at D (1440x900 and 1280x800); selecting a chapter changes the map's spotlit regions (a class on them, spec); at 390x844 the selected panel is 160 px+ tall with Cath in it; tutorial and campaign specs pass; shots P and D.
 - **Size:** 2
 
-## 523. [ ] The bugs from the 2026-11-19 09:15 critique, fixed as one batch
+## 523. [ ] The bugs from the 2026-11-19 09:15 critique, fixed as one batch *(lane A, in progress)*
 - `cath-game-P` (125-225 x 695-750): 'Buy Harbour Stall Licence' runs into the price badge and the 'i'.
 - `cath-setup-D` (108-125 x 520-540): the Easy/Hard radio dots clipped; (143-340 x 448-500) 'How hard Hollowell pushes' wraps where steps 1-2 are one line.
 - `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the bottom edge (also in 512: check the safe-area padding).
