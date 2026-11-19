@@ -5118,7 +5118,20 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D.
 - **Size:** 1
 
-## 537. [ ] The bugs from the 2026-11-19 17:35 critique, fixed as one batch *(lane B, in progress)*
+## 537. [x] The bugs from the 2026-11-19 17:35 critique, fixed as one batch *(done 2026-11-19 17:45, lane B, in `5f0dc81`.
+  **Fixed:**
+  - Hedgerow's lane tag keeps off the depots (key art re-shot).
+  - The D level card's docked rows drop the driver's face (crowded).
+  - Runnel's footer hint stands down during the first-field lesson.
+  - Portfolio says 48 build sessions a day (two lanes).
+
+  **Checked, kept:**
+  - `cath-campaign-P`: Cath stands behind her stall's crates on the map frame by design.
+  - `cath-setup-D`: she holds the market sign (her hand on its edge), not covered by it.
+
+  **Not done, noted for the figure (shared/cath, item 524):** the cream trousers' tone and knee lines.
+
+  runnel board/lesson-*/scale, portfolio-*, hedgerow gatequeue/convoy/critique/level-card pass (P, D, --retries=0).)*
 - `hedge-l34-2d-D` (165-260 x 205-225): the 'Box Lorry' lane tag is drawn under the upper Hollowell depot, only its foot showing.
 - `portfolio-D`: the studio strip's '43 sessions in the last 24 hours' (282-695 x 728-745) contradicts the stat '24 Build sessions a day' (213-375 x 865-890) now there are two lanes.
 - `portfolio-D` (1290-1365 x 400-555) / `runnel-D` (445-505 x 715-835): Cath's cream trousers are skin-toned with knee lines, so at this size her legs read bare. Use a darker trouser tone (item 524's figure).
