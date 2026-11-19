@@ -4958,7 +4958,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 ## 529. [x] Hedgerow: Hollowell's fleet gets faces, a first-sighting reveal, and a Fleet page in the Almanac *(done 2026-11-19 16:45, lane B, slices 1-4 `818db4f`, `79e4e69`, `1ec88eb` and the lane-tag commit after it.
   - **Faces:** `fleetfaces.ts` draws all 39 vehicles' drivers in Hollowell's livery (navy jacket, orange collar, H badge, the corporate grin) with their job's prop (headset, ring light, tie, hard hat, goggles, crown...) and a slogan each (unit test: every kind drawn, slogans unique, 8+ props).
   - **Where they show:** item 64's first-sighting page (the reveal, its hold and the save's `seen` already existed: no migration needed) pins the driver's mugshot to the sketch and prints the slogan. The Almanac's Enemies and Bosses cards carry the mugshot and the slogan as lore; unmet ones stay '???'. The level card's briefing rows show the driver's face on each portrait (heights unchanged). The 2D lane's name tag leads with the face (key art re-shot).
-  - **Deviation:** the 3D field's own name tags (render3d) are unchanged; the DOM pages carry the faces in both renderers.
+  - **3D:** the 3D field's name tag (item 410, DOM) leads with the face too (slice 5).
   - **Specs:** hedgerow-intro, -tower-lineup, -map, -level-card, -map-you, -critique*, -ledger, -gatequeue, -convoy pass (P, D, --retries=0).
   - **Shots:** scratchpad h529-*.)*
 - **Why:**
