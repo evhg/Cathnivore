@@ -71,6 +71,7 @@ import {
   setShadowSun,
 } from "./sprites";
 import { dayLamps, dayPhase, dayShadowDir, dayShadowLength, daySunRgb, dayWarmth } from "./sunlight";
+import { driverFace } from "./fleetfaces";
 
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
 // Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
@@ -1237,7 +1238,7 @@ export class Renderer {
                 // ...and off Cath's figure.
                 const hp = this.heroPx();
                 const cath = { x: X(game.hero.x) - hp.w / 2, y: Y(game.hero.y) - hp.h, w: hp.w, h: hp.h + s * 0.3 };
-                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath], behind, plots());
+                const r = this.namePlate(ctx, ENEMIES[kind].name, box, s, [...shown.leads, ...shown.plates, cath], behind, plots(), this.driverImg(kind));
                 if (r) shown.names.push(r);
               },
             });
@@ -1931,12 +1932,26 @@ export class Renderer {
   /** The count plate at the gate: "12 coming" on a paper pill, kept on the canvas. */
   /** Plan item 256: a Hollowell name tag by the queue's lead, on the first side (above, below, beside) that clears
    *  the other leads and plates and stays in the canvas; none if no side does. */
-  private namePlate(ctx: CanvasRenderingContext2D, name: string, lead: Rect, s: number, avoid: Rect[], behind?: Rect, plots: Rect[] = []): Rect | null {
+  /** Plan item 529: the driver's face (fleetfaces.ts) as an image for the lane's name tag, once it has loaded. */
+  private driverImg(kind: EnemyKind): HTMLImageElement | null {
+    if (typeof Image === "undefined") return null;
+    let im = this.drivers.get(kind);
+    if (!im) {
+      im = new Image();
+      im.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(driverFace(kind))}`;
+      this.drivers.set(kind, im);
+    }
+    return im.complete && im.naturalWidth > 0 ? im : null;
+  }
+  private drivers = new Map<EnemyKind, HTMLImageElement>();
+  private namePlate(ctx: CanvasRenderingContext2D, name: string, lead: Rect, s: number, avoid: Rect[], behind?: Rect, plots: Rect[] = [], face: HTMLImageElement | null = null): Rect | null {
     const fs = Math.max(13, Math.round(s * 0.19));
     ctx.save();
     ctx.font = `700 ${fs}px ${FONT}`;
-    const w = ctx.measureText(name).width + fs * 1.2;
     const h = fs * 1.55;
+    // Plan item 529: the tag leads with its driver's face, a round mugshot inside its left end.
+    const facew = face ? h - 2 : 0;
+    const w = ctx.measureText(name).width + fs * 1.2 + facew;
     const g = 3;
     const gs = g + lead.w * 0.25;
     const cx = lead.x + lead.w / 2;
@@ -1981,10 +1996,21 @@ export class Renderer {
       ctx.arc(r.x + r.w <= lead.x ? lx1 : lx0, r.y + r.h / 2, 2.5, 0, Math.PI * 2);
       ctx.fill();
     }
+    if (face) {
+      const d = r.h - 4;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(r.x + 2 + d / 2, r.y + 2 + d / 2, d / 2, 0, Math.PI * 2);
+      ctx.fillStyle = "#e4d6b8";
+      ctx.fill();
+      ctx.clip();
+      ctx.drawImage(face, r.x + 2, r.y + 2, d, d);
+      ctx.restore();
+    }
     ctx.fillStyle = "#f4fbfb";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(name, r.x + r.w / 2, r.y + r.h / 2 - 0.5);
+    ctx.fillText(name, r.x + facew + (r.w - facew) / 2, r.y + r.h / 2 - 0.5);
     ctx.restore();
     return r;
   }
