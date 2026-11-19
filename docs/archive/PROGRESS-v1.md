@@ -4223,3 +4223,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-19 01:21 lane B: 511 slices 1-3 and done; hedgerow-convoy (new), tray, round-chips, rack, rack-roles, level-card, critique79 Hedgerow (P, D, --retries=0) pass; shots 2D/3D at 1440, 1280, 844x390.
 - 2026-11-19 02:22 lane B: 515 slices 1-2; 3dframe, closeframe, shadow3d, attack (P, D, --retries=0), render3d/roles unit tests (257), drawcalls unchanged; shots h515*.
 - 2026-11-19 03:21 lane B: E2E red fixed (hedgerow-ledger); 515 slice 3 and done; 517 done; hedgerow ledger/critique/convoy/tray/round-chips, 3dframe/closeframe/shadow3d/attack, /games/ site specs (P, D, --retries=0) pass.
+- 2026-11-19 04:21 lane B: 516 slices 1-3 and done (key art re-shot); 518 three points; every Runnel site spec, cathode-front List/mugshot, cathode-classpick (P, D, --retries=0), keyart-fresh pass.

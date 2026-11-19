@@ -4927,7 +4927,19 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D of levels 21 and 34, 2D and 3D.
 - **Size:** 2
 
-## 528. [ ] The bugs from the 2026-11-19 12:30 critique, fixed as one batch *(lane B, in progress)*
+## 528. [x] The bugs from the 2026-11-19 12:30 critique, fixed as one batch *(done 2026-11-19 12:50, lane B, `13c14c5`: **fixed:**
+  - `cath-game-D`'s Not yet pile now stands beside the hand: the hand ends 76 px short of the rail's fixed pile, last card 1332 against the pile's 1346 at 1440, 1172 against 1186 at 1280.
+  - `cath-setup-D`'s 'Injunction' fits its stamp (type closed up; it ran 1-2 px past the border).
+
+  **Checked, kept:**
+  - `ns-title-D`'s rule is in the rendered street (only the canvas is under it, no DOM rule).
+  - `cath-title-P`'s wave passes behind the board preview's card, a layering, not a clash.
+  - The 2D haze is item 497's deliberate veil over the margins (render.ts, a key-art source).
+  - The 3D figures' scale was measured and kept in item 515 (farmers 1.34 units on 1-unit plots).
+
+  **Moved:** `games-D`'s four alike Caths go with item 524's poses.
+
+  Specs: desktop-no-scroll, hand-art, hand-painted, hand-shelf, action-hand, critique104/166/177 and setup-* pass (D, --retries=0). critique107's 'space after Need' fails locally on the unchanged build too (CI green on 4949812).)*
 - `ns-title-D` (585-855 x 858-866): a stray thin rule floats under The List's cards.
 - `hedge-l21-2d-P`/`hedge-l34-2d-P` (0-390 x 55-200): a milky haze over the top of the 2D field. It may be the day's light (item 485): check it, or soften it.
 - `hedge-l21-3d-D` (115-225 x 500-790): the 3D Cath and farmer stand about twice the scale of the beds and house. Item 515 measured them at 1.34 world units: check, and note the decision.
