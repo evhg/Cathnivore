@@ -2541,7 +2541,7 @@ float reliefShade( vec2 uv ) {
           const crook = Math.max(0, Math.cos(a - Math.PI * 0.3));
           const point = Math.max(0, -Math.cos(a - Math.PI * 0.35));
           const bunch = Math.pow(Math.abs(Math.sin((s - sE) * 90 + 0.6 * Math.cos(a))), 0.5);
-          const r = r0 * (1 + nearE * (0.085 * crook * bunch + 0.06 * point * point) + drag * 0.045 * Math.pow(Math.abs(Math.sin(a * 2.5 + (s - sE) * 26)), 0.6));
+          const r = r0 * (1 + nearE * (0.15 * crook * bunch + 0.06 * point * point) + drag * 0.06 * Math.pow(Math.abs(Math.sin(a * 2.5 + (s - sE) * 26)), 0.6));
           o.copy(n).multiplyScalar(Math.cos(a)).addScaledVector(b, Math.sin(a));
           const k = (i * (R + 1) + j) * 3;
           pos[k] = c.x + o.x * r;
