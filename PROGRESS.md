@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (03:52 11-19): the phone project's 11 red specs green (1b826c3b: Setup-board race, item 513/507 design, plus real fixes: the phone event pennant off the top hexes, the 1280 memos whole). 513 done (59d40c83: the event a pennant on the opening board, board 352x335 at 390x844). 518: Same-Day pill (5c8eb790), two points checked; handed back. Full `npm run check` passed (2802).
+- Lane A (04:51 11-19): item 510 slice 1 (fcb54260: the title's far wall a lit Hollowell shop, a passer-by, a headlight sweep, an OPEN tube, a café on the facade); handed back with P and the t 8 framing left. Ran over time (lock released 06:05).
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 04:51 lane A session:** 510 slice 1. cathode-title-ambient (new, 3 sizes + reduced motion), cathode-title-focal (D, --retries=0) pass; keyart-fresh after re-rendering posters and key art; title perf 197 calls; tsc, eslint. cathode-front/-title-diorama not run (stopped for time). No full check. Shots scratchpad s510 (b0 poster before, a2-a5 live after).
 - 2026-11-19 05:21 lane B: 518 and 496 done, 514 slice 1; setup/quick-game, hedgerow map/map-you/masthead/ambient/level-card, cathode-setprops/classpose (P, D, --retries=0) pass.
 - 2026-11-19 04:21 lane B: 516 slices 1-3 and done (key art re-shot); 518 three points; every Runnel site spec, cathode-front List/mugshot, cathode-classpick (P, D, --retries=0), keyart-fresh pass.
 - **2026-11-19 03:52 lane A session:** phone e2e reds fixed; 513 done; 518 slice. ability-moment/-preview, cath-beats, market-event-dressing, phone-hand-held, plan-cards, producer-faces, plan-strip, tooltip, desktop-no-scroll, papers-placard, setup-*, quick-game (P, D, --retries=0); hedgerow-round-chips/-convoy/-critique (P, D, 25), Hedgerow units (733); css lint, critical-css, keyart-fresh; full `npm run check` passed (2802). Shots scratchpad ph, s513c, h518. Lock released.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-18 23:21 lane B: E2E red fixed (two cathode-front specs, reproduced and passing locally; cathode-front + title-focal D 25 pass); 496 slice 4; hedgerow map/masthead/ambient/level-card (P, D, 62) pass.
 - **2026-11-18 22:51 lane A session:** 505 slices 2-3 and done. cathode-title-focal (new, D 2), frontpage, listwall, list-strike (P, D), cathode-front face/logotype/dossier/List (P, D); keyart-fresh after re-rendering posters and key art; paper-cover D 0.3%; css lint, cathode-type, eslint, tsc. No full check. Lock released. Shots scratchpad s505.
 - 2026-11-18 22:21 lane B: 506 slices 5-6 and done; render3d unit tests and keyart-fresh (168), Hedgerow growth/3dframe/closeframe/water/biome3d/shadow3d (P, D, 47 twice), 486 measure l5/21/34/40, drawcalls before/after.
-- **2026-11-18 21:51 lane A session:** 504 slice 3 and done, 505 slice 1. classpick, armoury, testfire (P, D, 23), frontpage, listwall, list-strike (P, D, 5); cathode-perf alone; css lint, cathode-type, keyart-fresh. No full check. Lock released. Shots scratchpad s504, s505.
