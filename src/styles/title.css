@@ -1247,8 +1247,8 @@ html.no-animations .title-screen * {
    slate: today's number large in chalk, the last result and its stamp, the pennants and the goal, the next Daily's
    countdown. One object, one focal number (the receipt, the slate tag and the card were three stray widgets). */
 @media (min-width: 1024px) {
-  /* clear of her figure's box (it runs on under the counter to 50% + 126 px) */
-  .daily-ritual:not(.is-compact) { align-items: flex-start; left: calc(50% + 132px); }
+  /* clear of her figure's box (it runs on under the counter to 50% + 134 px at 1280x800) */
+  .daily-ritual:not(.is-compact) { align-items: flex-start; left: calc(50% + 138px); }
 }
 .ritual-board {
   --chalk: var(--wood-ink);
@@ -2077,3 +2077,15 @@ html.no-animations .title-screen * {
 html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .title-cath-line { animation: none !important; }
 /* Plan item 518: the Daily tag's event name breaks as a whole ('Dry / Spell' left 'Spell' alone on its line). */
 .title-daily-event-name { white-space: nowrap; }
+/* Plan item 523: above a phone the Daily tag reads two set lines, where and who, then the event and when ('Dry Spell ·
+   Open · 15h left'); the event wrapping alone made three cramped lines. */
+@media (min-width: 601px) {
+  .title-menu .title-daily small { display: flex; flex-wrap: wrap; justify-content: center; }
+  .title-menu .title-daily small > .title-daily-where { display: contents; }
+  .title-menu .title-daily small::after { content: ''; flex-basis: 100%; order: 1; }
+  .title-menu .title-daily .title-daily-event { order: 2; font-size: 0; margin-right: 0.3rem; }
+  .title-menu .title-daily .title-daily-event-name { font-size: var(--fs-caption); }
+  /* the dot binds to the event (item 296), so a narrow tag breaks 'Dry Spell ·' / 'Open · 14h left' */
+  .title-menu .title-daily .title-daily-event-name::after { content: '\00a0·'; }
+  .title-menu .title-daily small > .title-daily-when { order: 2; }
+}
