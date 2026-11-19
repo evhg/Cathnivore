@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (17:51 11-19): 533 done (the D Setup's choices as objects); 535 done (ledger figures only, Cath's tip queued in her one bubble at 1280x800). Lock released.
+- Lane A (18:51 11-19): 536 done (the NIGHT SHIFT D title menu as the Ledger's index; Continue absent with no save, a clipped tag with one). Open plan items: 319, 471, 526 (fewer than 3 unclaimed after the next one is taken: plan). Lock released.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 18:51 lane A session:** 536 done. cathode-front (menu, class pick, neon, DPR; P and D, alone with --retries=0; a 3-worker run of cathode-front/-frontpage/-office was cut short, 3 load fails all passing alone), cathode-type, css lint, cathode-menu, keyart-fresh; tsc, eslint. No full check (one ran 17:51). Shots `e2e/screenshots/menu536`. Lock released.
 - **2026-11-19 17:51 lane A session:** 533 done (place settings, folded maps, Hollowell memos, pins on a ribbon; new setup-objects spec); 535 done (the ledger's tip gone, tips only from her bubble, queued after her line on a short table; new table-one-voice spec). setup-*, layouts, board-diorama, accessibility, suggest-move, ledger-ink, turn-show, boardroom (P, D, --retries=0); tsc, eslint, css lint; 536 claimed and handed back with pointers; full `npm run check` passed (2817). Shots scratchpad before-/a4-/g1-. Lock released.
 - 2026-11-19 18:21 lane B: 534 done with deviations (prints 290 px, bubble at the wall's foot); found and fixed the headline box swallowing the NIGHT SHIFT print's hover; portfolio-* pass (P, D, --retries=0).
 - 2026-11-19 17:21 lane B: E2E red fixed (critique104 measured NIGHT SHIFT's poster off screen in item 530's shelf); planning 533-537 (Setup as objects, portfolio gallery host, Cath one voice + ledger receipt, NIGHT SHIFT menu as paper, bugs); 537 done (lane tag off the depots, Runnel lesson hint, 48 sessions a day). Specs P/D pass (--retries=0).

@@ -22,8 +22,9 @@ test.describe('CATHODE front door', () => {
     await open(page, hasTouch)
     const items = page.locator('#menu .menu-item')
     await expect(items).toHaveCount(5)
-    // No save: CONTINUE keeps its row but is off; focus starts on NEW CASE.
+    // No save (plan item 536): CONTINUE is absent (off and hidden; focus steps over it); focus starts on NEW CASE.
     await expect(page.locator('#btn-continue')).toBeDisabled()
+    await expect(page.locator('#btn-continue')).toBeHidden()
     await expect(page.locator('#btn-begin')).toHaveClass(/is-focus/)
     const ticks = () => page.evaluate(() => (window as unknown as Front).cathodeFront!.ticks)
     const t0 = await ticks()
@@ -287,9 +288,9 @@ test('the neon sign reads clear of her on the title and the class pick', async (
 })
 
 
-// Plan item 159: the menu is a sign: a shut slot says why (aria-disabled, a visible reason), the lit row follows the
-// arrow keys within 250 ms, and upright the plate stays clear of her body (the umbrella's canopy aside).
-test('the front menu is a sign: lit by the keys, a shut slot says why, clear of her upright', async ({ page, hasTouch }) => {
+// Plan items 159 and 536: the menu is lit by the keys (the lit row follows the arrows within 250 ms), Continue is absent with no save, at D its
+// ground is opaque paper with a grease-pencil stroke under the lit entry, and upright the plate stays clear of her body.
+test('the front menu: lit by the keys, no dead Continue, paper at D, clear of her upright', async ({ page, hasTouch }) => {
   test.setTimeout(200_000)
   const upright = hasTouch
   await page.setViewportSize(upright ? { width: 390, height: 844 } : { width: 1440, height: 900 })
@@ -297,11 +298,20 @@ test('the front menu is a sign: lit by the keys, a shut slot says why, clear of 
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })) })
   await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
   await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  // Plan item 536 (reverses item 159's reserved row): with no save Continue is absent, not a dead row.
   const cont = page.locator('#btn-continue')
   await expect(cont).toHaveAttribute('aria-disabled', 'true')
-  await expect(cont.locator('.menu-why')).toBeVisible()
-  await expect(cont.locator('.menu-why')).toHaveText('No case open')
+  await expect(cont).toBeHidden()
   await expect(page.locator('#menu')).toHaveAttribute('data-lit', 'new')
+  if (!upright) {
+    // At D the menu is the paper's index: an opaque newsprint ground, no see-through glass.
+    const ground = await page.locator('#menu').evaluate((e) => {
+      const cs = getComputedStyle(e)
+      return { bg: cs.backgroundColor, blur: cs.backdropFilter }
+    })
+    expect(/rgba|\/|transparent/.test(ground.bg), JSON.stringify(ground)).toBe(false) // opaque (rgb() or color(srgb ...), no alpha)
+    expect(ground.blur === 'none' || ground.blur === '', JSON.stringify(ground)).toBe(true)
+  }
   await page.locator('#btn-begin').focus()
   for (const next of ['cases', 'settings']) {
     const t0 = Date.now()
@@ -309,6 +319,15 @@ test('the front menu is a sign: lit by the keys, a shut slot says why, clear of 
     await expect(page.locator('#menu')).toHaveAttribute('data-lit', next, { timeout: 250 })
     expect(Date.now() - t0).toBeLessThan(400)
     await expect(page.locator(`#menu [data-slot="${next}"]`)).toHaveAttribute('data-lit', '')
+    if (!upright) {
+      // Plan item 536: the grease-pencil stroke follows the keys within 200 ms (scaleX 0 -> 1 over 170 ms).
+      await page.waitForTimeout(200)
+      const drawn = await page.locator(`#menu [data-slot="${next}"] .menu-label`).evaluate((e) => {
+        const t = getComputedStyle(e, '::after').transform
+        return t === 'none' ? 1 : new DOMMatrix(t).a
+      })
+      expect(drawn).toBeGreaterThan(0.97)
+    }
   }
   if (upright) {
     type B = { left: number; top: number; right: number; bottom: number }

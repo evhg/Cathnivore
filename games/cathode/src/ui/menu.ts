@@ -1,6 +1,6 @@
 // C13 (docs/design/cathode-combat.md S9.1, S9.4): the front door's menu. One focus, shared by the mouse, the
 // keys (arrows, WASD, Enter, Space, Escape) and a gamepad (d-pad or left stick, A, B). The slots are fixed:
-// a disabled slot keeps its row (CONTINUE stays reserved without a save) and focus steps over it. Every focus
+// a disabled slot is stepped over (plan item 536: the page hides CONTINUE without a save, so it is off and unseen). Every focus
 // change calls `tick` once (the UI tick); a move that lands where it started calls nothing.
 //
 // The model is pure (tested in tests/cathode-menu.test.ts); `bindMenu` wires it to buttons in the DOM.

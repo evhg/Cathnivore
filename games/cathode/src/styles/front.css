@@ -1712,3 +1712,138 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
     box-shadow: calc(var(--u) * 3) calc(var(--u) * 5) calc(var(--u) * 6) rgb(var(--black-rgb) / .55);
   }
 }
+
+/* Plan item 536: Continue is absent with no save (a [hidden] button would otherwise keep its inline-flex row); the
+   index's masthead and page refs are print only, shown at D. Upright and sideways, an open case's tag line stays
+   off the row (it keeps item 159's one-line sign). */
+.menu-item[hidden], .menu-mast { display: none; }
+.menu-item:enabled .menu-why { display: none; }
+
+/* Plan item 536: at D the menu is the morning paper's index, a cutting of the Ledger's newsprint pinned to the wall
+   beside its front page: a small masthead ('Inside, tonight's edition'), the entries in the paper's heavy condensed
+   ink with section refs flush right and hairlines between, and a red grease-pencil stroke under the entry in focus
+   (it draws in 170 ms; a fade under reduced motion). An open case is a manila tag clipped over its head. Graded like
+   the Ledger (item 505) so it doesn't outshine her face, the ink kept dark enough for AA on the graded paper. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .menu {
+    --news: color-mix(in srgb, var(--card-paper) 84%, rgb(var(--white-rgb)));
+    --news-ink: var(--card-ink);
+    --grease: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9.5C34 7 70 9.8 104 8.2S170 6 197 5.2' fill='none' stroke='%23000' stroke-width='5.5' stroke-linecap='round'/%3E%3Cpath d='M8 11.2C52 9.6 118 10.4 186 7.4' fill='none' stroke='%23000' stroke-opacity='.55' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    justify-items: stretch;
+    min-width: calc(var(--u) * 300);
+    margin-left: calc(var(--u) * -16);
+    padding: calc(var(--u) * 14) calc(var(--u) * 22) calc(var(--u) * 12);
+    border-radius: 0;
+    background:
+      linear-gradient(100deg, rgb(var(--white-rgb) / .16), transparent 42%, rgb(var(--black-rgb) / .1)),
+      var(--grain),
+      var(--news);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: calc(var(--u) * 4) calc(var(--u) * 10) calc(var(--u) * 24) rgb(var(--black-rgb) / .55);
+    filter: brightness(.8) saturate(.9);
+    rotate: -1.4deg;
+  }
+  /* rows sized by their type (item 159's fixed sign rows, raised for short screens, would clip the tag) */
+  .menu, .title-col .menu { grid-auto-rows: auto; }
+  /* the pin, the Ledger's red push pin */
+  .menu::after {
+    content: ""; position: absolute; z-index: var(--z-lift); top: calc(var(--u) * -8); left: 50%;
+    width: calc(var(--u) * 16); height: calc(var(--u) * 16); margin-left: calc(var(--u) * -8); border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--blood) 45%, rgb(var(--white-rgb))) 0 18%, var(--blood) 45%, color-mix(in srgb, var(--blood) 55%, rgb(var(--black-rgb))) 100%);
+    box-shadow: calc(var(--u) * 3) calc(var(--u) * 5) calc(var(--u) * 6) rgb(var(--black-rgb) / .55);
+  }
+  .menu-mast {
+    display: flex; align-items: baseline; justify-content: space-between; gap: calc(var(--u) * 14);
+    margin: 0 0 calc(var(--u) * 4);
+    padding-bottom: calc(var(--u) * 5);
+    border-bottom: calc(var(--u) * 2) solid var(--news-ink);
+    color: var(--news-ink);
+  }
+  .menu-mast b { font: 900 var(--fs-2) / 1 var(--font-ui); font-stretch: var(--wdth-head); letter-spacing: .06em; text-transform: uppercase; }
+  .menu-mast i { font: italic 600 var(--fs-2) / 1 var(--font-voice); }
+  .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: calc(var(--u) * 24);
+    height: auto;
+    min-height: 0;
+    padding: calc(var(--u) * 11) 0 calc(var(--u) * 9);
+    border-top: calc(var(--u) * 1) solid color-mix(in srgb, var(--news-ink) 40%, transparent);
+    font-weight: 900;
+    font-stretch: var(--wdth-head);
+    font-size: var(--fs-4);
+    line-height: 1;
+    letter-spacing: .01em;
+    color: var(--news-ink);
+    text-shadow: none;
+  }
+  .menu-mast + .menu-item, .menu-item[hidden] + .menu-item { border-top: 0; }
+  .menu-item::before { display: none; }
+  .menu-item::after {
+    content: attr(data-page);
+    font: 700 var(--fs-2) / 1 var(--font-ui);
+    font-stretch: var(--wdth-label);
+    letter-spacing: .06em;
+    color: color-mix(in srgb, var(--blood) 72%, var(--news-ink));
+  }
+  .menu-item[data-lit] { color: var(--news-ink); text-shadow: none; animation: none; }
+  .menu-label { position: relative; }
+  .menu-label::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--u) * -6);
+    right: calc(var(--u) * -10);
+    bottom: calc(var(--u) * -9);
+    height: calc(var(--u) * 11);
+    background: var(--blood);
+    -webkit-mask: var(--grease) 0 0 / 100% 100% no-repeat;
+    mask: var(--grease) 0 0 / 100% 100% no-repeat;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 170ms cubic-bezier(.3, .6, .2, 1);
+  }
+  .menu-item[data-lit] .menu-label::after { transform: scaleX(1); }
+  .menu-item.is-confirm { color: var(--on-blood); background: var(--blood); }
+  .menu-item.is-armed, .menu-item.is-armed[data-lit] { color: color-mix(in srgb, var(--blood) 80%, var(--news-ink)); }
+  /* An open case: a manila tag clipped over the index's head, typed with the lead it reopens. */
+  .menu-item[data-slot="continue"]:enabled {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--u) * 14);
+    /* clipped over the card's top edge (half above it), so the index keeps its height and clears THE LIST */
+    margin: calc(var(--u) * -34) calc(var(--u) * -8) calc(var(--u) * 4);
+    padding: calc(var(--u) * 10) calc(var(--u) * 14) calc(var(--u) * 12);
+    border: 0;
+    background: var(--grain), color-mix(in srgb, var(--card-paper) 66%, var(--cork-hi));
+    box-shadow: calc(var(--u) * 2) calc(var(--u) * 4) calc(var(--u) * 8) rgb(var(--black-rgb) / .4);
+    rotate: 1.6deg;
+  }
+  .menu-item[data-slot="continue"]:enabled + .menu-item { border-top: 0; }
+  /* with the tag on its head the index drops its masthead (the tag is the edition's news) */
+  .menu:has(.menu-item[data-slot="continue"]:enabled) .menu-mast { display: none; }
+  /* and the clip holds it, so the push pin (which would sit on the tag's word) goes */
+  .menu:has(.menu-item[data-slot="continue"]:enabled)::after { display: none; }
+  .menu-item[data-slot="continue"]::after {
+    content: "";
+    position: absolute; top: calc(var(--u) * -12); right: calc(var(--u) * 26);
+    width: calc(var(--u) * 12); height: calc(var(--u) * 34);
+    border: calc(var(--u) * 2.5) solid color-mix(in srgb, var(--ink-3) 70%, rgb(var(--white-rgb)));
+    border-radius: calc(var(--u) * 6);
+  }
+  .menu-item[data-slot="continue"]:enabled .menu-why {
+    display: block;
+    margin: 0;
+    font: 700 var(--fs-2) / 1 var(--font-ui);
+    font-stretch: var(--wdth-label);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--blood) 72%, var(--news-ink));
+  }
+  .menu-hint { color: var(--ink-2); }
+}
+@media (min-width: 900px) and (min-height: 521px) and (prefers-reduced-motion: reduce) {
+  .menu-label::after { transform: none; opacity: 0; transition: opacity 160ms linear; }
+  .menu-item[data-lit] .menu-label::after { transform: none; opacity: 1; }
+}

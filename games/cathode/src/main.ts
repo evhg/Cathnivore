@@ -24,7 +24,7 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, openLead, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { OPENER_MS, openerHour, playOpener } from "./ui/opener";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
@@ -477,11 +477,15 @@ function fillTitle(): void {
     if (i === open) li.dataset.open = "";
   });
   stringWall(wall, open);
-  // Plan item 159: a slot that can't be used says why, on the sign itself.
+  // Plan item 536 (reverses item 159's reserved row): Continue shows only with a case open, as a tag naming the
+  // open lead; with no save it is absent, so the menu has no dead row.
   const cont = $<HTMLButtonElement>("btn-continue");
   cont.disabled = !hasSave();
+  cont.hidden = cont.disabled;
   cont.setAttribute("aria-disabled", String(cont.disabled));
-  $("continue-why").hidden = !cont.disabled;
+  const why = $("continue-why");
+  why.textContent = hasSave() ? (canStartNewGamePlus(done) ? "The List is closed" : (openLead(done) ?? "The case")) : "";
+  why.hidden = !hasSave();
   // Plan item 12: the board opens on a fresh save too, as a teaser (one lead, five blank prints).
   $<HTMLButtonElement>("btn-cases").disabled = false;
   const ng = hasSave() && canStartNewGamePlus(done);

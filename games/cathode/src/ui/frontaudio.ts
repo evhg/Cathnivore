@@ -1,7 +1,7 @@
 // C13 (docs/design/cathode-combat.md S9.2, S9.4, S10 "Front door: ui and music"): the front door's sound, all
 // synthesised. The ambience bed is a 60 Hz city rumble, the pier sign's 120 Hz hum (with its 2nd and 3rd
 // harmonics) and a minor pad of two detuned saws low-passed at 900 Hz that changes chord every 8 s (Am, Fmaj7,
-// Dm9, E7sus). The UI sounds are the focus tick (1.2 kHz sine plus noise, 25 ms, -22 dB) and the confirm (two
+// Dm9, E7sus). The UI sounds are the focus tick (a typewriter key: a 180 Hz thump and a band of noise, 22 ms, -22 dB) and the confirm (two
 // sines a fifth apart for 70 ms and a sub thump); the push into the street is a saw swell (200 Hz to 2 kHz).
 //
 // Browsers start audio only after a gesture: `wake()` runs on the first key, click or tap, and the bed fades in
@@ -273,31 +273,37 @@ export class FrontAudio {
     window.setTimeout(() => b.disconnect(), s * 1000 + 200);
   }
 
-  /** The focus tick: a 1.2 kHz sine and a breath of noise, 25 ms, at -22 dB. */
+  /**
+   * The focus tick (plan item 536: the menu is the paper's index, so the tick is a typewriter key): a low thump
+   * of the type bar (180 Hz, falling) under a bright band of noise for the strike, 22 ms, at -22 dB.
+   */
   tick(): void {
     const c = this.ctx;
     if (!c || !this.ui || !this.awake) return;
     const now = c.currentTime;
     const g = c.createGain();
     g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(db(-22), now + 0.002);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+    g.gain.linearRampToValueAtTime(db(-22), now + 0.001);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
     g.connect(this.ui);
     const o = c.createOscillator();
-    o.frequency.value = 1200;
+    o.type = "triangle";
+    o.frequency.setValueAtTime(180, now);
+    o.frequency.exponentialRampToValueAtTime(90, now + 0.02);
     o.connect(g);
     o.start(now);
     o.stop(now + 0.03);
     const n = this.noiseSrc();
     if (n) {
-      const hp = c.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 4000;
+      const bp = c.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 2800;
+      bp.Q.value = 1.4;
       const ng = c.createGain();
-      ng.gain.value = 0.35;
-      n.connect(hp).connect(ng).connect(g);
+      ng.gain.value = 0.9;
+      n.connect(bp).connect(ng).connect(g);
       n.start(now);
-      n.stop(now + 0.03);
+      n.stop(now + 0.025);
     }
   }
 
