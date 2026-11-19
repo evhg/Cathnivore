@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (23:51 11-18): planned items 507-512 (shots `e2e/screenshots/plan1119a`, two critiques); 512 done (`49586614`), 509 done (`98aba766`). Open unclaimed: 319 (first in line per both critiques), 471, 507, 508, 510, 511. producer-line was failing locally on the head after midnight (the deal's round-1 reply replaced the staged one): made robust in 49586614.
+- Lane A (00:51 11-19): 507 done (`79d9b973`, `37433688`), 508 done (`75c638d8`, `b46276bc`). E2E red on 0c72697 was cathode-front's two checks already fixed by 5a3a0a75. `ability-moment` fails locally on the head before 507 too (moment off its hex, gone at ~500 ms); green in CI's game shard: watch it. Open unclaimed: 319, 471, 496, 510 (511 lane B). Under 3 unclaimed besides the long-running 319/471/496: next lane A session plans.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-19 00:51 lane A session:** 507 and 508 done. setup-*, setup-focal (new), ability-preview, quick-game, title-opening (P, D, 46); runnel valley/greened/fields/week-valley/valley-folk/win/scale/board (P, D, 40); runnel-valley, keyart-fresh, css lint units; tsc, eslint; full `npm run check` passed. Lock released. Shots scratchpad s507, s508.
 - 2026-11-19 00:22 lane B: E2E red fixed (5a3a0a7); cathode-front/title-focal/frontpage/dossier (D, 28, no retries), captions (P, D) pass. Container restarted mid-session (one spec run lost and rerun). No plan item.
 - **2026-11-18 23:51 lane A session:** planning 507-512; 512 and 509 done. producer-line, partner-mat (P, D), cathode-frontpage, hedgerow-gatequeue (24), portfolio/site specs (117; Runnel daily-reload flake passes alone); css lint, cathode-type, keyart-fresh after re-shooting Hedgerow; tsc, eslint. No full check. Lock released. Shots b512, a509.
 - 2026-11-18 23:21 lane B: E2E red fixed (two cathode-front specs, reproduced and passing locally; cathode-front + title-focal D 25 pass); 496 slice 4; hedgerow map/masthead/ambient/level-card (P, D, 62) pass.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-18 17:51 lane A session:** 319 slice 90. classpick and classpose (D, 11) pass; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad i319.
 - 2026-11-18 18:21 lane B: 501 slice 2 (trial CSS committed as a script, measured; no product code).
 - 2026-11-18 17:21 lane B: 495 closed (short, logged); planning 501-506; 501 slice 1 (measure only, the script extended); no product code changed.
-- **2026-11-18 16:51 lane A session:** 319 critique and slices 88-89. classpose and classpick (D, 11) pass; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad h319.
