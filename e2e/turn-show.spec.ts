@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { clickSettled } from './setupSeed'
 
 // Plan item 34: the turns between yours are a show. The AI teammate lifts each pick as a card with its
 // reason before it lands (`data-teammate-step`), and a tap skips the rest of their turn; the enemy turn
@@ -7,7 +8,7 @@ import { test, expect, type Page } from '@playwright/test'
 const SAVE_KEY = 'cathnivore:save:v1'
 
 async function graft(page: Page) {
-  await page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
+  await clickSettled(page.getByRole('button', { name: /^Graft:/ }))
 }
 
 async function startSolo(page: Page) {

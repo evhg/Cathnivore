@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { clickSettled } from './setupSeed'
 
 // Plan item 11: the enemy turn is played in the boardroom strip, with both HQs on the map and each step's
 // pieces flying out of them. A tap still skips the whole turn (SPEC 10.2), and reduced motion only fades.
@@ -8,7 +9,7 @@ async function playToEnemyTurn(page: Page) {
   await page.getByText('Quick Game').click()
   await page.getByLabel('Hot-seat (two humans)').check()
   await page.getByRole('button', { name: 'Start' }).click()
-  const graft = () => page.getByRole('button', { name: /^Graft:/ }).click({ force: true })
+  const graft = () => clickSettled(page.getByRole('button', { name: /^Graft:/ }))
   for (let i = 0; i < 3; i++) await graft()
   await page.getByRole('button', { name: "I'm ready" }).click()
   for (let i = 0; i < 3; i++) await graft()
