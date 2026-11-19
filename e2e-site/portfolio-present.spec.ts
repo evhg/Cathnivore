@@ -41,5 +41,13 @@ test('the stats end on a live last-shipped line', async ({ page }) => {
   await expect(page.locator('#shipped-text')).toHaveText(/^Live: last shipped .+ The next build session starts in \d+ min\.$/)
   const box = (await page.locator('#shipped').boundingBox())!
   const stats = (await page.locator('.hero .stats').boundingBox())!
-  expect(box.y).toBeGreaterThanOrEqual(stats.y + stats.height - 1)
+  // Plan item 509: on a phone it is the studio's pulse over the prints, above the fold.
+  if (page.viewportSize()!.width <= 720) {
+    // after its rise (from 1 s, 1 s long)
+    await page.waitForTimeout(2300)
+    const line = (await page.locator('#shipped').boundingBox())!
+    const first = (await page.locator('.show-a').boundingBox())!
+    expect(line.y + line.height).toBeLessThanOrEqual(first.y)
+    expect(line.y + line.height).toBeLessThanOrEqual(page.viewportSize()!.height)
+  } else expect(box.y).toBeGreaterThanOrEqual(stats.y + stats.height - 1)
 })

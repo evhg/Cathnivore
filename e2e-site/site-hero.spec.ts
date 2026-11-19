@@ -12,7 +12,17 @@ test('the phone hero leads with the headline, then Cath behind a strip of the fo
   if (vw < 1100) {
     const h1 = (await page.locator('#hero-title').boundingBox())!
     expect(h1.y).toBeLessThan(200)
-    expect(box.y).toBeGreaterThan(h1.y + h1.height)
+    if (vw <= 720) {
+      // Plan item 509: on a phone she stands whole beside the headline and the lede (180 px+, feet and all), nothing
+      // over her, and the first row of prints starts under her, from y 560 or above.
+      const lede = (await page.locator('.hero .lede').boundingBox())!
+      const first = (await page.locator('.show-a').boundingBox())!
+      expect(box.height).toBeGreaterThanOrEqual(180)
+      expect(box.x).toBeGreaterThanOrEqual(lede.x + lede.width)
+      expect(box.x + box.width).toBeLessThanOrEqual(vw)
+      expect(box.y + box.height).toBeLessThanOrEqual(first.y)
+      if (page.viewportSize()!.height >= 844) expect(first.y).toBeLessThanOrEqual(560)
+    } else expect(box.y).toBeGreaterThan(h1.y + h1.height)
     // she stands behind the prints: the strip draws over her (it is above her in the stacking order)
     const over = await page.evaluate(() => {
       const strip = document.querySelector('.hero-show .show-strip')!
