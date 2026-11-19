@@ -476,6 +476,12 @@ h3 {
   animation: region-glow-pulse 1.6s ease-in-out infinite;
 }
 
+/* Plan item 531: a hex Hollowell's looked-at move will hit is outlined in Hollowell orange (his trail's colour),
+   not the wheat of your own targeting, so 'his plan' and 'your pick' never read alike. */
+.region-hex.glow[data-threat] polygon:first-of-type {
+  stroke: var(--hollowell-lo);
+}
+
 @keyframes region-glow-pulse {
   0%,
   100% {
