@@ -3656,7 +3656,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {/* Plan item 276: on an upright phone her reaction pops in over the board's lower-left corner (about 140 px tall)
             for a moment, as she strikes the pose; absolutely placed, so nothing moves, and taps go through her. */}
         {phoneTableCath && cathPose && (
-          <span key={`pop-${poseTick}`} className="cath-pop" data-pose={cathPose} aria-hidden="true">
+          <span key={`pop-${poseTick}`} className="cath-pop" data-pose={cathPose} data-expression={cathReaction.expression} aria-hidden="true">
             <CathArt framing="half" pose={cathPose} expression={cathReaction.expression} />
           </span>
         )}
