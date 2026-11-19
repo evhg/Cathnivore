@@ -4854,7 +4854,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 524. [ ] Cath, every full-figure use: a fashion-proportioned figure with real poses
+## 524. [ ] Cath, every full-figure use: a fashion-proportioned figure with real poses *(lane A, in progress)*
 - **Why:** `portfolio-D` (plan1119c) 1280-1390 x 180-515, `portfolio-P` 280-345 x 215-410, `runnel-D` 435-535 x 525-860, `hedge-menu-D` 145-185 x 230-390: the standing Cath is a paper doll. Her legs are about 60% of her height and her head about 12%. She stands rigid, arms at her sides, in beige trousers with blocks for boots. The bust Cath (`cath-title-D` 545-805 x 320-755: liner, pearls, pendant) is far ahead of her. VISION "Cath: character bible" (age and build, Style, Expressions) and "Characters with presence".
 - **Build:** `shared/cath/`'s full figure redrawn at about 7.5 heads:
   - **Clothes:** a tailored olive field jacket to mid-thigh with the collar up, a cream blouse, slim dark trousers and real ankle boots.
