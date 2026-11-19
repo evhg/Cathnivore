@@ -21,8 +21,8 @@ export type CathExpression = 'smirk' | 'delighted' | 'determined' | 'worried' | 
 export type CathOutfit = 'field' | 'market' | 'wax' | 'pinny' | 'gown' | 'trench'
 export type CathFraming = 'face' | 'bust' | 'half' | 'full'
 /** Her arms (plan item 23). 'clasped' is the classic hands-at-the-waist pose; each screen picks its own. */
-export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'walk' | 'can' | 'flag' | 'hip'
-export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed', 'can', 'flag', 'hip']
+export type CathPoseId = 'clasped' | 'wave' | 'point' | 'basket' | 'cheer' | 'thinking' | 'crossed' | 'walk' | 'can' | 'flag' | 'hip' | 'packet'
+export const CATH_POSES: readonly CathPoseId[] = ['clasped', 'wave', 'point', 'basket', 'cheer', 'thinking', 'crossed', 'can', 'flag', 'hip', 'packet']
 
 export interface CathOptions {
   expression?: CathExpression
@@ -1112,6 +1112,20 @@ function lanePennant(): string {
 <path fill="#E2B04A" stroke="#7A5226" stroke-width="1" d="M326 90 C328 80 336 76 340 78 C340 86 334 92 326 90 Z"/>`
 }
 
+/** Plan item 530: Hedgerow's seed packet, held up to show you: kraft paper with a crimped top, a printed panel of
+ * a pea pod on its leaf and a hand-lettered band, tilted a little in her raised hand. */
+function seedPacket(): string {
+  return `<g transform="rotate(8 324 214)">
+<path fill="#D9B27A" stroke="#7A5226" stroke-width="1.8" stroke-linejoin="round" d="M300 182 L348 182 L348 248 L300 248 Z"/>
+<path fill="none" stroke="#7A5226" stroke-width="1.2" d="M300 188 L304 184 L308 188 L312 184 L316 188 L320 184 L324 188 L328 184 L332 188 L336 184 L340 188 L344 184 L348 188"/>
+<rect x="305" y="194" width="38" height="34" rx="3" fill="#F3E6C8" stroke="#7A5226" stroke-width="1"/>
+<path fill="${C.leaf}" stroke="${C.leafDeep}" stroke-width="1.2" d="M310 222 C312 208 324 202 336 204 C332 216 322 222 310 222 Z"/>
+<path fill="#8DBA5A" stroke="${C.leafDeep}" stroke-width="1.2" d="M316 214 C322 204 334 200 340 202 C338 210 328 216 316 214 Z"/>
+<circle cx="326" cy="207" r="2.4" fill="#B9DB86"/><circle cx="332" cy="205" r="2.4" fill="#B9DB86"/>
+<path fill="none" stroke="#7A2E1E" stroke-width="2" stroke-linecap="round" d="M307 236 L341 236 M311 242 L335 242"/>
+</g>`
+}
+
 function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front', pointAt?: number): string {
   const cl = CLOTH[outfit]
   // Plan item 442 (critique: the hanging hand read as a limp claw): her free hand in her jacket pocket, the forearm
@@ -1205,6 +1219,11 @@ function poseLayer(pose: CathPoseId, outfit: CathOutfit, layer: 'back' | 'front'
       // Plan item 272: Hedgerow's lane: a pennant held up on its pole, the other hand at rest.
       return layer === 'back'
         ? restLeft + lanePennant() + sleeve('M264 298 Q292 278 298 248 Q304 216 308 192', 24, cl, 'M307 200 Q308 194 308 188') + hand('fist', 310, 172, 12, cl)
+        : ''
+    case 'packet':
+      // Plan item 530: Hedgerow's planting: her left hand raised with a seed packet held up to show you, the other at rest.
+      return layer === 'back'
+        ? restLeft + sleeve('M266 300 Q296 322 308 336 Q318 300 320 266', 24, cl, 'M319 274 Q320 268 320 262') + seedPacket() + hand('grip', 320, 252, 6, cl)
         : ''
     case 'hip':
       // Plan item 524: a hand on her hip, the elbow out in a triangle (the stance a full-length figure reads as
