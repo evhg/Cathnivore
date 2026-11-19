@@ -4213,3 +4213,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-18 15:21 lane B: 496 slices 2-3; map, map-ink, map-you (110 px bar), ambient, level-card, masthead (P, D, 60) pass.
 - 2026-11-18 16:21 lane B: 486 slice 7 and done; measure h486f1-2, h486g; shadow3d, biome3d, 3dframe (P, D, 37), keyart-fresh pass.
 - 2026-11-18 17:21 lane B: 495 closed (short, logged); planning 501-506; 501 slice 1 (measure only, the script extended); no product code changed.
+- **2026-11-18 17:51 lane A session:** 319 slice 90. classpick and classpose (D, 11) pass; keyart-fresh after re-rendering posters and key art; tsc, eslint. No full check. Lock released. Shots scratchpad i319.
