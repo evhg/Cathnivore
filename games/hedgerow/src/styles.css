@@ -1069,6 +1069,23 @@ button {
   max-width: 100%;
   height: auto;
 }
+/* Plan item 529: the vehicle's driver, a round mugshot clipped over the sketch's lower corner, and their slogan
+   under the name in Hollowell's voice. */
+.intro-sketch { position: relative; }
+.intro-driver {
+  position: absolute;
+  right: -14px;
+  bottom: -14px;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--kraft) 55%, var(--paper-hi));
+  box-shadow: 0 0 0 3px var(--paper-hi), 0 0 0 4.5px var(--kraft), 0 3px 6px var(--oak-a35);
+  transform: rotate(5deg);
+}
+.intro-driver svg { display: block; width: 100%; height: 100%; }
+.intro-slogan { margin: 2px 0 6px; font: italic 600 var(--fs-small) / 1.25 var(--font-voice); color: var(--ink-2); }
 .intro-body {
   min-width: 0;
 }
@@ -1328,6 +1345,8 @@ button {
     width: 88px;
     height: 88px;
   }
+  /* plan item 529: the driver's mugshot smaller beside the phone's 104 px sketch, clear of the name */
+  .intro-driver { right: -10px; bottom: -10px; width: 54px; height: 54px; }
   .intro-body {
     display: contents;
   }

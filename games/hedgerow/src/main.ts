@@ -149,6 +149,7 @@ function webglSupported(): boolean {
   }
 }
 import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { driverFace, driverSlogan } from "./fleetfaces";
 import { floodAdvice, gapAdvice, roundAdvice } from "./advice";
 import { suggestedPlot } from "./bot";
 import { barkSpot, type BarkSpot } from "./cathsay";
@@ -4150,6 +4151,11 @@ function showIntroPage(g: Game, k: EnemyKind): void {
   const sketch = document.createElement("figure");
   sketch.className = "intro-sketch";
   sketch.append(img(enemyIcon(k), "intro-icon"));
+  // Plan item 529: and its driver, a mugshot clipped to the sketch's corner: Hollowell's fleet has faces.
+  const driver = document.createElement("span");
+  driver.className = "intro-driver";
+  driver.innerHTML = driverFace(k);
+  sketch.append(driver);
   const body = document.createElement("div");
   body.className = "intro-body";
   const eb = document.createElement("p");
@@ -4168,6 +4174,10 @@ function showIntroPage(g: Game, k: EnemyKind): void {
     li.append(TRAIT_TEXT[t]);
     traits.append(li);
   }
+  // ...and the line its driver would put on the side of the van.
+  const slogan = document.createElement("p");
+  slogan.className = "intro-slogan";
+  slogan.textContent = `\u201c${driverSlogan(k)}\u201d`;
   const d = document.createElement("p");
   d.className = "intro-desc";
   d.textContent = describeEnemy(k);
@@ -4203,7 +4213,7 @@ function showIntroPage(g: Game, k: EnemyKind): void {
   go.type = "button";
   go.className = "btn intro-go";
   go.textContent = "Got it";
-  body.append(eb, n, traits, d, reachH, reach, go);
+  body.append(eb, n, slogan, traits, d, reachH, reach, go);
   sheet.append(sketch, body);
   el.append(sheet);
   el.setAttribute("role", "dialog");
