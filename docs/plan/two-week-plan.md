@@ -4772,7 +4772,7 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** at 390x844 the board is the largest element and 330 px+ wide on every step; each producer drawn once; one primary button; no vertical gap over 24 px between blocks; a pick redraws the board under 250 ms; no scroll at 390x844 and 375x667 (step 1 may scroll at 375x667 only if it did before); D unchanged; setup-*, setup-opening, setup-focal, quick-game pass; shots P, 375x667, D.
 - **Size:** 2
 
-## 514. [ ] NIGHT SHIFT class pick: textured rooms, not a grey blockout
+## 514. [ ] NIGHT SHIFT class pick: textured rooms, not a grey blockout *(lane B, in progress)*
 - **Why:** `ns-play-D` (plan1119a) 480-1000 x 80-650: the set behind Cath reads as flat untextured planes (a wall slab, a grey block at 830-975 x 640-830, a lone green bottle); `ns-play-P` the same at 60-340 (CSS). Item 498 dressed each class's props; the surfaces themselves are still grey-box. VISION 4: noir, wet, lit.
 - **Build:** `render/` class-pick set: brick and plaster textures (procedural canvas textures, as the street's walls), a wet floor already from `frontwet.ts`, a rain-streaked window with city bokeh behind the Ghost, a curtain or shutter per class, two practical lights per set (a lamp, a sign) with their pools on the walls.
 - **Accept:** no flat untextured surface over 5% of the frame at D and P (judged on a shot, the boxes listed); 3+ light sources per set; Cath's face the brightest thing (her mean luminance 1.3x+ the set's); `scripts/cathode-perf.mjs` alone within budget; classpick, armoury, testfire, cathode-setprops pass; shots P, D, L for all five classes.
