@@ -26,6 +26,7 @@ import { buildFrontStoop } from "./frontstoop";
 import { buildFrontSets } from "./frontsets";
 import { buildFrontWet } from "./frontwet";
 import { buildFrontDiorama, SODIUM } from "./frontdiorama";
+import { buildFrontStreet } from "./frontstreet";
 
 export interface FrontSceneOptions {
   quality: Quality;
@@ -324,6 +325,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const sets = buildFrontSets(feet, Math.PI, feet.y, phone);
   world.scene.add(sets.group);
   const groundAt = (x: number, z: number) => world.floorAt?.(x, feet.y + 1, z) ?? world.groundHeight(x, z);
+  // Plan item 510: the street behind her alive: a lit Hollowell shop on the far wall to her right, a passer-by under an
+  // umbrella, a car's headlights sweeping the cobbles, the shop's OPEN tube stuttering. Movers are named on the canvas.
+  const street = buildFrontStreet({ at: new THREE.Vector3(-0.9, groundAt(-0.9, 63.6), 63.97), yaw: Math.PI }, groundAt, phone);
+  world.scene.add(street.group);
+  world.renderer.domElement.dataset.ambient = street.movers(o.still).join(" ");
   const neonRimI = phone ? 7 : 9;
   const titleFaceKey = { pos: toWorld(0.5, 1.95, 0.85), color: new THREE.Color(1.0, 0.8, 0.72), intensity: 2.4, range: 1.9 };
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
@@ -962,6 +968,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // The rain round the sign dims as the wardrobe's class key takes over.
     neon.update(time, o.still, cam, 1 - 0.7 * wd.w);
     diorama.update(time, o.still, cam.position);
+    street.update(time, o.still);
     stoop.update(wd.w, wd.cls);
     target.visible = wd.w > 0.5;
     if (!target.visible) previewFx.stop();
@@ -1511,9 +1518,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       previewFx.dispose();
       wet.dispose();
       diorama.dispose();
+      street.dispose();
       stoop.dispose();
       sets.dispose();
       delete world.renderer.domElement.dataset.keyLight;
+      delete world.renderer.domElement.dataset.ambient;
       cath.dispose();
       world.setWounded?.({ pulse: 0, regen: 0, stim: 0, wipe: -1, lens: [], water: false });
       return world;

@@ -132,7 +132,35 @@ function facadeTexture(w: number, h: number): THREE.CanvasTexture {
     for (let b = 0; b < bays; b++) {
       const x0 = (b + 0.5) * 3.2 * PX - 0.7 * PX;
       // Ground floor: a shop shutter with a line of light under it, or a door.
-      if (b % 3 !== 1) {
+      if (b === 3) {
+        // Plan item 510: one shop open late, its shutter up: a warm café window, a counter, two customers at it.
+        const cafe = g.createLinearGradient(0, Y(2.3), 0, Y(0.2));
+        cafe.addColorStop(0, "#f0b070");
+        cafe.addColorStop(0.6, "#c27a44");
+        cafe.addColorStop(1, "#5a3420");
+        g.fillStyle = cafe;
+        g.fillRect(x0 - 0.4 * PX, Y(2.3), 2.2 * PX, 2.1 * PX);
+        g.fillStyle = "#2a1810";
+        g.fillRect(x0 - 0.4 * PX, Y(1.0), 2.2 * PX, 0.8 * PX);
+        g.fillStyle = "#1a0f0a";
+        for (const [cx, hy] of [[0.15, 1.62], [1.15, 1.55]] as const) {
+          g.beginPath();
+          g.ellipse(x0 + cx * PX, Y(hy), 0.13 * PX, 0.16 * PX, 0, 0, Math.PI * 2);
+          g.fill();
+          g.fillRect(x0 + (cx - 0.24) * PX, Y(hy - 0.12), 0.48 * PX, 0.75 * PX);
+        }
+        g.fillStyle = "rgba(255,230,190,0.9)";
+        for (let k = 0; k < 3; k++) g.fillRect(x0 + (-0.2 + k * 0.7) * PX, Y(2.25), 0.4 * PX, 3);
+        g.fillStyle = "#120c08";
+        g.fillRect(x0 - 0.45 * PX, Y(2.45), 2.3 * PX, 0.18 * PX);
+        const pool = g.createRadialGradient(x0 + 0.7 * PX, Y(0.4), 0.2 * PX, x0 + 0.7 * PX, Y(0.4), 3.8 * PX);
+        pool.addColorStop(0, "rgba(255,170,100,0.5)");
+        pool.addColorStop(1, "rgba(200,120,80,0)");
+        g.globalCompositeOperation = "lighter";
+        g.fillStyle = pool;
+        g.fillRect(x0 - 3.2 * PX, Y(4.2), 7.8 * PX, 4.2 * PX);
+        g.globalCompositeOperation = "source-over";
+      } else if (b % 3 !== 1) {
         g.fillStyle = "#1c1d21";
         g.fillRect(x0 - 0.4 * PX, Y(2.3), 2.2 * PX, 2.3 * PX);
         g.fillStyle = "rgba(0,0,0,0.5)";
