@@ -2462,7 +2462,9 @@ float reliefShade( vec2 uv ) {
   // forearm bone with the hand.
   const sleeveL = (() => {
     const upProf: Array<[number, number]> = [[0, 0.014], [0.025, 0.036], [0.06, 0.047], [0.12, 0.052], [0.3, 0.05], [0.8, 0.0425], [0.93, 0.0405], [1, 0.0395]];
-    const foProf: Array<[number, number]> = [[0, 0.0395], [0.2, 0.037], [0.5, 0.0355], [0.8, 0.0335], [0.87, 0.0355], [0.96, 0.0362], [1, 0.028]];
+    // Slice 91: the cuff's turn-back stands 5 mm proud with a clean ledge (it rose over 7% of the forearm, so at the
+    // title the sleeve ran straight into the glove).
+    const foProf: Array<[number, number]> = [[0, 0.0395], [0.2, 0.037], [0.5, 0.0355], [0.8, 0.0335], [0.825, 0.0338], [0.845, 0.0385], [0.96, 0.0382], [1, 0.029]];
     const upLen = shoulderL.distanceTo(elbowL);
     const sE = upLen / (upLen + elbowL.distanceTo(wristL));
     // Rings: an even run plus every profile key, so the sleeve head's dome and the cuff's turn-back keep their shape.
@@ -2471,6 +2473,8 @@ float reliefShade( vec2 uv ) {
     for (let i = 0; i <= N; i++) ss.add(Math.round((i / N) * 1e4) / 1e4);
     for (const [t] of upProf) ss.add(Math.round(t * sE * 1e4) / 1e4);
     for (const [t] of foProf) ss.add(Math.round((sE + t * (1 - sE)) * 1e4) / 1e4);
+    // Slice 91: dense rings over the elbow, where the folds bunch (at the even run's spacing they aliased away).
+    for (let t = -0.18; t <= 0.34; t += 0.009) ss.add(Math.round(THREE.MathUtils.clamp(sE + t, 0, 1) * 1e4) / 1e4);
     const rings = [...ss].sort((a, b) => a - b);
     const radius = (s: number) => (s < sE ? profR(upProf, s / sE) : profR(foProf, (s - sE) / (1 - sE)));
     const R = seg(24);
@@ -2519,18 +2523,32 @@ float reliefShade( vec2 uv ) {
         // Parallel transport: the ring's frame turns with the sleeve, so the cloth's weave never twists.
         n.addScaledVector(tan, -n.dot(tan)).normalize();
         b.crossVectors(tan, n);
-        const r = radius(s);
+        const r0 = radius(s);
+        // Plan item 319 slice 91 (critique 11-18 17:10, point 3: 'a flat panel with no elbow'): the cloth, not a
+        // pipe. Ring angle 0 faces front, pi/2 her body. Folds bunch in the crook of the elbow (front and inside),
+        // the sleeve pulls taut to a point over the elbow (back and outside), and drag lines run down the forearm.
+        const dE = (s - sE) / 0.2;
+        const nearE = Math.exp(-dE * dE);
+        const drag = THREE.MathUtils.smoothstep(s, sE, sE + 0.06) * (1 - THREE.MathUtils.smoothstep(s, sE + 0.16, sE + 0.34));
         for (let j = 0; j <= R; j++) {
           const a = (j / R) * Math.PI * 2;
+          const crook = Math.max(0, Math.cos(a - Math.PI * 0.3));
+          const point = Math.max(0, -Math.cos(a - Math.PI * 0.35));
+          const bunch = Math.pow(Math.abs(Math.sin((s - sE) * 90 + 0.6 * Math.cos(a))), 0.5);
+          const r = r0 * (1 + nearE * (0.085 * crook * bunch + 0.06 * point * point) + drag * 0.045 * Math.pow(Math.abs(Math.sin(a * 2.5 + (s - sE) * 26)), 0.6));
           o.copy(n).multiplyScalar(Math.cos(a)).addScaledVector(b, Math.sin(a));
           const k = (i * (R + 1) + j) * 3;
           pos[k] = c.x + o.x * r;
           pos[k + 1] = c.y + o.y * r;
           pos[k + 2] = c.z + o.z * r;
-          nor[k] = o.x;
-          nor[k + 1] = o.y;
-          nor[k + 2] = o.z;
         }
+      }
+      geo.computeVertexNormals();
+      // The ring's first and last columns are one seam: share their normal, so no line runs down the sleeve.
+      for (let i = 0; i < T; i++) {
+        const k0 = i * (R + 1) * 3;
+        const k1 = (i * (R + 1) + R) * 3;
+        for (let q = 0; q < 3; q++) nor[k0 + q] = nor[k1 + q] = (nor[k0 + q]! + nor[k1 + q]!) * 0.5;
       }
       (geo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
       (geo.attributes.normal as THREE.BufferAttribute).needsUpdate = true;
