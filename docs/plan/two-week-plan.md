@@ -4887,7 +4887,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D of the title, Setup and game, light and dark.
 - **Size:** 2
 
-## 526. [ ] NIGHT SHIFT phone title: one composed frame, Cath clear of the menu and The List
+## 526. [ ] NIGHT SHIFT phone title: one composed frame, Cath clear of the menu and The List *(lane B, in progress)*
 - **Why:** `ns-title-P` (plan1119c, 2x: 780x1688) has four elements fighting for the frame:
   - Cath's face is low (560-680 x 1140-1260) and The List strip (20-745 x 1420-1610) runs over her.
   - The umbrella's canopy (230-780 x 740-900) lies across the CREDITS row.
