@@ -387,3 +387,19 @@ test('the arrow keys step between chapters', async ({ page }) => {
   await page.keyboard.press('ArrowUp')
   await expect(cards.nth(1)).toBeFocused()
 })
+
+// Plan item 522: every chapter card's words read whole at D (no goal or title cut to an ellipsis).
+test('at D no chapter card cuts its words', async ({ page }) => {
+  test.skip(page.viewportSize()!.width < 1024, 'the desktop chapter list')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Campaign' }).click()
+    await expect(page.locator('.cmp-path .chapter-goal')).toHaveCount(6)
+    const cut = await page.locator('.cmp-path').evaluate((p) =>
+      [...p.querySelectorAll<HTMLElement>('.chapter-goal, .cmp-title')]
+        .filter((e) => e.getClientRects().length && (e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1))
+        .map((e) => e.textContent))
+    expect(cut, `${width}`).toEqual([])
+  }
+})

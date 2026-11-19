@@ -799,7 +799,7 @@ export default function CampaignScreen({
                     {chapter.title}
                     <span className="sr-only">{isDone ? ' (completed)' : locked ? ' (locked)' : ''}</span>
                   </strong>
-                  <span className="chapter-goal" title={chapter.goalDescription}>{chapter.goalDescription}</span>
+                  <span className="chapter-goal" title={chapter.goalDescription}>{(locked && chapter.goalShort) || chapter.goalDescription}</span>
                 </span>
                 <span className="cmp-card-foot">
                   <span className="cmp-cast" aria-hidden="true">

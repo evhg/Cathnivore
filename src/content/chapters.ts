@@ -53,6 +53,8 @@ export interface Chapter {
   cathsPlanLocked?: boolean // SPEC 8.2 ch6: Cath's Plan starts face down and locked
   winCondition: { regionsRequired: number; requireKingsmarket: boolean }
   goalDescription: string // shown on the chapter-list card, e.g. "Liberate both regions within 6 rounds."
+  /** Plan item 522: a locked card's two-line goal when goalDescription would be cut (the full line stays its title). */
+  goalShort?: string
   tutorialSteps: TutorialStep[]
   // The first-time guided tutorial (spotlight, hard gate, one baby step at a time) instead of the
   // prompt strip (chapters 1 and 2): see content/tutorial.ts and ui/TutorialCoach.tsx.
@@ -539,6 +541,7 @@ export const CHAPTER_5: Chapter = {
   scriptedPressure: chapter5Pressure(),
   winCondition: { regionsRequired: 3, requireKingsmarket: false },
   goalDescription: 'Liberate 3 regions within 7 rounds. Kingsmarket is not required.',
+  goalShort: 'Liberate 3 regions in 7 rounds. Kingsmarket optional.',
   scriptedStart: {
     rift: 1,
     publicTrust: 8,
@@ -634,6 +637,7 @@ export const CHAPTER_6: Chapter = {
   scriptedTrigger: { liberatedCount: 3, effect: 'unlockCathsPlan', sceneId: 'planUnlocked' },
   winCondition: { regionsRequired: 5, requireKingsmarket: true },
   goalDescription: 'Liberate 5 regions, including Kingsmarket — the standard win.',
+  goalShort: 'Liberate 5 regions, Kingsmarket among them.',
   tutorialSteps: [
     {
       text: "Cath's Plan is locked without me. No Schemes until I'm back.",
