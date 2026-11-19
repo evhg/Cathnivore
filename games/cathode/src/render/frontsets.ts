@@ -34,7 +34,10 @@ const HALO_A = 0.55;
 const FLAT_GAIN = 3.2;
 // Plan item 514: the halo behind her washes the whole set round her in the key's colour; the Ghost's cyan and the
 // Butcher's red were brighter there than her face, so theirs is softer (her face 1.3x+ the set).
-const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.3, butcher: 0.35 };
+const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.3, butcher: 0.12 };
+// With the flat in front of the street's facade (plan item 514) it is most of what's behind her: each a little down,
+// so her face stays 1.3x the set.
+const FLAT_CLASS_GAIN: Partial<Record<string, number>> = { ghost: 0.8, butcher: 0.5, gunslinger: 0.7, wirewitch: 0.8, fixer: 0.8 };
 
 type Paint = (g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number) => void;
 
@@ -83,6 +86,39 @@ function bricks(g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: nu
   for (let y = 0; y < FH; y += bh) g.fillRect(0, Y(y) - 3 * s, X(FW / 2), 6 * s);
 }
 
+
+/** Plan item 514: a window with its blind half down: slats lit from outside by `lit`, the night below them. */
+function blinds(g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number, x0: number, x1: number, y0: number, y1: number, lit: string, down = 0.6): void {
+  g.fillStyle = "#020203";
+  g.fillRect(X(x0) - 4 * s, Y(y1) - 4 * s, X(x1) - X(x0) + 8 * s, Y(y0) - Y(y1) + 8 * s);
+  const cut = y1 - (y1 - y0) * down;
+  for (let y = y1 - 0.02; y > cut; y -= 0.07) {
+    g.fillStyle = lit;
+    g.fillRect(X(x0), Y(y), X(x1) - X(x0), Math.max(2, 9 * s));
+  }
+  g.fillStyle = "rgba(0,0,0,0.55)";
+  g.fillRect(X((x0 + x1) / 2) - s, Y(y1), Math.max(1, 2 * s), Y(y0) - Y(y1));
+}
+
+/** A roll-up steel shutter, ribbed, left a hand's height off the sill so a line of the room's light shows under it. */
+function shutter(g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number, x0: number, x1: number, y0: number, y1: number, rib: string, gap: string): void {
+  g.fillStyle = gap;
+  g.fillRect(X(x0), Y(y0 + 0.12), X(x1) - X(x0), Y(y0) - Y(y0 + 0.12));
+  g.fillStyle = "#0b0b0d";
+  g.fillRect(X(x0), Y(y1), X(x1) - X(x0), Y(y0 + 0.12) - Y(y1));
+  g.fillStyle = rib;
+  for (let y = y0 + 0.2; y < y1; y += 0.09) g.fillRect(X(x0), Y(y), X(x1) - X(x0), Math.max(1, 2 * s));
+  g.fillStyle = "#050506";
+  g.fillRect(X(x0) - 6 * s, Y(y1) - 10 * s, X(x1) - X(x0) + 12 * s, 14 * s);
+}
+
+/** A practical: a bare bulb (or caged lamp) on its flex, with its pool of light on the wall. */
+function bulb(g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number, x: number, y: number, c: string, a: number, flex = 0.5): void {
+  g.fillStyle = "#050404";
+  g.fillRect(X(x) - s, Y(y + flex), Math.max(1, 2 * s), Y(y) - Y(y + flex));
+  glow(g, X(x), Y(y), 150 * s, c, a);
+  glow(g, X(x), Y(y), 18 * s, "rgba(255,250,235,A)", 1);
+}
 /** Ghost: a rooftop in the rain, the city's towers lit cyan behind a parapet, a water tower on its legs. */
 const ghost: Paint = (g, X, Y, s) => {
   const r = rng(11);
@@ -153,6 +189,41 @@ const ghost: Paint = (g, X, Y, s) => {
     g.lineTo(X(1.25), Y(y));
     g.stroke();
   }
+  // Plan item 514: the stairwell's window beside the door, the city behind it in soft bokeh and rain down the glass;
+  // a caged lamp over the door.
+  {
+    const wx0 = 1.45, wx1 = 2.45, wy0 = 1.35, wy1 = 2.55;
+    g.fillStyle = "#010406";
+    g.fillRect(X(wx0) - 5 * s, Y(wy1) - 5 * s, X(wx1) - X(wx0) + 10 * s, Y(wy0) - Y(wy1) + 10 * s);
+    g.fillStyle = "#04141a";
+    g.fillRect(X(wx0), Y(wy1), X(wx1) - X(wx0), Y(wy0) - Y(wy1));
+    g.save();
+    g.beginPath();
+    g.rect(X(wx0), Y(wy1), X(wx1) - X(wx0), Y(wy0) - Y(wy1));
+    g.clip();
+    for (let i = 0; i < 14; i++) {
+      const c = r() < 0.7 ? "rgba(90,220,255,A)" : "rgba(255,170,90,A)";
+      glow(g, X(wx0 + r() * (wx1 - wx0)), Y(wy0 + r() * (wy1 - wy0)), (10 + r() * 16) * s, c, 0.55);
+    }
+    g.strokeStyle = "rgba(190,240,255,0.35)";
+    g.lineWidth = Math.max(1, 1.5 * s);
+    for (let i = 0; i < 26; i++) {
+      const x = X(wx0 + r() * (wx1 - wx0));
+      let y = Y(wy1) + r() * (Y(wy0) - Y(wy1)) * 0.4;
+      g.beginPath();
+      g.moveTo(x, y);
+      for (let k = 0; k < 6; k++) {
+        y += (8 + r() * 14) * s;
+        g.lineTo(x + (r() - 0.5) * 4 * s, y);
+      }
+      g.stroke();
+    }
+    g.restore();
+    g.fillStyle = "#010406";
+    g.fillRect(X((wx0 + wx1) / 2) - 2 * s, Y(wy1), 4 * s, Y(wy0) - Y(wy1));
+    g.fillRect(X(wx0), Y((wy0 + wy1) / 2) - 2 * s, X(wx1) - X(wx0), 4 * s);
+  }
+  bulb(g, X, Y, s, 0.12, 3.05, "rgba(150,230,255,A)", 0.35, 0.1);
   // Rain, slanting.
   g.strokeStyle = "rgba(170,235,255,0.22)";
   for (let i = 0; i < 420; i++) {
@@ -214,11 +285,36 @@ const butcher: Paint = (g, X, Y, s) => {
   // The cold: fog pooled at the floor and the locker's steel door frame round the stoop.
   g.fillStyle = vgrad(g, Y(1.5), Y(0), [
     [0, "rgba(235,180,215,0)"],
-    [1, "rgba(235,180,215,0.3)"],
+    [1, "rgba(235,180,215,0.14)"],
   ]);
   g.fillRect(0, Y(1.5), X(FW / 2), Y(0) - Y(1.5));
   g.fillStyle = "#3a2a2c";
   g.fillRect(X(-0.95), Y(2.75), X(1.15) - X(-0.95), 10 * s);
+  // Plan item 514: the cold room's door right of her, hung with clouded PVC strips, the freezer's light behind them;
+  // a caged lamp over the rail and a red EXIT over the far door.
+  {
+    const dx0 = 1.4, dx1 = 2.3, dy1 = 2.3;
+    g.fillStyle = "#1c0a10";
+    g.fillRect(X(dx0) - 6 * s, Y(dy1) - 6 * s, X(dx1) - X(dx0) + 12 * s, Y(0) - Y(dy1) + 6 * s);
+    glow(g, X((dx0 + dx1) / 2), Y(1.2), 120 * s, "rgba(255,190,215,A)", 0.3);
+    for (let x = dx0; x < dx1 - 0.01; x += 0.15) {
+      g.fillStyle = `rgba(255,215,230,${0.1 + r() * 0.08})`;
+      g.fillRect(X(x) + s, Y(dy1), X(x + 0.15) - X(x) - 2 * s, Y(0.05) - Y(dy1));
+      g.fillStyle = "rgba(255,235,245,0.22)";
+      g.fillRect(X(x) + 2 * s, Y(dy1), Math.max(1, s), Y(0.05) - Y(dy1));
+    }
+    g.fillStyle = "#0c0102";
+    g.fillRect(X(dx0) - 6 * s, Y(dy1) - 8 * s, X(dx1) - X(dx0) + 12 * s, 9 * s);
+  }
+  bulb(g, X, Y, s, -1.7, 3.75, "rgba(255,120,150,A)", 0.4, 0.2);
+  g.fillStyle = "#300308";
+  g.fillRect(X(-2.3), Y(2.6), X(-1.6) - X(-2.3), Y(2.35) - Y(2.6));
+  glow(g, X(-1.95), Y(2.48), 50 * s, "rgba(255,40,60,A)", 0.5);
+  g.fillStyle = "#ff5a6a";
+  g.font = `bold ${Math.round(17 * s)}px sans-serif`;
+  g.textAlign = "center";
+  g.fillText("EXIT", X(-1.95), Y(2.41));
+  g.textAlign = "start";
 };
 
 /** Gunslinger: a bar's back room: panelling, a shelf of bottles lit gold, a lamp over the card table. */
@@ -262,6 +358,11 @@ const gunslinger: Paint = (g, X, Y, s) => {
         g.fillRect(X(x + 0.012), Y(y + h * 0.65), Math.max(1, 2 * s), Y(y + 0.05) - Y(y + h * 0.65));
       }
     }
+  // Plan item 514: the back room's window left of the door, its blind half down, the street's neon through the slats;
+  // a sconce beside it.
+  blinds(g, X, Y, s, -2.35, -1.35, 1.6, 2.75, "rgba(255,90,140,0.55)", 0.55);
+  glow(g, X(-1.85), Y(1.9), 70 * s, "rgba(255,80,130,A)", 0.25);
+  bulb(g, X, Y, s, -1.0, 2.35, "rgba(255,200,90,A)", 0.4, 0.08);
   // The card table under its lamp, right of the door: a round top lit gold, the cards fanned on it, two chairs.
   const cx = 3.2;
   glow(g, X(cx), Y(1.6), 230 * s, "rgba(255,220,80,A)", 0.55);
@@ -323,6 +424,10 @@ const wirewitch: Paint = (g, X, Y, s) => {
     }
     glow(g, X(x0 + w / 2), Y(1.6), 90 * s, "rgba(160,90,255,A)", 0.25);
   }
+  // Plan item 514: a loading bay's shutter above the screens, rolled down to a lit hand's gap; a bare bulb on a flex.
+  shutter(g, X, Y, s, 1.35, 2.6, 1.85, 3.25, "rgba(160,110,255,0.22)", "#d8a8ff");
+  glow(g, X(1.98), Y(1.9), 90 * s, "rgba(190,130,255,A)", 0.35);
+  bulb(g, X, Y, s, -1.25, 3.0, "rgba(220,170,255,A)", 0.35, 0.9);
   // A stack of CRTs right of the door, screens violet with scanlines.
   for (const [x, y, w] of [
     [2.75, 0.0, 0.7],
@@ -429,6 +534,10 @@ const fixer: Paint = (g, X, Y, s) => {
     g.fillText(r() < 0.5 ? "FRAGILE" : "No. 7", X(x + 0.15), Y(y + h * 0.45));
   }
   glow(g, X(-3.9), Y(2.6), 160 * s, "rgba(100,220,60,A)", 0.18);
+  // Plan item 514: the workshop's roll-up door left of her, down to a gap of the yard's sodium light; a caged lamp.
+  shutter(g, X, Y, s, -2.45, -1.2, 0.0, 2.4, "rgba(150,230,110,0.2)", "#ffb860");
+  glow(g, X(-1.82), Y(0.06), 110 * s, "rgba(255,170,80,A)", 0.3);
+  bulb(g, X, Y, s, -1.82, 2.75, "rgba(200,255,150,A)", 0.35, 0.12);
 };
 
 const PAINT: Record<string, Paint> = { ghost, butcher, gunslinger, wirewitch, fixer };
@@ -465,7 +574,7 @@ function paintFlat(cls: string, phone: boolean): THREE.CanvasTexture {
  * Builds the five sets in her local frame (the stoop's: x across, y up, z toward the pick's lens), the flats just
  * behind the stoop's door (`back` m behind her).
  */
-export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number, phone: boolean, back = 2.1): FrontSets {
+export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number, phone: boolean, back = 1.25): FrontSets {
   const group = new THREE.Group();
   group.name = "front-sets";
   group.position.set(feet.x, groundY, feet.z);
@@ -495,7 +604,7 @@ export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number
     const map = paintFlat(cls, phone);
     const flat = new THREE.MeshBasicMaterial({ map, transparent: true, opacity: 0, depthWrite: false, fog: false });
     // Unlit, the painting sat at the grade's black floor (post.ts's AgX): pushed into HDR so its lights read.
-    flat.color.setScalar(FLAT_GAIN);
+    flat.color.setScalar(FLAT_GAIN * (FLAT_CLASS_GAIN[cls] ?? 1));
     const fm = new THREE.Mesh(flatGeo, flat);
     fm.position.set(0, FH / 2, -back - 0.04);
     fm.renderOrder = -2;
@@ -510,7 +619,7 @@ export function buildFrontSets(feet: THREE.Vector3, yaw: number, groundY: number
     });
     const pm = new THREE.Mesh(poolGeo, pool);
     pm.rotation.x = -Math.PI / 2;
-    pm.position.set(0, 0.012, -back + 1.1);
+    pm.position.set(0, 0.012, -1.0);
     // The set's light behind her head: a soft disc of the key between her and the flat, so her hair and shoulders
     // stand out against the set's colour (on a phone, where the flat behind her is mostly shadow, too).
     const halo = new THREE.MeshBasicMaterial({
