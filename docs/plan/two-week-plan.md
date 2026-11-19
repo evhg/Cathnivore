@@ -4778,7 +4778,9 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** no flat untextured surface over 5% of the frame at D and P (judged on a shot, the boxes listed); 3+ light sources per set; Cath's face the brightest thing (her mean luminance 1.3x+ the set's); `scripts/cathode-perf.mjs` alone within budget; classpick, armoury, testfire, cathode-setprops pass; shots P, D, L for all five classes.
 - **Size:** 3
 
-## 515. [ ] Hedgerow 3D: towers that stand up as the field's landmarks *(lane B, in progress)*
+## 515. [ ] Hedgerow 3D: towers that stand up as the field's landmarks *(handed back 2026-11-19 02:50 by lane B after slice 2)*
+
+Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each tower's body (its lean group; the plinth stays on the plot) scaled by kind (`TOWER_STAND` in render3d/index.ts, 1.25-1.6); the plinth's top in its role colour (one material, +0 calls); the scarecrow sways. `scripts/hedgerow-515-measure.mjs` (sandbox `towerHeights()`, world and screen heights against the farmers'): at D l21 mast 1.54x a farmer, windmill/silo 1.4x, scarecrow 1.3x (was 0.81x), beehive 0.93x, stall 0.91x, hedgerow 0.82x, cannon 0.60x, pond 0.29x; P every tower 56-106 px (bar 40), 1.07-1.84x; L 0.32-1.79x. Draw calls unchanged. **Left:** the squat towers (hedgerow, beehive, stall, cannon; the pond is flat by nature: propose a waived bar for it) toward 1.5x at D without spilling their plots (try taller parts, not uniform scale); the nine told apart in a black-fill silhouette shot (a turntable render per tower); shots P/D/L in scratchpad h515*.
 - **Why:** `hedge-l21-3d-D` (plan1119a): the Scarecrow (575-640 x 405-500) is smaller than a farmer beside it (780-870 x 405-505) and shorter than Cath (150-215 x 505-640); at P (195-235 x 435-475) it is the size of a crop clump. The defence you build should be the most legible thing on the field.
 - **Build:** `render3d/` tower models: scale each up to stand tallest on its plot (base kept inside the plot), a stronger silhouette per tower (the Mast's lattice, the Silo's dome, the Windmill's sails), a coloured plinth ring in its role colour (Shoots, Splash, Slows, Earns), a short idle motion (sails turn, scarecrow sways, cannon recoils on fire already); the 2D sprites unchanged.
 - **Accept:** at the default D frame every tower's on-screen height 1.5x+ a farmer's; at P each tower 40 px+ tall; the nine told apart in a black-fill silhouette shot; draw calls +0 on a phone (instanced or merged), hedgerow-drawcalls within budget; 3dframe, closeframe, shadow3d pass; visual only, no retune; shots P, D, L.
@@ -4796,7 +4798,7 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** at 1440x900 Cath 380 px+ tall, her centre within the middle 50% of the width; the chalkboard 35% or less of the width; all four Play buttons above 900; P unchanged; site specs and axe pass; key art unaffected; shots P, D, 1280x800.
 - **Size:** 1
 
-## 518. [ ] The bugs from the 2026-11-19 02:00 critique, fixed as one batch
+## 518. [ ] The bugs from the 2026-11-19 02:00 critique, fixed as one batch *(lane B, in progress)*
 - `cath-title-D` (100-310 x 637-670): the Daily tag breaks 'Dry / Spell' with 'Spell' alone.
 - `cath-setup-D` (995-1140 x 565-775): the 'This week at the market' placard over Cath's torso and arm; her bubble repeats the event (check item 367's held poster first).
 - `cath-game-P` (293-375 x 596-616): the '9+ more' pill on the hand's top edge (checked by 512: recheck against this shot).
