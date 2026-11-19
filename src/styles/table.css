@@ -6150,3 +6150,116 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
      'Saltmarsh' are 150 px against the 135 px between the paddings (plan-cards) */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-target-short { margin-right: -16px; }
 }
+
+/* Plan item 531: on a desktop Hollowell's three moves are one quarterly-plan plaque, not three tickets on a beam:
+   a slab of over-lit acrylic on a polished chrome rim behind the moves, running on under Graham Pell's medallion
+   so his face is docked into its end, and a chrome tab under it that names the plan and, while a move is looked
+   at (hover, focus or a pin), quotes that move's slogan in his voice. The board's box doesn't move: the slab and
+   the tab are drawn outside the strip's own box. */
+.plan-plaque-tab { display: none; }
+@media (min-width: 1024px) {
+  .table-head .plan-strip[data-corp] {
+    position: relative;
+    z-index: var(--z-lift);
+  }
+  .table-head:has(.plan-strip[data-corp]) .rival { z-index: var(--z-map-fx); }
+  .plan-strip[data-corp]::before {
+    z-index: var(--z-under);
+    top: -7px;
+    right: -78px;
+    bottom: -8px;
+    left: -6px;
+    height: auto;
+    translate: none;
+    border-radius: 16px 64px 64px 16px;
+    background:
+      /* the over-lit studio gloss: a hard white line along the top edge and a cold sheen falling off it */
+      linear-gradient(180deg, color-mix(in srgb, var(--corp-plaque-hi) 70%, transparent) 0 1px, color-mix(in srgb, var(--corp-plaque-hi) 26%, transparent) 1px 20%, transparent 46%),
+      radial-gradient(70% 140% at 24% -40%, color-mix(in srgb, var(--corp-plaque-hi) 40%, transparent), transparent 62%),
+      /* Hollowell's orange rule along the foot */
+      linear-gradient(var(--hollowell), var(--hollowell-lo)) left 18px bottom 4px / calc(100% - 110px) 2px no-repeat,
+      /* polished graphite under the lit moves */
+      linear-gradient(180deg, color-mix(in srgb, var(--corp-slate) 62%, var(--corp-chrome)), var(--corp-slate) 70%);
+    box-shadow:
+      inset 0 0 0 1px var(--corp-plaque-rim),
+      inset 0 0 0 3px var(--corp-chrome),
+      inset 0 0 0 4px color-mix(in srgb, var(--corp-plaque-hi) 55%, transparent),
+      0 6px 10px -2px rgb(var(--shadow-ink) / .34),
+      0 1px 2px rgb(var(--shadow-ink) / .3);
+  }
+  /* the moves sit flush in the slab now: no separate drop shadows fighting the plaque's */
+  .plan-strip[data-corp] .plan-strip-item,
+  .plan-strip[data-corp] .plan-strip-item:nth-child(2),
+  .plan-strip[data-corp] .plan-strip-item:nth-child(3) {
+    filter: drop-shadow(0 1px 1px rgb(var(--shadow-ink) / .18));
+  }
+
+  .plan-plaque-tab {
+    position: absolute;
+    z-index: var(--z-raised);
+    top: calc(100% + 7px);
+    left: 50%;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    max-width: calc(100% - 40px);
+    padding: 2px 12px 3px;
+    translate: -50% 0;
+    border-radius: 0 0 9px 9px;
+    background: linear-gradient(180deg, var(--corp-plaque-lo), var(--corp-acrylic) 70%);
+    box-shadow:
+      inset 0 0 0 1px var(--corp-plaque-rim),
+      inset 0 -1px 0 1px color-mix(in srgb, var(--corp-plaque-hi) 60%, transparent),
+      0 3px 4px -1px rgb(var(--shadow-ink) / .3);
+    color: var(--corp-slate);
+    font: 600 var(--fs-label)/1.25 var(--font-ui);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .plan-plaque-tab b {
+    color: var(--hollowell-ink);
+    font-weight: 800;
+  }
+  .plan-plaque-quote {
+    overflow: hidden;
+    font-weight: 650;
+    letter-spacing: .01em;
+    text-overflow: ellipsis;
+    text-transform: none;
+  }
+  .plan-plaque-sign {
+    color: var(--hollowell-ink);
+    font-weight: 800;
+    letter-spacing: .12em;
+  }
+  .plan-plaque-tab[data-slot] {
+    animation: plaque-quote 160ms var(--ease-out) both;
+  }
+  /* every word on the plaque at the caption size (13 px+): the region chips and the stage tab were 12.5 */
+  .plan-plaque-tab,
+  .table-head .plan-strip[data-corp] .plan-strip-target .plan-chip,
+  .table-head .plan-strip[data-corp] .plan-strip-stage,
+  .game:has(.table-head.with-table-cath) .plan-strip[data-corp] .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage-word {
+    font-size: var(--fs-caption);
+  }
+  .table-head .plan-strip[data-corp] .plan-strip-target .plan-chip { padding-inline: 2px; }
+  .game:has(.table-head.with-table-cath) .plan-strip[data-corp] .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-target-short {
+    gap: 2px;
+    margin-right: -22px;
+  }
+}
+@keyframes plaque-quote {
+  from { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-plaque-tab[data-slot] { animation: none; }
+}
+html.no-animations .plan-plaque-tab[data-slot] { animation: none; }
+@media (min-width: 1240px) and (max-width: 1399px) and (min-height: 760px) {
+  /* Plan item 531: at 1280 the 13 px chips 'Shingle Bay' and 'Saltmarsh' need a few px more than a memo had: the
+     moves stand closer on the plaque and the chips' letters set a hair tighter */
+  .table-head .plan-strip[data-corp] { gap: var(--sp-2); }
+  .table-head .plan-strip[data-corp] .plan-strip-target .plan-chip { letter-spacing: -.012em; }
+}

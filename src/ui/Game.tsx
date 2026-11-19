@@ -16,6 +16,7 @@ import { createRng } from '../engine/rng'
 import { ACTIONS_PER_ROUND, canOpenStallIn, regionStallTotal } from '../engine/region'
 import { PRODUCERS } from '../content/producers'
 import { REGIONS } from '../content/map'
+import { planSlogan } from '../content/planSlogans'
 import { CHAPTER_HOMES, sealOutlook, type SealOutlook } from '../content/campaignMap'
 import { DIFFICULTY_SETTINGS } from '../content/difficulty'
 import { HeuristicBot } from '../ai/heuristic'
@@ -3684,6 +3685,27 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             </span>
           )
         })}
+        {/* Plan item 531: on a desktop the three moves sit on one acrylic plaque docked into Pell's medallion; its
+            chrome tab names the plan and, while you look at a move, says that move's slogan in his voice. */}
+        {(() => {
+          const slot = planHotSlot
+          const first = slot ? planPreview(state, slot).regions[0] : undefined
+          return (
+            <span className="plan-plaque-tab" aria-hidden="true" data-slot={slot ?? undefined}>
+              {slot ? (
+                <>
+                  <span className="plan-plaque-quote">{`\u201c${planSlogan(slot, state[slot]?.id, first ? REGIONS[first].name : undefined)}\u201d`}</span>
+                  <span className="plan-plaque-sign">G. Pell</span>
+                </>
+              ) : (
+                <>
+                  <b>Hollowell</b>
+                  <span>Quarterly Plan</span>
+                </>
+              )}
+            </span>
+          )
+        })()}
       </section>
       </div>
       {/* Plan item 92: Hollowell's face across the table from Cath, his mood the mirror of hers. */}

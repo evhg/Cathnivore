@@ -65,6 +65,10 @@
   --corp-acrylic: #F6FAFC;
   --corp-acrylic-lo: #D9E4EA;
   --corp-chrome: #8E9CA6;
+  /* Plan item 531: Hollowell's quarterly-plan plaque (desktop): over-lit acrylic on a polished chrome rim */
+  --corp-plaque-hi: #FFFFFF;
+  --corp-plaque-lo: #C9D6DE;
+  --corp-plaque-rim: #5E6C76;
   /* Plan item 525: Hollowell's shrink-wrap over the land: near-clear film, a cold highlight, an over-lit spot */
   --wrap-film: #EAF6FF;
   --wrap-shine: #FFFFFF;
@@ -280,6 +284,12 @@
     --corp-acrylic: #CDD6DC;
     --corp-acrylic-lo: #AAB7BF;
     --corp-chrome: #66737C;
+  --corp-plaque-hi: #DCE4E9;
+  --corp-plaque-lo: #9EADB7;
+  --corp-plaque-rim: #46525A;
+    --corp-plaque-hi: #DCE4E9;
+    --corp-plaque-lo: #9EADB7;
+    --corp-plaque-rim: #46525A;
   --wrap-film: #DCEBF5;
   --wrap-shine: #B3C3CD;
   --wrap-edge: #A8B9C4;
