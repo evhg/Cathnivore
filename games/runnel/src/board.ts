@@ -129,9 +129,11 @@ export class Board {
     const grainy = el('g', { class: 'terrace-grain' }, terrace)
     for (const c of puzzle.cells) {
       const { x, y } = cellCentre(c.q, c.r)
-      el('polygon', { points: hexPoints(S * 1.24), transform: `translate(${x} ${y + 1})` }, lip)
-      el('polygon', { points: hexPoints(S * 1.14), transform: `translate(${x} ${y})` }, apron)
-      el('polygon', { points: hexPoints(S * 1.14), transform: `translate(${x} ${y})`, fill: 'url(#soil-grain)' }, grainy)
+      // Plan item 516: a slimmer apron (1.06, was 1.14) inside a hedge bank (1.13, was a 1.24 turf lip), so the band
+      // round the board reads as the valley's hedge round a dug plot, not a thick plate's bevel
+      el('polygon', { points: hexPoints(S * 1.13), transform: `translate(${x} ${y + 1})` }, lip)
+      el('polygon', { points: hexPoints(S * 1.06), transform: `translate(${x} ${y})` }, apron)
+      el('polygon', { points: hexPoints(S * 1.06), transform: `translate(${x} ${y})`, fill: 'url(#soil-grain)' }, grainy)
     }
 
     // Plan item 138: each tile's ditches end inside its own dark rim (they used to run over it into the seam). The

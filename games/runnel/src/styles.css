@@ -5036,3 +5036,13 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 @media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: dark) {
   .stage:not(:has(.board.won)) .valley { --vk: 22%; }
 }
+
+/* Plan item 516: the board belongs to the valley's poster: the terrace round the board is the valley's ground under
+   a bank in the valley's hedge colour for the season and hour, not a pale beige plate. (The tiles keep their earth
+   rim: in the hedge's green it fell under runnel-tiles' 3:1 against the valley in both schemes.) */
+/* in the light scheme the apron is the valley's fallow, kept light so the tiles' dark earth rim holds 3:1 on it; the
+   dark scheme keeps its own apron (its rim is the light one) */
+@media (prefers-color-scheme: light) {
+  .stage .terrace-apron polygon { fill: color-mix(in srgb, var(--vl-fallow, var(--furrow)) 70%, var(--paper)); }
+}
+.stage .terrace-lip polygon { fill: var(--vl-hedge, var(--pasture-deep)); opacity: .9; }
