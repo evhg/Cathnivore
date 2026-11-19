@@ -2190,7 +2190,7 @@ html.no-animations .end-play, html.no-animations .end-chart, html.no-animations 
   /* Under them, the pair's abilities in full and Cath's line on how they cover each other. */
   .setup .pair-panel { display: grid; gap: 2px; margin-top: 3px; }
   .setup .pair-abilities { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .setup .pair-ability { margin: 0; padding: 0 0 0 8px; border-left: 3px solid var(--pc, var(--rule)); font-size: var(--fs-label); line-height: 1.3; color: var(--ink); }
+  .setup .pair-ability { margin: 0; padding: 0 0 0 8px; border-left: 3px solid var(--pc, var(--rule)); font-size: var(--fs-caption); line-height: 1.25; color: var(--ink); }
   .setup .pair-ability .pair-portrait { display: block; position: relative; width: 104px; margin: 0 auto 12px; line-height: 0; }
   .setup .pair-portrait svg {
     width: 100px; height: 120px; border: 2px solid var(--pc); border-radius: 50% / 46%;
