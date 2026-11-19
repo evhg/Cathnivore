@@ -35,9 +35,10 @@ let resize: ResizeObserver | undefined
 
 function observe(svg: Element): void {
   if (!(svg instanceof SVGSVGElement) || svg.hasAttribute('data-cath-lod')) return
-  const r = svg.getBoundingClientRect()
+  // Gate 7 (2026-11-19): no getBoundingClientRect here. Read in this (pre-paint) mutation callback it forced a second
+  // full layout of the page before the first paint; the observer's first entry comes after the frame's own layout
+  // and still before that frame paints, so the scale lands on the first frame either way.
   svg.setAttribute('data-cath-lod', 'full')
-  apply(svg, r.width, r.height)
   resize!.observe(svg)
 }
 
