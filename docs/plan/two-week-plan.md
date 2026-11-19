@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-19T08:53Z
+
 
 
 
@@ -4815,5 +4815,39 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-menu-P` (80-125 x 220-255): 'Next / On Air' against Cath and the 21 pin.
 - `games-D` (740-815 and 1050-1128 x 790-833): Hedgerow's and NIGHT SHIFT's 'PLAY' in caps beside two 'Play'.
 - `games-D`/`portfolio-D` Runnel poster: a pale hex mosaic unlike item 508's valley: check key-art staleness (keyart-fresh) and re-shoot if stale.
+- **Accept:** each point fixed or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 519. [ ] Cathnivore phone game: the table the hero, Cath reacting over it
+- **Why:** `cath-game-P` (plan1119b): the board takes about 44% of the height (8-382 x 100-475) under three stacked strips (the resources 0-58, the Squeeze/Expand/Scout strip 62-100, the event label); a producer/line band (485-600) and the hand (615-775) below it; the third card cramped and the fourth a 40 px sliver at the edge (350-390 x 620-775); Cath a 64 px static face (10-78 x 490-560) while at D she poses to every event (VISION 2: the table is the hero; 5: Cath reacts). Checked: item 405's hand dock and the '9 more' tab (512) kept as they are unless they block the accept.
+- **Build:** `src/ui/Game.tsx` and the game CSS below 720 px: the threat strip as plaques on the board's top edge, not a row above it; Cath's line as a speech bubble from a bust (her `cathPose` and the companion's expression) that pops over the board's corner for about 1.2 s on each reaction and rests small; the hand a row where every card on screen is whole (title in its box), the rest one swipe away.
+- **Accept:** at 390x844 the board's box is 55%+ of the viewport height; no hand card cut by the viewport edge and every visible card's title inside its card (bounding boxes); the reaction bust 110 px+ tall, its `data-expression` changing within 300 ms of a Squeeze and of a purchase, fades only under reduced motion; D unchanged; phone-hand-held, plan-strip, desktop-no-scroll, quick-game pass; shots P, D and 375x667.
+- **Size:** 3
+
+## 520. [ ] NIGHT SHIFT phone class pick: the case file on paper, like the desktop
+- **Why:** `ns-play-D` has the paper case file (2x boxes 970-1405 x 55-850 / 2), but `ns-play-P` (2x 22-758 x 1135-1660) is a plain black stat box with flat bar meters, and the class line still reads twice (2x 180-600 x 700-765 and 50-625 x 1045-1110; item 518's fade only covers the stage subtitle while it speaks). VISION 1/3: one designed language a game.
+- **Build:** the pick's phone layout (`games/cathode/src/ui/`, the class pick and front.css's phone block): the desktop dossier's paper component reflowed for an upright phone (a clipped weapon print, the stats as the dossier's own dials or ticks, the pinned quote), the class line said once.
+- **Accept:** at 390x844 the stats panel uses the desktop dossier's component class; the class line's text appears once on screen; the commit button visible without scrolling at 390x844 and 375x667; text 13 px+ at AA; cathode-classpick, cathode-classpose, cathode-type pass; shots P, L, D unchanged.
+- **Size:** 2
+
+## 521. [ ] Hedgerow phone level sheet: the briefing, not just a name
+- **Why:** `hedge-menu-P` (10-385 x 585-670): the phone's level sheet shows a name and a thumbnail, no Cath line and no vehicles, so a phone player goes in blind; at D (`hedge-menu-D` 1135-1410 x 495-670) the vehicles are a plain icon list beside item 324's painted briefing. Checked 324 (the D briefing), 348/403/511 (the round's convoy and tickets).
+- **Build:** `games/hedgerow/src/` level card: each of the level's vehicles as a small 'wanted' card (its sprite, a one-line habit, the tower that counters it, from `ENEMIES` data), the phone sheet dragging up (or a 'Briefing' tab) to the full briefing with Cath's line; at D the cards replace the list rows.
+- **Accept:** at 390x844 the opened sheet shows Cath's line and 3+ vehicle cards, each naming a counter tower, Play still in reach without scrolling; at D the cards fit the card with no overflow at 1440x900 and 1280x800; hedgerow level-card, map, map-you specs pass; shots P and D.
+- **Size:** 2
+
+## 522. [ ] Cathnivore campaign: chapters you can read whole, a spotlit map
+- **Why:** `cath-campaign-D` (1030-1377 x 140-880): the chapter list is a stack of alike cards with plain lock circles, chapters 5 and 6's copy ends in '...'; `cath-campaign-P` (12-380 x 520-580): the chapters are six tiny thumbnails. Checked 325 (Cath's pose per chapter: kept).
+- **Build:** `src/ui/CampaignScreen.tsx`/`CampaignMap.tsx`: the selected chapter as an opener panel (its scene on the map spotlit, its stakes in full, a seal), locked chapters as sealed envelopes with one teaser line, not a lock disc; on the phone the selected chapter's panel large under the map.
+- **Accept:** no chapter text ends in an ellipsis at D (1440x900 and 1280x800); selecting a chapter changes the map's spotlit regions (a class on them, spec); at 390x844 the selected panel is 160 px+ tall with Cath in it; tutorial and campaign specs pass; shots P and D.
+- **Size:** 2
+
+## 523. [ ] The bugs from the 2026-11-19 09:15 critique, fixed as one batch
+- `cath-game-P` (125-225 x 695-750): 'Buy Harbour Stall Licence' runs into the price badge and the 'i'.
+- `cath-setup-D` (108-125 x 520-540): the Easy/Hard radio dots clipped; (143-340 x 448-500) 'How hard Hollowell pushes' wraps where steps 1-2 are one line.
+- `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the bottom edge (also in 512: check the safe-area padding).
+- `cath-title-D` (110-320 x 635-690): the Daily card's details in three cramped centred lines.
+- `hedge-l21-2d-P`/`-3d-P` (222-368 x 676-700): the 'NEXT: ROUND 11' tab on the rack panel's border; (65-195 x 233-252) the 'Lifestyle influencer' tag over the plots.
+- `runnel-D` (165-320 x 630-750): 'Up next today' text jammed left under a centred eyebrow.
 - **Accept:** each point fixed or checked and noted here; shots P and D.
 - **Size:** 1
