@@ -996,6 +996,46 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       row.removeEventListener('scroll', onScroll)
     }
   })
+  // Plan item 519: a card only partly in view (face down, `data-cut-right`, useScrollCues) is brought into view by a
+  // tap, never played blind. Measured at the tap, not from the attribute, which is re-set a frame after a scroll.
+  useEffect(() => {
+    const row = document.querySelector<HTMLElement>('.action-tray .actions')
+    if (!row || isDesktop) return
+    let held: HTMLElement | null = null
+    const partial = (e: Event) => {
+      const card = (e.target as HTMLElement | null)?.closest<HTMLElement>('.action-item')
+      if (!card || card.parentElement !== row || card.dataset.peek !== undefined || card.dataset.fan !== undefined) return null
+      if (card.matches(':focus-within')) return null
+      const r = card.getBoundingClientRect()
+      const s = row.getBoundingClientRect()
+      return r.left < Math.max(s.left, 0) - 3 || r.right > Math.min(s.right, window.innerWidth) + 3 ? card : null
+    }
+    const swallow = (e: Event) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    const onDown = (e: PointerEvent) => {
+      held = partial(e)
+      if (held) swallow(e)
+    }
+    const onUpOrClick = (e: Event) => {
+      const card = held ?? partial(e)
+      if (!card) return
+      swallow(e)
+      if (e.type === 'click') {
+        held = null
+        card.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: loadSettings().animations ? 'smooth' : 'auto' })
+      }
+    }
+    row.addEventListener('pointerdown', onDown, true)
+    row.addEventListener('pointerup', onUpOrClick, true)
+    row.addEventListener('click', onUpOrClick, true)
+    return () => {
+      row.removeEventListener('pointerdown', onDown, true)
+      row.removeEventListener('pointerup', onUpOrClick, true)
+      row.removeEventListener('click', onUpOrClick, true)
+    }
+  })
   // Plan item 405: on the phone counter (390x844 and taller) the playable cards are a fanned dock: each lies over the
   // one before, showing its left strip (family seal and price), and one card is lifted whole, 140 px+ wide with its
   // name, price and 'i'. A tap on a strip lifts that card (it doesn't play it); a tap on the lifted card plays it.

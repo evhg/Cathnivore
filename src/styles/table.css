@@ -1996,7 +1996,8 @@ html.no-animations .cath-companion .cameo {
     overflow-y: hidden;
     padding: 12px var(--sp-2) 10px;
     margin: -4px calc(-1 * var(--sp-2)) 0;
-    scroll-snap-type: x proximity;
+    /* plan item 519: a swipe rests on a card's start, so no card rests cut at either edge */
+    scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--sp-2);
     overscroll-behavior-x: contain;
     scrollbar-width: none;
@@ -2005,6 +2006,11 @@ html.no-animations .cath-companion .cameo {
 
   .action-tray .actions::-webkit-scrollbar {
     display: none;
+  }
+
+  /* the row's last card snaps by its end, so a swipe can still reach the row's end */
+  .action-tray .actions > .action-item:last-child {
+    scroll-snap-align: end;
   }
 
   .action-tray .actions > p {
@@ -3779,6 +3785,8 @@ html.no-animations .table-cath-line { animation: none; }
     filter: saturate(0.55) brightness(0.96);
     transition: translate 150ms var(--ease-out), rotate 150ms var(--ease-out);
   }
+  /* plan item 519: the pile's last card still snaps by its end, so the mandatory snap reaches the row's end */
+  .action-tray .actions .action-head-later ~ .action-item:last-child { scroll-snap-align: end; }
   .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]) ~ .action-item:not([data-hand-card]) {
     margin-left: -126px;
     box-shadow: -3px 0 6px var(--ink-a15);
@@ -5106,12 +5114,12 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
 /* Plan item 287: on the phone's sideways hand a card that shows less than half at the right edge (the 'n more ›' tab
    counts it) turns face down: the wooden back of the NOT YET deck, so the edge reads as more cards in the hand (item
    83's peek), never as a card cut by broken layout. It turns face up as it scrolls in past half, and keyboard focus
-   turns it at once. */
+   turns it at once. Plan item 519: any card only partly in view, at either edge, turns face down too, and a tap on
+   one brings it into view instead of playing it (Game.tsx). */
 @media (max-width: 1023.98px) {
   .action-tray .actions > .action-item { position: relative; }
   .action-tray .actions > .action-item > * { transition: opacity 160ms linear; }
   .action-tray .actions > .action-item[data-cut-right]:not(:focus-within) > * { opacity: 0; }
-  .action-tray .actions > .action-item[data-cut-right]:not(:focus-within) { pointer-events: none; }
   .action-tray .actions > .action-item[data-cut-right]:not(:focus-within)::after {
     content: "";
     position: absolute;

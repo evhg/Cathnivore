@@ -165,3 +165,43 @@ for (const width of [360, 390, 430]) {
     await expect.poll(slivers, { message: 'a sliver shows its back' }).toEqual((await slivers()).map(() => ({ cut: true, face: '0' })))
   })
 }
+
+// Plan item 519: at 390x844 no face-up card is ever cut by the screen's edge: the row snaps to card starts, and a
+// card only partly in view (at either edge, mid-swipe) shows its back. Every face-up card's name sits inside it.
+test('the phone hand never shows a face-up card cut at either edge', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'phone layout')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '1')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  const row = page.locator('.action-tray .actions')
+  const faults = () => page.evaluate(() => {
+    const row = document.querySelector<HTMLElement>('.action-tray .actions')!
+    const box = row.getBoundingClientRect()
+    const l = Math.max(box.left, 0)
+    const r = Math.min(box.right, window.innerWidth)
+    const out: string[] = []
+    for (const el of row.querySelectorAll<HTMLElement>(':scope > .action-item')) {
+      const b = el.getBoundingClientRect()
+      if (b.right <= l || b.left >= r) continue
+      const face = getComputedStyle(el.firstElementChild!).opacity !== '0'
+      const name = (el.querySelector('.action-label')?.textContent ?? '').trim().slice(0, 24)
+      if (face && (b.left < l - 3 || b.right > r + 3)) out.push(`cut ${name} ${Math.round(b.left)}-${Math.round(b.right)}`)
+      const label = el.querySelector('.action-label')?.getBoundingClientRect()
+      if (face && label && (label.left < b.left - 1 || label.right > b.right + 1 || label.bottom > b.bottom + 1)) out.push(`name out of ${name}`)
+    }
+    return out
+  })
+  for (const by of [0, 60, 150, 230, 320]) {
+    await row.evaluate((el, by) => el.scrollTo({ left: by, behavior: 'instant' as ScrollBehavior }), by)
+    await expect.poll(faults, { message: `scrolled to ${by}` }).toEqual([])
+  }
+  // a swipe rests on a card's start (within the cards' tilt)
+  await row.evaluate((el) => el.scrollTo({ left: 175, behavior: 'instant' as ScrollBehavior }))
+  await expect.poll(() => row.evaluate((el) => {
+    const l = el.getBoundingClientRect().left + (parseFloat(getComputedStyle(el).scrollPaddingInlineStart) || 0)
+    return [...el.querySelectorAll(':scope > .action-item')].some((c) => Math.abs(c.getBoundingClientRect().left - l) < 4)
+  })).toBe(true)
+})

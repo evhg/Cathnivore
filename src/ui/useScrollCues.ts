@@ -23,26 +23,40 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
       toggle(el, 'fadeTop', top)
       toggle(el, 'fadeBottom', bottom)
       // Critique 2026-11-03: a row that scrolls sideways (the phone's hand of action cards) says so too.
-      const right = el.scrollWidth - el.clientWidth > 2 && el.scrollLeft + el.clientWidth < el.scrollWidth - 2
+      // (Plan item 519: and a card still lies past the edge: the hand's mandatory snap rests its last card on the edge,
+      // a few px short of the scroll's end.)
+      const right = el.scrollWidth - el.clientWidth > 2 && el.scrollLeft + el.clientWidth < el.scrollWidth - 2 &&
+        Array.from(el.children).some((c) => {
+          const r = c.getBoundingClientRect()
+          return r.width > 0 && r.right > el.getBoundingClientRect().right + 3
+        })
       toggle(el, 'fadeRight', right)
       // Plan item 266: and how many cards lie past the edge (a card more than half out counts), so the tab says so.
-      if (right) {
-        const edge = el.getBoundingClientRect().right
+      const sideways = el.scrollWidth - el.clientWidth > 2
+      if (sideways) {
+        const box = el.getBoundingClientRect()
+        const edge = box.right
         let n = 0
         for (const c of Array.from(el.children)) {
           const r = c.getBoundingClientRect()
-          const past = r.width > 0 && r.left + r.width / 2 > edge && !c.matches('[aria-hidden="true"], .action-head, [data-fan]')
+          const skip = r.width === 0 || c.matches('[aria-hidden="true"], .action-head, [data-fan], [data-peek]')
+          const past = !skip && right && r.left + r.width / 2 > edge
           if (past) n++
           // (Plan item 405: the counter fan's cards are all in the dock, mid-lift too: never counted.)
-          // Plan item 287: a card counted as past the edge but still showing a sliver is faded out whole (the tab
-          // counts it), so the edge never shows a cut card; scrolling it in past half brings it back.
-          const cut = past && r.left < edge
+          // Plan item 287: a card past the edge but still showing a sliver turns face down (the tab counts it), so
+          // the edge never shows a cut card. Plan item 519: so does any card only partly in view, at either edge
+          // (the row snaps to card starts, so one rests that way only mid-swipe); 3 px spare for the cards' tilt.
+          const cut = !skip && ((r.right > edge + 3 && r.left < edge) || (r.left < box.left - 3 && r.right > box.left))
           if (cut !== c.hasAttribute('data-cut-right')) c.toggleAttribute('data-cut-right', cut)
         }
         const v = n > 9 ? '9+' : String(n)
-        if (el.dataset.moreRight !== v) el.dataset.moreRight = v
-      } else if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
-      if (!right) for (const c of Array.from(el.querySelectorAll(':scope > [data-cut-right]'))) c.removeAttribute('data-cut-right')
+        if (right) {
+          if (el.dataset.moreRight !== v) el.dataset.moreRight = v
+        } else if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
+      } else {
+        if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
+        for (const c of Array.from(el.querySelectorAll(':scope > [data-cut-right]'))) c.removeAttribute('data-cut-right')
+      }
       const owner = el.parentElement
       if (!owner) return
       let more = 0
