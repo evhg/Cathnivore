@@ -595,7 +595,7 @@ function DifficultySheet({ difficulty }: { difficulty: GameConfig['difficulty'] 
     ['Lost Land', `${s.lostLandPool} to lose`, s.lostLandPool !== n.lostLandPool],
     [
       'Kingsmarket',
-      `${s.kingsmarketOutlets} Outlet${s.kingsmarketOutlets === 1 ? '' : 's'}${s.kingsmarketBuyouts ? `, ${s.kingsmarketBuyouts} Buyout` : ', no Buyout'}`,
+      `${s.kingsmarketOutlets}\u00a0Outlet${s.kingsmarketOutlets === 1 ? '' : 's'}${s.kingsmarketBuyouts ? `, ${s.kingsmarketBuyouts}\u00a0Buyout` : ', no\u00a0Buyout'}`,
       s.kingsmarketOutlets !== n.kingsmarketOutlets || s.kingsmarketBuyouts !== n.kingsmarketBuyouts,
     ],
   ]

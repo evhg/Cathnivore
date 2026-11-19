@@ -5105,7 +5105,10 @@ img.act-scene {
      (no padding, the rows 2 px apart) so act 1's card stays whole on a 900 px screen (item 372: 2 px in read 917) */
   #screen-select li.act.act-has-card .level-card .lcard-enemies { gap: 2px; }
   #screen-select li.act.act-has-card .lcard-enemies li {
-    padding: 0 8px 0 0;
+    /* plan item 532: the portrait inside its slip, 8 px clear of the words (it ran past the slip's edge, the habit
+       flush against it) */
+    gap: 8px;
+    padding: 0 8px 0 3px;
     border: 1.5px solid color-mix(in srgb, var(--soil) 45%, transparent);
     border-radius: 4px;
     background: var(--paper-hi);

@@ -2065,7 +2065,8 @@ h1 {
   flex-wrap: wrap;
   gap: var(--sp-2) var(--sp-6);
   max-width: none;
-  margin: 0;
+  /* plan item 532: a step clear of the track's hour labels (it sat flush under them, one cramped row) */
+  margin: var(--sp-2) 0 0;
   padding: 0;
   border: 0;
   animation: none;

@@ -6141,6 +6141,10 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) { position: relative; grid-template-areas: "art head eff eff" "tgt tgt tgt tgt"; }
   /* its stage tag a tab on the card's top-left corner, so the chips have the whole line */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dateline { position: absolute; left: -4px; top: -6px; }
+  /* plan item 532: as a corner tab the lone numeral read as a stray 'I': the tab says 'Stage I' (the word was hidden
+     to save width in the line, which the tab no longer takes) */
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage-word { display: inline; font-size: var(--fs-label); text-transform: uppercase; letter-spacing: .04em; }
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage { white-space: nowrap; gap: 3px; grid-auto-flow: column; }
   .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% - 8px); }
   /* the chips' line runs on under the raised (i) into the card's right padding: at 1280 'Shingle Bay' and
      'Saltmarsh' are 150 px against the 135 px between the paddings (plan-cards) */

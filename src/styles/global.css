@@ -1679,7 +1679,7 @@ html.no-animations .card-enter {
 .setup .segmented.mode-picker { flex-direction: column; border-radius: 18px; }
 /* What the chosen difficulty changes (from the rules' own table); lines that differ from Normal carry a wheat tick. */
 .setup .difficulty-sheet { margin-top: 10px; display: grid; gap: 6px; }
-.setup .difficulty-line { margin: 0; font-family: var(--font-voice); font-style: italic; font-weight: 420; color: var(--ink-muted); }
+.setup .difficulty-line { margin: 0; font-family: var(--font-voice); font-style: italic; font-weight: 420; color: var(--ink-muted); text-wrap: balance; }
 .setup .difficulty-sheet dl { margin: 0; display: grid; gap: 0; }
 .setup .difficulty-sheet dl > div { display: grid; grid-template-columns: 7.5em 1fr; gap: 8px; padding: 3px 0 3px 14px; border-bottom: 1px dashed color-mix(in srgb, var(--soil) 30%, transparent); position: relative; }
 .setup .difficulty-sheet dl > div:last-child { border-bottom: 0; }
