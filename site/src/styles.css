@@ -2086,3 +2086,13 @@ body {
   /* on the slate itself at D: no backing (it spilled past the slate's frame) */
   .today-board { padding: 2px 0 0; background: none; }
 }
+
+/* Plan item 517: at D Cath is the booth's centre: her column takes the larger share (her centre near the middle of
+   the screen, not its left quarter), she stands about 400 px tall behind the counter, and the words (with the slate
+   board drawn round them by booth.ts) narrow to the right so the board is about a third of the width. */
+@media (min-width: 1100px) and (min-aspect-ratio: 1/1) {
+  .hero[data-booth] { grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); }
+  .hero[data-booth] .hero-cath { height: min(44vh, 400px); }
+  .hero[data-booth] .hero-text { max-width: 440px; }
+  .hero[data-booth] .hero-text .title { font-size: clamp(3rem, 5.4vw, 5rem); }
+}
