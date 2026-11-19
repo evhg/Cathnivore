@@ -345,6 +345,10 @@ export const FOLK_3D_SCALE = 1.25;
 export class FolkMeshes {
   readonly group = new THREE.Group();
   private rigs = new Map<number, Rig>();
+  /** Plan item 515: the people on the field (rigs with no tail or wings), for the towers' height checks. */
+  people(): THREE.Object3D[] {
+    return [...this.rigs.values()].filter((r) => !r.tail && !r.wing && r.root.visible).map((r) => r.root);
+  }
   /** Plan item 485: at dusk the farm's people carry a lantern at their side (one instanced draw for them all). */
   lit = false;
   private lanterns = new THREE.InstancedMesh(

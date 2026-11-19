@@ -208,6 +208,13 @@ const DUSK_HORIZON = new THREE.Color("#ee7440");
 /** Plan item 98: the camera elevation (radians above the horizon) past which Cath leans back towards the lens. */
 const CATH_LEAN_FROM = 0.95;
 
+/** Plan item 515: how much each 3D tower's body is scaled over its model (its plinth isn't), so the defences stand
+ * as the field's landmarks: the tall ones about 1.3-1.5x a farmer, the squat ones as tall as a farmer, each body
+ * still inside its plot. The 2D sprites are unchanged. */
+const TOWER_STAND: Partial<Record<string, number>> = {
+  hedgerow: 1.45, scarecrow: 1.6, beehive: 1.5, stall: 1.4, pond: 1.25, windmill: 1.55, mast: 1.3, cannon: 1.55, silo: 1.55,
+};
+
 export class Renderer3D {
   private renderer: THREE.WebGLRenderer;
   private composer: EffectComposer;
@@ -853,6 +860,27 @@ export class Renderer3D {
 
   /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
   /** Plan item 284: her whole figure's box on the page in CSS px, so shot scripts can crop round her on any level. */
+  /** Plan item 515: on-screen heights (CSS px) of each built tower, each farmer and Cath, for the towers' scale checks. */
+  towerHeights(): { towers: Array<{ kind: string; h: number; w: number; world: number }>; folk: number[]; folkWorld: number[]; cath: number | null; cathWorld: number | null } {
+    const r = this.canvas.getBoundingClientRect();
+    const box = (o: THREE.Object3D) => new THREE.Box3().setFromObject(o);
+    const hOf = (o: THREE.Object3D) => this.boxRect(box(o), r.width, r.height);
+    const tall = (o: THREE.Object3D) => { const b = box(o); return b.max.y - b.min.y; };
+    const towers: Array<{ kind: string; h: number; w: number; world: number }> = [];
+    for (const [, v] of this.towers) {
+      const lean = (v.obj.userData.lean as THREE.Object3D | undefined) ?? v.obj;
+      const b = hOf(lean);
+      towers.push({ kind: String(v.sig.split(":")[0]), h: b.h, w: b.w, world: tall(lean) });
+    }
+    const people = this.folkMeshes.people();
+    return {
+      towers,
+      folk: people.map((o) => hOf(o).h),
+      folkWorld: people.map(tall),
+      cath: this.cath?.visible ? hOf(this.cath).h : null,
+      cathWorld: this.cath?.visible ? tall(this.cath) : null,
+    };
+  }
   cathScreenBox(): Rect | null {
     if (!this.cath?.visible) return null;
     const r = this.canvas.getBoundingClientRect();
@@ -1907,6 +1935,8 @@ export class Renderer3D {
           for (const c of obj.children.filter((o) => o.name !== "plinth")) lean.add(c);
           obj.add(lean);
           obj.userData.lean = lean;
+          // Plan item 515: the tower's body stands up as the field's landmark (the plinth stays on its plot)
+          lean.scale.setScalar(TOWER_STAND[tw.kind] ?? 1);
           shadowUpright(lean, (m) => m.identity());
         }
         this.dynamic.add(obj);
