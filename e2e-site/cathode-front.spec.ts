@@ -206,11 +206,11 @@ test('the front door has no letterbox bars at P and D', async ({ page }) => {
   }
 })
 
-// Plan item 82: on an upright phone she stood in the lower right, clear of the menu. Plan item 148 frames her whole
-// on the title instead, umbrella to shoes, down the right above The List's photo strip: her figure inside the
-// viewport and meeting no polaroid, her face meeting no menu entry, the scene's key light named on the canvas, and
-// the neon blade behind her with its backlit rain.
-test('upright, she stands whole above The List, her face clear of the menu', async ({ page, hasTouch }) => {
+// Plan item 82: on an upright phone she stood in the lower right, clear of the menu. Plan item 148 framed her whole,
+// umbrella to shoes; plan item 526 frames her waist up instead, one composed portrait right of the menu plate: her
+// head and face on screen, the face clear of every menu entry and above The List's photo strip, her body off the
+// plate, the scene's key light named on the canvas, and the neon blade with its backlit rain.
+test('upright, she stands waist up beside the menu, her face clear of it and of The List', async ({ page, hasTouch }) => {
   test.skip(!hasTouch, 'the upright phone framing')
   test.setTimeout(200_000)
   await page.setViewportSize({ width: 390, height: 844 })
@@ -225,6 +225,9 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
     const scene = (window as unknown as { cathodeFront: { scene(): { figureBox(): B; faceBox(): B } | null } }).cathodeFront.scene()
     return {
       rows: [...document.querySelectorAll('#menu button, #menu a')].map(box).filter((r) => r.right > r.left),
+      plate: box(document.querySelector('.menu')!),
+      wall: box(document.querySelector('#the-list-wall')!),
+      body: (scene as unknown as { figureBox(body: boolean): B }).figureBox(true),
       mugs: [...document.querySelectorAll('#the-list-wall .mug')].map(box).filter((r) => r.right > r.left),
       fig: scene!.figureBox(),
       face: scene!.faceBox(),
@@ -239,13 +242,15 @@ test('upright, she stands whole above The List, her face clear of the menu', asy
   const hits = (a: B, b: B) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
   expect(m.mugs.length).toBeGreaterThan(0)
   expect(m.fig.top, JSON.stringify(m.fig)).toBeGreaterThanOrEqual(0)
-  expect(m.fig.left).toBeGreaterThanOrEqual(0)
-  expect(m.fig.right).toBeLessThanOrEqual(390)
-  expect(m.fig.bottom).toBeLessThanOrEqual(844)
-  for (const mug of m.mugs) expect(hits(m.fig, mug), JSON.stringify({ fig: m.fig, mug })).toBe(false)
-  for (const r of m.rows) expect(hits(m.face, r), JSON.stringify({ face: m.face, r })).toBe(false)
-  // Whole, but not small: she fills most of the screen above the strip.
-  expect(m.fig.bottom - m.fig.top).toBeGreaterThan(560)
+  // her body keeps off the menu plate (item 526: the plate keeps to a narrower column)
+  expect(hits(m.body, m.plate), JSON.stringify({ body: m.body, plate: m.plate })).toBe(false)
+  // her face whole on screen, clear of every menu entry and mugshot, above the photo strip
+  expect(m.face.left).toBeGreaterThanOrEqual(0)
+  expect(m.face.right).toBeLessThanOrEqual(390)
+  expect(m.face.bottom, JSON.stringify({ face: m.face, wall: m.wall })).toBeLessThanOrEqual(m.wall.top)
+  for (const r of [...m.rows, ...m.mugs]) expect(hits(m.face, r), JSON.stringify({ face: m.face, r })).toBe(false)
+  // a portrait, not a figurine: her face is a real presence on the phone
+  expect(m.face.bottom - m.face.top).toBeGreaterThan(110)
   // Plan item 258: the sign hangs under the menu, left of her: it meets her figure box under 5%, stays off every
   // menu entry and mugshot, on screen and big enough to read; rain falls through its light.
   const over = (a: B, b: B) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top))

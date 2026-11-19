@@ -616,6 +616,14 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Plan item 422: an upright phone keeps 20 cm (8 over the hair): its stage is short, and the 40 held her to about
     // 35% of the screen's height; the faces still sit level, a little higher.
     if (cloudBody) cloud.push(new THREE.Vector3(0, cam.aspect < 1 ? 0.2 : 0.4, 0).applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv));
+    // Plan item 526: the upright title frames her waist up, a portrait beside the menu rather than a small whole
+    // figure: the fit measures only what lies above her waist (58% of her head's height), and the rest runs off the
+    // stage's foot behind The List.
+    if (!cloudBody && cam.aspect < 1) {
+      const waist = new THREE.Vector3().applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv).y * 0.58;
+      const upper = cloud.filter((v) => v.y >= waist);
+      if (upper.length > 8) cloud.splice(0, cloud.length, ...upper);
+    }
     cloudAge = 0;
   }
   const fitPos = new THREE.Vector3();

@@ -867,6 +867,13 @@
     margin-left: calc(var(--u) * 12 - var(--safe-x));
     padding: calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 40);
   }
+  /* Plan item 526: framed waist up she stands larger, so the plate keeps to a narrower column: the mark's hang and
+     the left pad tighter, the rows' type a step smaller. */
+  .menu {
+    --mark-hang: calc(var(--u) * 22);
+    padding-left: calc(var(--u) * 30);
+  }
+  .menu-item { font-size: var(--fs-3); }
   /* Plan item 251: the rows' trailing pad (room for nothing upright) pushed the plate's rim 15 px onto her left
      elbow; without it the plate ends about 5 px short of her body at 390 and 375. */
   .menu-item { padding-right: 0; }
