@@ -9,7 +9,7 @@ async function start(page: Page) {
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.map .region-hex').first().waitFor()
+  await page.locator('.game .map .region-hex').first().waitFor() // the Setup's opening board is a .map too (item 513)
 }
 const idle = (page: Page) => page.evaluate(() => [...document.querySelectorAll<SVGElement>('.map [data-idle]')].map((e) => ({
   kind: e.dataset.idle!, anim: getComputedStyle(e).animationName, delay: getComputedStyle(e).animationDelay,

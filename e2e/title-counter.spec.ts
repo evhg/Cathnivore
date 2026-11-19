@@ -57,7 +57,7 @@ for (const withSave of [false, true]) {
       await page.goto('/')
       await page.getByText('Quick Game').click()
       await page.getByRole('button', { name: 'Start' }).click()
-      await page.locator('.map').first().waitFor()
+      await page.locator('.game .map').first().waitFor() // the Setup's opening board is a .map too (item 513)
     }
     await page.goto('/')
     await page.locator('.title-cath svg').waitFor()

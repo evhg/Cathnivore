@@ -6,7 +6,7 @@ test('a region tapped on a phone opens up close', async ({ page }, testInfo) => 
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.map').waitFor()
+  await page.locator('.game .map').waitFor() // the Setup's opening board is a .map too (item 513)
   const phone = testInfo.project.name === 'phone'
   // Hollowell starts with pieces somewhere; open the region holding the most.
   const target = await page.evaluate(() => {
@@ -52,7 +52,7 @@ test('the close-up offers this turn\'s actions on the region', async ({ page }, 
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.map').waitFor()
+  await page.locator('.game .map').waitFor()
   // Try regions until one offers an action this turn (the opening turn can open a stall somewhere).
   const ids = await page.locator('.region-hex').evaluateAll((els) => els.map((e) => (e as SVGGElement).dataset.region!))
   for (const id of ids) {

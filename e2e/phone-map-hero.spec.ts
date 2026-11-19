@@ -9,7 +9,7 @@ test('phone board fills its frame', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.map .tile-edges').waitFor()
+  await page.locator('.game .map .tile-edges').waitFor() // the Setup's opening board is a .map too (item 513)
   await page.waitForTimeout(300)
   const m = await page.evaluate(() => {
     const f = document.querySelector('.map-wrap')!.getBoundingClientRect()
@@ -27,7 +27,7 @@ test('phone map shows every hex above the hand', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await page.locator('.map').waitFor()
+  await page.locator('.game .map').waitFor()
   const fit = await page.evaluate(() => {
     const scroll = document.querySelector('.game-scroll')!
     const view = scroll.getBoundingClientRect()
