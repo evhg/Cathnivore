@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-19T12:21:45Z
 
 
 
@@ -4853,4 +4852,88 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-l21-2d-P`/`-3d-P` (222-368 x 676-700): the 'NEXT: ROUND 11' tab on the rack panel's border; (65-195 x 233-252) the 'Lifestyle influencer' tag over the plots.
 - `runnel-D` (165-320 x 630-750): 'Up next today' text jammed left under a centred eyebrow.
 - **Accept:** each point fixed or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 524. [ ] Cath, every full-figure use: a fashion-proportioned figure with real poses
+- **Why:** `portfolio-D` (plan1119c) 1280-1390 x 180-515, `portfolio-P` 280-345 x 215-410, `runnel-D` 435-535 x 525-860, `hedge-menu-D` 145-185 x 230-390: the standing Cath is a paper doll. Her legs are about 60% of her height and her head about 12%. She stands rigid, arms at her sides, in beige trousers with blocks for boots. The bust Cath (`cath-title-D` 545-805 x 320-755: liner, pearls, pendant) is far ahead of her. VISION "Cath: character bible" (age and build, Style, Expressions) and "Characters with presence".
+- **Build:** `shared/cath/`'s full figure redrawn at about 7.5 heads:
+  - **Clothes:** a tailored olive field jacket to mid-thigh with the collar up, a cream blouse, slim dark trousers and real ankle boots.
+  - **Poses:** at least 4 (point, wave, hand on hip, holding a prop such as a watering can or crate) with the bust's expressions.
+  - **Idle:** a weight-shift idle (breath, hair sway), off under reduced motion.
+  - **Where:** swapped in at every full-figure use: the portfolio hero, the /games/ cut-outs, Runnel's host, Hedgerow's act-map marker.
+  - **Checked:** the bust framing stays as it is.
+- **Accept:**
+  - The head is 13-15% of the figure's height (in the module's viewBox).
+  - The portfolio D figure is 330 px+ tall and Runnel's D figure 300 px+.
+  - Each use carries `data-pose`, with 3+ distinct poses across those screens.
+  - The bust Cath (Cathnivore title and game) is unchanged.
+  - keyart-fresh passes after `npm run keyart`.
+  - Shots P and D of portfolio, /games/, Runnel and the Hedgerow menu.
+- **Size:** 3
+
+## 525. [ ] Cathnivore table: the land stays warm under Hollowell, who sits on it as glossy plastic
+- **Why:** `cath-game-D` (plan1119c) 590-1220 x 110-710, `cath-game-P` 15-375 x 140-470, `cath-setup-D` 405-990 x 255-830, `cath-title-D` 865-1365 x 285-735: every occupied region sits under a grey-blue crackle wash, so the table reads cold and dull for most of a match. VISION 2 says the table is the most beautiful thing on screen. VISION's art direction sets the players' world as warm paper, ink and flat colour, and the corporations as glossy, plastic and over-lit: the wash greys the land instead of laying plastic over it.
+- **Build:** `src/ui` (the region renderer) and `src/styles`:
+  - Each region keeps its warm palette and paper texture at full strength.
+  - Hollowell's hold becomes objects on top: a shrink-wrap sheen with a specular streak across the hex, chrome rims on his outlets, and a cold over-lit spot pool or two.
+  - A liberation peels the wrap off in 600-900 ms (a fade under reduced motion).
+  - The plastic's colours are tokens in `tokens.css`.
+- **Accept:**
+  - The board's mean saturation in round 1 at D (box 590-1220 x 110-710) is 1.4x today's or more.
+  - Region name plates are 4.5:1+.
+  - Occupied and liberated regions stay apart in greyscale (a sheen or shape, not hue alone).
+  - The liberation moment runs 600-900 ms (moments.spec).
+  - ui-css-lint passes.
+  - Shots P and D of the title, Setup and game, light and dark.
+- **Size:** 2
+
+## 526. [ ] NIGHT SHIFT phone title: one composed frame, Cath clear of the menu and The List
+- **Why:** `ns-title-P` (plan1119c, 2x: 780x1688) has four elements fighting for the frame:
+  - Cath's face is low (560-680 x 1140-1260) and The List strip (20-745 x 1420-1610) runs over her.
+  - The umbrella's canopy (230-780 x 740-900) lies across the CREDITS row.
+  - The HOLLOWELL sign is cut to 'HOLLOW' (360-780 x 640-760) behind the menu.
+  - The Ledger (25-395 x 890-1225) floats over her coat.
+  
+  Item 505 gave D one focal point; the phone has none. VISION 1 (a clear focal point, a deliberate hierarchy).
+- **Build:** `games/cathode/src/ui` and the title scene's phone framing (frontscene.ts, a poster source: re-render the posters):
+  - Cath waist-up in the right 55% of the screen, her face in the upper-middle third.
+  - The menu on the left over a darkened gradient, with the umbrella above it.
+  - The Ledger a smaller tilted clipping pinned under the menu.
+  - The List one row clear of her.
+  - The sign either whole or cropped as a deliberate frame, never mid-word.
+- **Accept:**
+  - At 390x844 her face box (`scene().faceBox()`) lies within y 180-480 and meets none of the menu, Ledger or List boxes (a new e2e box check).
+  - No word of the sign is cut by the viewport.
+  - Menu text is 4.5:1+.
+  - D is unchanged; posters are re-rendered and keyart-fresh is green.
+  - cathode-front and cathode-frontpage pass.
+  - Shots P and D.
+- **Size:** 2
+
+## 527. [ ] Hedgerow in a level: the tower shop as a rack of seed packets, and a coach line that reads the level
+- **Why:**
+  - **The shop:** `hedge-l21-2d-D` (plan1119c) 900-1280 x 85-350, `hedge-l34-2d-D` 965-1345 x 85-365 and `hedge-l21-3d-D` 1105-1415 x 85-350 show a spreadsheet-like grid of small cells: about 40 px icons, price chips on top, 'Shoots/Splash' captions. With the round card, the coach and the coming-up table, the right column competes with the field.
+  - **The coach:** its line is the same at level 21 and 34 ('Build a Scarecrow... Tap a plot to build', `hedge-l21-2d-P` 95-365 x 700-745).
+  - VISION 1 and 2 (panels support, nothing looks like a default form) and 3 (no mystery).
+  - **Checked:** on a phone the build is a plot tap, which the coach names, so it stays.
+- **Build:** `games/hedgerow/src`:
+  - **At D:** the shop becomes a rack of illustrated seed packets: 64-72 px art each, the price on a stamped tag, grouped by role (Shoots, Splash, Slows, Earns). An unaffordable packet fades; a locked one is tied with string.
+  - **Coach:** Cath's line reads the level. It names a threat from the next round's convoy or the twist (level 34's flood) and the tower in the kit that answers it (item 521's `counterFor`), then folds after the first build.
+- **Accept:**
+  - At D the packet art is 60 px+ and the shop column 360 px wide or less.
+  - The coach text differs between level 21 and 34, and names a tower in that level's kit.
+  - The ?2d build specs and hedgerow-tray and hedgerow-critique pass.
+  - Tower costs and the tuner are untouched (visual only).
+  - Shots P and D of levels 21 and 34, 2D and 3D.
+- **Size:** 2
+
+## 528. [ ] The bugs from the 2026-11-19 12:30 critique, fixed as one batch
+- `ns-title-D` (585-855 x 858-866): a stray thin rule floats under The List's cards.
+- `hedge-l21-2d-P`/`hedge-l34-2d-P` (0-390 x 55-200): a milky haze over the top of the 2D field. It may be the day's light (item 485): check it, or soften it.
+- `hedge-l21-3d-D` (115-225 x 500-790): the 3D Cath and farmer stand about twice the scale of the beds and house. Item 515 measured them at 1.34 world units: check, and note the decision.
+- `cath-setup-D` (340-440 x 175-197): the 'Injunction' power tag is clipped at Mara's card edge.
+- `cath-title-P` (168-186 x 425-452): Cath's waving hand overlaps the board preview's top-left hex.
+- `cath-game-D` (1345-1410 x 795-885): the '8 NOT YET' deck overlaps the last hand card (Injunction) rather than sitting beside it.
+- `games-D` (340-1010 x 630-740): the same Cath cut-out appears on three cards and in the booth. Give each card its own pose: item 524's poses, or the bust's expressions until then.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
