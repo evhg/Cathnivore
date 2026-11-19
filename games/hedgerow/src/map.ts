@@ -9,6 +9,7 @@ import { ENEMIES, TOWERS, TWISTS, isFleet, type EnemyKind, type Level, type Towe
 import { countersFor, needsUpgrade, traitsOf } from "./intro";
 import { towerRole } from "./roles";
 import { enemyIcon, towerIcon } from "./icons";
+import { driverFace } from "./fleetfaces";
 import { startPlatePreview, type PlatePreview } from "./platepreview";
 import { openActs } from "./unlocks";
 import { landState, stopLandSvg } from "./stopland";
@@ -2244,7 +2245,7 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       foes.innerHTML = top
         .map(
           ([k]) =>
-            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt="">${counterBadge(k, lv)}</span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span>${counterLine(k, lv)}</span></li>`,
+            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt="">${counterBadge(k, lv)}<span class="lcard-driver">${driverFace(k)}</span></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span>${counterLine(k, lv)}</span></li>`,
         )
         .join("");
       preview = startPlatePreview(thumb, lv, matchMedia("(prefers-reduced-motion: reduce)").matches, top.map(([k]) => k));
