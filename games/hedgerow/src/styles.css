@@ -4974,6 +4974,19 @@ img.act-scene {
 .lcard-foe { display: grid; gap: 1px; min-width: 0; }
 .lcard-foe b { overflow: hidden; font: 800 var(--fs-small) / 1.15 var(--font-ui); color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
 .lcard-foe span { font: 600 0.8125rem / 1.2 var(--font-ui); color: var(--ink-2); } /* plan item 200: the threat lines at 13 px, up from 12 */
+/* Plan item 521: the tower in this level's kit that stops it, in the field's green under the threat line */
+.lcard-foe .lcard-counter { font-weight: 800; color: var(--pasture-ink); }
+.lcard-foe .lcard-counter::before { content: "\2192\00a0"; }
+.enemy-portrait { position: relative; }
+.lcard-counter-badge { display: none; }
+@media (min-width: 900px) {
+  /* at D the counter is the tower's badge on the portrait (its words stay for screen readers) */
+  #screen-select li.act .level-card .lcard-enemies .enemy-portrait img.lcard-counter-badge {
+    display: block; position: absolute; right: -7px; bottom: -5px; width: 22px; height: 22px; padding: 2px; animation: none;
+    border-radius: 50%; background: var(--paper-hi); box-shadow: 0 0 0 2px var(--pasture-ink);
+  }
+  .lcard-foe .lcard-counter { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 /* Plan item 324 (slice 1): at D the card reads as a briefing: the field's plan larger (156 px tall, was about 115), Cath's
    face beside her line at 48 px (was a 32 px coin), the vehicles' art at 44 px in 48 px portraits (was 38 in 46). */
 @media (min-width: 900px) {

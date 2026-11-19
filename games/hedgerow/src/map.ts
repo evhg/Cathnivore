@@ -5,8 +5,10 @@
 import { playDepart } from "./sound";
 import { endlessUnlocked } from "./endless";
 import { cathSvg } from "../../../shared/cath/cath";
-import { ENEMIES, TWISTS, isFleet, type EnemyKind, type Level } from "./engine";
-import { enemyIcon } from "./icons";
+import { ENEMIES, TOWERS, TWISTS, isFleet, type EnemyKind, type Level, type TowerKind } from "./engine";
+import { countersFor, needsUpgrade, traitsOf } from "./intro";
+import { towerRole } from "./roles";
+import { enemyIcon, towerIcon } from "./icons";
 import { startPlatePreview, type PlatePreview } from "./platepreview";
 import { openActs } from "./unlocks";
 import { landState, stopLandSvg } from "./stopland";
@@ -2044,6 +2046,48 @@ function fieldThumb(lv: Level, landscape = false): string {
 }
 
 /** Plan item 174: one line on what a vehicle does to you, for its portrait on the level card. */
+/**
+ * Plan item 521: each vehicle on the level card names the tower in this level's kit that answers it best: a slowing
+ * tower for a fast one on the ground, the hardest single hit for heavy plant and bosses, splash for what splits, the Radio Mast for
+ * stealth, else the first that reaches it without an upgrade.
+ */
+export function counterFor(kind: EnemyKind, kit: readonly TowerKind[]): { tower: TowerKind; verb: string; upgrade: boolean } | null {
+  const counters = countersFor(kind, kit);
+  if (!counters.length) return null;
+  const ready = counters.filter((t) => !needsUpgrade(kind, t));
+  const pool = ready.length ? ready : counters;
+  const traits = traitsOf(kind);
+  const hit = (t: TowerKind) => TOWERS[t].damage[0] ?? 0;
+  let tower: TowerKind | undefined;
+  let verb = "stops it";
+  if (traits.includes("stealth") && kit.includes("mast")) [tower, verb] = ["mast", "spots it"];
+  // (a hedge or a pond can't hold up what flies over them)
+  else if (traits.includes("fast") && !traits.includes("flies")) {
+    const slow = kit.find((t) => towerRole(t) === "slow");
+    if (slow) [tower, verb] = [slow, "slows it"];
+  } else if (traits.some((t) => t === "heavy" || t === "boss" || t === "armour")) {
+    tower = [...pool].sort((a, b) => hit(b) - hit(a))[0];
+    verb = "breaks it";
+  } else if (traits.includes("splits")) {
+    const splash = pool.find((t) => towerRole(t) === "splash");
+    if (splash) [tower, verb] = [splash, "mops it up"];
+  }
+  tower ??= pool[0]!;
+  return { tower, verb, upgrade: needsUpgrade(kind, tower) };
+}
+
+/** At D the counter rides the vehicle's portrait as its tower's badge (the card has no height to spare at 1440x900). */
+function counterBadge(kind: EnemyKind, lv: Level): string {
+  const c = counterFor(kind, lv.towers);
+  return c ? `<img class="lcard-counter-badge" src="${towerIcon(c.tower)}" alt="" title="${TOWERS[c.tower].name} ${c.verb}">` : "";
+}
+
+function counterLine(kind: EnemyKind, lv: Level): string {
+  const c = counterFor(kind, lv.towers);
+  if (!c) return "";
+  return `<span class="lcard-counter" data-counter="${c.tower}">${TOWERS[c.tower].name}${c.upgrade ? " (upgraded)" : ""} ${c.verb}</span>`;
+}
+
 function threatLine(kind: EnemyKind): string {
   const e = ENEMIES[kind];
   if (e.hp >= 1500) return "The boss: a long, hard slog.";
@@ -2194,7 +2238,7 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       foes.innerHTML = top
         .map(
           ([k]) =>
-            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt=""></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span></span></li>`,
+            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt="">${counterBadge(k, lv)}</span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span>${counterLine(k, lv)}</span></li>`,
         )
         .join("");
       preview = startPlatePreview(thumb, lv, matchMedia("(prefers-reduced-motion: reduce)").matches, top.map(([k]) => k));
