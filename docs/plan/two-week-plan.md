@@ -5211,7 +5211,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - The campaign, hotseat, cath-pop and quick-game specs pass; shots P.
 - **Size:** 2
 
-## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(lane B, in progress)*
+## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(handed back 2026-11-19 22:55 by lane B: five points done or checked (marked below); left: Hedgerow's shop role lines, letterbox, phone top band and coming-up columns, the Setup banner, the campaign bunting)*
 - `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge. **Checked 22:50 lane B, kept:** whole at 1328-1438 in the 30 s live frame, off screen in the t=8 frame; it rides the title's camera drift, so a nudge moves the clip, not fixes it.
 - `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px.
 - `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars.
@@ -5222,7 +5222,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `cath-campaign-P` (120-380 x 522-535): the chapter thumbnails' red pins collide with the next card's edge. **Fixed 22:50 lane B:** the locked tab's wax seal sits inside its own corner (right 4 px, was -5) (plan1119g).
 - `cath-campaign-D` (350-880 x 0-180): the 1-6 bunting floats unattached over dead space.
 - `games-P` (30-205 x 515-555): 'Play today's Runnel' reads as a link, not a button; the Cathnivore card's Play button crowds its caption (285-355 x 790-830). **Checked 22:45 lane B, kept:** it is a framed chalkboard sign whose underline marks the primary choice; the card's Play keeps 8 px from its caption.
-- `runnel-D` (385-685 x 408-480): Cath's bubble overlaps the board's left edge.
+- `runnel-D` (385-685 x 408-480): Cath's bubble overlaps the board's left edge. **Checked 22:50 lane B, kept:** it sits inside the field's frame (the frame's inner edge is about 390), on open field clear of every tile, pointing at the first one.
 - Not taken from this critique: the full-body Cath (portfolio, Runnel) was item 524, done today, re-judge it at the next planning before reopening; `ns-title-P`'s framing was the first SwiftShader frame (about one frame in 30 s headless), not the settled title.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
