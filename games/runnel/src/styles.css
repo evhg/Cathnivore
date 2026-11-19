@@ -5046,3 +5046,10 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .stage .terrace-apron polygon { fill: color-mix(in srgb, var(--vl-fallow, var(--furrow)) 70%, var(--paper)); }
 }
 .stage .terrace-lip polygon { fill: var(--vl-hedge, var(--pasture-deep)); opacity: .9; }
+/* Plan item 516: a dry tile's ground is the valley's own field for the season and hour (half way from the board's
+   earth to the valley's fallow, wheat or meadow beside it), so the tiles and the poster are one palette. */
+@media (prefers-color-scheme: light) {
+  .stage .cell:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))); }
+  .stage .cell.ground-field:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))); }
+  .stage .cell.ground-meadow:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))); }
+}
