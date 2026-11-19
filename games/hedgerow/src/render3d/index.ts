@@ -214,6 +214,9 @@ const CATH_LEAN_FROM = 0.95;
 const TOWER_STAND: Partial<Record<string, number>> = {
   hedgerow: 1.45, scarecrow: 1.6, beehive: 1.5, stall: 1.4, pond: 1.25, windmill: 1.55, mast: 1.3, cannon: 1.55, silo: 1.55,
 };
+/** The squat towers also stand a little taller than wide (their footprint kept): the hedge grows up, the skep and the
+ * stall's canopy rise, the cannon sits higher on its carriage. */
+const TOWER_RISE: Partial<Record<string, number>> = { hedgerow: 1.3, beehive: 1.25, stall: 1.25, cannon: 1.3 };
 
 export class Renderer3D {
   private renderer: THREE.WebGLRenderer;
@@ -880,6 +883,51 @@ export class Renderer3D {
       cath: this.cath?.visible ? hOf(this.cath).h : null,
       cathWorld: this.cath?.visible ? tall(this.cath) : null,
     };
+  }
+  /** Plan item 515: each built tower drawn alone in flat black on white from the game camera, as an n x n mask of 0/1
+   * (the tower's screen box scaled to fit), so a test can tell the nine apart by silhouette. Test hook only. */
+  towerMasks(n = 48): Array<{ kind: string; mask: number[] }> {
+    const out: Array<{ kind: string; mask: number[] }> = [];
+    const r = this.canvas.getBoundingClientRect();
+    const rt = new THREE.WebGLRenderTarget(n, n);
+    const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const prev = { bg: this.scene.background, over: this.scene.overrideMaterial, fog: this.scene.fog };
+    const shown = new Map<THREE.Object3D, boolean>();
+    for (const o of this.scene.children) shown.set(o, o.visible);
+    const cam = this.camera.clone() as THREE.PerspectiveCamera;
+    const buf = new Uint8Array(n * n * 4);
+    try {
+      this.scene.background = new THREE.Color(0xffffff);
+      this.scene.overrideMaterial = black;
+      this.scene.fog = null;
+      for (const o of this.scene.children) o.visible = o === this.dynamic;
+      const dynShown = new Map<THREE.Object3D, boolean>();
+      for (const o of this.dynamic.children) dynShown.set(o, o.visible);
+      for (const [, v] of this.towers) {
+        for (const o of this.dynamic.children) o.visible = o === v.obj;
+        const b = this.boxRect(new THREE.Box3().setFromObject(v.obj), r.width, r.height);
+        // a view offset that crops the camera to the tower's box, squared up
+        const side = Math.max(b.w, b.h) * 1.05;
+        cam.setViewOffset(r.width, r.height, b.x + b.w / 2 - side / 2, b.y + b.h / 2 - side / 2, side, side);
+        cam.updateProjectionMatrix();
+        this.renderer.setRenderTarget(rt);
+        this.renderer.render(this.scene, cam);
+        this.renderer.readRenderTargetPixels(rt, 0, 0, n, n, buf);
+        const mask: number[] = [];
+        for (let y = n - 1; y >= 0; y--) for (let x = 0; x < n; x++) mask.push(buf[(y * n + x) * 4]! < 128 ? 1 : 0);
+        out.push({ kind: String(v.sig.split(":")[0]), mask });
+      }
+      for (const [o, vis] of dynShown) o.visible = vis;
+    } finally {
+      this.renderer.setRenderTarget(null);
+      this.scene.background = prev.bg;
+      this.scene.overrideMaterial = prev.over;
+      this.scene.fog = prev.fog;
+      for (const [o, vis] of shown) o.visible = vis;
+      rt.dispose();
+      black.dispose();
+    }
+    return out;
   }
   cathScreenBox(): Rect | null {
     if (!this.cath?.visible) return null;
@@ -1937,6 +1985,7 @@ export class Renderer3D {
           obj.userData.lean = lean;
           // Plan item 515: the tower's body stands up as the field's landmark (the plinth stays on its plot)
           lean.scale.setScalar(TOWER_STAND[tw.kind] ?? 1);
+          lean.scale.y *= TOWER_RISE[tw.kind] ?? 1;
           shadowUpright(lean, (m) => m.identity());
         }
         this.dynamic.add(obj);

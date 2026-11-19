@@ -3,7 +3,7 @@
 // and as a multiple of the median farmer's (the bar: 1.5x+ at D, 40 px+ at P), with a shot per size.
 // Usage: a dist-site preview, then BASE=http://localhost:4186 OUT=<dir> [LEVEL=21] node scripts/hedgerow-515-measure.mjs
 import { chromium } from '@playwright/test'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 
 const base = process.env.BASE ?? 'http://localhost:4175'
 const out = process.env.OUT ?? 'e2e/screenshots/h515'
@@ -38,6 +38,8 @@ for (const [size, w, h] of (process.env.SIZES ?? 'D,P,L').split(',').map((s) => 
   console.log(size, `farmer ${farmer?.toFixed(0)} px (world ${farmerW?.toFixed(2)}) cath ${m?.cath?.toFixed(0)} px (world ${m?.cathWorld?.toFixed(2)}) built ${kinds.join(',')}`)
   for (const t of m?.towers ?? []) console.log(`  ${t.kind.padEnd(10)} ${t.h.toFixed(0).padStart(4)} px  world ${t.world.toFixed(2)} = ${farmerW ? (t.world / farmerW).toFixed(2) : '-'}x farmer`)
   await page.screenshot({ path: `${out}/towers-${size}.png`, timeout: 120000 })
+  // the nine in black fill (scripts/hedgerow-515-masks.py draws them and their pairwise overlap)
+  if (size === 'D') writeFileSync(`${out}/masks-${size}.json`, JSON.stringify(await page.evaluate(() => window.hedgerow.towerMasks(48))))
   await page.close()
 }
 await browser.close()
