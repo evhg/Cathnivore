@@ -5218,10 +5218,10 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-l21-3d-P` (y 75-105): the Hollowell '216 NEXT' pill and the 'CLOSER' button crowd the top band.
 - Hedgerow, both renderers (D 1110-1420 x 590-660): the coming-up columns in about 11 px grey; the coloured bars under them at y 690 read as a broken element.
 - `cath-setup-P` (60-335 x 232-250): the 'Dry Spell … 1 Mark off' banner nearly overflows; the producer power text about 10-11 px (y 715-760).
-- `cath-setup-D` (140-340 x 448-500): step 3's heading wraps to two lines, unlike steps 1 and 2.
+- `cath-setup-D` (140-340 x 448-500): step 3's heading wraps to two lines, unlike steps 1 and 2. **Fixed 2026-11-19 22:45 lane B:** 'Hollowell's push', one line (plan1119f).
 - `cath-campaign-P` (120-380 x 522-535): the chapter thumbnails' red pins collide with the next card's edge.
 - `cath-campaign-D` (350-880 x 0-180): the 1-6 bunting floats unattached over dead space.
-- `games-P` (30-205 x 515-555): 'Play today's Runnel' reads as a link, not a button; the Cathnivore card's Play button crowds its caption (285-355 x 790-830).
+- `games-P` (30-205 x 515-555): 'Play today's Runnel' reads as a link, not a button; the Cathnivore card's Play button crowds its caption (285-355 x 790-830). **Checked 22:45 lane B, kept:** it is a framed chalkboard sign whose underline marks the primary choice; the card's Play keeps 8 px from its caption.
 - `runnel-D` (385-685 x 408-480): Cath's bubble overlaps the board's left edge.
 - Not taken from this critique: the full-body Cath (portfolio, Runnel) was item 524, done today, re-judge it at the next planning before reopening; `ns-title-P`'s framing was the first SwiftShader frame (about one frame in 30 s headless), not the settled title.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.

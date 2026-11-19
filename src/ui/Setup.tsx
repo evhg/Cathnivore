@@ -315,7 +315,7 @@ export default function Setup({ onStart }: Props) {
             {mapSection}
           </section>
           <section className="setup-step" data-step="3">
-            <StepHead n={3} words="How hard Hollowell pushes" />
+            <StepHead n={3} words="Hollowell's push" />
             {difficultySection}
             {/* Plan item 367: Cath's pins, the prize for winning an event week, lie by Hollowell's tags. */}
             <PinTin week={marketEvent.id} />
