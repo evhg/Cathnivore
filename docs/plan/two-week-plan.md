@@ -5143,7 +5143,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 538. [ ] NIGHT SHIFT class pick: hero weapons on a lit mat, and the back room dressed as an armoury
+## 538. [ ] NIGHT SHIFT class pick: hero weapons on a lit mat, and the back room dressed as an armoury *(lane B, in progress)*
 - **Why:** `ns-play-D`/`ns-play-P` (plan1119e, critique 2026-11-19 22:30): the last screen before play still reads as a prototype.
   - The five weapons are untextured grey low-poly sticks on flat black (D 965-1410 x 225-405; P at 2x 30-330 x 1270-1400), and the class list's weapon icons are flat grey silhouettes.
   - Behind her the room is bare boxes (D 830-960 x 560-700, a grey cuboid; P at 2x 540-760 x 470-760, a black slab) with one green bottle (D 900-930 x 540-650). Item 514 textured the rooms; the props are still blockout.
