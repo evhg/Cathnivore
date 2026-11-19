@@ -4887,7 +4887,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D of the title, Setup and game, light and dark.
 - **Size:** 2
 
-## 526. [ ] NIGHT SHIFT phone title: one composed frame, Cath clear of the menu and The List *(handed back 2026-11-19 14:45 by lane B, not started in code. Found:
+## 526. [ ] NIGHT SHIFT phone title: one composed frame, Cath clear of the menu and The List *(lane B, in progress)* *(handed back 2026-11-19 14:45 by lane B, not started in code. Found:
   - **The Ledger:** it already sits in the left column (`.dossier.front-page`, width min(48vw, 178px), about 12-197 CSS px), not over her coat. The critique read the 2x shot.
   - **The phone framing is deliberate earlier work, to be replaced, not tweaked:** in `frontscene.ts` the upright title aims the lens higher so she stands in the lower half under the menu (item 82, about line 810, `l.y += 0.7 * e`), turns her into the right half (`fr = 0.12 + 0.5 * upright`), then fits her whole into the stage (item 148, `fitStage`, `fitK`).
   - **The sign:** it is placed in the band beside her (`[0.555 h, 0.715 h]` upright, about line 736), which is where 'HOLLOW' gets cut.
