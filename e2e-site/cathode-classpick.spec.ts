@@ -647,7 +647,7 @@ test('the five classes show five different guns, by name and silhouette', async 
 // type 4.5:1 on the cream and the weapon's name 7:1, her line a slip of the same paper, a class switch turning the
 // page in 250 ms or less, and Walk in the file's red stamp.
 test('at D the stat sheet is a paper case file that turns its page on a class change', async ({ page, hasTouch }) => {
-  test.skip(hasTouch, 'the desktop file (the phone keeps its glass dossier)')
+  test.skip(hasTouch, 'the desktop file (the phone has its own paper file, armoury spec)')
   test.setTimeout(300_000)
   await fresh(page, false)
   await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')

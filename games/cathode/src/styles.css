@@ -3205,6 +3205,45 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 @media (max-width: 700px) and (orientation: portrait) and (max-height: 720px) {
   .cp-sheet[data-dossier] .cp-weapon-art.cp-case { height: 56px; } /* px-ok */
 }
+/* Plan item 520: on an upright phone the sheet is the desktop's paper case file too (item 504), reflowed: the cream
+   folder ruled in the case board's ink (the same local tokens, so every rule keeps its job), the steel clip over its
+   top, the gun a print with a white border, the trees inked seals, Walk in the red tape at its foot. It replaces
+   item 334's smoked glass, now that D's file is paper: one language for the pick. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-sheet[data-casefile][data-dossier] {
+    --ink: var(--card-ink); --ink-2: var(--card-ink-2); --ink-3: var(--card-ink-2);
+    --ink-rgb: 29 26 22;
+    --line-2: color-mix(in srgb, var(--card-ink) 24%, transparent); --line-3: color-mix(in srgb, var(--card-ink) 14%, transparent);
+    color: var(--card-ink);
+    border-top: 0;
+    background:
+      radial-gradient(120% 50% at 30% 0%, color-mix(in srgb, var(--print-paper) 70%, transparent), transparent 70%),
+      repeating-linear-gradient(0deg, transparent 0 calc(var(--u) * 21), var(--card-rule) calc(var(--u) * 21) calc(var(--u) * 22)),
+      var(--card-paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow:
+      inset 0 0 calc(var(--u) * 30) color-mix(in srgb, var(--cork-lo) 22%, transparent),
+      0 calc(var(--u) * 6) calc(var(--u) * 18) rgb(var(--black-rgb) / .6);
+  }
+  .cp-sheet[data-casefile][data-dossier]::before,
+  .cp-sheet[data-casefile][data-dossier]::after { border-color: color-mix(in srgb, var(--card-ink-2) 70%, var(--print-paper)); }
+  /* the gun a print clipped to the page: a white border drawn outside the frame, tilted a touch */
+  .cp-sheet[data-casefile][data-dossier] .cp-weapon-art.cp-case {
+    background: var(--night-2);
+    box-shadow:
+      0 0 0 calc(var(--u) * 5) var(--print-paper),
+      0 calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 2) rgb(var(--black-rgb) / .35);
+    transform: rotate(-1deg);
+  }
+  .cp-sheet[data-casefile][data-dossier] .cp-tree-name { border-color: var(--card-ink); color: var(--card-ink); }
+  .cp-sheet[data-casefile][data-dossier] .cp-tree-theme { color: var(--card-ink-2); }
+  /* the labels in the full ink: the case board's second ink read 6.6:1 on the cream (bar 7:1) */
+  .cp-sheet[data-casefile][data-dossier] :is(.cp-label, .cp-attr dt, .cp-weapon-nums dt) { color: var(--card-ink); }
+  .cp-sheet[data-casefile][data-dossier] .cp-attr-n { font-variant-numeric: tabular-nums; }
+  .cp-sheet[data-casefile][data-dossier] .cp-bar-fill { background: var(--stamp-red); }
+  .cp-sheet[data-casefile][data-dossier] .cp-avg { box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-paper) 80%, transparent); } /* px-ok */
+}
 
 /* Plan item 340: the menu hint's parts never break inside ('TOMAS REED · THE HARBOUR · A DEBT TAG'). */
 .mh-part { white-space: nowrap; }
@@ -3349,6 +3388,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
    copy of it fades while she speaks (it was shown twice for those 3.2 s, and held in shots); it stays in the page for
    screen readers, and comes back when the subtitle goes. */
 @media (max-width: 700px) and (orientation: portrait) {
-  .cp[data-speaking] .cp-line { opacity: 0; transition: opacity 160ms ease; }
+  /* Plan item 520: and its fade-in (`.cp-words .is-in`, fill both) let go, or the held animation kept it at 1. */
+  .cp[data-speaking] .cp-line { opacity: 0; animation: none; transition: opacity 160ms ease; }
   .cp .cp-line { transition: opacity 260ms ease; }
 }

@@ -100,7 +100,8 @@ test('at D the case gun is lit and the rack guns are distinct silhouettes', asyn
   for (const p of m.ious) expect(p.iou, p.pair).toBeLessThanOrEqual(0.7)
 })
 
-test('on a phone the class card is smoked glass with 7:1 words', async ({ page }) => {
+// Plan item 520 (was item 334's smoked glass): the phone's card is the desktop's paper case file, its ink 7:1+ on it.
+test('on a phone the class card is the paper case file with 7:1 words', async ({ page }) => {
   test.skip(page.viewportSize()!.width > 700, 'the upright phone')
   test.setTimeout(300_000)
   await openPick(page)
@@ -128,7 +129,7 @@ test('on a phone the class card is smoked glass with 7:1 words', async ({ page }
       const d = x.getImageData(0, 0, c.width, c.height).data
       const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
       const lum = (r: number, g: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-      // Skip the red rule along the top (the first 4% of rows).
+      // Skip the clip over the top edge (the first 4% of rows).
       const ls: number[] = []
       for (let y = Math.ceil(c.height * 0.04); y < c.height; y++) {
         for (let xx = 0; xx < c.width; xx++) {
@@ -138,17 +139,18 @@ test('on a phone the class card is smoked glass with 7:1 words', async ({ page }
       }
       ls.sort((a, b) => a - b)
       const median = ls[Math.floor(ls.length / 2)]!
-      const bright = ls[Math.floor(ls.length * 0.95)]!
+      // the paper's darker reaches (its ruled lines, the vignette), not the rare clip or edge pixel
+      const dim = ls[Math.floor(ls.length * 0.1)]!
       const worst = Math.min(
         ...inks.map((s) => {
           const [r, g, b] = s.match(/[\d.]+/g)!.map(Number)
-          return (lum(r!, g!, b!) + 0.05) / (bright + 0.05)
+          return (dim + 0.05) / (lum(r!, g!, b!) + 0.05)
         }),
       )
-      return { median, bright, worst }
+      return { median, dim, worst }
     },
     [png, inks] as const,
   )
-  expect(r.median, JSON.stringify(r)).toBeLessThanOrEqual(0.08)
+  expect(r.median, `cream paper, not glass ${JSON.stringify(r)}`).toBeGreaterThanOrEqual(0.5)
   expect(r.worst, JSON.stringify(r)).toBeGreaterThanOrEqual(7)
 })
