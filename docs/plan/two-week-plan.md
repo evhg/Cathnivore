@@ -4778,7 +4778,7 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** no flat untextured surface over 5% of the frame at D and P (judged on a shot, the boxes listed); 3+ light sources per set; Cath's face the brightest thing (her mean luminance 1.3x+ the set's); `scripts/cathode-perf.mjs` alone within budget; classpick, armoury, testfire, cathode-setprops pass; shots P, D, L for all five classes.
 - **Size:** 3
 
-## 515. [ ] Hedgerow 3D: towers that stand up as the field's landmarks
+## 515. [ ] Hedgerow 3D: towers that stand up as the field's landmarks *(lane B, in progress)*
 - **Why:** `hedge-l21-3d-D` (plan1119a): the Scarecrow (575-640 x 405-500) is smaller than a farmer beside it (780-870 x 405-505) and shorter than Cath (150-215 x 505-640); at P (195-235 x 435-475) it is the size of a crop clump. The defence you build should be the most legible thing on the field.
 - **Build:** `render3d/` tower models: scale each up to stand tallest on its plot (base kept inside the plot), a stronger silhouette per tower (the Mast's lattice, the Silo's dome, the Windmill's sails), a coloured plinth ring in its role colour (Shoots, Splash, Slows, Earns), a short idle motion (sails turn, scarecrow sways, cannon recoils on fire already); the 2D sprites unchanged.
 - **Accept:** at the default D frame every tower's on-screen height 1.5x+ a farmer's; at P each tower 40 px+ tall; the nine told apart in a black-fill silhouette shot; draw calls +0 on a phone (instanced or merged), hedgerow-drawcalls within budget; 3dframe, closeframe, shadow3d pass; visual only, no retune; shots P, D, L.
