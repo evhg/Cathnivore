@@ -3840,6 +3840,34 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             })}
           />
         )}
+        {/* Plan item 519: on an upright phone the counter (her bust, her line, the producers) is the board's near edge, inside
+            its frame, so the table takes 55% of the screen and she reacts at it, not below it. */}
+        {phoneTableCath && (
+          <CathDock expression={cathReaction.expression} line={cathReaction.line} beat={{ mood: cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind], n: cathBeat.n }}>
+            {/* Plan item 387: on an upright phone the producers sit at the counter's right end, opposite Cath, off the
+                board: 72 px busts side by side with a name plate in their colour; whoever's turn it is sits up, lit, the
+                other back in the counter's shade. A tap opens the Farm. (They were medallions pinned on the board's edge.) */}
+            <span className="table-producers table-producers-phone counter-bench">
+              {state.config.producers.map((id) => (
+                <button
+                  type="button"
+                  key={id}
+                  className={`table-producer pc-${id}`}
+                  data-table-producer={id}
+                  data-expression={producerFaces[id] ?? 'neutral'}
+                  data-active={id === state.activeProducer ? '' : undefined}
+                  aria-label={`${PRODUCERS[id].name}${id === state.activeProducer ? ', playing now' : ''}: open the Farm`}
+                  onClick={() => setShowFarm(true)}
+                >
+                  <Portrait character={id} size={72} expression={faceExpression(producerFaces[id])} />
+                  <span className="table-producer-name" aria-hidden="true">{PRODUCERS[id].name.split(' ')[0]}</span>
+                </button>
+              ))}
+              {/* Plan item 489: the busts clip to their frames, so the reply hangs from the bench above them. */}
+              {producerLine && <ProducerLineBubble key={producerLine.n} reply={producerLine} />}
+            </span>
+          </CathDock>
+        )}
       </section>
       {showHand && (
         <section
@@ -3862,32 +3890,6 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       {/* SPEC 10.2's phone "Bottom panel (fixed)": the active producer, its actions and Undo/sheet-toggle
           buttons, always on screen — see the `.game-scroll` comment above for how. */}
       <div className="action-tray">
-      {phoneTableCath && (
-        <CathDock expression={cathReaction.expression} line={cathReaction.line} beat={{ mood: cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind], n: cathBeat.n }}>
-          {/* Plan item 387: on an upright phone the producers sit at the counter's right end, opposite Cath, off the
-              board: 72 px busts side by side with a name plate in their colour; whoever's turn it is sits up, lit, the
-              other back in the counter's shade. A tap opens the Farm. (They were medallions pinned on the board's edge.) */}
-          <span className="table-producers table-producers-phone counter-bench">
-            {state.config.producers.map((id) => (
-              <button
-                type="button"
-                key={id}
-                className={`table-producer pc-${id}`}
-                data-table-producer={id}
-                data-expression={producerFaces[id] ?? 'neutral'}
-                data-active={id === state.activeProducer ? '' : undefined}
-                aria-label={`${PRODUCERS[id].name}${id === state.activeProducer ? ', playing now' : ''}: open the Farm`}
-                onClick={() => setShowFarm(true)}
-              >
-                <Portrait character={id} size={72} expression={faceExpression(producerFaces[id])} />
-                <span className="table-producer-name" aria-hidden="true">{PRODUCERS[id].name.split(' ')[0]}</span>
-              </button>
-            ))}
-            {/* Plan item 489: the busts clip to their frames, so the reply hangs from the bench above them. */}
-            {producerLine && <ProducerLineBubble key={producerLine.n} reply={producerLine} />}
-          </span>
-        </CathDock>
-      )}
       {!isDesktop && producerPanel}
 
       {/* Phone copy of `actionsPanel` (defined above), now inside `.action-tray`. Only mounted when

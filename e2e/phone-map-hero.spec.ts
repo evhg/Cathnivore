@@ -12,7 +12,8 @@ test('phone board fills its frame', async ({ page }, testInfo) => {
   await page.locator('.game .map .tile-edges').waitFor() // the Setup's opening board is a .map too (item 513)
   await page.waitForTimeout(300)
   const m = await page.evaluate(() => {
-    const f = document.querySelector('.map-wrap')!.getBoundingClientRect()
+    // Plan item 519: the frame also holds the placard and the counter; the board is its svg
+    const f = document.querySelector('.map-wrap svg.map')!.getBoundingClientRect()
     const h = document.querySelector('.map .tile-edges')!.getBoundingClientRect()
     return { hcov: h.height / f.height, wcov: h.width / f.width, inside: h.top >= f.top - 1 && h.bottom <= f.bottom + 1 }
   })

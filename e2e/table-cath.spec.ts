@@ -81,7 +81,7 @@ test('Cath speaks from a dock above the hand on a phone', async ({ page }, testI
     const line = (await lineEl.boundingBox())!
     type B = { x: number; y: number; width: number; height: number }
     const meets = (a: B, b: B) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
-    const map = (await page.locator('.map-wrap').boundingBox())!
+    const map = (await page.locator('.map-wrap svg.map').boundingBox())!  // plan item 519: the board, under the frame's counter
     let x0 = Infinity, x1 = -Infinity
     for (const hex of await page.locator('.region-hex').all()) {
       const h = (await hex.locator('polygon').first().boundingBox())!

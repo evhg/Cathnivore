@@ -17,7 +17,10 @@ test('the phone placard is 44 px or less, the board starts by y 110, and the she
   expect(pb.height).toBeLessThanOrEqual(44)
   const board = (await page.locator('.map-wrap').boundingBox())!
   expect(board.y).toBeLessThanOrEqual(110)
-  expect(pb.y + pb.height).toBeLessThanOrEqual(board.y)
+  // Plan item 519: the placard hangs on the board frame's top edge, inside it, clear of every hex
+  expect(pb.y).toBeGreaterThanOrEqual(board.y - 1)
+  const hexTop = await page.evaluate(() => Math.min(...[...document.querySelectorAll('.region-hex polygon')].map((p) => p.getBoundingClientRect()).filter((r) => r.height > 0).map((r) => r.top)))
+  expect(pb.y + pb.height).toBeLessThanOrEqual(hexTop)
   await expect(placard).toHaveAccessibleName(/Squeeze .*Expand .*Scout/)
 
   // No word on the placard under 13 px.

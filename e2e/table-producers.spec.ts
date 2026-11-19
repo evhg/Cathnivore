@@ -16,7 +16,7 @@ test('the producers are seated at the table, and a Squeeze worries them', async 
   await expect(people).toHaveCount(2)
   await expect(people.nth(1)).toBeVisible()
   await page.waitForTimeout(400)
-  const wrap = (await page.locator('.map-wrap').boundingBox())!
+  const wrap = (await page.locator('.map-wrap svg.map').boundingBox())!  // plan item 519: the board (the frame holds the counter)
   const blockers = await page.evaluate(() =>
     [
       ...[...document.querySelectorAll('.region-hex')].map((h) => h.querySelector('polygon')!.getBoundingClientRect()),

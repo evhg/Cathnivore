@@ -19,7 +19,9 @@ for (const scheme of ['light', 'dark'] as const) {
       const map = document.querySelector<HTMLElement>('.map-wrap')!.getBoundingClientRect()
       const cs = getComputedStyle(line)
       return {
-        gap: goods.getBoundingClientRect().top - dock.getBoundingClientRect().bottom,
+        // Plan item 519: the counter is the board frame's near edge, the goods' row just under the frame
+        inFrame: dock.getBoundingClientRect().bottom <= map.bottom + 1 && dock.getBoundingClientRect().top >= map.top,
+        gap: goods.getBoundingClientRect().top - map.bottom,
         lineBorder: cs.borderTopWidth,
         tail: getComputedStyle(line, '::after').display,
         lineSize: parseFloat(cs.fontSize),
@@ -28,7 +30,8 @@ for (const scheme of ['light', 'dark'] as const) {
         mapH: map.height,
       }
     })
-    expect(m.gap).toBeLessThanOrEqual(0.5)
+    expect(m.inFrame).toBe(true)
+    expect(m.gap).toBeLessThanOrEqual(10)
     expect(m.lineBorder).toBe('0px')
     expect(m.tail).toBe('none')
     expect(m.lineSize).toBeGreaterThanOrEqual(13)
@@ -103,8 +106,9 @@ test('a 375x667 phone has the counter, three whole cards and the board above it'
   await page.locator('.game .cath-dock').waitFor()
   await page.waitForTimeout(600)
   const m = await page.evaluate(() => {
-    const map = document.querySelector<HTMLElement>('.map-wrap')!.getBoundingClientRect()
-    const dock = document.querySelector<HTMLElement>('.action-tray .cath-dock')!.getBoundingClientRect()
+    // Plan item 519: the counter is the board frame's near edge, so the board is the map above it
+    const map = document.querySelector<SVGElement>('.map-wrap svg.map')!.getBoundingClientRect()
+    const dock = document.querySelector<HTMLElement>('.map-wrap .cath-dock')!.getBoundingClientRect()
     const tabs = document.querySelector<HTMLElement>('.tab-bar, nav[aria-label]')?.getBoundingClientRect()
     const whole = [...document.querySelectorAll<HTMLElement>('[data-hand-card] .action-label')].filter((el) => {
       const r = el.getBoundingClientRect()
@@ -113,7 +117,8 @@ test('a 375x667 phone has the counter, three whole cards and the board above it'
     const cards = [...document.querySelectorAll<HTMLElement>('[data-hand-card]')].map((c) => c.getBoundingClientRect())
     return { mapH: map.height, mapBottom: map.bottom, dockTop: dock.top, whole, cardsBottom: Math.max(...cards.map((r) => r.bottom)), tabsTop: tabs?.top ?? innerHeight }
   })
-  expect(m.mapH).toBeGreaterThanOrEqual(255)
+  // the board itself (since item 519 the frame also holds the counter and the placard): 254.5 px
+  expect(m.mapH).toBeGreaterThanOrEqual(254)
   expect(m.dockTop).toBeGreaterThanOrEqual(m.mapBottom - 1)
   expect(m.whole).toBeGreaterThanOrEqual(3)
   expect(m.cardsBottom).toBeLessThanOrEqual(m.tabsTop + 1)

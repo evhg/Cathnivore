@@ -7,14 +7,17 @@ for (const kind of ['liberate', 'squeeze'] as const) {
     await page.goto('/?e2eMoment=1')
     await page.getByText('Quick Game').click()
     await page.getByRole('button', { name: 'Start' }).click()
-    const map = page.locator('svg.map')
+    // the game's board, not the Setup's opening board (also an svg.map since item 513, gone a moment later: its box
+    // read null after the moment)
+    await page.locator('.game .map .tile-edges').waitFor()
+    const map = page.locator('.game svg.map')
     await expect(map).toBeVisible()
     await page.waitForTimeout(500)
     const box = async () => (await map.boundingBox())!
     const before = await box()
     const r = await page.evaluate(async (k) => {
       const id = document.querySelectorAll('.region-hex')[3]!.getAttribute('data-region')!
-      const svg = document.querySelector('svg.map')!
+      const svg = document.querySelector('.game svg.map')!
       ;(window as unknown as { cathnivoreMoment(k: string, id: string): void }).cathnivoreMoment(k, id)
       // Timed from when the map shows the moment to when it ends (React renders it a frame or two after the call).
       const c0 = performance.now()
