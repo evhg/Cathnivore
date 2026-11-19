@@ -186,7 +186,8 @@ test('at D she stands full length in the meadow, nothing across her hips', async
       valleyTop: valley.top,
     }
   })
-  expect(m.viewBox).toBe('20 20 360 870')
+  // Plan item 524: the full framing (legs stretched below the hip, the top trimmed).
+  expect(m.viewBox).toBe('20 50 360 898')
   expect(m.walls).toBe(0)
   // Her boots stand inside the valley, the tufts round them (no higher than her shins), the whole of her in view.
   expect(m.bootsBottom).toBeLessThanOrEqual(m.valleyBottom - 4)

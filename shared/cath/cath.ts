@@ -108,13 +108,15 @@ const C = {
   claretLine: '#36101A',
 }
 
+const LEG_K_VB = 1.18
 const VIEWBOX: Record<CathFraming, string> = {
   face: '122 52 156 188',
   bust: '80 36 240 288',
   half: '40 20 320 480',
   // Plan item 85: head to boots, standing on the ground (a contact shadow under her feet).
   // Plan item 292: longer legs (45%+ of her height, about 7.5 heads) standing with a weight shift.
-  full: '20 20 360 870',
+  // Plan item 524: legs stretched by LEG_K; the top trimmed to 50, since the smaller head leaves only the flag above it.
+  full: `20 50 360 ${Math.round(840 + (812 - 490) * (LEG_K_VB - 1))}`,
 }
 
 /** Plan item 85: what she wears below the jacket's hem (the waist-up framings never show it). Trousers and boots
@@ -167,6 +169,16 @@ function walkBootFinish(): string {
 <ellipse cx="121" cy="870" rx="6.5" ry="2.4" transform="rotate(-10 121 870)" fill="#ffffff" opacity="0.38"/>`
 }
 
+/** Plan item 524: at full length her legs are drawn stretched by LEG_K below the hip line (490) down to the boot
+ *  tops (812), and the boots and ground shadow move down by the same amount unstretched, so she stands about 7.5
+ *  heads tall with the long field coat over the thigh (a smaller head alone made a pinhead on a short figure). */
+export const LEG_K = LEG_K_VB
+const LEG_DY = (812 - 490) * (LEG_K - 1)
+/** Where her soles meet the ground at full length (the ground shadow's centre line). */
+export const FULL_SOLES = 878 + LEG_DY
+const LEG_STRETCH = `matrix(1 0 0 ${LEG_K} 0 ${+(490 * (1 - LEG_K)).toFixed(2)})`
+const LEG_SHIFT = `translate(0 ${+LEG_DY.toFixed(2)})`
+
 function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped'): string {
   const o = LOWER[outfit]
   const leg = (d: string) => `<path fill="${o.trousers}" stroke="${o.line}" stroke-width="2" stroke-linejoin="round" d="${d}"/>`
@@ -180,11 +192,11 @@ function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped')
   if (pose === 'walk') {
     const front = 'M202 490 L250 490 C252 570 250 640 248 700 C254 750 260 790 262 830 L244 834 C236 790 228 750 222 700 C214 640 206 570 202 490 Z'
     const back = 'M150 490 L198 490 C194 570 182 640 178 700 C174 750 166 800 160 846 L141 846 C143 800 146 750 150 700 C150 630 150 560 150 490 Z'
-    return `${groundShadow(200, 96)}
-${leg(front)}${legShade(id, [front], o.line)}${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}
-${leg(back)}${legShade(id + 'b', [back], o.line)}${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
-${walkBootFinish()}
-${skirt}`
+    return `<g transform="${LEG_SHIFT}">${groundShadow(200, 96)}</g>
+<g transform="${LEG_STRETCH}">${leg(front)}${legShade(id, [front], o.line)}</g><g transform="${LEG_SHIFT}">${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}</g>
+<g transform="${LEG_STRETCH}">${leg(back)}${legShade(id + 'b', [back], o.line)}</g><g transform="${LEG_SHIFT}">${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
+${walkBootFinish()}</g>
+<g transform="${LEG_STRETCH}">${skirt}</g>`
   }
   // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
   // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
@@ -192,21 +204,23 @@ ${skirt}`
   // thigh rounds out from the hip.
   const right = 'M150 490 L198 490 C198 560 194 630 191 700 C194 726 197 756 193 782 C190 802 188 818 187 846 L168 846 C167 818 164 802 158 782 C152 756 154 726 162 700 C155 640 147 565 150 490 Z'
   const left = 'M202 490 L250 490 C250 565 241 640 231 708 C240 734 247 766 243 792 C240 812 239 830 239 852 L221 852 C220 832 217 812 210 790 C204 764 203 734 206 708 C203 640 201 565 202 490 Z'
-  return `${groundShadow(203, 80)}
-${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
+  return `<g transform="${LEG_SHIFT}">${groundShadow(203, 80)}</g>
+<g transform="${LEG_STRETCH}">${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
 <path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
 <path fill="none" stroke="${o.line}" stroke-width="1.4" stroke-linecap="round" opacity="0.5" d="M166 700 Q177 708 189 700 M210 708 Q220 716 230 708"/>
-<ellipse cx="178" cy="690" rx="8" ry="11" fill="#ffffff" opacity="0.12"/><ellipse cx="220" cy="697" rx="7" ry="10" fill="#ffffff" opacity="0.1"/>
-${boot('M162 812 L194 812 C193 828 192 846 195 862 Q196 878 182 878 L144 878 Q132 878 139 867 L159 852 C161 840 163 826 162 812 Z')}${boot('M215 818 L246 818 C245 834 244 848 247 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 C213 850 216 834 215 818 Z')}
+<ellipse cx="178" cy="690" rx="8" ry="11" fill="#ffffff" opacity="0.12"/><ellipse cx="220" cy="697" rx="7" ry="10" fill="#ffffff" opacity="0.1"/></g>
+<g transform="${LEG_SHIFT}">${boot('M162 812 L194 812 C193 828 192 846 195 862 Q196 878 182 878 L144 878 Q132 878 139 867 L159 852 C161 840 163 826 162 812 Z')}${boot('M215 818 L246 818 C245 834 244 848 247 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 C213 850 216 834 215 818 Z')}
 <path fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round" d="M168 820 L168 846 M222 826 L222 850"/>
-${bootFinish(o.boots)}
-${skirt}`
+${bootFinish(o.boots)}</g>
+<g transform="${LEG_STRETCH}">${skirt}</g>`
 }
 
 let uid = 0
 
 /** Plan item 442: the full-length figure's head scale (about the collar at 200, 262). */
-export const FULL_HEAD = 0.84
+export const FULL_HEAD = 0.72
+/** Plan item 524: the full figure's coat and arms, narrowed about x 200. */
+export const FULL_SLIM = 0.9
 
 
 export function cathSvg(options: CathOptions = {}): string {
@@ -226,12 +240,16 @@ export function cathSvg(options: CathOptions = {}): string {
   // readable face. An outer group, so the head's own CSS tilt and the hair's sway still apply.
   const headOpen = framing === 'full' ? `<g transform="translate(200 262) scale(${FULL_HEAD}) translate(-200 -262)">` : ''
   const headClose = framing === 'full' ? '</g>' : ''
+  // Plan item 524: with the smaller head the bust's shoulders read as a linebacker's, so at full length the coat and
+  // arms are drawn FULL_SLIM as wide about her centre line.
+  const slimOpen = framing === 'full' ? `<g transform="matrix(${FULL_SLIM} 0 0 1 ${+(200 * (1 - FULL_SLIM)).toFixed(2)} 0)">` : ''
+  const slimClose = framing === 'full' ? '</g>' : ''
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" data-pose="${pose}" data-framing="${framing}" ${a11y}>
 ${defs(id)}
 ${framing === 'full' ? `<g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
 ${headOpen}<g class="cath-hair-back">${hairBack(id)}</g>${headClose}
-<g class="cath-body">${outfit === 'field' && framing === 'full' ? fieldOutfit(id, true) : OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>
+${slimOpen}<g class="cath-body">${outfit === 'field' && framing === 'full' ? fieldOutfit(id, true) : OUTFITS[outfit](id)}${poseLayer(pose, outfit, 'back', options.pointAt)}</g>${slimClose}
 ${headOpen}<g class="cath-head">
 ${neck(id)}
 ${NECKWEAR[outfit](id)}
@@ -241,7 +259,7 @@ ${hairFront(id)}
 ${accessories(id, outfit)}
 ${options.pin ? `<g class="cath-pin" transform="translate(164 74) scale(1.5)">${pinSvg(options.pin)}</g>` : ''}
 </g>${headClose}
-<g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>
+${slimOpen}<g class="cath-arms">${poseLayer(pose, outfit, 'front')}</g>${slimClose}
 </svg>`
 }
 

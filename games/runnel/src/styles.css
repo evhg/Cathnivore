@@ -4027,9 +4027,9 @@ body[data-mode='practice'] #week-slot {
     height: calc(22% + 26px);
   }
   /* Plan item 430: full length on the stream's near bank (host.ts draws her 'full' here); the box takes the framing's
-     own shape (viewBox 360 x 870) and main.ts sizes it by width the same way. */
+     own shape (viewBox 360 x 898) and main.ts sizes it by width the same way. */
   .valley-cath[data-framing='full']:not([hidden]) {
-    aspect-ratio: 360 / 870;
+    aspect-ratio: 360 / 898;
     bottom: 12px;
   }
   .valley-cath svg.valley-bank {
