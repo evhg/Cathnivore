@@ -4741,7 +4741,7 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - **Accept:** at 390x844 her whole figure, feet included, 180 px+ tall with nothing over her; the mosaic's first row from y 560 or above (644 now) and whole above the fold; the pulse line above the fold; D unchanged (pixel diff under 1%); e2e:site passes; shots P and D, both themes.
 - **Size:** 1
 
-## 510. [ ] NIGHT SHIFT title: a living street behind her
+## 510. [ ] NIGHT SHIFT title: a living street behind her *(lane A, in progress)*
 - **Why:** `ns-title-D` 1110-1440 x 0-900 and 0-400 x 0-260: a static dark brick wall with one lamp wedge and LUNA; `ns-title-P` (2x) 560-780 x 60-1000 a flat dark wall. Item 473 kept 'no new shopfronts (a later critique can ask again)': this one asks (VISION 3-4: the scene alive). Checked 187 (idle push), 331, 473, 494, 505 (her face the brightest thing: must hold).
 - **Build:** `render/frontdiorama.ts`: two lit shopfronts across the street at depth (one a glossy Hollowell shop), and from `streetlife.ts`/`traffic.ts`/`frontneon.ts`/`frontwet.ts`: a passer-by under an umbrella about every 12 s, a headlight sweep across the wet cobbles (reflected), one stuttering neon; posters re-rendered (`scripts/cathode-poster.mjs`).
 - **Accept:** 3+ `[data-ambient]` movers on the live title at 390x844, 1440x900, 844x390, none under reduced motion; the luminance spread of the street behind her 1.5x+ today's; `cathode-title-focal` passes (her face brightest); cathode-perf alone within budget; keyart-fresh, cathode-front pass; shots P, D, L.
