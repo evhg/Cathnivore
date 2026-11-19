@@ -958,12 +958,13 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           },
           hexPx,
         )
+        // The landmark's flank spot, which the dressing and the ground marks also keep clear of.
+        const spot = tray ? pickSpot(tray.rects) : null
         // Plan item 144: the event's dressing keeps to the hex's foot, but steps aside (and down in size) when the
         // stalls, pushed down the tile by Hollowell's stacks, reach there; it never meets a piece or the landmark.
         const dress =
           tray && (marketEvent === 'glut' || marketEvent === 'festival')
             ? (() => {
-                const spot = pickSpot(tray.rects)
                 const taken = spot ? [...tray.rects, boxAt(spot, spot.scale)] : tray.rects
                 return dressingSpot(marketEvent, taken, { x: 0, y: HEX_R * (marketEvent === 'glut' ? 0.8 : 0.72) })
               })()
@@ -972,7 +973,6 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         // a freed tile's stalls keep clear of LiberatedLife's cottage and bunting too.
         const ground = (() => {
           if (!tray) return []
-          const spot = pickSpot(tray.rects)
           const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
           return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, control)
         })()
@@ -1133,7 +1133,6 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 map's art, on the first flank of the tile its pieces leave clear. Plan item 341: over the plastic film, so a
                 held region's landmark keeps its full ink. */}
             {(() => {
-              const spot = tray && hexPx !== null ? pickSpot(tray.rects) : null
               if (!spot || hexPx === null) return null
               const grip = gripStage(r)
               const edge = atTheEdge(r)
