@@ -52,10 +52,28 @@ test('phone Setup shows the opening table on the map step', async ({ page }, tes
   test.skip(testInfo.project.name !== 'phone', 'the phone steps')
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  await page.getByRole('button', { name: /Next: Where you trade/ }).click()
-  const preview = page.locator('.map-stage [data-opening-preview]')
+  await page.locator('.setup-dot').nth(1).click() // item 513: the rail moves the steps (no Next pill on a phone)
+  const preview = page.locator('.setup-board-stage [data-opening-preview]')
   await expect(preview).toBeInViewport()
   expect((await preview.boundingBox())!.width).toBeGreaterThanOrEqual(200)
   await page.getByRole('button', { name: 'Next map' }).click()
   await expect(preview).toHaveAttribute('data-layout', 'coast')
+})
+
+// Plan item 513: on an upright phone the opening board stands above the steps on every step, the screen's largest
+// thing (slice 1: 250 px+ wide at 390x844), with Start whole below.
+test('phone Setup keeps the opening table above every step', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the phone steps')
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  const board = page.locator('.setup-board-stage [data-opening-preview] .map')
+  for (const i of [0, 1, 2]) {
+    await page.locator('.setup-dot').nth(i).click()
+    await expect(page.locator('.setup-dot').nth(i)).toHaveAttribute('aria-current', 'step')
+    const b = (await board.boundingBox())!
+    expect(b.width).toBeGreaterThanOrEqual(250)
+    const start = (await page.locator('.setup-start').boundingBox())!
+    expect(b.y + b.height).toBeLessThanOrEqual(start.y)
+    expect(start.y + start.height).toBeLessThanOrEqual(page.viewportSize()!.height + 0.5)
+  }
 })

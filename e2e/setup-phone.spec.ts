@@ -82,9 +82,9 @@ test('the phone Setup is three steps on one screen: every control whole and clea
 
   // Step 2: one large board between the arrows (plan item 502: the opening table you'll play); the arrows and the
   // names pick the map; Cath names it.
-  await page.getByRole('button', { name: /Next: Where you trade/ }).click()
+  await page.locator('.setup-dot').nth(1).click() // item 513: the rail moves the steps (no Next pill on a phone)
   await expect(page.locator('.setup-dot').nth(1)).toHaveAttribute('aria-current', 'step')
-  const board = (await page.locator('.map-stage [data-opening-preview] .map').boundingBox())!
+  const board = (await page.locator('.setup-board-stage [data-opening-preview] .map').boundingBox())!
   expect(board.width).toBeGreaterThanOrEqual(200)
   await expect(page.locator('.setup-cath-line')).toContainText('The Ring')
   await page.getByRole('button', { name: 'Next map' }).click()
@@ -100,14 +100,13 @@ test('the phone Setup is three steps on one screen: every control whole and clea
   await clearOfStart(page, page.locator('input[inputmode="numeric"]'), 'seed')
 
   // Step 3: every difficulty keeps the screen whole; Cath speaks for the level.
-  await page.getByRole('button', { name: /Next: How hard/ }).click()
+  await page.locator('.setup-dot').nth(2).click()
   for (const i of [0, 2, 1]) {
     await page.locator('.setup-difficulty label').nth(i).click()
     await clearOfStart(page, page.locator('.difficulty-sheet'), `sheet ${i + 1}`)
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
   }
   await expect(page.locator('.setup-cath-line')).toContainText('A fair fight')
-  await clearOfStart(page, page.locator('.setup-panel .pin-tin'), 'pins')
 })
 
 // Plan item 461: a swipe moves the steps: the rail follows the track and Cath's line follows the step.

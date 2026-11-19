@@ -4400,9 +4400,10 @@ html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: 
 @media (max-width: 1099px) and (orientation: landscape) and (max-height: 560px) {
   .setup[data-phone-steps] {
     display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); grid-template-rows: auto auto auto 1fr auto;
-    grid-template-areas: "head track" "event track" "dots track" ". track" "start track"; align-content: stretch; padding-top: 8px;
+    grid-template-areas: "head track" "event track" "dots track" "board track" "start track"; align-content: stretch; padding-top: 8px;
   }
   .setup[data-phone-steps] .setup-dots { grid-area: dots; }
+  .setup[data-phone-steps] > .setup-board-stage { grid-area: board; min-height: 0; margin: 0; }
   .setup[data-phone-steps] .setup-table.setup-track { grid-area: track; margin: 0; min-height: 0; }
   .setup[data-phone-steps] .setup-panel { padding-inline: 4px; }
   .setup[data-phone-steps] .setup-next { display: none; }
@@ -4490,12 +4491,36 @@ html.no-animations .setup[data-phone-steps] .map-stage .board-mini { animation: 
 }
 html.no-animations .setup .opening-preview :is(.piece-tray, .ev-heap, .ev-lanterns) { animation: none; }
 .setup .opening-preview-caption { display: none; }
-.setup[data-phone-steps] .map-stage .opening-preview { width: 100%; animation: map-deal var(--dur-base, 280ms) var(--ease-settle, ease) both; }
-.setup[data-phone-steps] .map-stage .opening-preview .map { max-width: 260px; max-height: 236px; margin: 0 auto; }
-@media (prefers-reduced-motion: reduce) {
-  .setup[data-phone-steps] .map-stage .opening-preview { animation: none; }
+/* Plan item 513: below D the opening board stands on its own stage under the dot rail, on every step: it takes the
+   height the steps leave (the track holds its tallest step), the map sized by that height, never past the width. */
+.setup .setup-board-stage { display: none; }
+@media (max-width: 1099px) {
+  .setup[data-phone-steps] > .setup-board-stage { display: flex; justify-content: center; align-items: center; flex: 1 1 0; min-height: 120px; margin: -2px -10px 0; }
+  .setup[data-phone-steps] .setup-board-stage .opening-preview { height: 100%; width: 100%; animation: map-deal var(--dur-base, 280ms) var(--ease-settle, ease) both; }
+  .setup[data-phone-steps] .setup-board-stage .opening-preview .map { width: auto; height: 100%; max-width: 100%; margin: 0 auto; filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 22%, transparent)); }
+  .setup[data-phone-steps] .setup-table.setup-track { flex: none; }
+  /* The board now carries the power (Map's showcase over their home), so the pair reads as words: each face once. */
+  .setup[data-phone-steps] .pair-panel .pair-portrait { display: none; }
+  .setup[data-phone-steps] .market-event-pin { display: none; }
+  /* The map step keeps only its arrows round the map's name, and the three names. */
+  .setup[data-phone-steps] .map-stage { margin-top: 2px; }
 }
-html.no-animations .setup[data-phone-steps] .map-stage .opening-preview { animation: none; }
+/* An upright phone gives the board the height: the dot rail (and a swipe) moves the steps, so the Next pill goes;
+   Cath's pins are a desktop shelf (D's stall shows them); the mode chairs sit lower. */
+@media (max-width: 599px) and (orientation: portrait) {
+  .setup[data-phone-steps] .setup-next, .setup[data-phone-steps] .setup-panel > .pin-tin { display: none; }
+  .setup[data-phone-steps] .setup-panel { gap: 8px; padding-bottom: 2px; }
+  .setup[data-phone-steps] .setup-mode .mode-art svg { max-height: 40px; }
+}
+/* A short phone (an SE's 667 px): the steps may shrink and scroll inside their panel, so Start stays whole. */
+@media (max-width: 599px) and (orientation: portrait) and (max-height: 740px) {
+  .setup[data-phone-steps] > .setup-board-stage { min-height: 96px; }
+  .setup[data-phone-steps] .setup-table.setup-track { flex: 0 1 auto; min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .setup[data-phone-steps] .setup-board-stage .opening-preview { animation: none; }
+}
+html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview { animation: none; }
 @media (min-width: 1100px) {
   .setup[data-steps] .setup-table { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); column-gap: 26px; }
   .setup[data-steps] .setup-step[data-step='2'] .setup-seed {

@@ -40,7 +40,7 @@ test('the phone map is one large board, the names under it', async ({ page }) =>
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.locator('.setup-dot').nth(1).click()
-  const board = page.locator('.map-stage [data-opening-preview] .map')
+  const board = page.locator('.setup-board-stage [data-opening-preview] .map')
   await expect(board).toHaveCount(1)
   const b = (await board.boundingBox())!
   expect(b.width).toBeGreaterThanOrEqual(200)

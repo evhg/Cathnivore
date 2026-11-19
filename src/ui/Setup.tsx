@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ALL_PRODUCER_IDS, PRODUCERS, RECOMMENDED_PAIR } from '../content/producers'
 import { LAYOUTS, type LayoutId } from '../content/layouts'
 import BoardMiniature from './BoardMiniature'
@@ -221,7 +221,9 @@ export default function Setup({ onStart }: Props) {
         </div>
         {/* Plan item 461: on a phone the chosen map is one large board between two arrows; the names below pick it too. */}
         {/* Plan item 502: the opening table you'll play, drawn from the picks; on a phone it is the map stage's board. */}
-        {rail ? <OpeningPreview picks={picks} seed={seed} showcase={preview} /> : <MapStage layout={layout} onPick={setLayout} board={<OpeningPreview picks={picks} seed={seed} />} />}
+        {/* Plan item 513: on a phone the board stands above the steps (the stage under the dot rail), so step 2 keeps
+            only its arrows and names. */}
+        {rail ? <OpeningPreview picks={picks} seed={seed} showcase={preview} /> : <MapStage layout={layout} onPick={setLayout} />}
         <div className="layout-picker" role="radiogroup" aria-label="Map">
           {(Object.keys(LAYOUTS) as LayoutId[]).map((id) => (
             <label key={id} className="layout-tile" data-layout={id}>
@@ -361,6 +363,12 @@ export default function Setup({ onStart }: Props) {
         ))}
       </nav>
 
+      {/* Plan item 513: the opening table you'll play, the screen's largest thing on every step: a producer's power
+          plays on it over their home region, and a map or difficulty pick redraws it in place. */}
+      <div className="setup-board-stage" data-board-stage>
+        <OpeningPreview picks={picks} seed={seed} showcase={preview} />
+      </div>
+
       {/* Plan item 195: the producers, the maps and Hollowell's price tags laid on one gingham table, Cath at its head. */}
       <div className="setup-table setup-track" data-setup-table ref={trackRef} onScroll={onTrackScroll}>
         <section className="setup-panel" data-panel="1" aria-label={`Step 1 of 3: ${STEP_WORDS[0]}`}>
@@ -435,7 +443,7 @@ function OpeningPreview({ picks, seed, showcase }: { picks: SetupPicks; seed: nu
 }
 
 /** Plan item 461: the phone's map step, the chosen board large between two arrows. */
-function MapStage({ layout, onPick, board }: { layout: LayoutId; onPick(id: LayoutId): void; board: ReactNode }) {
+function MapStage({ layout, onPick }: { layout: LayoutId; onPick(id: LayoutId): void }) {
   const ids = Object.keys(LAYOUTS) as LayoutId[]
   const at = ids.indexOf(layout)
   const step = (d: number) => onPick(ids[(at + d + ids.length) % ids.length]!)
@@ -445,7 +453,6 @@ function MapStage({ layout, onPick, board }: { layout: LayoutId; onPick(id: Layo
         <span aria-hidden="true">‹</span>
       </button>
       <div className="map-stage-board" aria-hidden="true">
-        {board}
         <span className="map-stage-name">{LAYOUTS[layout].name}</span>
         <span className="map-stage-blurb">{LAYOUTS[layout].blurb}</span>
       </div>
