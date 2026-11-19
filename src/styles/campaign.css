@@ -1530,11 +1530,12 @@ html.no-animations .campaign-screen .cmp-map * { animation: none !important; }
   /* Plan item 395: a locked tab wears the co-op's wax seal on its corner (it looked the same as a playable one); the
      chapter stays playable (SPEC 8.1: the lock is a hint). */
   .cmp-tab-locked { position: relative; }
+  /* Plan item 542: inside the tab's corner (at -5 px it hung over the next tab's edge on a phone). */
   .cmp-tab-locked::after {
     content: '';
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: -6px;
+    right: 4px;
     width: 15px;
     height: 15px;
     border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;

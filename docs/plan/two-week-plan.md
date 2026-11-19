@@ -5212,14 +5212,14 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Size:** 2
 
 ## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch *(lane B, in progress)*
-- `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge.
+- `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge. **Checked 22:50 lane B, kept:** whole at 1328-1438 in the 30 s live frame, off screen in the t=8 frame; it rides the title's camera drift, so a nudge moves the clip, not fixes it.
 - `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px.
 - `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars.
 - `hedge-l21-3d-P` (y 75-105): the Hollowell '216 NEXT' pill and the 'CLOSER' button crowd the top band.
 - Hedgerow, both renderers (D 1110-1420 x 590-660): the coming-up columns in about 11 px grey; the coloured bars under them at y 690 read as a broken element.
 - `cath-setup-P` (60-335 x 232-250): the 'Dry Spell … 1 Mark off' banner nearly overflows; the producer power text about 10-11 px (y 715-760).
 - `cath-setup-D` (140-340 x 448-500): step 3's heading wraps to two lines, unlike steps 1 and 2. **Fixed 2026-11-19 22:45 lane B:** 'Hollowell's push', one line (plan1119f).
-- `cath-campaign-P` (120-380 x 522-535): the chapter thumbnails' red pins collide with the next card's edge.
+- `cath-campaign-P` (120-380 x 522-535): the chapter thumbnails' red pins collide with the next card's edge. **Fixed 22:50 lane B:** the locked tab's wax seal sits inside its own corner (right 4 px, was -5) (plan1119g).
 - `cath-campaign-D` (350-880 x 0-180): the 1-6 bunting floats unattached over dead space.
 - `games-P` (30-205 x 515-555): 'Play today's Runnel' reads as a link, not a button; the Cathnivore card's Play button crowds its caption (285-355 x 790-830). **Checked 22:45 lane B, kept:** it is a framed chalkboard sign whose underline marks the primary choice; the card's Play keeps 8 px from its caption.
 - `runnel-D` (385-685 x 408-480): Cath's bubble overlaps the board's left edge.
