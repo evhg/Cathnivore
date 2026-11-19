@@ -5178,7 +5178,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Shots P and D in 3D (see CLAUDE.md for 3D shots).
 - **Size:** 3
 
-## 540. [ ] Cathnivore desktop table: one clean top rail, the whole hand on screen, an empty ledger that stays small
+## 540. [ ] Cathnivore desktop table: one clean top rail, the whole hand on screen, an empty ledger that stays small *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1119e): the chrome competes with the table (VISION 2, 'the table is the hero').
   - The 'STAGE I' tab collides with the Expand card's top edge (773-835 x 10-28).
   - Hollowell's portrait ring overlaps the Scout card and spills below the rail (1180-1310 x 10-150).
