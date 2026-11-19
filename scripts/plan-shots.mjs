@@ -23,7 +23,7 @@ const jobs = {
     await p.goto(`${base}/games/`); await p.waitForTimeout(4000); await p.screenshot({ path: `${out}/games-${s}.png` })
   },
   async cathnivore(p, s) {
-    await p.goto(`${base}/cathnivore/`); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/cath-title-${s}.png` })
+    await p.goto(`${base}/cathnivore/?e2eHandFan=1`); await p.waitForTimeout(1500); await p.screenshot({ path: `${out}/cath-title-${s}.png` })
     await p.getByText('Quick Game').click(); await p.waitForTimeout(800); await p.screenshot({ path: `${out}/cath-setup-${s}.png` })
     await p.getByRole('button', { name: 'Start' }).click()
     // Item 369: the pointer left over Start lifts whichever hand card lands under it (the 'Injunction under Supply'

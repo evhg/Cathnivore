@@ -15,7 +15,9 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   // Ten screens in one test: 26 s alone, so 30 s ran out under the gates' parallel load (2026-11-13). A timing budget.
   test.setTimeout(90_000)
 
-  await page.goto('/')
+  // Plan item 541: under webdriver the phone hand is a plain swiped row (item 302) unless asked for the fan a real
+  // phone holds; the shots show what a player sees (a critique of the plain row read it as 'two and a half cards').
+  await page.goto('/?e2eHandFan=1')
   // .title-cath fades/rises in (title.css's title-fade-rise, a 500ms delay + 900ms animation) — wait for
   // it to finish so gate 8's screenshot actually shows Cath instead of catching her mid-fade or invisible.
   await page.waitForFunction(() => {
