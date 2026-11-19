@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-19T22:22:16Z
 
 
 
@@ -5141,5 +5140,89 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `cath-campaign-P` (288-358 x 165-188): Cath's crates overlap the map frame's top edge, her figure cut by them.
 - `runnel-P` (95-300 x 790-805): the footer hint 'Tap a tile to turn it, hold to pin it.' shows under Cath's lesson bubble saying the same.
 - `cath-setup-D` (995-1140 x 565-775): the 'This week at the market' sign covers Cath's torso and arm.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 538. [ ] NIGHT SHIFT class pick: hero weapons on a lit mat, and the back room dressed as an armoury
+- **Why:** `ns-play-D`/`ns-play-P` (plan1119e, critique 2026-11-19 22:30): the last screen before play still reads as a prototype.
+  - The five weapons are untextured grey low-poly sticks on flat black (D 965-1410 x 225-405; P at 2x 30-330 x 1270-1400), and the class list's weapon icons are flat grey silhouettes.
+  - Behind her the room is bare boxes (D 830-960 x 560-700, a grey cuboid; P at 2x 540-760 x 470-760, a black slab) with one green bottle (D 900-930 x 540-650). Item 514 textured the rooms; the props are still blockout.
+  - VISION: NIGHT SHIFT is noir, dressed and lit like the title street; the pick is where she arms up.
+- **Build:** `games/cathode/src/render/` (`gunportrait.ts`, `guntex.ts`, `frontsets.ts`/`frontsetprops.ts`):
+  - Each class weapon as a hero mesh: bevelled receivers and barrels, wood or polymer furniture, metal with a roughness map, a scope glint where it has one. It lies on a lit felt or leather mat with a soft contact shadow, not on black.
+  - The back room: a pegboard wall with tool outlines, a workbench with a green-shaded lamp (the warm key), a shelf of case files, a rain-streaked window (the cold rim). Reuse the title street's materials.
+  - The class list's weapon icons drawn from the same meshes (a baked side view), not flat silhouettes.
+- **Accept:**
+  - Every backdrop prop mesh on the pick is bevelled or textured (a scene-graph test: no plain box geometry with a single flat material in the set), with 12 or more distinct props.
+  - In the weapon render's box, luminance standard deviation at least 2x today's and the mean above 0.15 (measure before, record it here).
+  - `cathode-classpick.spec.ts` (including :376's 3:1 specular check, which read 2.94 on the Gunslinger in CI on 0a6c520) and `cathode-classpose` pass; `scripts/cathode-perf.mjs`, run alone, stays in budget.
+  - Shots P and D; posters and key art re-rendered if a poster source changes.
+- **Size:** 3
+
+## 539. [ ] Hedgerow 3D: the fleet, the scarecrow and the crops modelled, not blocked out
+- **Why:** `hedge-l21-3d-D`/`-P` (plan1119e): the 3D field looks less crafted than the 2D one, which inverts the point of item 315's 3D.
+  - The pink vans are flat-shaded boxes, no cab, windows or wheels (D 230-310 x 220-400).
+  - The scarecrow is sticks (D 770-830 x 410-500).
+  - Every plot is the same cabbage, so the board looks wallpapered.
+  - On the phone the top band (y 60-160) is blown out white by fog and bloom.
+- **Build:** `games/hedgerow/src/render3d/`:
+  - Each fleet class a small model: a cab, windows, four wheels that turn with the path, the livery and driver face from item 529's `fleetfaces.ts`.
+  - The scarecrow with a hat, straw cuffs and a patched coat; the windmill's sails turning.
+  - Three or four crop variants per bed, picked by a seeded hash, with a little rotation and scale jitter.
+  - On a phone, clamp the far fog and the bloom threshold so the sky band holds colour.
+- **Accept:**
+  - Each vehicle group has 4 or more wheel meshes and 2 or more materials (scene-graph test in `?sandbox=1`).
+  - 3 or more distinct crop geometries on screen at level 21.
+  - Mean luminance of the phone frame's top 15% below 0.85 (today near white).
+  - Hedgerow 3D specs pass (`hedgerow-3dframe`, `hedgerow-cath3d`); key art re-shot if `render.ts` changes. No rules change, so no retune.
+  - Shots P and D in 3D (see CLAUDE.md for 3D shots).
+- **Size:** 3
+
+## 540. [ ] Cathnivore desktop table: one clean top rail, the whole hand on screen, an empty ledger that stays small
+- **Why:** `cath-game-D` (plan1119e): the chrome competes with the table (VISION 2, 'the table is the hero').
+  - The 'STAGE I' tab collides with the Expand card's top edge (773-835 x 10-28).
+  - Hollowell's portrait ring overlaps the Scout card and spills below the rail (1180-1310 x 10-150).
+  - Before the first sale the Ledger (item 535's receipt) is a dark box reading 'TAKINGS TO COME' (35-315 x 645-800).
+  - The hand's card bottoms are cut by the screen's foot (y 880-900).
+  - Market, Plan and Log are three tiny tabs at 1340-1420.
+- **Build:** Cathnivore `src/ui` and `src/styles`:
+  - The top rail on one baseline, the stage label inside it; Hollowell seated in a corner frame of his own.
+  - The hand lifted so every card sits whole above the screen's foot at 1440x900 and 1280x800.
+  - The empty Ledger collapses to its heading and opening balance until the first line lands.
+  - The right tabs grown to real tab targets (44 px or more), labelled.
+- **Accept:**
+  - No bounding-box overlap between the rail's children (e2e).
+  - Every hand card's bottom at most 896 at 1440x900 and 796 at 1280x800.
+  - The empty Ledger at most 80 px tall; it grows with its first line.
+  - The table, dock, ledger and turn-show specs pass; shots D (and P unchanged).
+- **Size:** 2
+
+## 541. [ ] Cathnivore phone table: the whole hand as a fan, and more board
+- **Why:** `cath-game-P` (plan1119e):
+  - Only two and a half cards show (8-390 x 615-775), behind a '9+ more' button.
+  - The Graft card's cost badge sits over its art (15-110 x 690-720).
+  - Cath's line strip (y 478-555) and the resource bar (y 563-595) squeeze the board to about 330 px.
+  - The cards' 'i' buttons are about 22 px, under the 44 px touch target.
+- **Build:** the phone hand as a fan of every card, overlapped, that lifts on a tap; a tapped card's 'i' becomes its own long-press or a 44 px corner. Cath's line folds into item 519's pop-up bubble at her figure rather than a strip; the badge sits in the card's corner, clear of the art.
+- **Accept:**
+  - Every hand card reachable at rest with no 'more' control (e2e).
+  - The board at least 400 px tall at 390x844.
+  - Every interactive element in the hand at least 44x44.
+  - The campaign, hotseat, cath-pop and quick-game specs pass; shots P.
+- **Size:** 2
+
+## 542. [ ] The bugs from the 2026-11-19 22:30 critique, fixed as one batch
+- `ns-title-D` (1330-1440 x 150-195): the 'OPEN' neon clipped at the right edge.
+- `hedge-l34-2d-D` (970-1345 x 85-350): at four columns the shop tiles drop their role line (Slows/Shoots), unlike level 21; the tower art is about 30 px.
+- `hedge-l21-2d-D` (0-150 and 1290-1440): the board letterboxed by dead cream bars.
+- `hedge-l21-3d-P` (y 75-105): the Hollowell '216 NEXT' pill and the 'CLOSER' button crowd the top band.
+- Hedgerow, both renderers (D 1110-1420 x 590-660): the coming-up columns in about 11 px grey; the coloured bars under them at y 690 read as a broken element.
+- `cath-setup-P` (60-335 x 232-250): the 'Dry Spell … 1 Mark off' banner nearly overflows; the producer power text about 10-11 px (y 715-760).
+- `cath-setup-D` (140-340 x 448-500): step 3's heading wraps to two lines, unlike steps 1 and 2.
+- `cath-campaign-P` (120-380 x 522-535): the chapter thumbnails' red pins collide with the next card's edge.
+- `cath-campaign-D` (350-880 x 0-180): the 1-6 bunting floats unattached over dead space.
+- `games-P` (30-205 x 515-555): 'Play today's Runnel' reads as a link, not a button; the Cathnivore card's Play button crowds its caption (285-355 x 790-830).
+- `runnel-D` (385-685 x 408-480): Cath's bubble overlaps the board's left edge.
+- Not taken from this critique: the full-body Cath (portfolio, Runnel) was item 524, done today, re-judge it at the next planning before reopening; `ns-title-P`'s framing was the first SwiftShader frame (about one frame in 30 s headless), not the settled title.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
