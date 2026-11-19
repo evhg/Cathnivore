@@ -4832,7 +4832,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 the stats panel uses the desktop dossier's component class; the class line's text appears once on screen; the commit button visible without scrolling at 390x844 and 375x667; text 13 px+ at AA; cathode-classpick, cathode-classpose, cathode-type pass; shots P, L, D unchanged.
 - **Size:** 2
 
-## 521. [ ] Hedgerow phone level sheet: the briefing, not just a name
+## 521. [ ] Hedgerow phone level sheet: the briefing, not just a name *(lane A, in progress)*
 - **Why:** `hedge-menu-P` (10-385 x 585-670): the phone's level sheet shows a name and a thumbnail, no Cath line and no vehicles, so a phone player goes in blind; at D (`hedge-menu-D` 1135-1410 x 495-670) the vehicles are a plain icon list beside item 324's painted briefing. Checked 324 (the D briefing), 348/403/511 (the round's convoy and tickets).
 - **Build:** `games/hedgerow/src/` level card: each of the level's vehicles as a small 'wanted' card (its sprite, a one-line habit, the tower that counters it, from `ENEMIES` data), the phone sheet dragging up (or a 'Briefing' tab) to the full briefing with Cath's line; at D the cards replace the list rows.
 - **Accept:** at 390x844 the opened sheet shows Cath's line and 3+ vehicle cards, each naming a counter tower, Play still in reach without scrolling; at D the cards fit the card with no overflow at 1440x900 and 1280x800; hedgerow level-card, map, map-you specs pass; shots P and D.
