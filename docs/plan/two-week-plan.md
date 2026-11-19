@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-19 01:55 UTC
+
 
 
 
@@ -4763,5 +4763,48 @@ Planning 2026-11-19 00:05 lane A: shots `e2e/screenshots/plan1119a` (P 390x844, 
 - `hedge-l21-2d-D` (175-305 x 340-358): the 'Lifestyle influencer' tag floats over the sea, apart from its van (325-370 x 345-375).
 - `hedge-l34-2d-D` (120-250 x 725-835): the second depot over the river bank at the board's foot, cut by the frame (check 246/380).
 - `ns-title-P` (2x, 35-390 x 1015-1100): the Ledger's 'Tomas Reed / The Harbour' set larger than its headline.
+- **Accept:** each point fixed or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 513. [ ] Cathnivore phone Setup: the opening table you'll play, at the top of the stall *(lane A, in progress)*
+- **Why:** `cath-setup-P` (plan1119a): no board at all on the phone; 185-640 is a form (stepper, mode chips, four producer chips at 428-475 and Mara and Tomas drawn again as large portraits at 478-610), then a 70 px dead gap (655-725) and two calls ('Next: Where you trade' 728-768, Start 785-833). Items 502/507 made the opening board the focal point at D; the phone (item 461's dot rail) never got it. VISION 1-2: the board is the hero.
+- **Build:** `src/ui/Setup.tsx` and its CSS below 1100 px: item 502's opening board (`openingPreview.ts`, Map read-only) on step 1 under Cath's sign, about 350 px wide; the two picked producers' portraits seated on its edge (each shown once: the chip row picks, the board shows); their power plays on the board (Map's `showcase`) instead of the two big portrait cards, the rules a one-line caption under it; the 70 px gap closed. Steps 2-3 keep the board in the same place, so a map or difficulty pick redraws it in place.
+- **Accept:** at 390x844 the board is the largest element and 330 px+ wide on every step; each producer drawn once; one primary button; no vertical gap over 24 px between blocks; a pick redraws the board under 250 ms; no scroll at 390x844 and 375x667 (step 1 may scroll at 375x667 only if it did before); D unchanged; setup-*, setup-opening, setup-focal, quick-game pass; shots P, 375x667, D.
+- **Size:** 2
+
+## 514. [ ] NIGHT SHIFT class pick: textured rooms, not a grey blockout
+- **Why:** `ns-play-D` (plan1119a) 480-1000 x 80-650: the set behind Cath reads as flat untextured planes (a wall slab, a grey block at 830-975 x 640-830, a lone green bottle); `ns-play-P` the same at 60-340 (CSS). Item 498 dressed each class's props; the surfaces themselves are still grey-box. VISION 4: noir, wet, lit.
+- **Build:** `render/` class-pick set: brick and plaster textures (procedural canvas textures, as the street's walls), a wet floor already from `frontwet.ts`, a rain-streaked window with city bokeh behind the Ghost, a curtain or shutter per class, two practical lights per set (a lamp, a sign) with their pools on the walls.
+- **Accept:** no flat untextured surface over 5% of the frame at D and P (judged on a shot, the boxes listed); 3+ light sources per set; Cath's face the brightest thing (her mean luminance 1.3x+ the set's); `scripts/cathode-perf.mjs` alone within budget; classpick, armoury, testfire, cathode-setprops pass; shots P, D, L for all five classes.
+- **Size:** 3
+
+## 515. [ ] Hedgerow 3D: towers that stand up as the field's landmarks
+- **Why:** `hedge-l21-3d-D` (plan1119a): the Scarecrow (575-640 x 405-500) is smaller than a farmer beside it (780-870 x 405-505) and shorter than Cath (150-215 x 505-640); at P (195-235 x 435-475) it is the size of a crop clump. The defence you build should be the most legible thing on the field.
+- **Build:** `render3d/` tower models: scale each up to stand tallest on its plot (base kept inside the plot), a stronger silhouette per tower (the Mast's lattice, the Silo's dome, the Windmill's sails), a coloured plinth ring in its role colour (Shoots, Splash, Slows, Earns), a short idle motion (sails turn, scarecrow sways, cannon recoils on fire already); the 2D sprites unchanged.
+- **Accept:** at the default D frame every tower's on-screen height 1.5x+ a farmer's; at P each tower 40 px+ tall; the nine told apart in a black-fill silhouette shot; draw calls +0 on a phone (instanced or merged), hedgerow-drawcalls within budget; 3dframe, closeframe, shadow3d pass; visual only, no retune; shots P, D, L.
+- **Size:** 2
+
+## 516. [ ] Runnel: tiles that belong to the valley's poster
+- **Why:** `runnel-D` (plan1119a) 560-1240 x 95-760 and `runnel-P` 35-355 x 270-565: the tiles are thick beige-bevelled plates with drop shadows, a shaded object style floating over item 508's flat poster valley: two art styles in one frame.
+- **Build:** `games/runnel/` board: the tile rim becomes the valley's own hedge (the hedge token, 6 px or less), dry ground in the valley's field palette for the hour, the drop shadow down to a 2 px offset, the channels running off the board's edge tiles into the valley's ditches at the spring and the garden.
+- **Accept:** rim 6 px or less in the hedge colour; shadow offset 2 px or less; dry tile ground within ΔE 15 of the valley field beside it (measured); channels 3:1+ against the ground; tap targets 44 px+; runnel valley, board, greened, lesson, win, scale pass; key art re-shot; shots P, D.
+- **Size:** 2
+
+## 517. [ ] /games/ desktop: Cath the centre of the booth
+- **Why:** `games-D` (plan1119a): Cath (275-375 x 120-300) about 180 px tall in the top-left corner while the chalkboard (580-1145 x 100-455) dominates the hero; VISION calls her the centrepiece of the landing page.
+- **Build:** `site/` hero from 1100 px: Cath full length centre-left behind the counter (the shared `shared/cath/` art), the chalkboard a hanging sign beside her at 35% of the width or less; the four games' cards unchanged below.
+- **Accept:** at 1440x900 Cath 380 px+ tall, her centre within the middle 50% of the width; the chalkboard 35% or less of the width; all four Play buttons above 900; P unchanged; site specs and axe pass; key art unaffected; shots P, D, 1280x800.
+- **Size:** 1
+
+## 518. [ ] The bugs from the 2026-11-19 02:00 critique, fixed as one batch
+- `cath-title-D` (100-310 x 637-670): the Daily tag breaks 'Dry / Spell' with 'Spell' alone.
+- `cath-setup-D` (995-1140 x 565-775): the 'This week at the market' placard over Cath's torso and arm; her bubble repeats the event (check item 367's held poster first).
+- `cath-game-P` (293-375 x 596-616): the '9+ more' pill on the hand's top edge (checked by 512: recheck against this shot).
+- `ns-play-P` (CSS 90-300 x 355-378 and 525-550): her line shown twice, stage caption and HER LINE.
+- `ns-title-P` (CSS 15-80 x 770-790): the List's MARKET stamp past the print's left edge.
+- `hedge-l21-3d-D` (1320-1400 x 640-668): Round 14's 'Same-Day van' wraps to two lines beside one-line neighbours.
+- `hedge-menu-P` (80-125 x 220-255): 'Next / On Air' against Cath and the 21 pin.
+- `games-D` (740-815 and 1050-1128 x 790-833): Hedgerow's and NIGHT SHIFT's 'PLAY' in caps beside two 'Play'.
+- `games-D`/`portfolio-D` Runnel poster: a pale hex mosaic unlike item 508's valley: check key-art staleness (keyart-fresh) and re-shoot if stale.
 - **Accept:** each point fixed or checked and noted here; shots P and D.
 - **Size:** 1
