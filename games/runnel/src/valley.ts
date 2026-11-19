@@ -212,6 +212,17 @@ export function valleyLayers(seed: string, weather: Sky['weather'], season: Seas
         const rx = px + pw * (rnd(860 + n) * 0.5 - 0.1)
         puddles.push(`<g class="vl-puddle"><path class="vl-puddle-pool" d="${blob}Z"/><path class="vl-puddle-glint" d="${glint}"/><ellipse class="vl-puddle-ring" cx="${rx.toFixed(1)}" cy="${(py + ry * 0.15).toFixed(1)}" rx="${(pw * 0.14).toFixed(1)}" ry="${(ry * 0.22).toFixed(1)}"/></g>`)
       }
+      // Plan item 508: a grass field may be an orchard: rows of small round trees in its middle, so a margin that
+      // shows only grass still reads as farmed land.
+      if (kind === 'grass' && r >= 1 && rnd(900 + n) < 0.5) {
+        const cx = (xa + xb) / 2 + lean * 0.5, top = slope(r, cx) + 26, bot = slope(r + 1, cx + lean * 0.5) - 22
+        const w = Math.min(150, (xb - xa) * 0.6)
+        for (let oy = top; oy <= bot; oy += 34)
+          for (let ox = cx - w / 2; ox <= cx + w / 2; ox += 30) {
+            const tx = ox + ((oy - top) / Math.max(1, bot - top)) * lean * 0.5
+            trees.push(`<g class="vl-tree vl-orchard"><ellipse class="vl-tree-shade" cx="${(tx + 5).toFixed(0)}" cy="${(oy + 8).toFixed(0)}" rx="9" ry="3"/><circle cx="${tx.toFixed(0)}" cy="${oy.toFixed(0)}" r="8"/><circle class="vl-tree-lit" cx="${(tx - 2.5).toFixed(0)}" cy="${(oy - 2.5).toFixed(0)}" r="3.5"/></g>`)
+          }
+      }
       if (i > 0) hedges.push(`M${xa.toFixed(0)} ${slope(r, xa).toFixed(0)}L${(xa + lean).toFixed(0)} ${slope(r + 1, xa + lean).toFixed(0)}`)
       // An oak or two where the hedges meet.
       if (i > 0 && rnd(700 + n) < 0.55) {
@@ -223,6 +234,13 @@ export function valleyLayers(seed: string, weather: Sky['weather'], season: Seas
     }
     parts.push('</g>')
     if (r > 0) hedges.push(`M-20 ${slope(r, -20).toFixed(0)}L1020 ${slope(r, 1020).toFixed(0)}`)
+    // Plan item 508: hedgerow oaks along the row's hedge, crowned, so the long hedges aren't bare lines.
+    if (r > 0)
+      for (let x = 40 + rnd(950 + r) * 90; x < 1000; x += 110 + rnd(960 + r * 7 + x) * 90) {
+        if (rnd(970 + r * 13 + Math.round(x)) < 0.4) continue
+        const ty = slope(r, x) - 6, s2 = 0.75 + rnd(980 + Math.round(x)) * 0.35
+        trees.push(`<g class="vl-tree"><ellipse class="vl-tree-shade" cx="${(x + 9 * s2).toFixed(0)}" cy="${(ty + 13 * s2).toFixed(0)}" rx="${(16 * s2).toFixed(0)}" ry="${(5 * s2).toFixed(0)}"/><ellipse cx="${x.toFixed(0)}" cy="${ty.toFixed(0)}" rx="${(15 * s2).toFixed(0)}" ry="${(14 * s2).toFixed(0)}"/><ellipse class="vl-tree-lit" cx="${(x - 5 * s2).toFixed(0)}" cy="${(ty - 5 * s2).toFixed(0)}" rx="${(7 * s2).toFixed(0)}" ry="${(6 * s2).toFixed(0)}"/></g>`)
+      }
   }
   const rain =
     weather === 'drizzle' ? '<rect class="vl-rain" x="0" y="0" width="1000" height="1000" fill="url(#vl-rain)" mask="url(#vl-rain-mask)"/>' : ''
