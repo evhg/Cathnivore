@@ -4626,7 +4626,7 @@ Progress (lane A, 09:05): **slice 1** (one voice): while a producer answers from
 - **Accept:** the hex board's box covers 60%+ of the 1440x900 viewport (e2e measure); no region shows more than 3 marker kinds (`data-marker` count, e2e); at most one speech bubble visible at any moment through a round (e2e sampling); pieces 36 px+ at P; shots P and D before/after; the existing table/dock specs pass.
 - **Size:** 3
 
-## 496. [ ] Hedgerow act map at D: one road through a living diorama *(handed back 2026-11-18 23:58 by lane B after slice 4)*
+## 496. [ ] Hedgerow act map at D: one road through a living diorama *(lane B, in progress)*
 
 Progress (lane B, 2026-11-18 23:58, slice 4, `0c72697`): `scripts/hedgerow-496-measure.mjs` (BASE, OUT) reports the stops-in-view centroid as a share of the viewport after the spec's seeds. Once the map scrolls to a later stop the trail is already in the middle third (upTo 6: 0.53/0.50, 21: 0.62/0.62 at 1440x900/1280x800); a fresh farm (upTo 3) sat low, 0.735/0.711 with the second row's names at the fold. Act 1's gap between its two rows of stops is now half item 377's (clamp up to 60 px, was 120): upTo 3 0.698/0.689. **Left for the 0.67 bar on a fresh farm:** lift act 1's first row about 30 px more; `.trail.has-home`'s margin-top -136 -> -176 moved it only 10 px (the lane's layout seems to place the stops), so look at map.ts's stop layout first. Then Cath walking between stops when a level is chosen.
 
