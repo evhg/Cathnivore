@@ -2075,3 +2075,5 @@ html.no-animations .title-screen * {
   .title-beat *, .title-cath[data-beat] .title-cath-line { animation: none; }
 }
 html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .title-cath-line { animation: none !important; }
+/* Plan item 518: the Daily tag's event name breaks as a whole ('Dry / Spell' left 'Spell' alone on its line). */
+.title-daily-event-name { white-space: nowrap; }

@@ -553,7 +553,8 @@ function DailyButton({ onStart }: { onStart(config: GameConfig, seed: number, mo
           {/* Plan item 453: the event stays on a tall phone's tag (the pair goes to screen readers there). */}
           <span className="title-daily-event">
             {'\u00a0· '}
-            {MARKET_EVENTS[daily.marketEvent].name}
+            {/* Plan item 518: the event's name breaks as a whole ('Dry / Spell' left 'Spell' alone) */}
+            <span className="title-daily-event-name">{MARKET_EVENTS[daily.marketEvent].name}</span>
           </span>
         </span>
         <span className="title-daily-when">
