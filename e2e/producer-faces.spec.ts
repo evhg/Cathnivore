@@ -29,22 +29,22 @@ test('the active producer reacts to the turn', async ({ page }) => {
   expect([...board].every((f) => f === 'worried' || f === 'delighted') && board.size > 0, `board faces: ${[...board].join(', ')}`).toBe(true)
 })
 
-// Plan item 80: the Setup draws the producers big: each card's portrait at D, the picked pair's at P, at least
-// 120 px tall, with the page not scrolling (a phone a little, item 349).
-test('Setup producer portraits are at least 120 px tall', async ({ page }, testInfo) => {
-  test.skip(!['phone', 'desktop-chromium'].includes(testInfo.project.name), 'P and D')
-  const sizes: Array<[number, number]> = testInfo.project.name === 'phone' ? [[390, 844]] : [[1440, 900], [1280, 800]]
+// Plan item 80: the Setup draws every producer's face, with the page not scrolling. Item 507 made the opening board
+// the D Setup's focal point and each producer card a nameplate (a 58x70 portrait; 120 px before), so the bound is 56.
+test('Setup producer portraits are drawn on every card', async ({ page }, testInfo) => {
+  // Plan item 513: an upright phone draws the pair once, on the producer chips, and gives the height to the opening
+  // board (setup-opening measures that), so this is a D check now.
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'D')
+  const sizes: Array<[number, number]> = [[1440, 900], [1280, 800]]
   for (const [width, height] of sizes) {
     await page.setViewportSize({ width, height })
     await page.goto('/')
     await page.getByText('Quick Game').click()
     await expect(page.getByRole('heading', { name: 'Quick Game' })).toBeVisible()
-    const sel = testInfo.project.name === 'phone' ? '.pair-portrait svg' : '.producer-card .pc-portrait'
+    const sel = '.producer-card .pc-portrait'
     const boxes = await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))
-    expect(boxes.length, `${width}x${height} portraits`).toBe(testInfo.project.name === 'phone' ? 2 : 4)
-    for (const h of boxes) expect(h, `${width}x${height}`).toBeGreaterThanOrEqual(120)
-    // Plan item 349: the phone's stall header lets the page scroll a little under the docked Start sign.
-    const slack = testInfo.project.name === 'phone' ? 220 : 1
-    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(slack)
+    expect(boxes.length, `${width}x${height} portraits`).toBe(4)
+    for (const h of boxes) expect(h, `${width}x${height}`).toBeGreaterThanOrEqual(56)
+    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(1)
   }
 })

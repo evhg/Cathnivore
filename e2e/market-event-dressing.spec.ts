@@ -13,12 +13,13 @@ for (const [event, day, sel, says] of [
     await page.goto('/')
     await page.getByText('Quick Game').click()
     await page.getByRole('button', { name: 'Start' }).click()
-    await expect(page.locator('svg.map')).toHaveAttribute('data-event', event)
-    const regions = await page.locator('svg.map .region-hex').count()
-    await expect(page.locator(`svg.map ${sel}`)).toHaveCount(regions)
+    // The Setup's opening board is a .map too (item 513): read the game's own board.
+    await expect(page.locator('.game svg.map')).toHaveAttribute('data-event', event)
+    const regions = await page.locator('.game svg.map .region-hex').count()
+    await expect(page.locator(`.game svg.map ${sel}`)).toHaveCount(regions)
     const hit = await page.evaluate((s) => {
       const pieces = [...document.querySelectorAll('.piece-tray .piece-slot')].map((e) => e.getBoundingClientRect())
-      return [...document.querySelectorAll(s)].some((d) => {
+      return [...document.querySelectorAll(`.game ${s}`)].some((d) => {
         const a = d.getBoundingClientRect()
         return pieces.some((q) => q.left < a.right - 1 && a.left + 1 < q.right && q.top < a.bottom - 1 && a.top + 1 < q.bottom)
       })
@@ -37,7 +38,7 @@ for (const [event, day, sel, says] of [
           for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) if (pts[i]!.y > y !== pts[j]!.y > y && x < ((pts[j]!.x - pts[i]!.x) * (y - pts[i]!.y)) / (pts[j]!.y - pts[i]!.y) + pts[i]!.x) c = !c
           return c
         }
-        const hexes = [...document.querySelectorAll<SVGPolygonElement>('.region-hex > polygon:first-of-type')].map((pg) => [...pg.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(pg.getScreenCTM()!)))
+        const hexes = [...document.querySelectorAll<SVGPolygonElement>('.game .region-hex > polygon:first-of-type')].map((pg) => [...pg.points].map((q) => new DOMPoint(q.x, q.y).matrixTransform(pg.getScreenCTM()!)))
         for (let x = t.left; x <= t.right; x += 4) for (let y = t.top; y <= t.bottom; y += 4) if (hexes.some((h) => inside(x, y, h))) return true
         return false
       })

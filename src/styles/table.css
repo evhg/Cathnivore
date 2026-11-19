@@ -3021,8 +3021,11 @@ html.no-animations .cath-companion .cameo {
   /* The board lost the bubble band at its foot: the ticket rides up onto the frame's rim to clear the top plaques. */
   /* Plan item 212: it rode up over the plan cards' foot; it hangs inside the frame's top strip as a pennant pinned
      to the rim (a swallowtail end each side), clear of the cards above and the plaques below. */
+  /* 2026-11-19: since the board grew (items 495-513) its top hexes reach 21 px into the frame; the pennant sits 1 px
+     from the rim and 3 px slimmer so it stays clear of them (market-event-dressing). */
   .game:has(.cath-dock) .event-ticket {
-    top: 3px;
+    top: 1px;
+    padding-block: 1px 2px;
     padding-inline: 16px;
     border-radius: 0;
     rotate: 0deg;
@@ -4946,6 +4949,8 @@ html.no-animations .terrain-art .idle-sheep-head { animation: none; }
 @media (min-width: 1240px) and (max-width: 1399px) and (min-height: 760px) {
   /* At 1280 a memo is about 235 px: 'SQUEEZE Coast' with its dial and stage cut the effect by 2 px at .06em. */
   .table-head.with-table-cath .plan-strip-headline { letter-spacing: .03em; }
+  /* 'SQUEEZE Empty' ran 4 px past its memo's effect column (plan-cards at 1280x800): the art steps down 24 -> 20 px. */
+  .game:has(.table-head.with-table-cath) .plan-strip-item svg.plan-art { width: 20px; height: 20px; }
 }
 
 /* Plan item 276: on an upright phone Cath's reaction pops up over the board's lower-left corner, about 140 px tall, rises
@@ -6074,5 +6079,8 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) { position: relative; grid-template-areas: "art head eff eff" "tgt tgt tgt tgt"; }
   /* its stage tag a tab on the card's top-left corner, so the chips have the whole line */
   .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dateline { position: absolute; left: -4px; top: -6px; }
-  .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% - 5px); }
+  .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% - 8px); }
+  /* the chips' line runs on under the raised (i) into the card's right padding: at 1280 'Shingle Bay' and
+     'Saltmarsh' are 150 px against the 135 px between the paddings (plan-cards) */
+  .game:has(.table-head.with-table-cath) .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-target-short { margin-right: -16px; }
 }

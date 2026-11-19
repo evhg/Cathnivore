@@ -6,7 +6,7 @@ async function start(page: import('@playwright/test').Page) {
   await page.goto('/?e2eMoment=1')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
-  await expect(page.locator('svg.map')).toBeVisible()
+  await expect(page.locator('.game svg.map')).toBeVisible() // the Setup's opening board is a .map too (item 513)
   await page.waitForTimeout(400)
 }
 
@@ -14,7 +14,7 @@ for (const producer of ['mara', 'tomas', 'ines', 'sol'] as const) {
   test(`${producer}'s ability is a staged moment over its tile`, async ({ page }) => {
     await start(page)
     const r = await page.evaluate(async (p) => {
-      const hex = document.querySelectorAll('.region-hex')[2]!
+      const hex = document.querySelectorAll('.game .region-hex')[2]!
       const id = hex.getAttribute('data-region')!
       ;(window as unknown as { cathnivoreAbility(p: string, id: string): void }).cathnivoreAbility(p, id)
       const t0 = performance.now()
@@ -54,7 +54,7 @@ test.describe('reduced motion', () => {
   test('the moment only fades', async ({ page }) => {
     await start(page)
     const t = await page.evaluate(async () => {
-      const id = document.querySelectorAll('.region-hex')[2]!.getAttribute('data-region')!
+      const id = document.querySelectorAll('.game .region-hex')[2]!.getAttribute('data-region')!
       ;(window as unknown as { cathnivoreAbility(p: string, id: string): void }).cathnivoreAbility('tomas', id)
       await new Promise((r) => setTimeout(r, 120))
       return [...document.querySelectorAll('.ability-moment *')].map((e) => getComputedStyle(e).animationName).filter((n) => n !== 'none')

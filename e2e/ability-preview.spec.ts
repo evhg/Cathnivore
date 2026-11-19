@@ -36,7 +36,8 @@ test('on a phone a picked producer plays their power on their bust, without a sc
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.locator('.producer-card[data-producer=sol]').click()
-  const sol = page.locator('.pair-portrait [data-ability-preview=sol][data-played]')
+  // Plan item 513: the phone Setup draws each producer once (on the chips); their power plays on the opening board.
+  const sol = page.locator('.opening-preview [data-ability-preview=sol][data-played]')
   await expect(sol).toBeVisible({ timeout: 1200 })
   await expect(sol.locator('[data-ability=on-air]')).toHaveCount(1)
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(844)

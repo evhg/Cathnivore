@@ -49,12 +49,14 @@ test('phone: every playable card is in view, and a tap on a strip brings it forw
     expect(sp.name.length).toBeGreaterThan(2)
     expect(sp.shown).toBe(true)
   }
-  // The last card is a strip off the front: tap the strip.
-  const last = before.length - 1
+  // Tap a strip off the front: the last card, or the first when Cath's suggested card (scrolled into view) is the last.
+  const last = before[before.length - 1]!.mid ? 0 : before.length - 1
   expect(before[last]!.mid).toBe(false)
   const ledger = await page.locator('.active-producer').textContent()
-  const card = page.locator('.action-tray .actions > .action-item[data-peek]').last()
-  await card.click({ position: { x: before[last]!.width - 8, y: 40 }, force: true })
+  const card = page.locator('.action-tray .actions > .action-item[data-peek]').nth(last)
+  // a strip shows on its far side from the front: its left edge on the left stack, its right edge on the right
+  const x = before[last]!.left < before.find((c) => c.mid)!.left ? 8 : before[last]!.width - 8
+  await card.click({ position: { x, y: 40 }, force: true })
   await expect.poll(async () => (await strips(page))[last]!.mid, { timeout: 3000 }).toBe(true)
   await expect(page.locator('.active-producer')).toHaveText(ledger ?? '')
 })
