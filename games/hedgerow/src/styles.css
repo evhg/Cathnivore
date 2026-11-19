@@ -5099,6 +5099,17 @@ img.act-scene {
 @media (max-width: 899.98px) and (prefers-reduced-motion: reduce) {
   .level-card.open .lcard-enemies li { rotate: none; }
 }
+.lcard-grip-word { display: none; }
+@media (max-width: 899.98px) {
+  /* Plan item 521 (slice 3): the closed sheet's grip is a labelled tab, 'Briefing' under an up chevron, in the grip's
+     own 20 px row (the peek keeps its height), so a phone player knows the vehicles and Cath's line are up there. */
+  #screen-select .level-card:not(.open) .lcard-grip { display: flex; align-items: center; justify-content: center; gap: 6px; width: auto; min-width: 64px; padding: 0 10px; color: var(--ink-2); }
+  #screen-select .level-card:not(.open) .lcard-grip::before {
+    width: 8px; height: 8px; margin: 3px 0 0; border-radius: 0; background: none;
+    border: solid currentColor; border-width: 2px 0 0 2px; rotate: 45deg;
+  }
+  #screen-select .level-card:not(.open) .lcard-grip-word { display: block; font: 800 var(--fs-label) / 1 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; }
+}
 /* Plan item 98: on a portrait phone the map's tools are a fixed tab bar at the foot (N4); the sheet was cut by it.
    The map's own bottom padding (the bar's height) counts toward the sticky inset, so 8 px clears the bar. */
 @media (max-width: 640px) and (orientation: portrait) {

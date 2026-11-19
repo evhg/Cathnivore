@@ -2137,6 +2137,12 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
   const grip = document.createElement("button");
   grip.type = "button";
   grip.className = "lcard-grip";
+  // Plan item 521: closed, the grip says what pulling it up gives: the level's briefing (Cath's line, the vehicles).
+  const gripWord = document.createElement("span");
+  gripWord.className = "lcard-grip-word";
+  gripWord.setAttribute("aria-hidden", "true");
+  gripWord.textContent = "Briefing";
+  grip.append(gripWord);
   const sync = () => {
     el.classList.toggle("open", cardOpen);
     grip.setAttribute("aria-expanded", String(cardOpen));
