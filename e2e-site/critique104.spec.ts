@@ -25,6 +25,9 @@ test('/games/ has landed by 1 s: the wordmark unblurred, the CTAs and the game p
 test("the NIGHT SHIFT poster's 18+ badge has no line of its own", async ({ page }) => {
   await page.goto('/games/')
   await page.waitForTimeout(1200)
+  // Plan item 530: on a phone the games are a swiped shelf of posters, so NIGHT SHIFT's is brought into view first.
+  await page.evaluate(() => document.querySelector('.hero-game-nightshift')?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'instant' }))
+  await page.waitForTimeout(400)
   const r = await page.evaluate(() => {
     const name = document.querySelector<HTMLElement>('.hero-game-nightshift .hero-game-name')!
     const badge = name.querySelector<HTMLElement>('.badge-adult')!.getBoundingClientRect()
