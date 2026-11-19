@@ -6,6 +6,7 @@ import type { EnemyClass, EnemyKind, MegaId, TowerKind } from "./engine";
 import { DAMAGE_NAMES, FLEET_TOWERS, PROPERTIES, RUNGS, damageTypeOf, fleetSpecPrice, fvOf } from "./fleet";
 import { propertyEntries, towerBadges } from "./counters";
 import { enemyIcon, img, propIcon, towerIcon } from "./icons";
+import { driverFace, driverSlogan } from "./fleetfaces";
 import { towerRole } from "./roles";
 import type { Subject } from "./render3d/turntable";
 
@@ -203,7 +204,19 @@ function enemies(boss: boolean, seen: Record<string, boolean>, describe: (k: Ene
       c.classList.add("locked");
       return c;
     }
-    return card(enemyIcon(k), e.name, describe(k), enemyRows(k).map(([l, v]) => stat(l, v)), undefined, { enemy: k });
+    // Plan item 529: the Fleet's cards carry their drivers: the mugshot pinned to the vehicle, the slogan as its lore.
+    const c = card(enemyIcon(k), e.name, describe(k), enemyRows(k).map(([l, v]) => stat(l, v)), `\u201c${driverSlogan(k)}\u201d`, { enemy: k });
+    const icon = c.querySelector(".alm-icon");
+    if (icon) {
+      const pic = document.createElement("span");
+      pic.className = "alm-pic";
+      const driver = document.createElement("span");
+      driver.className = "alm-driver";
+      driver.innerHTML = driverFace(k);
+      icon.replaceWith(pic);
+      pic.append(icon, driver);
+    }
+    return c;
   });
 }
 
