@@ -1677,13 +1677,18 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
    frame's bright point; a print you point at comes back to full value as it comes forward. */
 @media (min-width: 900px) and (min-height: 521px) {
   .dossier.front-page { filter: brightness(.6) saturate(.9); }
+  /* under the grade its paper is mid grey, so its dark captions go to full black to keep 4.5:1 at 13 px (cathode-front
+     read 4.46 with the card ink) */
+  .dossier.front-page :is(.dossier-target, .dossier-place, .dossier-tag) { color: rgb(var(--black-rgb)); }
   .dossier.front-page::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
       repeating-linear-gradient(97deg, transparent 0 calc(var(--u) * 23), rgb(var(--white-rgb) / .07) calc(var(--u) * 23) calc(var(--u) * 24), transparent calc(var(--u) * 24) calc(var(--u) * 41)),
       linear-gradient(180deg, rgb(var(--black-rgb) / .1), transparent 35%, transparent 70%, rgb(var(--black-rgb) / .08));
   }
-  .the-list-wall { filter: brightness(.72) saturate(.92); }
+  /* contrast after the grade: it scales every difference between the prints back up (the grade alone put pairs within
+     cathode-front's 10%) and lifts their paper under the names (4.5:1), while the dark prints stay dark */
+  .the-list-wall { filter: brightness(.72) contrast(1.25) saturate(.92); }
   .the-list-wall .mug:is(:hover, :focus-within) { filter: brightness(1.38); }
 }
 
