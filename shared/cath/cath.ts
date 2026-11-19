@@ -208,6 +208,7 @@ let uid = 0
 /** Plan item 442: the full-length figure's head scale (about the collar at 200, 262). */
 export const FULL_HEAD = 0.84
 
+
 export function cathSvg(options: CathOptions = {}): string {
   watchCathLines()
   const expression = options.expression ?? 'smirk'
@@ -226,7 +227,7 @@ export function cathSvg(options: CathOptions = {}): string {
   const headOpen = framing === 'full' ? `<g transform="translate(200 262) scale(${FULL_HEAD}) translate(-200 -262)">` : ''
   const headClose = framing === 'full' ? '</g>' : ''
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" ${a11y}>
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" data-pose="${pose}" data-framing="${framing}" ${a11y}>
 ${defs(id)}
 ${framing === 'full' ? `<g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
 ${headOpen}<g class="cath-hair-back">${hairBack(id)}</g>${headClose}

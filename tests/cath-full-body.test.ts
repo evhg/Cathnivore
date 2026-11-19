@@ -46,3 +46,13 @@ describe('Cath full-body figure (plan item 292)', () => {
     expect(0.2126 * r! + 0.7152 * g! + 0.0722 * b!).toBeGreaterThan(150)
   })
 })
+
+// Plan item 524: every Cath carries her pose and framing on the root, so a screen's pose can be checked in e2e.
+describe('pose attributes', () => {
+  it('names the pose and framing on the svg', () => {
+    const s = cathSvg({ framing: 'full', pose: 'wave' })
+    expect(s).toContain('data-pose="wave"')
+    expect(s).toContain('data-framing="full"')
+    expect(cathSvg()).toContain('data-pose="clasped"')
+  })
+})
