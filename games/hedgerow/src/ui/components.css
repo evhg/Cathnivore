@@ -4579,6 +4579,20 @@ body:has(#dlg-pause[open]) .paused-note {
 .round-chip-btn .mix-bar i + i {
   box-shadow: inset 1px 0 0 var(--white-a50);
 }
+/* Plan item 542: the mix was a hairline flush with the card's foot, which read as a broken border; it is the card's own
+   gauge now, inset from the edges with rounded ends, a paper rim and the liveries at full strength. */
+.round-chip-btn .mix-bar {
+  left: 10px;
+  right: 10px;
+  bottom: 5px;
+  width: auto;
+  height: 6px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 2.5px var(--ink-a14);
+}
+.round-chip-btn .mix-bar i + i {
+  box-shadow: inset 1.5px 0 0 var(--paper);
+}
 .round-chip-btn .round-count {
   grid-area: count;
   display: grid;
@@ -4722,7 +4736,7 @@ body:has(#dlg-pause[open]) .paused-note {
     height: 24px;
   }
   .round-chip-btn .mix-bar {
-    height: 4px;
+    height: 5px;
   }
   .round-banner {
     padding: 1px 0 2px;
