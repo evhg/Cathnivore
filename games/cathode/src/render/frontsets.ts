@@ -62,6 +62,24 @@ function glow(g: CanvasRenderingContext2D, x: number, y: number, r: number, c: s
   g.fillRect(x - r, y - r, 2 * r, 2 * r);
 }
 
+/** Plan item 514: a wall of large old bricks (half a metre by a quarter, each its own shade, wide dark mortar and a lit
+ * top edge), big enough that its courses survive the pick's depth of field (the sets' finer detail blurred to a flat
+ * wash). Drawn over the back wall before the set's own things. */
+function bricks(g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number, seed: number, lit: string, a: number): void {
+  const r = rng(seed);
+  const bw = 0.5;
+  const bh = 0.25;
+  for (let row = 0, y = 0; y < FH; row++, y += bh) {
+    for (let x = -FW / 2 - (row % 2 ? bw / 2 : 0); x < FW / 2; x += bw) {
+      const k = r();
+      g.fillStyle = k < 0.5 ? `rgba(0,0,0,${(0.08 + k * 0.3) * a})` : `${lit.replace("A", String((0.04 + (k - 0.5) * 0.22) * a))}`;
+      g.fillRect(X(x) + 3 * s, Y(y + bh) + 3 * s, X(x + bw) - X(x) - 6 * s, Y(y) - Y(y + bh) - 6 * s);
+    }
+  }
+  g.fillStyle = `rgba(0,0,0,${0.55 * a})`;
+  for (let y = 0; y < FH; y += bh) g.fillRect(0, Y(y) - 3 * s, X(FW / 2), 6 * s);
+}
+
 /** Ghost: a rooftop in the rain, the city's towers lit cyan behind a parapet, a water tower on its legs. */
 const ghost: Paint = (g, X, Y, s) => {
   const r = rng(11);
@@ -281,6 +299,8 @@ const wirewitch: Paint = (g, X, Y, s) => {
     [1, "#0e0520"],
   ]);
   g.fillRect(0, 0, X(FW / 2), Y(0));
+  // Plan item 514: the alley's brick wall behind the racks, in the key's violet.
+  bricks(g, X, Y, s, 54, "rgba(150,90,255,A)", 1);
   // Racks: tall dark cabinets with rows of status lights.
   for (const x0 of [-5.2, -4.3, -3.4, -2.5, 1.9, 4.4]) {
     const w = 0.8;
@@ -346,6 +366,8 @@ const fixer: Paint = (g, X, Y, s) => {
     [1, "#081604"],
   ]);
   g.fillRect(0, 0, X(FW / 2), Y(0));
+  // Plan item 514: the workshop's brick wall behind the bench, lit green by the key.
+  bricks(g, X, Y, s, 72, "rgba(120,220,90,A)", 1);
   // The pegboard over the bench, its holes and the tools on it.
   const px0 = 1.5, px1 = 5.0, py0 = 1.1, py1 = 2.9;
   g.fillStyle = "#1a3a0e";
