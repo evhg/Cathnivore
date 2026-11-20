@@ -5651,7 +5651,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** every `[data-setup-choice]` at 390x844 holds art (the setup-objects spec extended to P); no page scroll at 390x844 and no choice past x 16-374; at most 2 lines of rules text visible without a tap.
 - **Size:** 2
 
-## 573. [ ] Cathnivore phone campaign: the chapters as a stack of sealed letters *(handed back 2026-11-20 21:30 by lane A after slice 1: locked chapters are kraft-flapped letters with 14 px ink teasers, the carousel shows two letters' edges under the open card. **Left:** Back to Title on the map frame's foot (a ~70 px empty band below the stack at 390x844), the stack's swipe feel)*
+## 573. [x] Cathnivore phone campaign: the chapters as a stack of sealed letters *(done 2026-11-20 21:35 lane A, b94bc3e8..980db490: locked chapters kraft-flapped letters with 14 px ink teasers and the print's seal, two letters' edges under the open one, the open letter filling to the screen's foot, Back to Title a plank on the map frame's foot; campaign-map spec for the accept at 390x844)*
 - **Why:** `cath-campaign-P`: six 50 px thumbnails with red pins (12-375 x 520-580) over a generic card (20-370 x 590-775); desktop got sealed letters in item 556. Back to Title floats in an empty band (95-295 x 795-842).
 - **Build:** in `CampaignScreen.tsx` the chapters as a swipeable stack of 556's letters (kraft flap, seal, teaser), the open chapter on top; Back to Title on the map frame's foot.
 - **Accept:** each locked chapter at P shows its seal and a teaser of 14 px or more; no empty band over 24 px below the stack at 390x844; the campaign specs pass at P and D.
