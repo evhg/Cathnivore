@@ -500,7 +500,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       }
       if (still) art.classList.add("is-still");
       // Plan item 400: the band under the case table holds her edge: the (up to) two stats she starts furthest above
-      // the five classes' average, as '+7 NERVE 25 · 18 avg', so the classes read apart without the dials.
+      // the five classes' average, as '+7 NERVE 25 vs 18 avg' (plan item 548: the dot read cryptic), so the classes read apart without the dials.
       const avg = (a: AttributeId) => CLASS_IDS.reduce((t, c) => t + CLASS_START_ATTRIBUTES[c][a], 0) / CLASS_IDS.length;
       const lead = (a: AttributeId) => CLASS_START_ATTRIBUTES[cls][a] - avg(a);
       const best = [...ATTRIBUTES].filter((a) => lead(a) > 0).sort((a, b) => lead(b) - lead(a)).slice(0, 2);
@@ -512,7 +512,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
           el("dt", "", d, ATTRIBUTE_LABEL[a]);
           const dd = el("dd", "", d);
           el("span", "cp-edge-lead", dd, `+${Math.round(lead(a))}`);
-          el("span", "cp-edge-of", dd, `${CLASS_START_ATTRIBUTES[cls][a]} · ${Math.round(avg(a))} avg`);
+          el("span", "cp-edge-of", dd, `${CLASS_START_ATTRIBUTES[cls][a]} vs ${Math.round(avg(a))} avg`);
         }
       }
       el("span", "cp-label", weapon, WEAPON_CLASS_LABEL[w.cls] ?? w.cls);

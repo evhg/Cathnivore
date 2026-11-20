@@ -5315,7 +5315,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Size:** 2
 
 ## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(lane B, in progress)*
-- `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot.
+- `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot. **Checked 01:45 lane B, kept:** the page scrolls; the button sits whole just under the fold.
 - `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't.
 - `cath-setup-D`:
   - (105-255 x 170-215) 'Two at the table' clipped against 'You and an AI'.
@@ -5330,10 +5330,10 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `ns-title-D` (565-740 x 330-390): the Ledger's italic body about 11 px.
 - `ns-play-P`:
   - (at 2x 325-595 x 872-898) 'GUNSLINGER' butts 'WIREWITCH'.
-  - The CTA reads only 'HOLD'.
-- `ns-play-D` (998-1100 x 438-455): '+7 25 · 18 avg' is cryptic; label it.
+  - The CTA reads only 'HOLD'. **Fixed 01:45 lane B:** 'Hold to start' on touch ('Hold Enter' with a keyboard).
+- `ns-play-D` (998-1100 x 438-455): '+7 25 · 18 avg' is cryptic; label it. **Fixed 01:45 lane B:** '+7 25 vs 18 avg' (plan1120b).
 - `runnel-D` (165-265 x 635-745): the 'Up next' card's text off its heading's left edge.
-- `runnel-P` (265-385 x 158-185): step 3's label wraps where the others don't.
-- `portfolio-D`: Cath's bubble says 'Hover one' (wrong on touch: say 'Pick one' or detect hover).
+- `runnel-P` (265-385 x 158-185): step 3's label wraps where the others don't. **Checked, kept:** steps 2 and 3 both wrap to two lines; step 1 is short.
+- `portfolio-D`: Cath's bubble says 'Hover one' (wrong on touch: say 'Pick one' or detect hover). **Fixed 01:45 lane B:** 'Pick one and I'll show you round'; portfolio-present passes.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1

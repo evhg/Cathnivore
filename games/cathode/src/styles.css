@@ -959,7 +959,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 /* Plan item 166: 'Hold' a step up from the caption size; condensed caps at --fs-1 read about 10 px. */
 .cp-hold-how { font: 700 var(--fs-2)/1 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); font-stretch: var(--wdth-label); }
 .cp-hold-how::after { content: " Enter"; }
-@media (hover: none) { .cp-hold-how::after { content: ""; } }
+@media (hover: none) { .cp-hold-how::after { content: " to start"; } } /* plan item 548: a bare "Hold" read as no instruction */
 /* The foot only exists for the upright phone (below): elsewhere the hold bar lays out as the sheet's own child. */
 .cp-foot { display: contents; }
 .cp-cue { display: none; }

@@ -20,7 +20,7 @@ test('Cath presents the print you point at', async ({ page }) => {
   expect(geo.scroll).toBeLessThanOrEqual(0)
 
   const say = page.locator('#show-say .show-say-text')
-  await expect(say).toContainText('Hover one')
+  await expect(say).toContainText('Pick one')
   await page.locator('.show-c').hover()
   await expect(page.locator('#hero-cath')).toHaveAttribute('data-facing', 'nightshift')
   await expect(say).toHaveText(/^NIGHT SHIFT:/)
@@ -29,7 +29,7 @@ test('Cath presents the print you point at', async ({ page }) => {
   await expect.poll(() => page.locator('#hero-cath svg').evaluate((el) => getComputedStyle(el).transform)).toContain('matrix(-1')
   await page.mouse.move(5, 880)
   await expect(page.locator('#hero-cath')).not.toHaveAttribute('data-facing')
-  await expect(say).toContainText('Hover one')
+  await expect(say).toContainText('Pick one')
   // keyboard: focusing a print is the same as pointing at it, and it links to the game
   await page.locator('.show-a').focus()
   await expect(say).toHaveText(/^Cathnivore:/)
