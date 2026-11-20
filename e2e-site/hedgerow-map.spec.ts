@@ -747,3 +747,18 @@ test('plan item 377: big stops, and landmarks at scene scale between the rows', 
     }
   }
 })
+
+// Plan item 471: on a phone the next stop opens clear of the briefing card docked at the map's foot (with three won,
+// the lines above the map landed after the first layout and left Bea's Beehive under the card).
+test('plan item 471: on a phone the next stop opens clear of the level card', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-phone', 'phone layout')
+  for (const n of [0, 3, 5, 13]) {
+    await seed(page, n)
+    await page.waitForTimeout(1200)
+    const m = await page.evaluate(() => ({
+      coin: document.querySelector('button.node.next .level-num')!.getBoundingClientRect().bottom,
+      card: document.querySelector('#screen-select .level-card')!.getBoundingClientRect().top,
+    }))
+    expect(m.coin, `${n} won`).toBeLessThanOrEqual(m.card)
+  }
+})

@@ -2690,7 +2690,11 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     const headBottom = document.querySelector("#screen-select > header, #screen-select .select-head")?.getBoundingClientRect().bottom ?? lr.top;
     // The phone's level sheet covers the map's foot (96 px kept clear); a card docked beside the act (plan item 372,
     // 1200 px+) covers none of it, so a whole act a screen tall still counts as showing her stop.
-    const foot = matchMedia("(min-width: 1200px) and (min-height: 700px)").matches ? 8 : 96;
+    // Plan item 471: on a phone the briefing card is taller than that (647-752 over a 785 px tab bar at 390x844), so a
+    // fresh farm's next stop opened under it: the foot kept clear is measured from the card when it docks there.
+    const docked = list.querySelector<HTMLElement>(".level-card")?.getBoundingClientRect();
+    const cardFoot = docked && docked.height > 0 && docked.top > lr.top + lr.height / 2 && docked.top < lr.bottom ? lr.bottom - docked.top + 8 : 0;
+    const foot = matchMedia("(min-width: 1200px) and (min-height: 700px)").matches ? 8 : Math.max(96, cardFoot);
     const fits = hr.top >= headBottom && hr.bottom <= lr.top + list.clientHeight - foot;
     if (!(atTop && fits)) {
       // Plan item 79: start her act's painted head just under the glass header when her stop still shows in full
@@ -2715,6 +2719,24 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         });
       } else list.scrollTo({ top: list.scrollTop + hr.top - lr.top - (list.clientHeight - hr.height) / 2, behavior: "instant" });
     }
+  }
+  if (here && !matchMedia("(min-width: 1200px) and (min-height: 700px)").matches) {
+    // Plan item 471: the lines above the map (Cath's week, her line, the kit row) can land after this first layout and
+    // push a fresh farm's next stop under the phone's briefing card; once they have, lift her act just enough that her
+    // stop clears the card (unless the player has scrolled the map already).
+    let touched = false;
+    for (const t of ["wheel", "touchstart", "pointerdown", "keydown"]) list.addEventListener(t, () => (touched = true), { once: true, passive: true });
+    const clear = () => {
+      if (touched || !here.isConnected) return;
+      const c = list.querySelector<HTMLElement>(".level-card")?.getBoundingClientRect();
+      const h = here.querySelector<HTMLElement>(".level-num")?.getBoundingClientRect();
+      const l = list.getBoundingClientRect();
+      if (!c || !h || !c.height || c.top < l.top + l.height / 2) return;
+      const over = h.bottom - (c.top - 12);
+      if (over > 0) list.scrollTo({ top: list.scrollTop + over, behavior: "instant" });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(clear));
+    void document.fonts?.ready.then(() => setTimeout(clear, 50));
   }
   const you = here?.querySelector<HTMLElement>(".you");
   if (you && from && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
