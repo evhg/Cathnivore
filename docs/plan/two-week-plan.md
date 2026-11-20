@@ -5442,7 +5442,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cath-beats, table-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 556. [ ] Cathnivore campaign desktop: Cath in front, chapters as sealed letters
+## 556. [ ] Cathnivore campaign desktop: Cath in front, chapters as sealed letters *(lane A, in progress)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `cath-campaign-D` (730-920 x 600-890): crates hide Cath from the chest down. The locked chapter rows (1030-1375 x 355-880) are 12-13 px grey italic on cream with dim thumbnails and read as disabled list items. The pennants (375-850 x 55-110) carry 11 px numbers that mean nothing.
 - **Build:**
