@@ -1777,3 +1777,10 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
 @keyframes cmp-arrive {
   from { opacity: 0; }
 }
+
+/* Plan item 560: on a 390x844 phone Back to Title's plank was cut 14 px by the screen's foot (the page scrolled 38 px):
+   a tighter gap above it and a slimmer foot keep it whole on the first screen. */
+@media (max-width: 480px) {
+  .campaign-screen > .cmp-back { margin-top: 10px; }
+  .campaign.campaign-screen { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+}
