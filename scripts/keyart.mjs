@@ -88,14 +88,15 @@ const shoot = {
     await p.waitForTimeout(1500)
     return (await p.screenshot()).toString('base64')
   },
-  // Level 30 in the 2D field: six towers grown along their paths and a round in flight.
+  // Level 30: six towers grown along their paths and a round in flight. Plan item 546: in the 3D field the game opens
+  // in (it was the 2D one, stale beside it); KEYART_HEDGEROW_2D=1 shoots the 2D field.
   async hedgerow() {
     const p = await page()
     const stars = Object.fromEntries(Array.from({ length: 29 }, (_, i) => [String(i + 1), 3]))
     const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
     await p.goto(`${base}/hedgerow/?sandbox=1&2d`)
     await p.evaluate(([s, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { 30: true }, tips: t })), [stars, tips])
-    await p.goto(`${base}/hedgerow/?keyart&sandbox=1${process.env.KEYART_HEDGEROW_3D ? '' : '&2d'}&level=30`)
+    await p.goto(`${base}/hedgerow/?keyart&sandbox=1${process.env.KEYART_HEDGEROW_2D ? '&2d' : ''}&level=30`)
     await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
     await p.waitForTimeout(800)
     await p.evaluate(() => {
