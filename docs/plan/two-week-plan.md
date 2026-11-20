@@ -5427,7 +5427,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - board-*, region-status, map-key, turn-show specs and the CSS lint pass; shots P and D at rounds 1 and 6; key art re-shot.
 - **Size:** 2
 
-## 555. [ ] Cathnivore table: Cath reacts to the game, in her own bubble
+## 555. [ ] Cathnivore table: Cath reacts to the game, in her own bubble *(lane B, in progress)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `cath-game-D` (360-550 x 405-720): Cath stands front-on in the title's pose whatever happens; her diary line (365-545 x 210-375) is grey italic on cream (about 3:1) and doesn't read as her voice. `cath-game-P` (0-390 x 478-555): a producer's line sits beside Cath's portrait, so the speaker reads wrong.
 - **Build:**
