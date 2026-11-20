@@ -5457,7 +5457,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - campaign, campaign-map, campaign-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 557. [ ] Hedgerow 3D: Cath reads as herself on the field *(lane B, in progress)*
+## 557. [x] Hedgerow 3D: Cath reads as herself on the field *(done 2026-11-20 11:50, lane B, with deviations: measured first (`window.hedgerow.faceBox()`, level 21 sandbox): her face was already 48x52 at D and 26x28 at P, past the accept's 28/14; the critique judged a 1x crop. Done: `CATH_3D_SCALE` 1.15 -> 1.32 (the accept's 1.15x; about 1.4x a farmer): face 56x60 at D, 30x32 at P, figure 155 / 71 px tall; the blazer outfit's trousers camel (#ae8a5c, item 551's tailored trouser) for cream, which read as bare pale legs. Kept: the model's centre-parted hair, olive jacket with collar and the painted face texture are already item 310's (no rebuild), and the poses (rest, plant, throw, cheer, worried) already exist. Draw calls unchanged (no new meshes). hedgerow-3dframe/cath2d/cath3d/cathlevel/closeframe/doorstep pass P and D (42); key art re-shot. Shots e2e/screenshots/plan1120k (before) / plan1120l (after).)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `hedge-l21-3d-D` (150-235 x 505-640): Cath is a low-poly block whose face is a 15 px dark smudge; hair and jacket don't read as the character bible. `hedge-l21-3d-P` (15-45 x 485-545): an unreadable sliver. She's the weakest model on the field.
 - **Build:**

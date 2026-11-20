@@ -196,7 +196,9 @@ const HERO_REACH_X = 1.3;
 /** Plan item 78: Cath's 3D figure at twice her old size (0.98). */
 // Plan item 346: one scale for the farm: she stands about 1.2x a farmer (1.15 model units at 1.15 against a farmer's
 // 0.86 at FOLK_3D_SCALE); at 1.9 she was a giant doll at the field's edge, 2.5x them.
-export const CATH_3D_SCALE = 1.15;
+// Plan item 557: 1.15x again (1.15 -> 1.32, about 1.4x a farmer): at 1.15 her face was a 15 px smudge in the field's
+// wide frame at D, the weakest figure on the farm; the hero reads a size up from the folk.
+export const CATH_3D_SCALE = 1.32;
 /** Plan item 459: her extra size on a phone's canvas (under 600 px wide). */
 const CATH_PHONE_GROW = 1.25;
 /** Plan item 485: the dusk the day's light runs toward (key, sky fill, ground bounce, the frame's sky and horizon). */

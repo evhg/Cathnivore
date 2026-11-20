@@ -35,7 +35,8 @@ export const OUTFITS: Outfit[] = [
     how: "Hers from the start.",
     jacket: "#6E7C4B",
     sleeve: "#56623A",
-    trousers: "#d3be98",
+    // Plan item 557: camel, as the shared art's tailored trouser (item 551): the cream read as bare pale legs in 3D.
+    trousers: "#ae8a5c",
     boots: "#5a3a28",
     blouse: "#F7F0E3",
     brooch: "#86AC5B",
