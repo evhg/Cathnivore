@@ -1083,6 +1083,73 @@ window.setInterval(() => {
 
 // ---- rendering --------------------------------------------------------------------------------------
 
+/** Plan item 567: which valley plots each field tile waters, measured once per layout (screen-space centroids): a field
+ *  owns its two nearest plots, and every plot follows its own nearest field. */
+let valleyMap: { key: string; plots: Array<{ el: SVGPolygonElement; fields: number[] }> } | null = null
+let valleyWet: ReadonlySet<number> = new Set()
+let valleyFrame = 0
+function scheduleValleyWet(wet: ReadonlySet<number>): void {
+  valleyWet = new Set(wet)
+  if (!valleyFrame) valleyFrame = requestAnimationFrame(() => {
+    valleyFrame = 0
+    applyValleyWet()
+  })
+}
+function applyValleyWet(): void {
+  const paint = document.getElementById('valley-paint')
+  const cellEls = [...ui.board.querySelectorAll<SVGGElement>('g.cell')]
+  if (!paint || cellEls.length !== puzzle.cells.length) return
+  const br = ui.board.getBoundingClientRect()
+  const pr = paint.getBoundingClientRect()
+  const key = [puzzle.seed, cellEls.length, br.left, br.top, br.width, pr.left, pr.top, pr.width, pr.height].join('|')
+  if (valleyMap?.key !== key || !valleyMap.plots[0]?.el.isConnected) {
+    const fields = puzzle.cells.flatMap((c, i) => {
+      if (c.kind !== 'field') return []
+      const r = cellEls[i]!.getBoundingClientRect()
+      return r.width > 0 ? [{ i, x: r.left + r.width / 2, y: r.top + r.height / 2 }] : []
+    })
+    const plots = [...paint.querySelectorAll<SVGPolygonElement>('.vl-f')].map((el) => {
+      const r = el.getBoundingClientRect()
+      return { el, x: r.left + r.width / 2, y: r.top + r.height / 2, fields: [] as number[] }
+    })
+    const d2 = (a: { x: number; y: number }, b: { x: number; y: number }) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2
+    for (const f of fields) for (const p of [...plots].sort((a, b) => d2(a, f) - d2(b, f)).slice(0, 2)) p.fields.push(f.i)
+    for (const p of plots) {
+      let best = -1
+      let bestD = Infinity
+      for (const f of fields) if (d2(f, p) < bestD) [bestD, best] = [d2(f, p), f.i]
+      if (best >= 0 && !p.fields.includes(best)) p.fields.push(best)
+    }
+    valleyMap = { key, plots: plots.map(({ el, fields }) => ({ el, fields })) }
+  }
+  for (const p of valleyMap.plots) {
+    const wet = p.fields.some((i) => valleyWet.has(i))
+    p.el.toggleAttribute('data-wet', wet)
+    // Plan item 567 slice 2: three sprouts in the plot come up one after another as it greens (styles.css staggers
+    // them; made once per plot, in the plot's own SVG units, so they sit in it however the valley scales).
+    let sp = p.el.nextElementSibling
+    if (!sp?.classList.contains('vl-sprouts') && wet) {
+      const b = p.el.getBBox()
+      const k = Math.min(b.width, b.height) * 0.07
+      if (k > 0) {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+        g.setAttribute('class', 'vl-sprouts')
+        g.setAttribute('aria-hidden', 'true')
+        g.innerHTML = [[0.32, 0.58], [0.52, 0.44], [0.7, 0.62]]
+          .map(([fx, fy], j) => {
+            const x = b.x + b.width * fx!
+            const y = b.y + b.height * fy!
+            return `<path class="vl-sprout vl-sprout-${j}" d="M${x} ${y}v${-k}m0 ${k * 0.4}c${-k * 0.5} 0 ${-k * 0.7} ${-k * 0.3} ${-k * 0.7} ${-k * 0.6}c${k * 0.5} 0 ${k * 0.7} ${k * 0.3} ${k * 0.7} ${k * 0.6}m0 ${-k * 0.25}c${k * 0.45} 0 ${k * 0.6} ${-k * 0.3} ${k * 0.6} ${-k * 0.55}c${-k * 0.45} 0 ${-k * 0.6} ${k * 0.3} ${-k * 0.6} ${k * 0.55}" stroke-width="${Math.max(0.6, k * 0.12)}"/>`
+          })
+          .join('')
+        p.el.after(g)
+        sp = g
+      }
+    }
+    if (sp?.classList.contains('vl-sprouts')) sp.toggleAttribute('data-wet', wet)
+  }
+}
+
 function render(): void {
   const isDaily = mode === 'daily'
   ui.tabDaily.setAttribute('aria-selected', String(isDaily))
@@ -1135,67 +1202,8 @@ function render(): void {
   // Plan item 308: a solved board greens the valley's fields over, in a wave (styles.css).
   document.getElementById('valley-paint')?.toggleAttribute('data-greened', flow.solved)
   // Plan item 567: each valley plot follows the board's field tile nearest it on screen: watered, it greens (styles.css).
-  {
-    const paint = document.getElementById('valley-paint')
-    const cellEls = [...ui.board.querySelectorAll<SVGGElement>('g.cell')]
-    if (paint && cellEls.length === puzzle.cells.length) {
-      const fields = puzzle.cells.flatMap((c, i) => {
-        if (c.kind !== 'field') return []
-        const r = cellEls[i]!.getBoundingClientRect()
-        return r.width > 0 ? [{ i, x: r.left + r.width / 2, y: r.top + r.height / 2 }] : []
-      })
-      // each field tile owns the two plots nearest it, so every watered field greens two or more of the valley's plots
-      const plots = [...paint.querySelectorAll<SVGPolygonElement>('.vl-f')].map((el) => {
-        const r = el.getBoundingClientRect()
-        return { el, x: r.left + r.width / 2, y: r.top + r.height / 2 }
-      })
-      const wetPlots = new Set<SVGPolygonElement>()
-      for (const f of fields) {
-        if (!flow.wet.has(f.i)) continue
-        const near = [...plots].sort((a, b) => (a.x - f.x) ** 2 + (a.y - f.y) ** 2 - ((b.x - f.x) ** 2 + (b.y - f.y) ** 2))
-        for (const p of near.slice(0, 2)) wetPlots.add(p.el)
-      }
-      // and every plot follows its own nearest field (those at the valley's edges, clear of the board, answer too)
-      for (const p of plots) {
-        let best = -1
-        let bestD = Infinity
-        for (const f of fields) {
-          const d = (f.x - p.x) ** 2 + (f.y - p.y) ** 2
-          if (d < bestD) {
-            bestD = d
-            best = f.i
-          }
-        }
-        if (best >= 0 && flow.wet.has(best)) wetPlots.add(p.el)
-      }
-      for (const p of plots) {
-        const wet = wetPlots.has(p.el)
-        p.el.toggleAttribute('data-wet', wet)
-        // Plan item 567 slice 2: three sprouts in the plot come up one after another as it greens (styles.css staggers
-        // them; made once per plot, in the plot's own SVG units, so they sit in it however the valley scales).
-        let sp = p.el.nextElementSibling
-        if (!sp?.classList.contains('vl-sprouts') && wet) {
-          const b = p.el.getBBox()
-          const k = Math.min(b.width, b.height) * 0.07
-          if (k > 0) {
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-            g.setAttribute('class', 'vl-sprouts')
-            g.setAttribute('aria-hidden', 'true')
-            g.innerHTML = [[0.32, 0.58], [0.52, 0.44], [0.7, 0.62]]
-              .map(([fx, fy], j) => {
-                const x = b.x + b.width * fx!
-                const y = b.y + b.height * fy!
-                return `<path class="vl-sprout vl-sprout-${j}" d="M${x} ${y}v${-k}m0 ${k * 0.4}c${-k * 0.5} 0 ${-k * 0.7} ${-k * 0.3} ${-k * 0.7} ${-k * 0.6}c${k * 0.5} 0 ${k * 0.7} ${k * 0.3} ${k * 0.7} ${k * 0.6}m0 ${-k * 0.25}c${k * 0.45} 0 ${k * 0.6} ${-k * 0.3} ${k * 0.6} ${-k * 0.55}c${-k * 0.45} 0 ${-k * 0.6} ${k * 0.3} ${-k * 0.6} ${k * 0.55}" stroke-width="${Math.max(0.6, k * 0.12)}"/>`
-              })
-              .join('')
-            p.el.after(g)
-            sp = g
-          }
-        }
-        if (sp?.classList.contains('vl-sprouts')) sp.toggleAttribute('data-wet', wet)
-      }
-    }
-  }
+  // (Next frame, off the render path: measuring the board here held the lesson's handover past 1.5 s on CI.)
+  scheduleValleyWet(flow.wet)
   const wetShare = flow.solved ? 1 : flow.wet.size / playable
   for (const path of document.querySelectorAll<SVGPathElement>('.vl-water, .vl-trickle')) path.style.setProperty('--wet', String(wetShare))
   // Plan item 70: today's seed in Bea's garden sprouts as the stream reaches the fields (a full plant at a solve).
@@ -1367,9 +1375,10 @@ function showStrip(isDaily: boolean, streak: number): void {
   strip.root.hidden = false
   document.body.classList.add('has-win-strip')
   placeStrip()
-  // her solve line steps clear of the strip (it sat under it, 2026-11-20), measured again once the strip has slid in
-  placeValleySay()
-  strip.root.addEventListener('animationend', () => placeValleySay(), { once: true })
+  // her solve line steps clear of the strip (it sat under it, 2026-11-20), measured once the strip has slid in (not
+  // as it starts: the search beside her held up the slide on a slow CI)
+  if (getComputedStyle(strip.root).animationName === 'none') requestAnimationFrame(() => placeValleySay())
+  else strip.root.addEventListener('animationend', () => placeValleySay(), { once: true })
 }
 
 /** At D the strip centres under the board, not the window (the rail sits to its left). */
