@@ -12,10 +12,14 @@ import { CLASS_START_ATTRIBUTES } from "../sim/stats";
 import { ATTRIBUTES, CLASS_IDS, type AttributeId, type ClassId, type TreeId } from "../sim/types";
 import { SKILL_PREVIEWS } from "../game/skillpreview";
 import { WEAPON_BASES } from "../sim/weapons";
+import { cathSvg, type CathExpression } from "../../../../shared/cath/cath";
 import { CLASS_COPY } from "./classart";
 import { button, el, reducedMotion, trapTab } from "./dom";
 import { WEAPON_CLASS_LABEL } from "./itemtext";
 import { weaponArtSvg } from "./weaponart";
+
+/** Plan item 575: her look in each class's booking photo. */
+const MUG_FACE: Record<ClassId, CathExpression> = { ghost: "determined", butcher: "smirk", gunslinger: "wink", wirewitch: "worried", fixer: "delighted" };
 
 export interface ClassPickHandle {
   /** Removes the screen without picking. */
@@ -96,6 +100,11 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     opt.setAttribute("role", "radio");
     opt.dataset.cls = cls;
     el("span", "cp-opt-n", opt, String(i + 1)).setAttribute("aria-hidden", "true");
+    // Plan item 575: each row is a dossier with her booking photo: the bust against a height chart, the case file's
+    // number on the placard, her look the class's (shared/cath, drawn once with the row).
+    const mug = el("span", "cp-opt-mug", opt);
+    mug.setAttribute("aria-hidden", "true");
+    mug.innerHTML = `<span class="cp-mug-chart"></span>${cathSvg({ framing: "bust", outfit: "trench", expression: MUG_FACE[cls] })}<span class="cp-mug-plate">${CLASS_COPY[cls].file}</span>`;
     // Plan item 233: on a desktop each row is a slot in a lit rack: the name over a four-pip stat strip (Grit,
     // Aim, Nerve, Wire), the class's weapon in neon outline at the row's end. Decorative: the sheet carries the
     // numbers and the weapon's name.
