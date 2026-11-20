@@ -247,3 +247,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-20 02:35 lane A (548): kept lane B's 3D Hedgerow poster (item 546) over my 2D re-shoot in the rebase, and re-shot it with their script so keyart-fresh holds.
 - 2026-11-20 02:21 lane B (546): one Play shape on /games/ but each game's colours kept, a middle way between item 401's per-game signs and the critique's 'four unrelated buttons'.
 - 2026-11-20 03:21 lane B (544): closed without code: the settled title already keeps the menu, Ledger and List off Cath; the critique judged an unsettled headless frame. Planning critiques should judge NIGHT SHIFT titles on ?shot&t=8.
+- 2026-11-20 03:00 lane A (548): took 548's rest ahead of 319 (first open, 97 slices in): a whole batch finishable in one session. The Setup poster is pinned, not held: once it cleared her, the grip hand floated with no arm.
+- 2026-11-20 03:20 lane A (548): the blank-ledger rail gap at 1440x900 kept: a second shelf row fits only with 32 px pictures, which item 263's 60 px+ (player-mat spec) forbids; two rows from 1400x1000 only (three cards a row, 64 px pictures).
