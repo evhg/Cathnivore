@@ -5551,7 +5551,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - games-cards, games-stall, games-hero-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 564. [ ] Hedgerow act map: stops as signs, a lane through the middle, Cath to scale
+## 564. [ ] Hedgerow act map: stops as signs, a lane through the middle, Cath to scale *(lane A, in progress)*
 *(planned 2026-11-20 12:45, lane B, plan1120m critique)*
 - **Why:** `hedge-menu-D`: an empty band between the two rows of stops (y 470-700). Cath (160-215 x 200-425) is about twice a stop's height and covers stop 21's label stack.
 - **Build:** a winding lane drawn through the middle band joining the rows; Cath beside the next stop at about a stop's height (item 547's 244 px figure is too tall for the trail), clear of its label.
