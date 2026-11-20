@@ -5485,7 +5485,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Runnel site specs pass; shots P and D, lesson and daily.
 - **Size:** 2
 
-## 559. [ ] NIGHT SHIFT phone class pick: one composed screen
+## 559. [ ] NIGHT SHIFT phone class pick: one composed screen *(lane B, in progress)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `ns-play-P` (CSS px) 0-390 x 520-570 is an empty dark band, the stat sheet (12-378 x 570-844) is pushed to the foot, the stat bars' comparison ticks are about 6 px and unexplained, and the subtitle (90-300 x 350-385) can wrap one word onto a faded second line.
 - **Build:**
