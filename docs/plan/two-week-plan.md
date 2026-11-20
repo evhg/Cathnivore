@@ -5254,7 +5254,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Re-render the posters and key art.
 - **Size:** 3
 
-## 544. [ ] NIGHT SHIFT title: one reading order, nothing on Cath
+## 544. [ ] NIGHT SHIFT title: one reading order, nothing on Cath *(lane B, in progress)*
 - **Why:** `ns-title-D`/`-P` (plan1120a): the menu, the Ledger and The List are three equal paper rectangles with no order (VISION 1, one focal point).
   - The desktop Ledger sits mid-screen against her umbrella (415-765 x 220-515).
   - On the phone, the Ledger crosses the umbrella's shaft and her coat (at 2x 30-395 x 805-1140).
