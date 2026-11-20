@@ -5094,14 +5094,25 @@ img.act-scene {
 .lcard-play:hover,
 .lcard-play:focus-visible { transform: translateY(-2px); box-shadow: 0 0 0 2.5px var(--line), 0 7px 0 var(--line); }
 .lcard-play:active { transform: translateY(3px); box-shadow: 0 0 0 2.5px var(--line), 0 2px 0 var(--line); }
-/* The next stop breathes, gently (its glow eases in and out; still under reduced motion). */
+/* The next stop breathes, gently (its glow eases in and out; still under reduced motion). Plan item 569: it wears a
+   gold rim and stands in a soft pool of warm light, a spotlight the eye finds first. */
 #screen-select .node.next .level-num { animation: next-breathe 2.4s ease-in-out infinite; }
 @keyframes next-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--map-flag-gold) 0%, transparent); }
-  50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--map-flag-gold) 45%, transparent); }
+  0%, 100% {
+    box-shadow: 0 0 0 3px var(--map-flag-gold), 0 0 0 3px color-mix(in srgb, var(--map-flag-gold) 0%, transparent),
+      0 0 26px 12px color-mix(in srgb, var(--map-flag-gold-lit) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 3px var(--map-flag-gold), 0 0 0 9px color-mix(in srgb, var(--map-flag-gold) 40%, transparent),
+      0 0 34px 16px color-mix(in srgb, var(--map-flag-gold-lit) 50%, transparent);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  #screen-select .node.next .level-num { animation: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--map-flag-gold) 40%, transparent); }
+  #screen-select .node.next .level-num {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--map-flag-gold), 0 0 0 6px color-mix(in srgb, var(--map-flag-gold) 40%, transparent),
+      0 0 30px 14px color-mix(in srgb, var(--map-flag-gold-lit) 45%, transparent);
+  }
 }
 @media (max-width: 899.98px) {
   /* A bottom sheet: it peeks the level's name and Play; its grip pulls up the plate, Cath's line and the vehicles. */

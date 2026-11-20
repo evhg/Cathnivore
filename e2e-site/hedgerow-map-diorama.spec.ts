@@ -94,3 +94,35 @@ test('each stop its own landmark: 64 px on a phone, no two silhouettes alike in 
   // both a mast) until item 569 slice 2 redrew 30 landmarks to their own outlines.
   expect(alike, alike.join('\n')).toEqual([])
 })
+
+// Plan item 569: every stop's name reads 4.5:1 or better against its plate (at D a cream pill; on a phone, where the
+// names sit on the field, the cream halo drawn round the letters), opacity included, locked stops too.
+test('each stop name reads 4.5:1 against its plate or halo', async ({ page }) => {
+  await page.goto('/hedgerow/?2d')
+  await page.evaluate(() => {
+    const stars: Record<number, number> = {}
+    for (let i = 1; i <= 23; i++) stars[i] = 1 + (i % 3)
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 24: true }, seen: {}, tips: { all: true }, bank: {} }))
+  })
+  await page.goto('/hedgerow/?2d')
+  await page.waitForSelector('#screen-select .node.next .you')
+  const rows = await page.$$eval('#screen-select li.act .node .level-name', (els) =>
+    els.map((e) => {
+      const rgb = (s: string) => (s.match(/[\d.]+/g) ?? []).map(Number)
+      const lum = ([r, g, b]: number[]) => {
+        const f = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+        return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!)
+      }
+      const cs = getComputedStyle(e)
+      const bgRaw = rgb(cs.backgroundColor)
+      const plate = bgRaw.length === 4 && bgRaw[3] === 0 ? rgb(cs.textShadow.split(')')[0] + ')') : bgRaw
+      let a = 1
+      for (let n: Element | null = e; n; n = n.parentElement) a *= Number(getComputedStyle(n).opacity)
+      const fg = rgb(cs.color).slice(0, 3).map((c, i) => c * a + plate[i]! * (1 - a))
+      const [l1, l2] = [lum(fg), lum(plate)].sort((x, y) => y - x)
+      return { name: e.textContent ?? '', ratio: (l1! + 0.05) / (l2! + 0.05) }
+    }),
+  )
+  expect(rows.length).toBeGreaterThanOrEqual(30)
+  for (const r of rows) expect(r.ratio, r.name).toBeGreaterThanOrEqual(4.5)
+})
