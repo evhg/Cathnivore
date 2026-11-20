@@ -31,6 +31,9 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
   await page.getByRole('button', { name: 'Close', exact: true }).click()
 
   await page.getByText('Quick Game').click()
+  // (The setup screen is a lazy chunk: shooting on the click caught a blank page, 2026-11-20.)
+  await page.getByRole('button', { name: 'Start' }).waitFor()
+  await page.waitForTimeout(600)
   await shoot(page, project, '3-setup')
   await page.getByRole('button', { name: 'Start' }).click()
 

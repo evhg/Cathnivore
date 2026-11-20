@@ -3417,7 +3417,7 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
     background: radial-gradient(circle at 35% 35%, var(--wheat-hi), var(--wood-lo)); pointer-events: none;
   }
   .setup > button.setup-start:not(:disabled):hover { transform: rotate(0deg); }
-  .setup .open-sign-kicker { display: block; font-size: .8125rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; opacity: 1; line-height: 1; }
+  .setup .open-sign-kicker { display: block; font-size: .875rem; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; opacity: 1; line-height: 1; }
   .setup .open-sign-word { font-size: var(--fs-lead); line-height: 1.1; }
   .setup > button.setup-start:disabled .open-sign-kicker { opacity: 1; letter-spacing: 0.12em; }
 }

@@ -2089,3 +2089,10 @@ html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .tit
   .title-menu .title-daily .title-daily-event-name::after { content: '\00a0·'; }
   .title-menu .title-daily small > .title-daily-when { order: 2; }
 }
+/* Plan item 560: from 1024 px the table front's Daily plaque says the status and the countdown, so the tag keeps two
+   lines, where and who, then the event: the when goes to screen readers (it made four centred lines repeating it). */
+@media (min-width: 1024px) {
+  .title-menu .title-daily small > .title-daily-when { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .title-menu .title-daily .title-daily-event-name::after { content: none; }
+  .title-menu .title-daily .title-daily-event { margin-right: 0; }
+}
