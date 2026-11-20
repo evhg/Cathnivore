@@ -5500,20 +5500,20 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-classpick specs pass (P, D); cathode-type test; shots P and D.
 - **Size:** 1
 
-## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(lane A, in progress)*
+## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(handed back 2026-11-20 09:50 by lane A after slice 2: Cathnivore and Hedgerow points done or checked; left: `ns-title-P`, `portfolio-D`)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique; check each at 2x before fixing)*
 - `cath-setup-D` (530-625 x 168-205): Tomas's 'Market Day' badge wraps and crowds the card edge; (715-800 x 135-160) 'Dr Ines Farrow' wraps. **Fixed 08:25 lane A:** a desktop nameplate's stamp drops its picture at every width (was 1100-1279 only), so 'Market Day' and 'On Air' keep one line at 1280-1600; 'Dr Ines Farrow' and 'Second Opinion' stay two balanced lines (kept: the card can't take either on one).
-- `cath-setup-D` (125-350 x 730-765): the pin labels about 12 px; 'This week' red on cream, low contrast. **Checked, kept (that half):** the labels are `--fs-caption` (13-14 px) and 'This week' is #873D2D on cream, about 7:1. (1185-1240 x 805-820): 'OPEN' above Start about 10 px pale on green.
+- `cath-setup-D` (125-350 x 730-765): the pin labels about 12 px; 'This week' red on cream, low contrast. **Checked, kept (that half):** the labels are `--fs-caption` (13-14 px) and 'This week' is #873D2D on cream, about 7:1. (1185-1240 x 805-820): 'OPEN' above Start about 10 px pale on green. **Fixed 09:00 lane A:** it was 13 px caps at 0.3em tracking; now 14 px at 0.24em.
 - `cath-setup-P` (15-45 x 352-378, 238-265 x 342-372): the setup's board preview: the '2' disc on Brindle Hills' plate edge, the '5' against Rivermead's (item 550's fit may not run there). **Fixed 08:22 lane A:** `fitPlaques` didn't rerun once the board was measured, so React's re-render put each disc back at its estimate; it now reruns on `hexPx`. region-status gains a setup-preview case.
-- `cath-title-D` (125-290 x 615-690): the Daily tag runs to four centred 13 px lines and repeats the plaque (860-1395 x 760-850).
+- `cath-title-D` (125-290 x 615-690): the Daily tag runs to four centred 13 px lines and repeats the plaque (860-1395 x 760-850). **Fixed 09:00 lane A:** from 1024 px (where the plaque shows) the tag's status and countdown go to screen readers: two lines, 'The Ring · Tomas & Ines' / 'Harvest Festival'.
 - `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the viewport foot (likely scroll: check). **Fixed 08:30 lane A:** the page scrolled 38 px with the plank cut 14 px; a tighter gap and foot on phones keep it whole at 390x844 (bottom 842); 375x667 still scrolls, as a short screen should.
-- `cath-game-D` (575-760 x 15-85): rail cards' second line about 12 px; the 'STAGE I' tab (900-962 x 15-30) over the card's top border. (375-500 x 840-885): hand titles cut by the foot.
+- `cath-game-D` (575-760 x 15-85): rail cards' second line about 12 px; the 'STAGE I' tab (900-962 x 15-30) over the card's top border. (375-500 x 840-885): hand titles cut by the foot. **09:00 lane A:** second lines measured 14 px (kept); the Stage tab's top-right corner now follows the card's 9 px rounding; hand titles whole at 1440x900 in the shots (kept).
 - `cath-game-P` (15-65 x 130-185): the MUM postcard over the corner hex. **Checked, kept:** it ends at x 60, Highmoor's hex starts at about 70.
-- `hedge-menu-D` (70-180 x 320-480): Cath on the 'Next' node, covering its medallion; H22-H30 medallions about 2:1, read as disabled. (1140-1190 x 500-675): fleet icons overhang the list's border; 11 px descriptions.
-- `hedge-l21-2d-P` (15-55 x 328-350): the '216' count about 10 px; (65-215 x 235-255) 'Lifestyle influencer' tag over the plots.
-- `hedge-l21-3d-D` (70-265 x 168-192): the HOLLOWELL label on the depot model.
+- `hedge-menu-D` (70-180 x 320-480): Cath on the 'Next' node, covering its medallion; H22-H30 medallions about 2:1, read as disabled. (1140-1190 x 500-675): fleet icons overhang the list's border; 11 px descriptions. **09:25 lane A:** fleet portraits inside their slips (1.5 px ring, no drop), words 12 px clear of the badge; descriptions measured 13 px (kept). Cath kept: she overlaps about 15 px of her coin's rim by items 420/500/547 (clearing it dropped her to 172 px and broke map-you's 8 px and 547's 240 px). H22-H30 are locked, so they read as locked (kept).
+- `hedge-l21-2d-P` (15-55 x 328-350): the '216' count about 10 px; (65-215 x 235-255) 'Lifestyle influencer' tag over the plots. **Checked, kept (09:35 lane A):** the count is 13.8 px; the tag takes the side covering least plot (item 273), none is clear.
+- `hedge-l21-3d-D` (70-265 x 168-192): the HOLLOWELL label on the depot model. **Checked, kept:** it is item 391's rooftop board on posts, naming the town while the gate's sign is down (item 450).
 - `ns-title-P` (CSS 15-195 x 420-590): the Ledger cutting over Cath's umbrella arm; The List cards (12-370 x 710-805) names only, no hooks.
-- `games-D` (345-400 / 960-1015 x 640-735): the same Cath sticker on each card; (122-370 x 755-790) 13 px taglines.
+- `games-D` (345-400 / 960-1015 x 640-735): the same Cath sticker on each card; (122-370 x 755-790) 13 px taglines. **09:45 lane A:** each card's Cath already has its own outfit, pose and mood (items 96/108; kept); hooks 15 px from 1200 px wide (were 14).
 - `portfolio-D` (1290-1380 x 175-550): Cath floats on black with no ground shadow, apart from her bubble (765-1230 x 555-597).
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
