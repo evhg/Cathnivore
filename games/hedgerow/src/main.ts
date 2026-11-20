@@ -4706,7 +4706,9 @@ function roundRosette(g: Game, round: number, reward: number, clean: boolean): v
   const [ec, er] = g.level.path[g.level.path.length - 1]!;
   const end = renderer.cellCenter(ec, er);
   const near = end ? { x: end.x - field.left, y: end.y - field.top } : { x: field.width / 2, y: field.height / 2 };
-  const spot = rosetteSpot(plots, size, { w: field.width, h: field.height }, near, 6, avoid);
+  // (Plan item 576: Cath weighs like a plot, so the phone's shore strip beside the gate, free of plots, doesn't put
+  // the rosette over her as she stands there.)
+  const spot = rosetteSpot(her ? [...plots, her] : plots, size, { w: field.width, h: field.height }, near, 6, avoid);
   el.style.setProperty("--at-x", `${Math.round(spot.x)}px`);
   el.style.setProperty("--at-y", `${Math.round(spot.y)}px`);
   el.classList.add("show");

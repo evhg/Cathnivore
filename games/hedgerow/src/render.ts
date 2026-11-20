@@ -151,6 +151,9 @@ const STAGE_GAP = 14;
 const DEPOT_ROOM = 2.5;
 const EDGE_ROOM = 0.7;
 
+/** Plan item 576: the act's strip at an upright phone field's gate side, px. */
+const PHONE_STRIP = 41;
+
 export interface View {
   cellSize: number;
   offX: number;
@@ -337,15 +340,29 @@ export class Renderer {
     this.canvas.width = Math.max(1, Math.round(rect.width * this.dpr));
     this.canvas.height = Math.max(1, Math.round(rect.height * this.dpr));
     // Leave a margin so the scenery frames the field and tall sprites don't clip at the top.
+    // Plan item 576: an upright phone's field filled the width, so the act's place (Saltmarsh's shore, Rivermead's
+    // river) never showed and the depot stood on the lane; the gate's side keeps a strip of the act's land for both.
+    const strip = this.phoneStrip(game, rect.width);
     const cell = Math.floor(
-      Math.min(rect.width / (game.level.cols + 0.3), rect.height / (game.level.rows + 0.6)),
+      Math.min((rect.width - Math.abs(strip)) / (game.level.cols + 0.3), rect.height / (game.level.rows + 0.6)),
     );
+    const spare = rect.width - cell * game.level.cols;
     this.view = {
       cellSize: cell,
-      offX: Math.floor((rect.width - cell * game.level.cols) * this.frameLeft),
+      offX: Math.floor(strip > 0 ? strip + (spare - strip) / 2 : strip < 0 ? (spare + strip) / 2 : spare * this.frameLeft),
       offY: Math.floor((rect.height - cell * game.level.rows) / 2 + cell * 0.15),
     };
     this.bgKey = "";
+  }
+
+  /** Plan item 576: px of the act's land kept on an upright phone's gate side (+ left, - right, 0 none). */
+  private phoneStrip(game: Game, width: number): number {
+    if (width >= 600 || window.innerHeight <= window.innerWidth) return 0;
+    const { cols } = game.level;
+    const gates = [game.level.path[0], game.level.path2?.[0]].filter((g): g is [number, number] => !!g);
+    if (gates.some(([c]) => c <= 1)) return PHONE_STRIP;
+    if (gates.some(([c]) => c >= cols - 2)) return -PHONE_STRIP;
+    return 0;
   }
 
   /**
