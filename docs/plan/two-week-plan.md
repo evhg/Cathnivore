@@ -5561,7 +5561,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-map specs pass; shots P and D.
 - **Size:** 1
 
-## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(handed back 2026-11-20 14:40 by lane B: 1 fixed, 4 checked, 2 tried (marked); left: the game P/D points, the Hedgerow briefing panel and 2D ring)*
+## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(lane A, in progress)* *(handed back 2026-11-20 14:40 by lane B: 1 fixed, 4 checked, 2 tried (marked); left: the game P/D points, the Hedgerow briefing panel and 2D ring)*
 *(planned 2026-11-20 12:45, lane B, plan1120m)*
 - `cath-setup-P` (0-45 x 240-262): Brindle Hills' '2' badge clipped at the left edge; 'Kingsmarket' runs into the '5' badge (150-265 x 240-262). **Tried 14:35 lane B, reverted:** Brindle Hills' disc sits at x 24, 5 px past the map SVG's left edge (29). Clamping the disc inside the viewBox (in `fitPlaques`) puts it over the name (region-status :6/:12 fail, 2-4 px); the fix is to slide the whole sign (plaque and name) in by the overhang, in the same loop that slides crowded signs. The '5' riding Kingsmarket's end is item 550's design.
 - `cath-setup-D`: the Dry Spell sign (985-1120 x 570-775) over the board's rim and Cath's arm; Dr Ines Farrow's 'Second Opinion' tag wraps (717-810 x 175-210). **Checked 14:35 lane B, kept:** the sign hanging over the rim, clear of Cath, is item 548's placement (plan1120n); the stamp's two lines are allowed on purpose (global.css `.pc-stamp` white-space normal) in the narrow card.
