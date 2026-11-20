@@ -23,10 +23,8 @@ test('each region has one labelled status on its name banner', async ({ page, ha
         label: s.getAttribute('aria-label') ?? '',
         n: Number(s.getAttribute('data-count')),
         // the disc overlaps the plaque's right end, centred on its height
-        // (plan item 550: on a small hex it hangs from under the plate's right end, inside the plate's span)
-        onEnd: s.hasAttribute('data-hang')
-          ? b.right <= plate.right + 2 && b.right > plate.right - b.width && b.top < plate.bottom && b.bottom > plate.bottom
-          : b.left < plate.right && b.right > plate.right && Math.abs((b.top + b.bottom) / 2 - (plate.top + plate.bottom) / 2) < plate.height * 0.4,
+        // (plan item 550: on its left end where the right would meet the next region's plate)
+        onEnd: (s.getAttribute('data-side') === 'left' ? b.left < plate.left && b.right > plate.left : b.left < plate.right && b.right > plate.right) && Math.abs((b.top + b.bottom) / 2 - (plate.top + plate.bottom) / 2) < plate.height * 0.4,
         // nor meets another region's plate
         others: [...document.querySelectorAll('.map-wrap svg.map .region-sign')].filter((o) => o !== sign).map((o) => o.querySelector('.region-plaque')!.getBoundingClientRect())
           .filter((o) => b.left < o.right && o.left < b.right && b.top < o.bottom && o.top < b.bottom).length,
@@ -47,7 +45,6 @@ test('each region has one labelled status on its name banner', async ({ page, ha
     // Plan item 550: 28 px across or more on a desktop, 17 on a phone (larger there reaches the next region's plate).
     expect(s.size, s.region!).toBeGreaterThanOrEqual(hasTouch ? 17 : 28)
     expect(s.meets, `${s.region} pieces on its banner`).toBe(0)
-    // On a phone Brindle Hills' disc still meets Kingsmarket's plate (plan item 550, open): checked on a desktop.
-    if (!hasTouch) expect(s.others, `${s.region} status on another plate`).toBe(0)
+    expect(s.others, `${s.region} status on another plate`).toBe(0)
   }
 })

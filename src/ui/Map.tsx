@@ -1597,6 +1597,8 @@ function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: La
 
 // Sizes each region's plaque to its name as actually set (attributes only: CSP allows no style attributes).
 function fitPlaques(svg: SVGSVGElement) {
+  const discs: Array<{ status: SVGGElement; cx: number; w: number }> = []
+  const plates: Array<{ x0: number; x1: number; y0: number; y1: number; sign: Element }> = []
   for (const sign of Array.from(svg.querySelectorAll('.region-sign'))) {
     const text = sign.querySelector<SVGTextElement>('.region-name')
     const plate = sign.querySelector<SVGRectElement>('.region-plaque')
@@ -1611,9 +1613,23 @@ function fitPlaques(svg: SVGSVGElement) {
     const cx = Number(text.getAttribute('x'))
     plate.setAttribute('x', String(cx - w / 2 - 8))
     plate.setAttribute('width', String(w + 16))
-    // Plan item 550: the status disc rides the plaque's right end.
+    const y0 = Number(plate.getAttribute('y'))
+    plates.push({ x0: cx - w / 2 - 8, x1: cx + w / 2 + 8, y0, y1: y0 + Number(plate.getAttribute('height')), sign })
     const status = sign.querySelector<SVGGElement>('.region-status')
-    if (status) status.setAttribute('transform', `translate(${cx + w / 2 + Math.max(14, Number(status.getAttribute('data-r')) * 0.8)} ${status.getAttribute('data-cy')})`)
+    if (status) discs.push({ status, cx, w })
+  }
+  // Plan item 550: the status disc rides the plaque's right end, or its left end where the right would meet the next
+  // region's plate (a phone's middle row: Brindle Hills beside Kingsmarket).
+  for (const { status, cx, w } of discs) {
+    const r = Number(status.getAttribute('data-r'))
+    const off = w / 2 + Math.max(14, r * 0.8)
+    const cy = Number(status.getAttribute('data-cy'))
+    const sign = status.closest('.region-sign')
+    const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r < p.x1 && p.x0 < x + r && cy - r < p.y1 && p.y0 < cy + r)
+    const left = meets(cx + off) && !meets(cx - off)
+    status.setAttribute('transform', `translate(${left ? cx - off : cx + off} ${cy})`)
+    if (left) status.setAttribute('data-side', 'left')
+    else status.removeAttribute('data-side')
   }
 }
 
