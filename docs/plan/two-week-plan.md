@@ -5271,7 +5271,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Re-render the posters if a poster source changes.
 - **Size:** 2
 
-## 545. [ ] Runnel: the board owns the screen
+## 545. [ ] Runnel: the board owns the screen *(lane B, in progress)*
 - **Why:** `runnel-D`/`-P` (plan1120a), VISION 2:
   - The four hexes (570-1230 x 110-740) float on a valley whose patches are as saturated as the tiles.
   - The left panel is a plain ruled list (55-345 x 195-590).
