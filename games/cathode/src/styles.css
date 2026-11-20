@@ -762,10 +762,10 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 /* Plan item 542: the picked gun brighter than the rest (the Gunslinger's read 2.94-2.99:1 on its lit row). Plan item 538:
    the studio's reflections (gunportrait.ts) light the steel itself, so the wash is milder (was contrast .66, brightness
    2 and 2.2, which turned the lit renders to chalk). */
-.cp-opt-gun { display: block; width: 100%; height: auto; aspect-ratio: 5 / 2; object-fit: contain; filter: grayscale(.35) contrast(.8) brightness(1.6); opacity: 1; transition: opacity 200ms ease, filter 200ms ease; }
+.cp-opt-gun { display: block; width: 100%; height: auto; aspect-ratio: 5 / 2; object-fit: contain; filter: grayscale(.35) contrast(.8) brightness(1.75); opacity: 1; transition: opacity 200ms ease, filter 200ms ease; }
 .cp-opt[aria-checked="true"] .cp-opt-gun {
   opacity: 1;
-  filter: contrast(.8) brightness(2.05) drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .8)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .4));
+  filter: contrast(.8) brightness(2.25) drop-shadow(0 0 calc(var(--u) * 4) rgb(var(--accent-rgb, var(--blood-rgb)) / .8)) drop-shadow(0 0 calc(var(--u) * 12) rgb(var(--accent-rgb, var(--blood-rgb)) / .4));
 }
 @media (prefers-reduced-motion: reduce) { .cp-opt, .cp-opt::after { transition: none; } }
 @media (max-height: 560px), (max-width: 700px) and (orientation: portrait) {

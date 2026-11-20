@@ -22,7 +22,7 @@ export interface GunTurntableOptions {
  * nothing to mirror and rendered as one dark mass under the three lights (the critique's 'grey low-poly sticks'): now
  * the steel's bevels and the barrel's roundness catch a soft room, and the wood and polymer keep their own colour.
  */
-const STUDIO_ENV_INTENSITY = 0.55;
+const STUDIO_ENV_INTENSITY = 0.2;
 const studioEnvs = new WeakMap<THREE.WebGLRenderer, THREE.Texture>();
 function studioEnv(renderer: THREE.WebGLRenderer): THREE.Texture {
   let t = studioEnvs.get(renderer);
@@ -95,13 +95,13 @@ export class GunStudio {
     const rimColour = new THREE.Color(o.rim[0], o.rim[1], o.rim[2]);
     // Plan item 334: a harder key over a lower fill, so the lit and shadow faces part by 35%+ in lightness (they
     // parted by 30%: the gunmetal read as one dark slab).
-    const key = new THREE.DirectionalLight(0xfff1e0, 9.5);
+    const key = new THREE.DirectionalLight(0xfff1e0, 11);
     key.position.set(0.6, 1.4, 1.0);
     const rim = new THREE.DirectionalLight(rimColour, 4.5);
     rim.position.set(-0.8, 0.5, -1.2);
     const kick = new THREE.DirectionalLight(rimColour, 1.6);
     kick.position.set(1.2, 0.1, -0.6);
-    const fill = new THREE.HemisphereLight(0x9aa8c0, 0x0a0a0c, 0.4);
+    const fill = new THREE.HemisphereLight(0x9aa8c0, 0x0a0a0c, 0.12);
     this.scene.add(key, rim, kick, fill);
     this.scene.environment = studioEnv(renderer);
     this.scene.environmentIntensity = STUDIO_ENV_INTENSITY;
