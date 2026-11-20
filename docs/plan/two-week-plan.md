@@ -5657,7 +5657,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each locked chapter at P shows its seal and a teaser of 14 px or more; no empty band over 24 px below the stack at 390x844; the campaign specs pass at P and D.
 - **Size:** 2
 
-## 574. [ ] NIGHT SHIFT class pick: a lit set, not blue fog
+## 574. [ ] NIGHT SHIFT class pick: a lit set, not blue fog *(lane A, in progress)*
 - **Why:** `ns-play-D` 330-960 x 0-900 and `ns-play-P` (2x) 0-780 x 130-900: Cath in an even blue haze, face and coat as flat as the wall; the textured rooms (items 514/538) are lost under the fog.
 - **Build:** per class a key and a rim light plus one practical in its colour (`games/cathode/src/render/lighting.ts`, `ui/classpick.ts`); the volumetric fog halved; the floor reflecting. New lights as `liveLight`s and in `render/warm.ts`'s variants; `scripts/cathode-perf.mjs` alone, then the posters.
 - **Accept:** Cath's face luminance at least 1.6x the wall beside her (measured on the shot); draw calls within budget; shots P and D for all 5 classes.
