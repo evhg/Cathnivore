@@ -5303,7 +5303,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `games-*` and `portfolio-*` specs pass; shots P and D.
 - **Size:** 2
 
-## 547. [ ] Hedgerow act map: the terrain at full colour, composed round the trail
+## 547. [ ] Hedgerow act map: the terrain at full colour, composed round the trail *(lane A, in progress)*
 - **Why:** `hedge-menu-D`/`-P` (plan1120a): the field reads as a 50% overlay, its props scattered clip-art with no composition (200-1100 x 430-740), Cath about 160 px tucked on a stop. The terrain, not the stops (item 471).
 - **Build:** after item 471 (lane A) lands. `games/hedgerow/src/map.ts` and styles:
   - The act's ground in full-strength tokens with paper texture and the sun's light from the top right.
