@@ -5561,15 +5561,15 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-map specs pass; shots P and D.
 - **Size:** 1
 
-## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(lane B, in progress)* *(handed back 2026-11-20 12:55 by lane B: 1 fixed, 1 checked, 1 tried (marked))*
+## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(handed back 2026-11-20 14:40 by lane B: 1 fixed, 4 checked, 2 tried (marked); left: the game P/D points, the Hedgerow briefing panel and 2D ring)*
 *(planned 2026-11-20 12:45, lane B, plan1120m)*
-- `cath-setup-P` (0-45 x 240-262): Brindle Hills' '2' badge clipped at the left edge; 'Kingsmarket' runs into the '5' badge (150-265 x 240-262).
-- `cath-setup-D`: the Dry Spell sign (985-1120 x 570-775) over the board's rim and Cath's arm; Dr Ines Farrow's 'Second Opinion' tag wraps (717-810 x 175-210).
+- `cath-setup-P` (0-45 x 240-262): Brindle Hills' '2' badge clipped at the left edge; 'Kingsmarket' runs into the '5' badge (150-265 x 240-262). **Tried 14:35 lane B, reverted:** Brindle Hills' disc sits at x 24, 5 px past the map SVG's left edge (29). Clamping the disc inside the viewBox (in `fitPlaques`) puts it over the name (region-status :6/:12 fail, 2-4 px); the fix is to slide the whole sign (plaque and name) in by the overhang, in the same loop that slides crowded signs. The '5' riding Kingsmarket's end is item 550's design.
+- `cath-setup-D`: the Dry Spell sign (985-1120 x 570-775) over the board's rim and Cath's arm; Dr Ines Farrow's 'Second Opinion' tag wraps (717-810 x 175-210). **Checked 14:35 lane B, kept:** the sign hanging over the rim, clear of Cath, is item 548's placement (plan1120n); the stamp's two lines are allowed on purpose (global.css `.pc-stamp` white-space normal) in the narrow card.
 - `cath-game-P` (355-378 x 650-765): the vertical 'SAVING FOR' label cut at its foot.
 - `cath-game-D`: hand card captions about 12 px (995-1150 x 840-855); the 'STAGE I' tag on the Expand card's border (900-960 x 15-30).
 - `hedge-menu-P` (y 585-670): the briefing panel covers the lane round stops 29-30.
-- `hedge-l21-2d-D` (275-420 x 300-318): the 'Lifestyle influencer' tag floats over the sea, apart from its vehicle.
-- `hedge-l21-3d-P` (5-195 x 78-100): the 'HOLLOWELL 216 NEXT' plate sits on the depot model.
+- `hedge-l21-2d-D` (275-420 x 300-318): the 'Lifestyle influencer' tag floats over the sea, apart from its vehicle. **Checked, kept:** it now sits directly over its van (plan1120n).
+- `hedge-l21-3d-P` (5-195 x 78-100): the 'HOLLOWELL 216 NEXT' plate sits on the depot model. **Checked, kept:** it reads as the depot's own signboard over its door.
 - Hedgerow 2D (830-885 x 280-380): Cath in an orange ring on the road reads as a target.
 - `ns-play-D` (998 x 593): 'and the Pin, her steel baton.' starts lowercase as a sentence. **Fixed 12:45 lane B:** 'And the Pin, her steel baton.'
 - `ns-title-P` (15-195 x 422-588): the Ledger over Cath's coat and glove (item 552 noted it at 375). **Tried 12:50 lane B, reverted:** a narrower Ledger (38vw/148 px) clears her body but grows taller and meets The List at 375x667 (553 vs 544); it needs a shorter phone Ledger (fewer lines or a smaller photo), not a narrower one.
