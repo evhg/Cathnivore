@@ -5681,7 +5681,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the board covers 60%+ of each poster crop; no flat cream area over 15% of the poster; keyart-fresh passes; shots of portfolio and /games/ P and D.
 - **Size:** 1
 
-## 578. [ ] The bugs from the 2026-11-20 20:05 critique, fixed as one batch *(lane A, in progress)*
+## 578. [x] The bugs from the 2026-11-20 20:05 critique, fixed as one batch *(closed 2026-11-20 20:35 lane A: the status discs fixed (f143e204: 4 units clear of the name, D shot `after578`; region-status and board-control pass P and D); kept: the market-event poster is item 367's held poster over the panel frame (it meets the board's hex rim by about 5 px only); the NIGHT SHIFT 'ghost' line is the subtitle mid-reveal (item 344); the Coming up bars are each round's coloured vehicle mix, not empty; Pell's phone medallion breaks the placard frame by design (items 237/383) and a 4 px clearance cut 'SQUEEZE' to 'SQUEE…', reverted; the l21 phone depot goes with item 576)*
 - `cath-game-D` 740-875 x 133-160 (and 625-785 / 830-995 x 313-340): status discs touch the last letter of Highmoor, Brindle Hills, Kingsmarket; same in `cath-setup-D` 550-680 x 285-312.
 - `cath-setup-D` 985-1120 x 565-775: the 'This week at the market / Dry Spell' card overlaps the board's right hex rim (885-990).
 - `ns-play-D` 590-870 x 790-830: a ghosted duplicate of 'Nobody hears the shot...' at her feet (item 344 found this was the subtitle mid-reveal: check timing before fixing).
