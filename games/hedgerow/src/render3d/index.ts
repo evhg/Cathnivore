@@ -12,6 +12,7 @@ import { BACKDROP_SKY_Y, BACKDROP_Z, buildBackdrop } from "./backdrop";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import {
   ENEMIES,
   MEGAS,
@@ -130,6 +131,24 @@ interface EnemyView {
   flashing: boolean;
   crack?: number;
 }
+
+/** Plan item 561: the field's grade (display-referred): warm, a mild S-curve and a soft vignette. */
+const FIELD_GRADE = {
+  uniforms: { tDiffuse: { value: null as THREE.Texture | null } },
+  vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+  fragmentShader: [
+    "uniform sampler2D tDiffuse; varying vec2 vUv;",
+    "void main() {",
+    "  vec4 t = texture2D(tDiffuse, vUv);",
+    "  vec3 c = clamp(t.rgb, 0.0, 1.0);",
+    "  c = mix(c, c * c * (3.0 - 2.0 * c), 0.3);",
+    "  c *= vec3(1.03, 1.0, 0.94);",
+    "  vec2 d = (vUv - 0.5) * vec2(1.0, 0.8);",
+    "  c *= 1.0 - 0.22 * smoothstep(0.3, 0.72, length(d));",
+    "  gl_FragColor = vec4(clamp(c, 0.0, 1.0), t.a);",
+    "}",
+  ].join("\n"),
+};
 
 /** Geometry and materials every projectile of a kind borrows (created once, never disposed by an effect). */
 interface ShotKit {
@@ -393,9 +412,14 @@ export class Renderer3D {
     // a composer renders the scene, so every hedge, kerb and roof edge stair-stepped and the phone frame read soft).
     this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.7, 0.55, 0.8);
+    // Plan item 561: a light bloom (0.35 over 0.88, was 0.7 over 0.8): only lamps, logos and magic glow now; the old
+    // strength lifted the whole sunlit field into a milky haze, so plots, hedges and the lane shared one brightness.
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.35, 0.5, 0.88);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
+    // Plan item 561: the field's grade, in display space after the tone map: a warm, gently S-shaped curve and a soft
+    // vignette to the frame's edges, so the board reads as a printed poster on warm paper.
+    this.composer.addPass(new ShaderPass(FIELD_GRADE));
 
     // Selection square, range ring and pie aim.
     const sq = new THREE.LineSegments(

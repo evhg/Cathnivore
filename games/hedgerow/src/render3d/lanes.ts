@@ -331,6 +331,9 @@ const PAINT: Paint[] = [
   },
 ];
 
+/** Plan item 561: the warm shade multiplied over every act's lane surface (about 0.6 of its linear brightness). */
+export const LANE_SHADE = "#ccbba6";
+
 function laneTexture(act: number): THREE.Texture {
   let t = texCache.get(act);
   if (t) return t;
@@ -341,6 +344,14 @@ function laneTexture(act: number): THREE.Texture {
   let seed = 9001 + act * 31;
   const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   PAINT[Math.max(0, Math.min(PAINT.length - 1, act))]!(ctx, r);
+  // Plan item 561: the lane reads as a band: its surface a warm shade darker than the plots beside it (it shared their
+  // brightness, so the road the player defends was hard to follow) with a pale kerb along each edge, as the 2D track
+  // draws its edges.
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = LANE_SHADE;
+  ctx.fillRect(0, 0, TW, TH);
+  ctx.globalCompositeOperation = "source-over";
+  for (const u of [0.165, 0.835]) streak(ctx, u, 5, "#f6ecd2", 0.9);
   // Fade the sides into the verge: an alpha ramp across the lane.
   const st = laneStyle(act);
   ctx.globalCompositeOperation = "destination-in";
