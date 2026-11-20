@@ -106,6 +106,12 @@ test('each stop name reads 4.5:1 against its plate or halo', async ({ page }) =>
   })
   await page.goto('/hedgerow/?2d')
   await page.waitForSelector('#screen-select .node.next .you')
+  // The stops pop in (node-pop fades each from 0 opacity): measure the settled map, not a stop mid-entrance.
+  await page.evaluate(() =>
+    Promise.all(
+      document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => null)),
+    ),
+  )
   const rows = await page.$$eval('#screen-select li.act .node .level-name', (els) =>
     els.map((e) => {
       const rgb = (s: string) => (s.match(/[\d.]+/g) ?? []).map(Number)
