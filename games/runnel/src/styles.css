@@ -3941,15 +3941,15 @@ body[data-mode='practice'] #week-slot {
   #valley-paint .vl-sprouts[data-wet] .vl-sprout-0 { transition-delay: 250ms; }
   #valley-paint .vl-sprouts[data-wet] .vl-sprout-1 { transition-delay: 400ms; }
   #valley-paint .vl-sprouts[data-wet] .vl-sprout-2 { transition-delay: 550ms; }
-  #valley-paint[data-greened] .vl-w1 { transition-delay: 90ms; }
-  #valley-paint[data-greened] .vl-w2 { transition-delay: 180ms; }
-  #valley-paint[data-greened] .vl-w3 { transition-delay: 270ms; }
-  #valley-paint[data-greened] .vl-w4 { transition-delay: 360ms; }
-  #valley-paint[data-greened] .vl-w5 { transition-delay: 450ms; }
-  #valley-paint[data-greened] .vl-w6 { transition-delay: 540ms; }
-  #valley-paint[data-greened] .vl-w7 { transition-delay: 630ms; }
-  #valley-paint[data-greened] .vl-w8 { transition-delay: 720ms; }
-  #valley-paint[data-greened] .vl-w9 { transition-delay: 810ms; }
+  #valley-paint[data-greened] .vl-w1 { transition-delay: 60ms; }
+  #valley-paint[data-greened] .vl-w2 { transition-delay: 120ms; }
+  #valley-paint[data-greened] .vl-w3 { transition-delay: 180ms; }
+  #valley-paint[data-greened] .vl-w4 { transition-delay: 240ms; }
+  #valley-paint[data-greened] .vl-w5 { transition-delay: 300ms; }
+  #valley-paint[data-greened] .vl-w6 { transition-delay: 360ms; }
+  #valley-paint[data-greened] .vl-w7 { transition-delay: 420ms; }
+  #valley-paint[data-greened] .vl-w8 { transition-delay: 480ms; }
+  #valley-paint[data-greened] .vl-w9 { transition-delay: 540ms; }
   .vl-row {
     stroke: color-mix(in srgb, var(--vl-hedge) 30%, transparent);
     stroke-width: 3;
