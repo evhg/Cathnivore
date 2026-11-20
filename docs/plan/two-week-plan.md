@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-20T19:56Z
 
 
 
@@ -5641,5 +5640,53 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-menu-P` (80-205 x 175-262): Cath stands over stop 21's icon; 'Next / On Air' meets the stop's disc and its '21' badge. **Fixed lane A:** where no full-size spot between two coins is clear on a phone she steps down to 90% (65 px; item 441's 64 px floor holds) and stands clear of every coin and name (390x844, 375x667, 360x780; stops 1, 14, 21, 25).
 - `games-D` (415-520 x 300-485): Cath's legs drawn over the counter planks, so she stands inside the stall; the 'FRESH · FREE' sign (627-760 x 383-418) floats on the planks. **Checked, kept:** item 563 stands her in front of the counter on purpose (the counter layer behind her); her feet sit on the rail line.
 - `cath-campaign-P` (15-375 x 522-580): the chapter prints' red pins overlap their neighbours; print 6 cut at x 375. **Checked lane A:** the six tabs end at 374 of 390 (16 px gutter; 359 of 375, 344 of 360) and each pin sits inside its own tab.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+*(Items 572-578 planned 2026-11-20 20:05 by lane A from the `plan1120u` shots (scratchpad; `scripts/plan-shots.mjs`), critiqued by a subagent against VISION.md and checked against withdrawn/kept decisions: the locked plastic coins, the Doubt bubble, the phone hand fan, the phone title's Cath-first layout, the darker Runnel valley and the `?keyart` table-only frame are not reopened.)*
+
+## 572. [ ] Cathnivore phone Setup: every choice an object on the stall, as on desktop
+- **Why:** `cath-setup-P`: item 533 made the desktop choices objects; the phone is still a form. The step rail reads like a wizard (20-360 x 180-225), Solo and Hot-seat are flat pills (15-375 x 572-610), the producers are chips over a paragraph of rules (28-375 x 620-800).
+- **Build:** reuse 533's art below D in `src/ui/Setup.tsx`: two place settings for the mode, standee cards for the producers (rules on tap, not in the body), memo slips for difficulty; the step rail as three pennants on the bunting, not numbered dots.
+- **Accept:** every `[data-setup-choice]` at 390x844 holds art (the setup-objects spec extended to P); no page scroll at 390x844 and no choice past x 16-374; at most 2 lines of rules text visible without a tap.
+- **Size:** 2
+
+## 573. [ ] Cathnivore phone campaign: the chapters as a stack of sealed letters
+- **Why:** `cath-campaign-P`: six 50 px thumbnails with red pins (12-375 x 520-580) over a generic card (20-370 x 590-775); desktop got sealed letters in item 556. Back to Title floats in an empty band (95-295 x 795-842).
+- **Build:** in `CampaignScreen.tsx` the chapters as a swipeable stack of 556's letters (kraft flap, seal, teaser), the open chapter on top; Back to Title on the map frame's foot.
+- **Accept:** each locked chapter at P shows its seal and a teaser of 14 px or more; no empty band over 24 px below the stack at 390x844; the campaign specs pass at P and D.
+- **Size:** 2
+
+## 574. [ ] NIGHT SHIFT class pick: a lit set, not blue fog
+- **Why:** `ns-play-D` 330-960 x 0-900 and `ns-play-P` (2x) 0-780 x 130-900: Cath in an even blue haze, face and coat as flat as the wall; the textured rooms (items 514/538) are lost under the fog.
+- **Build:** per class a key and a rim light plus one practical in its colour (`games/cathode/src/render/lighting.ts`, `ui/classpick.ts`); the volumetric fog halved; the floor reflecting. New lights as `liveLight`s and in `render/warm.ts`'s variants; `scripts/cathode-perf.mjs` alone, then the posters.
+- **Accept:** Cath's face luminance at least 1.6x the wall beside her (measured on the shot); draw calls within budget; shots P and D for all 5 classes.
+- **Size:** 2
+
+## 575. [ ] NIGHT SHIFT class pick: the unpicked classes as a dossier lineup
+- **Why:** `ns-play-D` 45-470 x 260-650: the four unpicked classes are grey words with a small gun; nothing shows who each is. `ns-play-P` (2x) 40-730 x 935-1000: tiny grey glyph tabs.
+- **Build:** each row a dossier tab in its class colour with a booking-photo thumbnail of Cath in that class's kit (rendered once, cached; `classpick.ts`/`classart.ts`); the same thumbnails on the P tabs.
+- **Accept:** each row/tab holds a portrait of 48 px or more; unpicked text 4.5:1 or better; keys 1-5 still work; the classpick specs pass at P and D.
+- **Size:** 2
+
+## 576. [ ] Hedgerow 2D phone: the act's place at the field's edge
+- **Why:** `hedge-l21-2d-D` shows Saltmarsh's sea and jetty depot (155-300 x 75-890); `hedge-l21-2d-P` drops them, so Saltmarsh and Rivermead (`hedge-l34-2d-P`) look alike, and the depot is squeezed onto the lane over a queued van (10-60 x 300-395).
+- **Build:** a 24-36 px act strip (shore, river, hill) at the phone field's edge (`games/hedgerow/src/render.ts`, `layouts.ts`, `scenery.ts`), the depot set on it, clear of the lane.
+- **Accept:** at 390x844 levels 21 and 34 differ in that strip (2,000+ px pixel-diff region); the depot box meets neither the lane nor queued vans; key art re-shot (keyart-fresh).
+- **Size:** 1
+
+## 577. [ ] Site: Cathnivore's poster as full-bleed as the other three
+- **Why:** `portfolio-D` 640-925 x 155-340: a small board on blank cream while Runnel, NIGHT SHIFT and Hedgerow fill their frames; same on `games-D` 112-400 x 540-740 and `games-P` 20-375 x 605-810.
+- **Build:** keep `?keyart` table-only (item 116) but crop to the board plus the gingham cloth, a crate and the bunting edge; `npm run keyart cathnivore`.
+- **Accept:** the board covers 60%+ of each poster crop; no flat cream area over 15% of the poster; keyart-fresh passes; shots of portfolio and /games/ P and D.
+- **Size:** 1
+
+## 578. [ ] The bugs from the 2026-11-20 20:05 critique, fixed as one batch
+- `cath-game-D` 740-875 x 133-160 (and 625-785 / 830-995 x 313-340): status discs touch the last letter of Highmoor, Brindle Hills, Kingsmarket; same in `cath-setup-D` 550-680 x 285-312.
+- `cath-setup-D` 985-1120 x 565-775: the 'This week at the market / Dry Spell' card overlaps the board's right hex rim (885-990).
+- `ns-play-D` 590-870 x 790-830: a ghosted duplicate of 'Nobody hears the shot...' at her feet (item 344 found this was the subtitle mid-reveal: check timing before fixing).
+- `hedge-l21-2d-P` 10-60 x 300-395: the Hollowell depot and its '216' plate crushed over the queued pink van (may go with item 576).
+- `hedge-l21-3d-D` 1125-1395 x 683-693: the Coming up cards' livery bars render as empty grey stubs.
+- `cath-game-P` 5-65 x 65-125: Pell's portrait ring overlaps the Squeeze tile's left edge.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
