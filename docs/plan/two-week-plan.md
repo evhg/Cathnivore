@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-20T08:12Z
+
 
 
 
@@ -5410,5 +5410,110 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `ns-play-P` (2x, y 1030-1130): an empty band between 'HER LINE' and the stat sheet. **Left to item 538** (lane B's class pick, in progress): the sheet docks to the foot, the band is the slack.
 - `portfolio-D` (1100-1220 x 445-520), `games-D` (890-960 x 630-700): purple glow blobs in Hedgerow's key art read as a glitch at thumbnail size. **Fixed 05:35 lane A:** the blob was the queue's overflow, item 45's stacked column by the gate (a left-running wave has about 80 out by SwiftShader's first frames). `scripts/keyart.mjs` now starts the round, lays nine vehicles out in one file along the lane (`spawn`) and holds the sim (`window.hedgerow.freeze`, sandbox only, no pause note); Hedgerow's key art re-shot.
 - `games-P` (30-380 x 512-558): 'Play today's Runnel' thin italic, low contrast; 'Browse the games' reads disabled. **Checked, kept:** chalk 700 on the brass-lit slate and cream on the plank (5.9:1, item 222), item 409's deliberate lead.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 554. [ ] Cathnivore board: the pieces as miniatures on the table
+*(planned 2026-11-20 08:20, lane A, from the plan1120j critique, `e2e/screenshots/plan1120j/`)*
+- **Why:** `cath-game-D` (580-1110 x 130-720): each hex is about 180 px wide, but its stall, outlet and scout pieces are flat 30-45 px icons (the stall 940-990 x 195-240, the '?' pin 1010-1050 x 195-235) that read as map symbols, not pieces on a table (VISION item 2). On the phone (`cath-game-P` 70-380 x 135-470) they are 18-22 px and blur together.
+- **Build:**
+  - Producers' stalls as wooden miniatures (awning, crates, a cast shadow, ink outline); Hollowell outlets as glossy plastic kiosks with a specular band.
+  - The scout '?' as a paper flag on a pin, not a blue map pin.
+  - A 300 ms drop with overshoot when a player places a piece; Hollowell's slide in without it; reduced motion fades only.
+  - Pieces grow to fill the space item 550 freed (no count discs, no tags).
+- **Accept:**
+  - Piece art at least 48 px wide at 1440x900 and 28 px at 390x844.
+  - No piece meets a region name plate or status disc (region-status spec).
+  - board-*, region-status, map-key, turn-show specs and the CSS lint pass; shots P and D at rounds 1 and 6; key art re-shot.
+- **Size:** 2
+
+## 555. [ ] Cathnivore table: Cath reacts to the game, in her own bubble
+*(planned 2026-11-20 08:20, lane A, plan1120j critique)*
+- **Why:** `cath-game-D` (360-550 x 405-720): Cath stands front-on in the title's pose whatever happens; her diary line (365-545 x 210-375) is grey italic on cream (about 3:1) and doesn't read as her voice. `cath-game-P` (0-390 x 478-555): a producer's line sits beside Cath's portrait, so the speaker reads wrong.
+- **Build:**
+  - Expressions on the table (delighted, determined, worried, wink at least), driven by game events (a region freed, a Squeeze, Trust lost, a good harvest) through a pure event-to-expression map.
+  - Her line in a speech bubble with its tail to her, styled like the producers' bubble.
+  - On the phone, the strip's portrait is whoever speaks the line.
+  - A 200 ms cross-fade between expressions (none with reduced motion).
+- **Accept:**
+  - Her text at least 15 px and 4.5:1.
+  - At least four expressions reachable, with a unit test on the event map.
+  - Every phone line shows its speaker's portrait (an e2e check on a producer's line).
+  - cath-beats, table-cath specs pass; shots P and D.
+- **Size:** 2
+
+## 556. [ ] Cathnivore campaign desktop: Cath in front, chapters as sealed letters
+*(planned 2026-11-20 08:20, lane A, plan1120j critique)*
+- **Why:** `cath-campaign-D` (730-920 x 600-890): crates hide Cath from the chest down. The locked chapter rows (1030-1375 x 355-880) are 12-13 px grey italic on cream with dim thumbnails and read as disabled list items. The pennants (375-850 x 55-110) carry 11 px numbers that mean nothing.
+- **Build:**
+  - Cath full figure, clear of the crates, holding chapter 1's letter.
+  - Locked chapters as folded letters with a wax seal and a one-line teaser at 14 px.
+  - The pennants as progress bunting, one flag filled per chapter won, labelled.
+  - A 600 ms seal-crack when a chapter unlocks (reduced motion: none).
+- **Accept:**
+  - At most 10% of Cath's figure covered.
+  - Teasers at least 14 px and 4.5:1.
+  - The bunting's state matches campaign progress (unit test).
+  - campaign, campaign-map, campaign-cath specs pass; shots P and D.
+- **Size:** 2
+
+## 557. [ ] Hedgerow 3D: Cath reads as herself on the field
+*(planned 2026-11-20 08:20, lane A, plan1120j critique)*
+- **Why:** `hedge-l21-3d-D` (150-235 x 505-640): Cath is a low-poly block whose face is a 15 px dark smudge; hair and jacket don't read as the character bible. `hedge-l21-3d-P` (15-45 x 485-545): an unreadable sliver. She's the weakest model on the field.
+- **Build:**
+  - In `render3d/`: centre-parted long hair with a shine band, the olive jacket with its collar, cream trousers and boots (item 551's tailoring), the face as a textured plane from `shared/cath/`'s face.
+  - Idle, cast and cheer poses (keyframed parts).
+  - 1.15x scale and a soft contact shadow.
+- **Accept:**
+  - Her face at least 28 px tall at 1440x900, 14 px at 390x844.
+  - She stands on the same tile in `?2d` and 3D.
+  - Draw calls rise by at most 10.
+  - hedgerow-3dframe, hedgerow-cath3d specs pass; shots P and D at level 21; key art re-shot.
+- **Size:** 2
+
+## 558. [ ] Runnel desktop: Cath as a host who reacts
+*(planned 2026-11-20 08:20, lane A, plan1120j critique)*
+- **Why:** `runnel-D` (435-525 x 510-860): Cath is a 90 px-wide figure with a 22 px face, her bubble (385-685 x 410-480) outweighs her and she never reacts. The left rail (15-345 x 175-785) is 13 px lined type with a dead band at 790-900.
+- **Build:**
+  - A host bust in the rail (portrait at least 120 px) whose expression follows play (a tile watered, a dry field, solved, par beaten).
+  - The valley figure stays, beside the spring house, clear of the board.
+  - 'Up next today' as a postcard pinned to the rail with Bea's drawing, filling the band at 790-900.
+- **Accept:**
+  - Cath's face at least 60 px tall at D, 44 px at P.
+  - At least three expressions tied to puzzle events (unit test).
+  - Rail text at least 14 px.
+  - Runnel site specs pass; shots P and D, lesson and daily.
+- **Size:** 2
+
+## 559. [ ] NIGHT SHIFT phone class pick: one composed screen
+*(planned 2026-11-20 08:20, lane A, plan1120j critique)*
+- **Why:** `ns-play-P` (CSS px) 0-390 x 520-570 is an empty dark band, the stat sheet (12-378 x 570-844) is pushed to the foot, the stat bars' comparison ticks are about 6 px and unexplained, and the subtitle (90-300 x 350-385) can wrap one word onto a faded second line.
+- **Build:**
+  - Close the band: the class tabs and description sit over the sheet, the hero frame grows to fill.
+  - The ticks become a 'vs average' delta (+7), as on desktop (998-1240 x 415-455).
+  - The subtitle on one line or two balanced lines.
+  - The Hold button inside the safe area.
+- **Accept:**
+  - No vertical gap over 16 px between sections at 390x844 and 375x667.
+  - Deltas at least 14 px (in `var(--u)`).
+  - The subtitle never ends on a lone word.
+  - cathode-classpick specs pass (P, D); cathode-type test; shots P and D.
+- **Size:** 1
+
+## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(lane A, in progress)*
+*(planned 2026-11-20 08:20, lane A, plan1120j critique; check each at 2x before fixing)*
+- `cath-setup-D` (530-625 x 168-205): Tomas's 'Market Day' badge wraps and crowds the card edge; (715-800 x 135-160) 'Dr Ines Farrow' wraps.
+- `cath-setup-D` (125-350 x 730-765): the pin labels about 12 px; 'This week' red on cream, low contrast. (1185-1240 x 805-820): 'OPEN' above Start about 10 px pale on green.
+- `cath-setup-P` (15-45 x 352-378, 238-265 x 342-372): the setup's board preview: the '2' disc on Brindle Hills' plate edge, the '5' against Rivermead's (item 550's fit may not run there).
+- `cath-title-D` (125-290 x 615-690): the Daily tag runs to four centred 13 px lines and repeats the plaque (860-1395 x 760-850).
+- `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the viewport foot (likely scroll: check).
+- `cath-game-D` (575-760 x 15-85): rail cards' second line about 12 px; the 'STAGE I' tab (900-962 x 15-30) over the card's top border. (375-500 x 840-885): hand titles cut by the foot.
+- `cath-game-P` (15-65 x 130-185): the MUM postcard over the corner hex.
+- `hedge-menu-D` (70-180 x 320-480): Cath on the 'Next' node, covering its medallion; H22-H30 medallions about 2:1, read as disabled. (1140-1190 x 500-675): fleet icons overhang the list's border; 11 px descriptions.
+- `hedge-l21-2d-P` (15-55 x 328-350): the '216' count about 10 px; (65-215 x 235-255) 'Lifestyle influencer' tag over the plots.
+- `hedge-l21-3d-D` (70-265 x 168-192): the HOLLOWELL label on the depot model.
+- `ns-title-P` (CSS 15-195 x 420-590): the Ledger cutting over Cath's umbrella arm; The List cards (12-370 x 710-805) names only, no hooks.
+- `games-D` (345-400 / 960-1015 x 640-735): the same Cath sticker on each card; (122-370 x 755-790) 13 px taglines.
+- `portfolio-D` (1290-1380 x 175-550): Cath floats on black with no ground shadow, apart from her bubble (765-1230 x 555-597).
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
