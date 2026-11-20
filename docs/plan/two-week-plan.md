@@ -5590,7 +5590,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - desktop-no-scroll, desktop-top-rail, table-hand*, saving-goal, board-* pass; shots P and D.
 - **Size:** 3
 
-## 567. [ ] Runnel: the valley answers the water
+## 567. [ ] Runnel: the valley answers the water *(lane B, in progress)*
 *(planned 2026-11-20 15:20, lane A, plan1120p critique)*
 - **Why:** `runnel-D` (375-1425 x 10-890): the valley around the board is a flat grey-mauve and brown patchwork, its right third (1130-1410 x 150-700) empty stripes, and nothing in it changes as you play; `runnel-P` (0-390 x 200-680) the same. VISION 3 and 4: the world reacts.
 - **Build:** tie the valley's plots beside the board to the field tile nearest each. When a field tile is watered its plots ease from dry ochre to green over 600 ms and sprouts come up one after another; on the solve a water line runs down the valley's ditches to Bea's garden, she waves and the sunflowers open. In the existing valley SVG layers; reduced motion gets a crossfade.
