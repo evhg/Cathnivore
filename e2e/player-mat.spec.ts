@@ -128,7 +128,11 @@ test('the stall goods animate on change and the empty ledger stays small at 1440
   const t0 = Date.now()
   await expect(marks.locator('.mat-art-slot[data-bump="up"]')).toBeAttached({ timeout: 250 })
   expect(Date.now() - t0).toBeLessThan(250)
-  expect(await marks.locator('.mat-art-slot').evaluate((e) => e.getAnimations().length)).toBeGreaterThan(0)
+  // The slot carries its hop (420 ms): read the computed animation, not getAnimations(), which is empty once a
+  // loaded machine has let the hop finish before this line runs (it flaked 1-2 in 3 at D).
+  const hop = await marks.locator('.mat-art-slot').evaluate((e) => { const cs = getComputedStyle(e); return { name: cs.animationName, ms: parseFloat(cs.animationDuration) * 1000 } })
+  expect(hop.name, 'the hop is wired').not.toBe('none')
+  expect(hop.ms).toBeGreaterThan(0)
   await expect(mat.locator('.mat-store').first().locator('.mat-art-slot[data-bump="down"]')).toBeAttached()
   await expect(marks.locator('.ledger-value')).toHaveText(String(was + 1))
   await page.waitForTimeout(600)
