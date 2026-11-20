@@ -5787,11 +5787,6 @@ img.act-scene {
   #screen-select .trail .node:disabled .level-stars.level-lock { display: none; }
   #screen-select .trail .node:disabled .level-lock + .level-medals + .level-name,
   #screen-select .trail .node:disabled .level-lock + .level-name { margin-top: 0; }
-  #screen-select .trail .node:disabled .level-name::after {
-    /* a no-break space ties the padlock to the last word, so it never wraps onto a line of its own */
-    content: "\00a0🔒";
-    font-size: 0.8em;
-  }
 }
 
 /* Plan item 372 (phone): the sheet rides the act down to its end but stops above the hedge, so the gate the lane
@@ -6091,4 +6086,31 @@ img.act-scene {
     transparent 26%,
     transparent 72%,
     color-mix(in srgb, var(--pasture-ink) 24%, transparent) 100%);
+}
+
+/* Plan item 471: a locked stop is a place Hollowell has wrapped, not a padlock: its landmark on a turf plinth ringed
+   by hedge, under the plastic coin's cellophane (item 372's language kept), and its H seal and number one small
+   inked tag (two badges and a padlock before). The padlock glyph is gone everywhere (map.ts). */
+#screen-select .node .level-stars.level-lock { display: none; }
+#screen-select .node:disabled .level-num::after { content: none; }
+#screen-select .node:disabled .level-num {
+  box-shadow:
+    0 4px 0 0 color-mix(in srgb, var(--pasture) 60%, var(--plastic-shade)),
+    0 5px 0 1.5px color-mix(in srgb, var(--pasture-ink) 80%, var(--corp-ink)),
+    0 7px 6px 1px color-mix(in srgb, var(--soil) 30%, transparent);
+}
+#screen-select .node:disabled .level-num.vignette .level-n {
+  grid-auto-flow: column;
+  gap: 3px;
+  padding: 0 6px 0 5px;
+  background: radial-gradient(circle at 35% 30%, var(--corp-hi), var(--corp));
+  color: var(--plastic);
+  box-shadow: 0 0 0 2px var(--plastic), 0 1px 0 2px color-mix(in srgb, var(--corp-ink) 35%, transparent);
+}
+#screen-select .node:disabled .level-num.vignette .level-n::before {
+  content: "H";
+  padding-right: 3px;
+  border-right: 1px solid color-mix(in srgb, var(--plastic) 55%, transparent);
+  font-family: var(--font-ui, system-ui);
+  font-weight: 800;
 }

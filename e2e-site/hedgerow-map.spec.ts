@@ -212,7 +212,8 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, in Hollo
   const rgb = (grey ?? '').match(/[\d.]+/g)!.map(Number)
   expect(rgb[2]!, 'cool grey, not sepia').toBeGreaterThanOrEqual(rgb[0]!)
   for (const n of nodes.filter((x) => !x.locked)) expect(n.ink).not.toBe(grey)
-  const seals = await page.evaluate(() => [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => [b.disabled, getComputedStyle(b.querySelector('.level-num')!, '::after').content]))
+  // Plan item 471: the seal is merged into the number tag (one Hollowell tag, 'H | 15')
+  const seals = await page.evaluate(() => [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => [b.disabled, getComputedStyle(b.querySelector('.level-n')!, '::before').content]))
   for (const [locked, content] of seals) if (locked) expect(content).toBe('"H"')
 })
 
@@ -284,7 +285,7 @@ test('plan item 73: picking another open stop, Cath walks to it before it opens'
   await expect.poll(() => page.evaluate(() => !!document.querySelector('dialog[open]') || !!document.querySelector<HTMLElement>('#screen-select')?.hidden), { timeout: 5000 }).toBe(true)
 })
 
-test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its name clear of its padlock', async ({ page }) => {
+test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its name clear of its coin', async ({ page }) => {
   await seed(page, 20)
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
   const m = await page.evaluate(() => {
@@ -292,7 +293,8 @@ test('plan item 84: Cath stands clear of her coin, and a locked boss keeps its n
     return {
       you: r('button.node[data-level="21"] .you'),
       coin: r('button.node[data-level="21"] .level-num'),
-      lock: r('button.node[data-level="30"] .level-lock').bottom,
+      // Plan item 471: no padlock any more; the name keeps clear of the coin's tag instead
+      lock: r('button.node[data-level="30"] .level-n').bottom,
       name: r('button.node[data-level="30"] .level-name').top,
     }
   })
@@ -639,9 +641,9 @@ test('plan item 372: the level card docks beside the act, clear of every stop', 
   }
 })
 
-// Plan item 372 (phone): each stop's name is one tag beside its own coin, within 12 px, and a locked stop's padlock
-// rides in that tag (no separate lock pill).
-test('plan item 372: on a phone each name sits by its coin with its padlock inside', async ({ page }, testInfo) => {
+// Plan item 372 (phone): each stop's name is one tag beside its own coin, within 12 px. Plan item 471: no padlock
+// glyph anywhere (no lock pill, none in the tag); a locked stop's coin wears one Hollowell tag, its H and number.
+test('plan item 372: on a phone each name sits by its coin, and no stop wears a padlock', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'site-phone', 'phone layout')
   await seed(page, 20)
   await page.waitForTimeout(800)
@@ -656,7 +658,8 @@ test('plan item 372: on a phone each name sits by its coin with its padlock insi
         gap: Math.max(0, t.left - c.right, c.left - t.right),
         locked: n.disabled,
         lockPill: !!lock && lock.getBoundingClientRect().width > 0,
-        tagLock: getComputedStyle(n.querySelector('.level-name')!, '::after').content,
+        tagLock: getComputedStyle(n.querySelector('.level-name')!, '::after').content + n.textContent,
+        hTag: getComputedStyle(n.querySelector('.level-n')!, '::before').content,
       }
     })
   })
@@ -665,7 +668,8 @@ test('plan item 372: on a phone each name sits by its coin with its padlock insi
     expect(s.gap, `stop ${s.id}`).toBeLessThanOrEqual(12)
     if (s.locked) {
       expect(s.lockPill, `stop ${s.id}`).toBe(false)
-      expect(s.tagLock, `stop ${s.id}`).toContain('🔒')
+      expect(s.tagLock, `stop ${s.id}`).not.toContain('🔒')
+      expect(s.hTag, `stop ${s.id}`).toBe('"H"')
     }
   }
 })

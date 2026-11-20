@@ -2560,8 +2560,12 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       numEl.textContent = String(lv.id);
       const st = document.createElement("span");
       st.className = "level-stars";
-      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "🔒";
-      if (!unlocked) st.classList.add("level-lock");
+      // Plan item 471: no padlock: a locked stop reads as Hollowell's by its wrapped plinth and its H tag (styles.css).
+      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "";
+      if (!unlocked) {
+        st.classList.add("level-lock");
+        st.hidden = true;
+      }
       // Plan item 314: a cleared stop wears its stars on a rosette ribbon (styles.css).
       else if (stars > 0) st.classList.add("won");
       const medals = document.createElement("span");
