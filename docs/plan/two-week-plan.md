@@ -5579,7 +5579,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 566. [ ] Cathnivore desktop: the board at hero size, the hand without cover
+## 566. [ ] Cathnivore desktop: the board at hero size, the hand without cover *(lane A, in progress)*
 *(planned 2026-11-20 15:20, lane A, plan1120p critique)*
 - **Why:** `cath-game-D`: the board spans about 580-1130 x 105-720, 38% of the width; the two rails (10-340 and 1180-1430) are nearly as wide together. In the hand (355-1330 x 725-900) 'Buy Roadside Stand' (485-650) lies over Sell's coin chips and its 'Sell' label (372-400 x 850-870); card text runs to y 885. VISION 2: the table is the hero.
 - **Build:** tighten the desktop grid so the board's SVG takes what the rails free: left rail 300 px or less at 1440 (item 549's goal card scales down with it), the producers' column as narrow as their figures allow, the board scaled to fill. Keep item 541's fan and item 405's lift, but no card covers another card's controls (price chips, Sell's 1/2/3, the (i)): a card's neighbour may cover only its picture's edge. Fold Hollowell's medallion inside the plaque's end (1165-1310 x 15-150 overhangs it).
