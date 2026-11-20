@@ -5531,7 +5531,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `hedgerow-3dframe`, `hedgerow-cath3d` pass; key art re-shot, keyart-fresh passes; shots P and D.
 - **Size:** 2
 
-## 562. [ ] Cathnivore campaign: Cath the narrator at real scale, the centre column used
+## 562. [x] Cathnivore campaign: Cath the narrator at real scale, the centre column used *(closed 2026-11-20 13:40, lane B, checked: lane A's item 556 already did it. Measured on the build: her figure 430 px tall at 1440x900 (172 wide), 150 px at 390x844; her line follows the chapter under the pointer or focus (`campaignLine(pointed ...)`, pinned by `campaign-cath.spec.ts` :4), and the chapter's regions light on the map (`campaign-link`). Both pass (P, D). Not built: a separate dotted route from her figure to the region.)*
 *(planned 2026-11-20 12:45, lane B, plan1120m critique)*
 - **Why:** `cath-campaign-D`: the strip between the map and the chapter rail (730-960 x 140-890) is empty paper but for a bubble and a Cath about 100 px wide. `cath-campaign-P`: Cath about 60 px wide, tucked top right (290-360 x 5-185).
 - **Build:** Cath at least 260 px tall at D on the crates between map and rail, a dotted route from her to the picked chapter's region on the map, her bubble the picked chapter's line. On a phone she stands in the chapter card beside 'Start here', 90 px or taller.
