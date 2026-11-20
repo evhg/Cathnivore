@@ -1338,6 +1338,28 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
               {def.name}
             </text>
+            {/* Plan item 550: one status per region on its banner's end: free (a leaf), or how many Hollowell pieces
+                stand there, in Hollowell's colour once it holds the land. `fitPlaques` keeps it on the plaque's end. */}
+            {(() => {
+              const r = state.regions[id]
+              const n = r.outlets + r.buyouts + r.doubt
+              const control = regionControl(r)
+              const label = `${def.name}: ${control === 'free' ? 'free' : control === 'held' ? 'held by Hollowell' : 'contested'}${control === 'free' ? '' : `, ${n} Hollowell ${n === 1 ? 'piece' : 'pieces'}`}`
+              const cy = y - HEX_R * 0.62 - 4.5
+              return (
+                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + 14} ${cy})`}>
+                  <title>{label}</title>
+                  <circle r={11} className="region-status-disc" />
+                  {control === 'free' ? (
+                    <path className="region-status-leaf" d="M-5 4C-5-3 0-7 6-7C6 0 2 5-5 4ZM-5 4L2-2" />
+                  ) : (
+                    <text y={4.6} textAnchor="middle" className="region-status-count">
+                      {n}
+                    </text>
+                  )}
+                </g>
+              )
+            })()}
           </g>
         )
       })}
@@ -1583,6 +1605,9 @@ function fitPlaques(svg: SVGSVGElement) {
     const cx = Number(text.getAttribute('x'))
     plate.setAttribute('x', String(cx - w / 2 - 8))
     plate.setAttribute('width', String(w + 16))
+    // Plan item 550: the status disc rides the plaque's right end.
+    const status = sign.querySelector<SVGGElement>('.region-status')
+    if (status) status.setAttribute('transform', `translate(${cx + w / 2 + 14} ${status.getAttribute('data-cy')})`)
   }
 }
 

@@ -415,6 +415,15 @@ h3 {
   }
 }
 
+/* Plan item 550: a region's one status, on its name banner's end: a leaf on green when free, else the count of
+   Hollowell's pieces, on paper while contested and on Hollowell's own orange once it holds the land. */
+.region-status-disc { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5px; }
+.region-status-count { font: 800 13px/1 var(--font-num, var(--font-ui)); fill: var(--ink); }
+.region-status[data-region-status='held'] .region-status-disc { fill: var(--hollowell); }
+.region-status[data-region-status='held'] .region-status-count { fill: var(--paper); }
+.region-status[data-region-status='free'] .region-status-disc { fill: var(--pasture); }
+.region-status-leaf { fill: var(--paper); stroke: var(--ink); stroke-width: 1px; stroke-linejoin: round; }
+
 .badge-text {
   font-family: var(--font-text);
   font-size: 10px;
