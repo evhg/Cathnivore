@@ -871,6 +871,23 @@ export class Renderer {
       const bctx = this.bg.getContext("2d")!;
       bctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       paintBackground(bctx, level, { width: W, height: H, cell: s, offX, offY });
+      // Plan item 568: the field in the 3D diorama's colour: the painted beds read grey-teal beside it (saturation 0.24
+      // against 0.42 at level 21), so the baked ground is lifted once here (no per-frame filter).
+      {
+        const grade = document.createElement("canvas");
+        grade.width = this.bg.width;
+        grade.height = this.bg.height;
+        const gctx = grade.getContext("2d");
+        if (gctx && "filter" in gctx) {
+          gctx.filter = `saturate(${BG_SATURATE})`;
+          gctx.drawImage(this.bg, 0, 0);
+          bctx.save();
+          bctx.setTransform(1, 0, 0, 1, 0, 0);
+          bctx.clearRect(0, 0, this.bg.width, this.bg.height);
+          bctx.drawImage(grade, 0, 0);
+          bctx.restore();
+        }
+      }
       // Plan item 497: the country round the field steps back: a soft warm veil over everything outside the field's
       // own rectangle (14%, deepening a little toward the frame's edges), so the lane, plots and towers lead and the
       // margins' huts, boats and trees read as setting, as the 3D diorama's haze does. Baked once with the field.
@@ -2674,6 +2691,10 @@ export class Renderer {
     }
   }
 }
+
+/** Plan item 568: how much the 2D field's baked ground is saturated, toward the 3D diorama's colour (1.7 put the 2D pond
+ * 20 dE from the 3D one, past hedgerow-water's 15). */
+const BG_SATURATE = 1.55;
 
 /** The width of a swarm badge's row of types (at most three) and its total, for layout. */
 const SWARM_KINDS = 3;
