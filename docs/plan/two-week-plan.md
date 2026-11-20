@@ -5541,7 +5541,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - campaign, campaign-map, campaign-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 563. [ ] /games/: each card its own Cath, and a bigger host at the stall *(lane A, in progress)*
+## 563. [x] /games/: each card its own Cath, and a bigger host at the stall *(done 2026-11-20 14:30 lane A, 75e9d8b5 and 9ea1f4a9: at D Cath stands whole in front of her counter (440 px box, about 405 px of her above the rail; was about 190 over the fruit), the counter runs on to the slate with the price board beside her and crates at its foot; the cards: Cathnivore a winking bust, Runnel a small full figure with her can at the left, Hedgerow mirrored and pointing; 16x16 average hash 10+ bits apart pairwise (games-cath). games-stall/-cards/-cath/-hero-cath/-shelf/-backdrop/-todayboard and site pass (load flakes passing alone). Not done: Hedgerow's Cath from its 3D render (a transparent capture of the 3D figure is its own job; the 2D sticker differs by framing and stance instead). Shots scratchpad s563 (P, D, 1280x800))*
 *(planned 2026-11-20 12:45, lane B, plan1120m critique)*
 - **Why:** `games-D` (340-400, 650-710, 960-1020 x 635-735): near-identical Cath busts on the Cathnivore, Runnel and Hedgerow cards, so the cards blur. Hedgerow's 3D poster wears the 2D Cath. The stall's host is small (420-515 x 120-310) in its biggest space; the stall front (300-600 x 330-490) is bare.
 - **Build:** each card's Cath in that game's look (pose, expression, outfit from `shared/cath/`; Hedgerow's from its 3D render), the stall Cath about 1.6x, the stall front dressed (crates, a chalk price board).
