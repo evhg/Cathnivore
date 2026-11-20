@@ -104,3 +104,24 @@ test('the stage numeral at D is a filled tag', async ({ page }, testInfo) => {
     expect(s.h).toBeGreaterThanOrEqual(16)
   }
 })
+
+// Plan item 565: where the stage is a corner word ('Stage I'), it sits inside its card, clear of the border.
+test('the corner stage word sits inside its card at D', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop plan strip')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game').waitFor()
+  const stage = page.locator('.plan-strip-stage').first()
+  await expect(stage).toBeVisible()
+  const r = await stage.evaluate((e) => {
+    const s = e.getBoundingClientRect()
+    const c = e.closest('button')!.getBoundingClientRect()
+    return { word: getComputedStyle(e.querySelector('.plan-strip-stage-word')!).display, top: s.top - c.top, right: c.right - s.right }
+  })
+  if (r.word !== 'none') {
+    expect(r.top).toBeGreaterThanOrEqual(2)
+    expect(r.right).toBeGreaterThanOrEqual(4)
+  }
+})

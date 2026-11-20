@@ -3271,6 +3271,13 @@ html.no-animations .table-cath-line { animation: none; }
     font-weight: 600;
     color: color-mix(in srgb, var(--ink-on-fixed-fill) 72%, var(--wheat));
   }
+  /* Plan item 565: on a wide table the hand's captions read about 12 px in the fanned, tilted cards (the critique);
+     the name a step up (15 px) and its region line 14 px, once the cards are wide enough to hold them */
+  @media (min-width: 1400px) and (min-height: 860px) {
+    .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-label { font-size: var(--fs-small); }
+    .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-pick { font-size: var(--fs-caption); }
+    .game-layout .table-hand:not([data-rows]) .action-item[data-dense] .action-label { font-size: var(--fs-caption); }
+  }
   .game-layout .table-hand .action-item .action-label > svg {
     width: 30px;
     height: 30px;
@@ -6385,6 +6392,16 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
     font-size: var(--fs-caption);
   }
   .table-head .plan-strip[data-corp] .plan-strip-target .plan-chip { padding-inline: 2px; }
+  /* plan item 565: the corner tab's slate slab still read as laid on the card's border (the critique, three times:
+     items 540, 560); the stage is now the card's own ink lettering inside its top-right corner, clear of the edge */
+  .game:has(.table-head.with-table-cath) .plan-strip[data-corp] .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-dateline { top: 3px; right: 8px; }
+  .game:has(.table-head.with-table-cath) .plan-strip[data-corp] .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-stage {
+    background: none;
+    color: var(--corp-slate);
+    padding-inline: 0;
+    height: auto;
+    line-height: 1;
+  }
   .game:has(.table-head.with-table-cath) .plan-strip[data-corp] .plan-strip-item > button:first-child:has(.plan-strip-target-full[data-long]) .plan-strip-target-short {
     gap: 2px;
     margin-right: -22px;
