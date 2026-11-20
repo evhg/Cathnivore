@@ -1636,6 +1636,12 @@ function fitPlaques(svg: SVGSVGElement) {
     signs.push({ sign, text, plate, status: sign.querySelector<SVGGElement>('.region-status'), cx, w })
   }
   const GAP = 3
+  // The board's left edge in its own units (the svg's box, wider than the viewBox where the board is height-bound): a
+  // disc moved to a plaque's left end must not leave the board. The right end stays bounded by neighbours only.
+  const ctm = svg.getScreenCTM?.()
+  const box = svg.getBoundingClientRect()
+  const edge0 = ctm && ctm.a > 0 && box.width > 0 ? (box.left - ctm.e) / ctm.a : -Infinity
+  const edge1 = Infinity
   // Plan item 578: the disc's rim stands 4 units clear of the name's last letter (it met the 'r' of Highmoor at D).
   const DISC_CLEAR = 4
   const rowOf = (sign: Element, y0: number, y1: number) => plates.filter((p) => p.sign !== sign && p.y0 < y1 && y0 < p.y1)
@@ -1649,19 +1655,30 @@ function fitPlaques(svg: SVGSVGElement) {
     const cy = Number(g.status.getAttribute('data-cy'))
     const own = plates.find((p) => p.sign === g.sign)!
     const row = rowOf(g.sign, Math.min(own.y0, cy - r), Math.max(own.y1, cy + r))
-    const lo = Math.max(-Infinity, ...row.filter((p) => p.x1 <= g.cx).map((p) => p.x1)) + GAP
-    const hi = Math.min(Infinity, ...row.filter((p) => p.x0 >= g.cx).map((p) => p.x0)) - GAP
-    const reach = (rr: number) => g.w / 2 + Math.max(14, rr + DISC_CLEAR) + rr
+    // Item 578's wider clearance put Brindle Hills' left-end disc past the board's edge on a phone: the board's own
+    // box bounds the row as its neighbours do.
+    const lo = Math.max(edge0, ...row.filter((p) => p.x1 <= g.cx).map((p) => p.x1)) + GAP
+    const hi = Math.min(edge1, ...row.filter((p) => p.x0 >= g.cx).map((p) => p.x0)) - GAP
+    let clear = DISC_CLEAR
+    const reach = (rr: number) => g.w / 2 + Math.max(14, rr + clear) + rr
     if (g.cx + reach(r) <= hi || g.cx - reach(r) >= lo) continue
-    // the sign's span with the disc on its right: [cx - w/2 - 8, cx + reach]
+    // where the row is tight (a phone's middle row) the clearance gives way before the disc shrinks
+    clear = 1
+    // the sign's span with the disc on its right [cx - w/2 - 8, cx + reach], or on its left [cx - reach, cx + w/2 + 8]
     const span = (rr: number) => reach(rr) + g.w / 2 + 8
     let rr = r
     while (rr > 8 && span(rr) > hi - lo) rr -= 0.5
-    const dx = Math.max(lo - (g.cx - g.w / 2 - 8), Math.min(0, hi - (g.cx + reach(rr))))
+    const shift = (a: number, b: number) => Math.max(lo - a, Math.min(0, hi - b))
+    const dxR = shift(g.cx - g.w / 2 - 8, g.cx + reach(rr))
+    const dxL = shift(g.cx - reach(rr), g.cx + g.w / 2 + 8)
+    const left = Math.abs(dxL) < Math.abs(dxR)
+    const dx = left ? dxL : dxR
     g.cx += dx
     own.x0 += dx
     own.x1 += dx
     g.status.setAttribute('data-fit-r', rr.toFixed(1))
+    g.status.setAttribute('data-fit-side', left ? 'left' : 'right')
+    g.status.setAttribute('data-fit-clear', String(clear))
   }
   for (const g of signs) {
     g.text.setAttribute('x', String(g.cx))
@@ -1672,11 +1689,15 @@ function fitPlaques(svg: SVGSVGElement) {
     if (!status) continue
     const r0 = Number(status.getAttribute('data-r'))
     const r = Number(status.getAttribute('data-fit-r') ?? r0)
+    const fitSide = status.getAttribute('data-fit-side')
+    const clear = Number(status.getAttribute('data-fit-clear') ?? DISC_CLEAR)
     status.removeAttribute('data-fit-r')
-    const off = w / 2 + Math.max(14, r + DISC_CLEAR)
+    status.removeAttribute('data-fit-side')
+    status.removeAttribute('data-fit-clear')
+    const off = w / 2 + Math.max(14, r + clear)
     const cy = Number(status.getAttribute('data-cy'))
     const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r - GAP < p.x1 && p.x0 < x + r + GAP && cy - r < p.y1 && p.y0 < cy + r)
-    const left = meets(cx + off) && !meets(cx - off)
+    const left = fitSide ? fitSide === 'left' : meets(cx + off) && !meets(cx - off) && cx - off - r >= edge0 + GAP
     const scale = r < r0 ? ` scale(${(r / r0).toFixed(3)})` : ''
     status.setAttribute('transform', `translate(${left ? cx - off : cx + off} ${cy})${scale}`)
     if (left) status.setAttribute('data-side', 'left')
