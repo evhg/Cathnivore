@@ -3029,6 +3029,60 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </span>
             )
           }
+  // Plan item 549: on the desktop shelf the goal she is saving for is also shown large under the row: its picture, its
+  // name and a fill of the coins held toward its price. With nothing pinned it is the priced card nearest its price.
+  const featureCandidates = [
+    ...disabledInvest.map((d) => ({ key: investGoal(d.improvementId), cost: d.cost, missing: d.missing })),
+    ...disabledScheme.map((d) => ({ key: schemeGoal(d.schemeId), cost: d.cost, missing: d.missing })),
+  ].filter((c) => c.cost > 0)
+  const featured = shelf
+    ? (featureCandidates.find((c) => c.key === goal) ??
+      featureCandidates.reduce<(typeof featureCandidates)[number] | undefined>(
+        (best, c) => (!best || (c.cost - c.missing) / c.cost > (best.cost - best.missing) / best.cost ? c : best),
+        undefined,
+      ))
+    : undefined
+  const featuredCard = featured ? goalCard(featured.key) : undefined
+  const goalFeature =
+    featured && featuredCard
+      ? (() => {
+          const have = Math.max(0, featured.cost - featured.missing)
+          const share = Math.min(1, have / Math.max(1, featured.cost))
+          const imp = featured.key.startsWith('invest:') ? IMPROVEMENTS_BY_ID.get(featured.key.slice(7)) : undefined
+          const pinned = goal === featured.key
+          return (
+            <div
+              className="goal-feature"
+              data-goal-feature={featured.key}
+              data-pinned={pinned ? '' : undefined}
+              data-coin={featuredCard.coin === 'Marks' ? 'marks' : 'goodwill'}
+              style={{ ['--goal-fill' as string]: String(share) }}
+            >
+              <span className="goal-feature-pic" aria-hidden="true">
+                {imp ? <Vignette kind={vignetteFor(imp)} seed={imp.id} /> : <SchemeArt size={72} />}
+              </span>
+              <span className="goal-feature-text">
+                <span className="goal-feature-eyebrow">{pinned ? 'Saving for' : 'Nearest goal'}</span>
+                <span className="goal-feature-name">{featuredCard.name}</span>
+                <span
+                  className="goal-feature-meter"
+                  role="meter"
+                  aria-valuemin={0}
+                  aria-valuemax={featured.cost}
+                  aria-valuenow={have}
+                  aria-label={`${pinned ? 'Saving for' : 'Nearest goal'} ${featuredCard.name}: ${have} of ${featured.cost} ${featuredCard.coin}`}
+                >
+                  <span className="goal-feature-fill" />
+                </span>
+                <span className="goal-feature-count" aria-hidden="true">
+                  <b>{have}</b> of {featured.cost} {featuredCard.coin}
+                  {featured.missing > 0 ? ` · ${featured.missing} to go` : ' · ready'}
+                </span>
+              </span>
+            </div>
+          )
+        })()
+      : null
   // Plan item 225: Cath's suggestion, one line in her voice. On a desktop with her at the table it speaks from her
   // bubble there (one Cath voice on screen), elsewhere from the top of the actions.
   const suggestBody = suggested ? (
@@ -3037,7 +3091,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               <span>
                 <b>Cath:</b> I&rsquo;d play the leaf, love. {suggested.why}
                 {goal && goalShort !== undefined && goalCard(goal) && (
-                  <span data-goal-line="">
+                  <span data-goal-line="saving">
                     {` Still saving for ${goalCard(goal)!.name}: ${goalShort} more ${goalShort === 1 && goalCard(goal)!.coin === 'Marks' ? 'Mark' : goalCard(goal)!.coin} to go.`}
                   </span>
                 )}
@@ -3314,6 +3368,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               )}
             </button>
           )}
+          {goalFeature}
         </>
       )}
     </section>

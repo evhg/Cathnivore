@@ -146,3 +146,60 @@ test('on a phone the pile card takes the pin and the goal is a jar chip on the m
   expect(m).toEqual({ inside: true, onRow: true, hitsLedger: false, hitsPips: false, font: m.font })
   expect(m.font).toBeGreaterThanOrEqual(12)
 })
+
+// Plan item 549: at 1440x900 the band under the shelf's one row holds the goal shown large (its picture, name and a
+// fill of the coins held), so the rail has no bare gap over 40 px; the mat's resource pictures are 48 px or more.
+test('the rail shows the goal large in the band under the shelf, and its fill matches the coins held (1440x900)', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'the shelf is the big desktop column')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  const feature = page.locator('.goal-feature')
+  await expect(feature).toBeVisible()
+  await expect(feature.locator('.goal-feature-eyebrow')).toHaveText(/Nearest goal/i)
+  // Pin the second priced card: the card shows it, its fill is held / price.
+  const pin = page.locator('.shelf-pin').nth(1)
+  const name = (await pin.getAttribute('aria-label'))!.replace(/^Save for /, '')
+  await pin.click()
+  await expect(feature).toHaveAttribute('data-pinned', '')
+  await expect(feature.locator('.goal-feature-name')).toHaveText(name)
+  const m = await page.evaluate(() => {
+    const f = document.querySelector('.goal-feature')!
+    const meter = f.querySelector('.goal-feature-meter')!
+    const fill = f.querySelector('.goal-feature-fill')!.getBoundingClientRect()
+    const track = meter.getBoundingClientRect()
+    // the rail's visible pieces, top to bottom
+    const sheet = document.querySelector('.actions-sheet')!
+    const parts = [...sheet.querySelectorAll('.action-head-later, .action-item[data-later-idx], .shelf-fold, .goal-feature, .round-ledger, .round-ledger ~ *')]
+      .map((e) => e.getBoundingClientRect())
+      .filter((r) => r.width > 0 && r.height > 0)
+      .sort((a, b) => a.top - b.top)
+    let bottom = parts[0]!.bottom
+    let gap = 0
+    for (const r of parts.slice(1)) {
+      gap = Math.max(gap, r.top - bottom)
+      bottom = Math.max(bottom, r.bottom)
+    }
+    const glyphs = [...document.querySelectorAll('.player-mat .mat-store .mat-art')].map((s) => s.getBoundingClientRect().height)
+    const saving = document.querySelector('.table-cath-line [data-goal-line="saving"]')
+    return {
+      width: f.getBoundingClientRect().width,
+      share: fill.width / track.width,
+      now: Number(meter.getAttribute('aria-valuenow')),
+      max: Number(meter.getAttribute('aria-valuemax')),
+      gap,
+      glyphs,
+      savingShown: saving ? saving.getBoundingClientRect().width > 2 : false,
+    }
+  })
+  expect(m.width).toBeGreaterThanOrEqual(240)
+  expect(m.max).toBeGreaterThan(m.now)
+  expect(Math.abs(m.share - m.now / m.max)).toBeLessThan(0.04)
+  expect(m.gap).toBeLessThanOrEqual(40)
+  expect(m.glyphs.length).toBe(3)
+  for (const h of m.glyphs) expect(h).toBeGreaterThanOrEqual(48)
+  // Cath's bubble doesn't repeat what the card shows.
+  expect(m.savingShown).toBe(false)
+})
