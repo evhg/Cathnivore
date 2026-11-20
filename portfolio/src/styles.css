@@ -1976,17 +1976,28 @@ h1 {
     white-space: nowrap;
   }
   /* the gallery floor: no dais, a pool of the wall light on the boards and her shadow in it */
+  /* Plan item 560: the pool is brighter and reaches back under her bubble's tail, so she stands on a lit floor with
+     her line (she read as floating on black, apart from the bubble), and her contact shadow is dark and tight at her boots */
   .show-cath::after {
-    top: 90%;
-    height: 14%;
-    left: -30%;
-    right: -8px;
+    top: 88%;
+    height: 18%;
+    left: -150%;
+    right: -20%;
     border-radius: 50%;
     clip-path: none;
     box-shadow: none;
-    background: radial-gradient(closest-side, color-mix(in srgb, var(--accent-gold) 14%, transparent), transparent);
+    background:
+      radial-gradient(40% 50% at 72% 50%, color-mix(in srgb, var(--accent-gold) 30%, transparent), transparent 100%),
+      radial-gradient(closest-side, color-mix(in srgb, var(--accent-gold) 12%, transparent), transparent);
   }
-  .show-cath::before { top: 96%; height: 6%; left: -20%; right: -8px; }
+  .show-cath::before {
+    top: 95.5%;
+    height: 5%;
+    left: 4%;
+    right: 4%;
+    z-index: var(--z-base);
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 92%, transparent), color-mix(in srgb, var(--ink) 50%, transparent) 60%, transparent);
+  }
   /* her line, a bubble with its tail to her */
   .show-say-text { border-radius: 16px; }
   .show-say-text::after {
