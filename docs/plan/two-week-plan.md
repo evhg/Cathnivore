@@ -5355,7 +5355,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - The board keeps item 501's share. `saving-goal`, `player-mat`, `desktop-top-rail` and `desktop-no-scroll` pass; shots P and D (P unchanged).
 - **Size:** 2
 
-## 550. [ ] Cathnivore board: one status per region, fewer and larger glyphs
+## 550. [ ] Cathnivore board: one status per region, fewer and larger glyphs *(lane B, in progress)*
 - **Why:** `cath-game-D` (590-1110 x 130-720) and `cath-game-P` (15-375 x 135-470): each hex carries 4-7 glyphs of 15-25 px (Hollowell minis, small H signboards, '?' scout pins with '2' discs, EXPAND tags), all Hollowell orange, so a region's state can't be read without hovering. On the phone the '2' discs and signs are about 12 px, and EXPAND tags sit on Highmoor's and Brindle Hills' art.
 - **Build:**
   - One plaque per region on its name banner: free, contested or held, plus the count of Hollowell pieces. It replaces the separate number discs.
