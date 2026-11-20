@@ -1204,6 +1204,9 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-quote-open .cp-fold { margin-top: -10px; } /* px-ok */
   .cp-quote-open .cp-line { margin-bottom: 8px; } /* px-ok */
   .cp-dots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: calc(var(--u) * 4); align-self: stretch; margin: calc(var(--u) * 2) 0 calc(var(--u) * 2); }
+  /* Plan item 548: each tab is its name's width plus an equal share of the row (five equal columns left GUNSLINGER
+     about 10 px from WIREWITCH and 30 px between the short names); the gaps between names now match. */
+  .cp-dots { grid-template-columns: repeat(5, auto); }
   .cp-dot {
     display: grid;
     grid-template-rows: auto auto;
