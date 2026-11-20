@@ -3,7 +3,7 @@ import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilit
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, regionControl, squeezedLastTurn, type GripStage } from './grip'
-import { BADGE, COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
+import { COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -1151,22 +1151,21 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               atRisk={!r.liberated && r.outlets + 2 * r.buyouts > stalls.reduce((a, [, n]) => a + n, 0)}
               liberated={r.liberated}
             />
-            {tray && squeezeTargets.includes(id) && (
-              <g className="threat-badge" transform={`translate(${x}, ${y + BADGE.y0}) scale(${tray.badgeK.toFixed(3)}) translate(-30, 0)`}>
-                <rect x={0} y={0} width={60} height={14} rx={7} fill="var(--clay-deep)" />
-                <text x={30} y={10.2} textAnchor="middle" className="badge-text">
-                  SQUEEZE
-                </text>
-              </g>
-            )}
-            {tray && expandTargets.includes(id) && !squeezeTargets.includes(id) && (
-              <g className="threat-badge" transform={`translate(${x}, ${y + BADGE.y0}) scale(${tray.badgeK.toFixed(3)}) translate(-28, 0)`}>
-                <rect x={0} y={0} width={56} height={14} rx={7} fill="var(--wheat)" />
-                <text x={28} y={10.2} textAnchor="middle" className="badge-text badge-text-dark">
-                  EXPAND
-                </text>
-              </g>
-            )}
+            {/* Plan item 550: Hollowell's next target is the hex's lit rim (clay for a Squeeze, Hollowell's orange for an Expand), not a
+                tag over the art: the region's landmark stays the largest thing in the hex. Hollowell's orange, dashed like a
+                planning line, so it reads apart from the hex's own wheat border. */}
+            {tray && (squeezeTargets.includes(id) || expandTargets.includes(id)) && (() => {
+              const squeeze = squeezeTargets.includes(id)
+              const pts = hexPoints(x, y, HEX_R * GAP_SCALE * 0.985)
+              const ink = squeeze ? 'var(--clay-deep)' : 'var(--hollowell)'
+              return (
+                <g className="threat-edge" data-threat={squeeze ? 'squeeze' : 'expand'} pointerEvents="none">
+                  <title>{squeeze ? 'Hollowell squeezes here next' : 'Hollowell expands here next'}</title>
+                  <polygon points={pts} fill="none" stroke={ink} strokeWidth={HEX_R * 0.2} strokeLinejoin="round" opacity={0.45} />
+                  <polygon points={pts} fill="none" stroke={ink} strokeWidth={HEX_R * 0.07} strokeLinejoin="round" strokeDasharray={`${HEX_R * 0.32} ${HEX_R * 0.14}`} />
+                </g>
+              )
+            })()}
 
             {/* Plan item 63: the tile's piece tray (`pieceLayout`), sized to the hex as it renders on screen: Hollowell's
                 stacks in a row across the middle, the producers' miniatures along the bottom, the name plate and any

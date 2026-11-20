@@ -1,29 +1,27 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 121: the map's SQUEEZE/EXPAND badges were about 7 px on a phone. They now scale with the hex on screen
-// as far as the stalls' 24 px allows, and stay clear of the tile's pieces.
-test('threat badges read at 11 px or more on a desktop, grow on a phone, and keep off the pieces', async ({ page }, testInfo) => {
+// Plan item 121 sized the map's SQUEEZE/EXPAND tags; plan item 550 replaces them: Hollowell's next targets are each
+// hex's lit rim (clay for a Squeeze, Hollowell's orange for an Expand), named for screen readers, and no tag sits over the art.
+test('Hollowell\'s targets light their hexes\' rims, with no tag over the board', async ({ page }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await expect(page.locator('.game')).toBeVisible()
-  const badges = page.locator('.threat-badge')
-  await expect(badges.first()).toBeAttached({ timeout: 10_000 })
-  const m = await badges.evaluateAll((els) =>
-    els.map((b) => {
-      const t = b.querySelector('text')!.getBoundingClientRect()
-      const r = b.getBoundingClientRect()
-      const hex = b.closest('.region-hex')!
-      const pieces = [...hex.querySelectorAll('.piece-tray .piece-slot')].map((p) => p.getBoundingClientRect()).filter((p) => p.width > 0)
-      const hit = pieces.some((p) => p.left < r.right - 2 && r.left + 2 < p.right && p.top < r.bottom - 2 && r.top + 2 < p.bottom)
-      return { h: t.height, hit }
+  const edges = page.locator('.region-hex .threat-edge')
+  await expect(edges.first()).toBeAttached({ timeout: 10_000 })
+  const m = await edges.evaluateAll((els) =>
+    els.map((e) => {
+      const line = e.querySelectorAll('polygon')[1]!.getBoundingClientRect()
+      const hex = e.closest('.region-hex')!.querySelector('polygon')!.getBoundingClientRect()
+      return { kind: e.getAttribute('data-threat'), title: e.querySelector('title')?.textContent ?? '', w: line.width, hexW: hex.width }
     }),
   )
   expect(m.length).toBeGreaterThan(0)
-  for (const b of m) {
-    // A text box is about 1.15x its font size. On a phone the badge grows only while the stalls keep their 24 px
-    // (item 2), so it reaches about 8 px on a 64 px hex (it was 7); 11 px there is item 121's open design call.
-    expect(b.h / 1.15, JSON.stringify(m)).toBeGreaterThanOrEqual(testInfo.project.name === 'phone' ? 7.5 : 10.5)
-    expect(b.hit, JSON.stringify(m)).toBe(false)
+  for (const e of m) {
+    expect(['squeeze', 'expand']).toContain(e.kind)
+    expect(e.title, JSON.stringify(e)).toMatch(/Hollowell (squeezes|expands) here next/)
+    // the rim runs round the whole hex
+    expect(e.w, JSON.stringify(m)).toBeGreaterThan(e.hexW * 0.9)
   }
+  await expect(page.locator('.region-hex .threat-badge')).toHaveCount(0)
 })
