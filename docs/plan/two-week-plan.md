@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-20T12:31:31Z
 
 
 
@@ -5516,5 +5515,64 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `ns-title-P` (CSS 15-195 x 420-590): the Ledger cutting over Cath's umbrella arm; The List cards (12-370 x 710-805) names only, no hooks. **Checked, kept (11:27 lane A):** on the settled `?shot` frame at 390x844 the cutting ends at x 196 and her umbrella hand is at 230-290, clear; at 375x667 it laps about 15 px of her coat's edge (not the arm). Narrowing it there to 156 px was tried and reverted: the headline wrapped to five lines and the cutting ran down over The List. The List's cards are locked names ('Withheld') under their district tags by design; the hooks are on the case board.
 - `games-D` (345-400 / 960-1015 x 640-735): the same Cath sticker on each card; (122-370 x 755-790) 13 px taglines. **09:45 lane A:** each card's Cath already has its own outfit, pose and mood (items 96/108; kept); hooks 15 px from 1200 px wide (were 14).
 - `portfolio-D` (1290-1380 x 175-550): Cath floats on black with no ground shadow, apart from her bubble (765-1230 x 555-597). **Fixed 11:25 lane A (f2bfd704):** a brighter wall-light pool under her that reaches back under her bubble's tail, and a dark, tight contact shadow at her boots (D only; portfolio-hero-fan/-present/-idle, site-hero, site specs pass).
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 561. [ ] Hedgerow 3D: a field grade, so the lane reads and the haze lifts
+*(planned 2026-11-20 12:45, lane B, plan1120m critique)*
+- **Why:** `hedge-l21-3d-D`/`-P`: a milky haze and bloom over the whole field (D 15-1080 x 75-890). Plots, hedges and lanes share one mid-green/grey brightness, so the road loop (what the player defends) doesn't stand out. The top band (D y 75-200, P y 60-130) is near white. VISION: warm paper, ink outlines, flat colour.
+- **Build:** `games/hedgerow/src/render3d/` (atmosphere, palette, terrain):
+  - Cut the fog and bloom; a warm tone curve.
+  - The lane surface darker with a pale edge, so the path reads as a band.
+  - A soft vignette to the frame's edges.
+- **Accept:**
+  - Mean lane luminance vs the plots beside it differs by 25% or more (20 lane samples, 1440x900 `?sandbox=1&level=21`).
+  - The canvas's top 120 px mean luminance at or under 0.8.
+  - `hedgerow-3dframe`, `hedgerow-cath3d` pass; key art re-shot, keyart-fresh passes; shots P and D.
+- **Size:** 2
+
+## 562. [ ] Cathnivore campaign: Cath the narrator at real scale, the centre column used
+*(planned 2026-11-20 12:45, lane B, plan1120m critique)*
+- **Why:** `cath-campaign-D`: the strip between the map and the chapter rail (730-960 x 140-890) is empty paper but for a bubble and a Cath about 100 px wide. `cath-campaign-P`: Cath about 60 px wide, tucked top right (290-360 x 5-185).
+- **Build:** Cath at least 260 px tall at D on the crates between map and rail, a dotted route from her to the picked chapter's region on the map, her bubble the picked chapter's line. On a phone she stands in the chapter card beside 'Start here', 90 px or taller.
+- **Accept:**
+  - Her box 260 px or taller at 1440x900, 90 px or taller at 390x844.
+  - Picking chapter 3 changes her bubble's text (e2e).
+  - campaign, campaign-map, campaign-cath specs pass; shots P and D.
+- **Size:** 2
+
+## 563. [ ] /games/: each card its own Cath, and a bigger host at the stall
+*(planned 2026-11-20 12:45, lane B, plan1120m critique)*
+- **Why:** `games-D` (340-400, 650-710, 960-1020 x 635-735): near-identical Cath busts on the Cathnivore, Runnel and Hedgerow cards, so the cards blur. Hedgerow's 3D poster wears the 2D Cath. The stall's host is small (420-515 x 120-310) in its biggest space; the stall front (300-600 x 330-490) is bare.
+- **Build:** each card's Cath in that game's look (pose, expression, outfit from `shared/cath/`; Hedgerow's from its 3D render), the stall Cath about 1.6x, the stall front dressed (crates, a chalk price board).
+- **Accept:**
+  - The card Caths differ pairwise (perceptual hash over 10 bits apart).
+  - The stall Cath 300 px or taller at 1440x900.
+  - games-cards, games-stall, games-hero-cath specs pass; shots P and D.
+- **Size:** 2
+
+## 564. [ ] Hedgerow act map: stops as signs, a lane through the middle, Cath to scale
+*(planned 2026-11-20 12:45, lane B, plan1120m critique)*
+- **Why:** `hedge-menu-D`: an empty band between the two rows of stops (y 470-700). Cath (160-215 x 200-425) is about twice a stop's height and covers stop 21's label stack.
+- **Build:** a winding lane drawn through the middle band joining the rows; Cath beside the next stop at about a stop's height (item 547's 244 px figure is too tall for the trail), clear of its label.
+- **Accept:**
+  - Cath at most 1.2x a stop's height and clear of every stop label.
+  - Lane pixels cross the y 470-700 band.
+  - hedgerow-map specs pass; shots P and D.
+- **Size:** 1
+
+## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(lane B, in progress)*
+*(planned 2026-11-20 12:45, lane B, plan1120m)*
+- `cath-setup-P` (0-45 x 240-262): Brindle Hills' '2' badge clipped at the left edge; 'Kingsmarket' runs into the '5' badge (150-265 x 240-262).
+- `cath-setup-D`: the Dry Spell sign (985-1120 x 570-775) over the board's rim and Cath's arm; Dr Ines Farrow's 'Second Opinion' tag wraps (717-810 x 175-210).
+- `cath-game-P` (355-378 x 650-765): the vertical 'SAVING FOR' label cut at its foot.
+- `cath-game-D`: hand card captions about 12 px (995-1150 x 840-855); the 'STAGE I' tag on the Expand card's border (900-960 x 15-30).
+- `hedge-menu-P` (y 585-670): the briefing panel covers the lane round stops 29-30.
+- `hedge-l21-2d-D` (275-420 x 300-318): the 'Lifestyle influencer' tag floats over the sea, apart from its vehicle.
+- `hedge-l21-3d-P` (5-195 x 78-100): the 'HOLLOWELL 216 NEXT' plate sits on the depot model.
+- Hedgerow 2D (830-885 x 280-380): Cath in an orange ring on the road reads as a target.
+- `ns-play-D` (998 x 593): 'and the Pin, her steel baton.' starts lowercase as a sentence.
+- `ns-title-P` (15-195 x 422-588): the Ledger over Cath's coat and glove (item 552 noted it at 375).
+- `portfolio-P` (y 518-545): the live status line wraps.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
