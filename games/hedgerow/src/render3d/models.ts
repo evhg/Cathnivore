@@ -1523,6 +1523,29 @@ function bubbleWrap(l: number, h: number, w: number, x: number, y: number): THRE
  * The Fleet's rungs (Hedgerow 2 M2): small, chunky silhouettes that read at a glance, one colour per rung so
  * a pop (the model swapping to the next rung down) is obvious even when hundreds are on the lane.
  */
+/** Plan item 539: a lorry's cab facing +x, its front at `x`: a rounded shell, a windscreen and side windows, a grille
+ * and bumper, two headlights, mirrors; `len` long, `h` tall, `w` wide, standing on y = 0.07 (the axle line). */
+function truckCab(x: number, len: number, h: number, w: number, paint: M): THREE.Group {
+  const g = new THREE.Group();
+  const cx = x - len / 2;
+  const y0 = 0.07;
+  g.add(rbox(len, h, w, 0.035, paint, cx, y0, 0));
+  g.add(box(0.006, h * 0.36, w * 0.82, glass("#3d5c78"), x + 0.002, y0 + h * 0.52, 0));
+  for (const side of [-1, 1]) {
+    g.add(box(len * 0.5, h * 0.3, 0.005, glass("#3d5c78"), cx + len * 0.12, y0 + h * 0.54, side * (w / 2 + 0.002)));
+    g.add(ball(0.022, glow("#fff2b0", 2.5), x + 0.004, y0 + h * 0.2, side * w * 0.34, 0));
+    g.add(box(0.02, 0.04, 0.012, metal("#3a3d42", 0.5), x - 0.02, y0 + h * 0.62, side * (w / 2 + 0.018)));
+  }
+  g.add(box(0.008, h * 0.18, w * 0.42, chrome(), x + 0.003, y0 + h * 0.12, 0));
+  g.add(box(0.03, 0.035, w * 1.02, metal("#3a3d42", 0.5), x, y0 - 0.02, 0));
+  return g;
+}
+
+/** Plan item 539: a pair of red tail-lights on a box's back at `x`. */
+function tailLights(x: number, y: number, w: number): THREE.Object3D[] {
+  return [-1, 1].map((side) => box(0.012, 0.03, 0.04, glow("#ff2a2a", 1.8), x - 0.004, y, side * w * 0.36));
+}
+
 export function buildRung(kind: EnemyKind): THREE.Group | null {
   switch (kind) {
     case "courier": {
@@ -1568,8 +1591,8 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     }
     case "lorry": {
       const g = new THREE.Group();
-      g.add(box(0.62, 0.36, 0.34, plastic("#24345e"), -0.1, 0.1, 0));
-      g.add(box(0.2, 0.28, 0.32, gloss("#e9ecef"), 0.33, 0.07, 0), box(0.006, 0.12, 0.26, glass(), 0.432, 0.22, 0));
+      g.add(rbox(0.62, 0.36, 0.34, 0.03, plastic("#24345e"), -0.1, 0.1, 0), ...tailLights(-0.41, 0.16, 0.34));
+      g.add(truckCab(0.43, 0.2, 0.28, 0.32, gloss("#e9ecef")));
       for (const side of [-1, 1]) g.add(box(0.5, 0.05, 0.005, glow("#5ab0ff", 0.7), -0.1, 0.36, side * 0.172));
       for (const x of [-0.3, -0.12, 0.33]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
       g.add(box(0.7, 0.04, 0.3, matte("#26282d", 0.6, false), 0.02, 0.04, 0));
@@ -1578,10 +1601,10 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "steel": {
       // The Plated Lorry: a riveted steel box on the lorry's chassis.
       const g = new THREE.Group();
-      g.add(box(0.66, 0.38, 0.36, metal("#7d8894", 0.28), -0.1, 0.11, 0));
+      g.add(rbox(0.66, 0.38, 0.36, 0.025, metal("#7d8894", 0.28), -0.1, 0.11, 0), ...tailLights(-0.43, 0.17, 0.36));
       for (const x of [-0.38, -0.24, -0.1, 0.04, 0.18]) for (const side of [-1, 1]) g.add(ball(0.014, chrome(), x, 0.42, side * 0.182, 0));
       for (const side of [-1, 1]) g.add(box(0.62, 0.03, 0.006, metal("#5a636d", 0.4), -0.1, 0.26, side * 0.182));
-      g.add(box(0.2, 0.28, 0.32, metal("#5a636d", 0.4), 0.35, 0.07, 0), box(0.006, 0.1, 0.26, glass(), 0.452, 0.22, 0));
+      g.add(truckCab(0.45, 0.2, 0.28, 0.32, metal("#5a636d", 0.4)));
       for (const x of [-0.32, -0.12, 0.35]) for (const side of [-1, 1]) g.add(wheel(0.075, x, side * 0.17));
       g.add(box(0.74, 0.04, 0.3, matte("#26282d", 0.6, false), 0.02, 0.04, 0));
       return g;
@@ -1589,10 +1612,10 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "artic": {
       // The Artic: a bubble-wrapped cab pulling a frost-box trailer.
       const g = new THREE.Group();
-      g.add(box(0.62, 0.36, 0.34, gloss("#dfe9f2", 0.2), -0.18, 0.12, 0));
+      g.add(rbox(0.62, 0.36, 0.34, 0.03, gloss("#dfe9f2", 0.2), -0.18, 0.12, 0), ...tailLights(-0.49, 0.18, 0.34));
       for (const side of [-1, 1]) g.add(box(0.56, 0.05, 0.006, glow("#6fd0f0", 0.9), -0.18, 0.4, side * 0.172));
       g.add(box(0.16, 0.06, 0.3, matte("#9fb6c8", 0.6), -0.18, 0.5, 0));
-      g.add(box(0.22, 0.3, 0.32, gloss("#9fd3ff", 0.1), 0.3, 0.08, 0), box(0.006, 0.12, 0.26, glass(), 0.412, 0.22, 0));
+      g.add(truckCab(0.41, 0.22, 0.3, 0.32, gloss("#9fd3ff", 0.1)));
       for (const x of [-0.42, -0.28, 0.0, 0.3]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
       g.add(box(0.86, 0.04, 0.3, matte("#26282d", 0.6, false), -0.06, 0.04, 0));
       return g;
@@ -1600,7 +1623,7 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "skip": {
       // A skip lorry: amber cab, a deep steel skip on a flatbed.
       const g = new THREE.Group();
-      g.add(box(0.2, 0.3, 0.34, gloss("#e0a82e"), 0.36, 0.1, 0), box(0.006, 0.12, 0.28, glass(), 0.462, 0.24, 0));
+      g.add(truckCab(0.46, 0.2, 0.3, 0.34, gloss("#e0a82e")));
       g.add(box(0.7, 0.04, 0.34, metal("#3b3f44", 0.5), -0.1, 0.1, 0));
       g.add(box(0.56, 0.28, 0.32, metal("#b9831a", 0.3), -0.1, 0.26, 0), box(0.58, 0.03, 0.34, metal("#8a5f0e", 0.3), -0.1, 0.42, 0));
       for (const x of [-0.4, -0.2, 0.34]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.17));
@@ -1618,9 +1641,10 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "execcar": {
       // An Exec Car: a long black limousine with a gold stripe.
       const g = new THREE.Group();
-      g.add(box(0.9, 0.16, 0.3, gloss("#15171c", 0.2), 0, 0.12, 0), box(0.4, 0.12, 0.26, gloss("#15171c", 0.2), -0.05, 0.27, 0));
+      g.add(rbox(0.9, 0.16, 0.3, 0.04, gloss("#15171c", 0.2), 0, 0.07, 0), rbox(0.42, 0.12, 0.26, 0.04, gloss("#15171c", 0.2), -0.05, 0.21, 0));
+      for (const side of [-1, 1]) g.add(box(0.36, 0.07, 0.005, glass("#3d5c78"), -0.05, 0.245, side * 0.131), ball(0.022, glow("#fff2b0", 2.5), 0.45, 0.15, side * 0.1, 0), ...tailLights(-0.45, 0.15, 0.3));
       for (const side of [-1, 1]) g.add(box(0.8, 0.02, 0.006, glow("#d4ae58", 0.9), 0, 0.17, side * 0.153));
-      g.add(box(0.005, 0.07, 0.22, glass(), 0.14, 0.27, 0));
+      g.add(box(0.005, 0.07, 0.22, glass("#3d5c78"), 0.165, 0.235, 0));
       for (const x of [-0.3, 0.3]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.15));
       return g;
     }
@@ -1644,10 +1668,10 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
     case "transporter": {
       // The Car Transporter: a red cab and two open decks with cars on board.
       const g = new THREE.Group();
-      g.add(box(0.22, 0.3, 0.32, gloss("#b23a3a"), 0.4, 0.08, 0), box(0.006, 0.12, 0.26, glass(), 0.512, 0.22, 0));
+      g.add(truckCab(0.51, 0.22, 0.3, 0.32, gloss("#b23a3a")));
       g.add(box(0.8, 0.03, 0.32, metal("#3b3f44", 0.5), -0.14, 0.14, 0), box(0.8, 0.03, 0.32, metal("#3b3f44", 0.5), -0.14, 0.36, 0));
       for (const x of [-0.5, -0.14, 0.22]) for (const side of [-1, 1]) g.add(box(0.02, 0.24, 0.02, metal("#3b3f44", 0.5), x, 0.26, side * 0.15));
-      for (const [x, y, c] of [[-0.36, 0.2, "#e8b23a"], [0.06, 0.2, "#4a7fc4"], [-0.36, 0.42, "#f4f6f8"], [0.06, 0.42, "#e8b23a"]] as const) g.add(box(0.3, 0.09, 0.22, gloss(c), x, y, 0));
+      for (const [x, y, c] of [[-0.36, 0.2, "#e8b23a"], [0.06, 0.2, "#4a7fc4"], [-0.36, 0.42, "#f4f6f8"], [0.06, 0.42, "#e8b23a"]] as const) g.add(rbox(0.3, 0.09, 0.22, 0.03, gloss(c), x, y, 0), box(0.12, 0.05, 0.2, glass("#3d5c78"), x - 0.02, y + 0.07, 0));
       for (const x of [-0.46, -0.3, 0.4]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
       return g;
     }
