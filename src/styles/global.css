@@ -4728,8 +4728,9 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
   .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-portrait svg { width: 50px; height: 60px; }
   .setup[data-steps] .setup-table[data-setup-table] .producer-card { grid-template-columns: 50px minmax(0, 1fr); }
 }
-@media (min-width: 1100px) and (max-width: 1279px) {
-  /* Plan item 507: a narrow desktop's nameplates keep the power's whole word (the stamp's picture steps out). */
+@media (min-width: 1100px) {
+  /* Plan item 507: a narrow desktop's nameplates keep the power's whole word (the stamp's picture steps out).
+     Plan item 560: at every desktop width ('Market Day' wrapped beside the picture at 1440 and 1600). */
   .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp svg { display: none; }
 }
 
