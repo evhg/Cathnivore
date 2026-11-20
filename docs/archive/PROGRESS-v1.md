@@ -4262,3 +4262,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 07:21 lane B: 538 closed after a five-class check of the settled pick; note: `?play&class=X` skips the pick into the game (step through with ArrowDown instead).
 - 2026-11-20 09:21 lane B: 558 tried and handed back (conflicts with item 122); Runnel desktop specs clean after the revert (31 pass).
 - 2026-11-20 10:21 lane B: 555 done; table Cath specs pass except cath-pop-reaction :52 and producer-line :29, which fail on HEAD without the change too.
+- 2026-11-20 11:21 lane B: 557 done; 42 Hedgerow 3D Cath specs pass P and D.
