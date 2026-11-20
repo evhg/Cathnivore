@@ -1130,6 +1130,43 @@ function render(): void {
   ui.progress.classList.toggle('done', flow.solved)
   // Plan item 308: a solved board greens the valley's fields over, in a wave (styles.css).
   document.getElementById('valley-paint')?.toggleAttribute('data-greened', flow.solved)
+  // Plan item 567: each valley plot follows the board's field tile nearest it on screen: watered, it greens (styles.css).
+  {
+    const paint = document.getElementById('valley-paint')
+    const cellEls = [...ui.board.querySelectorAll<SVGGElement>('g.cell')]
+    if (paint && cellEls.length === puzzle.cells.length) {
+      const fields = puzzle.cells.flatMap((c, i) => {
+        if (c.kind !== 'field') return []
+        const r = cellEls[i]!.getBoundingClientRect()
+        return r.width > 0 ? [{ i, x: r.left + r.width / 2, y: r.top + r.height / 2 }] : []
+      })
+      // each field tile owns the two plots nearest it, so every watered field greens two or more of the valley's plots
+      const plots = [...paint.querySelectorAll<SVGPolygonElement>('.vl-f')].map((el) => {
+        const r = el.getBoundingClientRect()
+        return { el, x: r.left + r.width / 2, y: r.top + r.height / 2 }
+      })
+      const wetPlots = new Set<SVGPolygonElement>()
+      for (const f of fields) {
+        if (!flow.wet.has(f.i)) continue
+        const near = [...plots].sort((a, b) => (a.x - f.x) ** 2 + (a.y - f.y) ** 2 - ((b.x - f.x) ** 2 + (b.y - f.y) ** 2))
+        for (const p of near.slice(0, 2)) wetPlots.add(p.el)
+      }
+      // and every plot follows its own nearest field (those at the valley's edges, clear of the board, answer too)
+      for (const p of plots) {
+        let best = -1
+        let bestD = Infinity
+        for (const f of fields) {
+          const d = (f.x - p.x) ** 2 + (f.y - p.y) ** 2
+          if (d < bestD) {
+            bestD = d
+            best = f.i
+          }
+        }
+        if (best >= 0 && flow.wet.has(best)) wetPlots.add(p.el)
+      }
+      for (const p of plots) p.el.toggleAttribute('data-wet', wetPlots.has(p.el))
+    }
+  }
   const wetShare = flow.solved ? 1 : flow.wet.size / playable
   for (const path of document.querySelectorAll<SVGPathElement>('.vl-water, .vl-trickle')) path.style.setProperty('--wet', String(wetShare))
   // Plan item 70: today's seed in Bea's garden sprouts as the stream reaches the fields (a full plant at a solve).

@@ -70,3 +70,21 @@ test('at D the valley recedes during play and returns in full colour when solved
   await expect(page.locator('.board.won')).toHaveCount(1)
   expect(await vk()).toBe('100%')
 })
+
+// Plan item 567: during play the valley answers the water: each plot follows the board's field tile nearest it (and
+// each field owns its two nearest plots), so watered fields green their plots before the solve.
+test('watered fields green the valley plots beside them during play', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, seenHelp: true, results: {} })))
+  await page.goto('/runnel/?shotsolve')
+  await page.locator('[data-last]').waitFor()
+  // a full turn of one tile re-renders the board without changing it
+  const ch = page.locator('#board g.cell.channel:not([data-last])').first()
+  for (let k = 0; k < 6; k++) await ch.click({ force: true })
+  await expect(page.locator('#valley-paint')).not.toHaveAttribute('data-greened', '')
+  const m = await page.evaluate(() => ({
+    wetFields: document.querySelectorAll('#board g.cell.field.wet').length,
+    wetPlots: document.querySelectorAll('#valley-paint .vl-f[data-wet]').length,
+  }))
+  expect(m.wetFields, JSON.stringify(m)).toBeGreaterThan(0)
+  expect(m.wetPlots, JSON.stringify(m)).toBeGreaterThanOrEqual(2)
+})
