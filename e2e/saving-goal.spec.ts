@@ -60,11 +60,12 @@ test('the Not-yet shelf folds to one row, and a pinned goal fills its jar and su
   await expect(page.locator('.actions[data-shelf]')).not.toHaveAttribute('data-saving-for', /./)
 })
 
-// Plan item 548: before the ledger's first line a desktop 1000 px+ tall shows a second row of the shelf (the rail
-// had ~300 px of bare paper under one row at 1920x1080); the first line takes the room back for the ledger.
-test('a tall desktop shows two rows of the shelf until the ledger has a line', async ({ page, isMobile }) => {
+// Plan item 548: before the ledger's first line a desktop 1400x1000+ shows a second row of the shelf (the rail had
+// ~300 px of bare paper under one row at 1920x1080); the first line takes the room back. The fold key stays inside
+// the rail's well.
+for (const [width, height] of [[1440, 1000], [1920, 1080]] as const) test(`a tall desktop shows two rows of the shelf until the ledger has a line (${width}x${height})`, async ({ page, isMobile }) => {
   test.skip(isMobile, 'the shelf is the big desktop column')
-  await page.setViewportSize({ width: 1920, height: 1080 })
+  await page.setViewportSize({ width, height })
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
@@ -81,6 +82,8 @@ test('a tall desktop shows two rows of the shelf until the ledger has a line', a
   const shelfFoot = await page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').evaluateAll((els) => Math.max(...els.map((e) => e.getBoundingClientRect().bottom)))
   const ledgerTop = (await page.locator('.actions-sheet .round-ledger').boundingBox())!.y
   expect(shelfFoot).toBeLessThanOrEqual(ledgerTop)
+  const wellFoot = (await page.locator('.actions-sheet .actions-well').boundingBox())!
+  if (total > 6) expect((await page.locator('.shelf-fold').boundingBox())!.y + 32).toBeLessThanOrEqual(wellFoot.y + wellFoot.height + 1)
   // A sale writes the ledger's first line; the shelf folds back to one row.
   const sell = page.locator('.table-hand [data-group="sell"]')
   await sell.getByRole('button', { name: '1 to sell' }).click()
@@ -97,7 +100,7 @@ test('a goal that becomes affordable lifts into the hand within 800 ms and the p
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
   await expect(page.locator('.shelf-pin').first()).toBeVisible()
-  if ((await page.locator('.shelf-fold').count()) > 0) await page.locator('.shelf-fold').click()
+  if (await page.locator('.shelf-fold').isVisible()) await page.locator('.shelf-fold').click()
   // An Invest card short by 3 Marks or fewer; selling that much Produce pays for it.
   const target = page.locator('.action-item.action-invest[data-later-idx]').filter({ hasText: /Need [123] more Marks?/ }).first()
   test.skip((await target.count()) === 0, 'no Invest card within three Marks on this seed')
