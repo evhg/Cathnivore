@@ -5442,7 +5442,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cath-beats, table-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 556. [ ] Cathnivore campaign desktop: Cath in front, chapters as sealed letters *(lane A, in progress)*
+## 556. [x] Cathnivore campaign desktop: Cath in front, chapters as sealed letters *(done 2026-11-20 11:20, lane A, c25fbd87, with a deviation: at D she stands full figure (430 px at 1440x900, `framing` full) with the crates behind her at her side, none in front (the spec measures 0 covered); the locked chapters' folded postcards are letters (a kraft flap creased to a point, the print's seal beside), teasers 14 px upright in the letter's ink (chapters 2 and 5 got shorter `goalShort`s so two lines hold them); the bunting's won flags carry a tick, unwon their number, each a `<title>`, and the slate gains 'Chapters won n of 6' as the string's label (`campaignBunting.ts`, `tests/campaign-bunting.test.ts`); the chapter a win opens has a wax seal on item 415's ribbon knot that cracks in two in 600 ms (a fade under reduced motion; campaign-map spec). Deviation: she doesn't hold chapter 1's letter: item 325's per-chapter poses hold her hands. At 1280x800 the bunting is narrower beside the three-cell slate. campaign-map/-cath/-spread/-atlas/-prints/-depart/-vignettes/-link (P, D, 58 passed), campaign.spec's play-throughs (D, alone); shots scratchpad b556 (before), a6 (after; P, D, 1280x800).)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `cath-campaign-D` (730-920 x 600-890): crates hide Cath from the chest down. The locked chapter rows (1030-1375 x 355-880) are 12-13 px grey italic on cream with dim thumbnails and read as disabled list items. The pennants (375-850 x 55-110) carry 11 px numbers that mean nothing.
 - **Build:**
@@ -5500,7 +5500,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-classpick specs pass (P, D); cathode-type test; shots P and D.
 - **Size:** 1
 
-## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(handed back 2026-11-20 09:50 by lane A after slice 2: Cathnivore and Hedgerow points done or checked; left: `ns-title-P`, `portfolio-D`)*
+## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(lane A, in progress)* *(handed back 2026-11-20 09:50 by lane A after slice 2: Cathnivore and Hedgerow points done or checked; left: `ns-title-P`, `portfolio-D`)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique; check each at 2x before fixing)*
 - `cath-setup-D` (530-625 x 168-205): Tomas's 'Market Day' badge wraps and crowds the card edge; (715-800 x 135-160) 'Dr Ines Farrow' wraps. **Fixed 08:25 lane A:** a desktop nameplate's stamp drops its picture at every width (was 1100-1279 only), so 'Market Day' and 'On Air' keep one line at 1280-1600; 'Dr Ines Farrow' and 'Second Opinion' stay two balanced lines (kept: the card can't take either on one).
 - `cath-setup-D` (125-350 x 730-765): the pin labels about 12 px; 'This week' red on cream, low contrast. **Checked, kept (that half):** the labels are `--fs-caption` (13-14 px) and 'This week' is #873D2D on cream, about 7:1. (1185-1240 x 805-820): 'OPEN' above Start about 10 px pale on green. **Fixed 09:00 lane A:** it was 13 px caps at 0.3em tracking; now 14 px at 0.24em.
