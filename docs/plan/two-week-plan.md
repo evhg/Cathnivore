@@ -5645,13 +5645,13 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 
 *(Items 572-578 planned 2026-11-20 20:05 by lane A from the `plan1120u` shots (scratchpad; `scripts/plan-shots.mjs`), critiqued by a subagent against VISION.md and checked against withdrawn/kept decisions: the locked plastic coins, the Doubt bubble, the phone hand fan, the phone title's Cath-first layout, the darker Runnel valley and the `?keyart` table-only frame are not reopened.)*
 
-## 572. [ ] Cathnivore phone Setup: every choice an object on the stall, as on desktop *(lane A, in progress)*
+## 572. [x] Cathnivore phone Setup: every choice an object on the stall, as on desktop *(done 2026-11-20 21:20 lane A, 373ea2cb..d86aac64: place settings for the mode, standee producers with their powers as stamps (a tap has Cath read the rule in her bubble), folded paper maps printed with their hexes, Hollowell memo slips (the picked one pinned; fixed the tag word printing over 'Memo'), the step rail three pennants on bunting; setup-objects extended to P; landscape keeps the chairs)*
 - **Why:** `cath-setup-P`: item 533 made the desktop choices objects; the phone is still a form. The step rail reads like a wizard (20-360 x 180-225), Solo and Hot-seat are flat pills (15-375 x 572-610), the producers are chips over a paragraph of rules (28-375 x 620-800).
 - **Build:** reuse 533's art below D in `src/ui/Setup.tsx`: two place settings for the mode, standee cards for the producers (rules on tap, not in the body), memo slips for difficulty; the step rail as three pennants on the bunting, not numbered dots.
 - **Accept:** every `[data-setup-choice]` at 390x844 holds art (the setup-objects spec extended to P); no page scroll at 390x844 and no choice past x 16-374; at most 2 lines of rules text visible without a tap.
 - **Size:** 2
 
-## 573. [ ] Cathnivore phone campaign: the chapters as a stack of sealed letters
+## 573. [ ] Cathnivore phone campaign: the chapters as a stack of sealed letters *(lane A, in progress)*
 - **Why:** `cath-campaign-P`: six 50 px thumbnails with red pins (12-375 x 520-580) over a generic card (20-370 x 590-775); desktop got sealed letters in item 556. Back to Title floats in an empty band (95-295 x 795-842).
 - **Build:** in `CampaignScreen.tsx` the chapters as a swipeable stack of 556's letters (kraft flap, seal, teaser), the open chapter on top; Back to Title on the map frame's foot.
 - **Accept:** each locked chapter at P shows its seal and a teaser of 14 px or more; no empty band over 24 px below the stack at 390x844; the campaign specs pass at P and D.
