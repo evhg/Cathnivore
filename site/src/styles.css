@@ -1489,6 +1489,11 @@ body {
   width: 25%;
   filter: drop-shadow(0 6px 10px var(--shadow-deep));
 }
+/* Plan item 563: three Caths that read apart at a glance: Cathnivore's a winking bust in the corner, Runnel's a small
+   full figure with her can at the meadow's left edge, Hedgerow's half length turned to point across the field. */
+.hero-game-cathnivore .hero-game-cath { width: 24%; }
+.hero-game-runnel .hero-game-cath { right: auto; left: 3%; width: 16%; }
+.hero-game-hedgerow .hero-game-cath svg { scale: -1 1; }
 /* Plan item 108: NIGHT SHIFT's Cath is noir: no colour but a red rim, dimmed into the street. */
 .hero-game-nightshift .hero-game-cath {
   filter: grayscale(1) brightness(0.7) contrast(1.15) drop-shadow(2px 0 0 var(--cd-blood)) drop-shadow(0 6px 10px var(--shadow-deep));
@@ -2137,6 +2142,7 @@ body {
   .hero-game-art { grid-column: 1 / -1; aspect-ratio: 16 / 8.2; }
   .stall-hero .hero-text > .cta-row { margin-top: 12px; }
   .hero-game-cath { width: 22%; }
+  .hero-game-runnel .hero-game-cath { width: 14%; }
   .hero-game-text { padding: 8px 4px 8px 12px; }
   .hero-game-hook {
     display: -webkit-box;

@@ -56,7 +56,8 @@ function showCath(expression: CathExpression): void {
   // mood (`data-pose`, `data-expression`), at half length, so the four cards don't repeat one smiling head.
   for (const el of document.querySelectorAll<HTMLElement>('.hero-game-cath')) {
     el.innerHTML ||= cathSvg({
-      framing: 'half',
+      // Plan item 563: each card its own framing too (a bust, a small full figure, half length), so they don't blur
+      framing: (el.dataset.framing ?? 'half') as 'bust' | 'half' | 'full',
       expression: (el.dataset.expression ?? 'delighted') as CathExpression,
       pose: (el.dataset.pose ?? 'clasped') as CathPoseId,
       outfit: el.dataset.outfit as CathOutfit,
