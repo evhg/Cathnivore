@@ -5485,7 +5485,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Runnel site specs pass; shots P and D, lesson and daily.
 - **Size:** 2
 
-## 559. [ ] NIGHT SHIFT phone class pick: one composed screen *(lane B, in progress)*
+## 559. [x] NIGHT SHIFT phone class pick: one composed screen *(done 2026-11-20 08:50, lane B: the empty band was her line in the column, faded but holding 40 px while she speaks it as the stage's subtitle (item 518): upright, it now starts folded ('Her line', one tap), so the file sits under the tabs (gap about 10 px at 390x844 and 375x667) and her frame grows. Each stat reads her lead over the five classes' average ('25 +7', `.cp-attr-d`, --fs-3, red when above) in place of item 397's 6 px ticks and their key (hidden upright; D keeps its dials). Checked and kept: the subtitle already balances (`text-wrap: balance`; the 'lone word' was a word mid-fade), and Hold sits 12 px over the screen's foot. `cathode-classpick.spec.ts` updated for the deltas and the folded line. Shots scratchpad pp-before/pp-c (390, 375).)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `ns-play-P` (CSS px) 0-390 x 520-570 is an empty dark band, the stat sheet (12-378 x 570-844) is pushed to the foot, the stat bars' comparison ticks are about 6 px and unexplained, and the subtitle (90-300 x 350-385) can wrap one word onto a faded second line.
 - **Build:**

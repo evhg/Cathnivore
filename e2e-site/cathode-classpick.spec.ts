@@ -112,7 +112,11 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
     })
     const art = document.querySelector('.cp-weapon-art')!.getBoundingClientRect()
     const panel = document.querySelector('.cp-weapon')!.getBoundingClientRect()
-    const marks = [...document.querySelectorAll('.cp-attr')].map((a) => ({ marks: [...a.querySelectorAll('.cp-mark')].filter(shown).length, avg: shown(a.querySelector('.cp-avg')!) }))
+    // Plan item 559: each stat reads her lead over the average ('+7', 14 px or more), not item 397's 6 px ticks.
+    const marks = [...document.querySelectorAll('.cp-attr')].map((a) => {
+      const d = a.querySelector<HTMLElement>('.cp-attr-d')!
+      return { ticks: [...a.querySelectorAll('.cp-mark')].filter(shown).length, delta: shown(d) && /^([+\u2212]\d+|avg)$/.test(d.textContent!.trim()), size: parseFloat(getComputedStyle(d).fontSize) >= 14 }
+    })
     return { text: n.textContent, left: r.left, right: r.right, list: list.width * list.height, dots: document.querySelectorAll('.cp-dot').length, title: shown(document.querySelector('.cp-nameplate')!), ghosts, rows, art: art.width / panel.width, marks }
   })
   const ps = JSON.stringify(plate)
@@ -127,7 +131,7 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   // Plan item 422: she holds the gun on the stage, so its slab is a plate beside the name and numbers (about 40% of
   // the panel; it spanned the panel, item 397), its height given to her figure.
   expect(plate.art, ps).toBeGreaterThanOrEqual(0.36)
-  expect(plate.marks, ps).toEqual(Array(4).fill({ marks: 4, avg: true }))
+  expect(plate.marks, ps).toEqual(Array(4).fill({ ticks: 0, delta: true, size: true }))
   // Plan item 125: the whole file is one screen at 390x844 and 375x667: every stat, the weapon and the hold bar
   // inside the viewport with no scroll, text 12 px or more; her quote unfolds behind a tap.
   for (const size of [{ width: 390, height: 844 }, { width: 375, height: 667 }]) {
@@ -152,11 +156,13 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
     for (const b of [m.attrs, m.weapon, m.hold]) expect(b.top >= 0 && b.bottom <= size.height && b.left >= 0 && b.right <= size.width, s).toBe(true)
     expect(m.art.bottom - m.art.top, s).toBeGreaterThanOrEqual(44)
     expect(m.hold.w, s).toBeGreaterThan(size.width - 40)
-    // Plan item 375: her line shows from the start (it was folded behind a tap, item 125).
-    await expect(page.locator('.cp-line')).toBeVisible()
+    // Plan item 559: upright, her line starts folded (she speaks it as the stage's subtitle, item 518); a tap opens it.
+    await expect(page.locator('.cp-line')).toBeHidden()
   }
   await page.locator('.cp-fold').click()
-  await expect(page.locator('.cp-fold')).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.locator('.cp-fold')).toHaveAttribute('aria-expanded', 'true')
+  await expect(page.locator('.cp-line')).toBeVisible()
+  await page.locator('.cp-fold').click()
   await expect(page.locator('.cp-line')).toBeHidden()
   const hold = (await page.locator('.cp-hold').boundingBox())!
   expect(hold.y + hold.height).toBeLessThanOrEqual(667)
@@ -579,7 +585,7 @@ test('the phone class pick names every class on a tab', async ({ page, hasTouch 
         return { name: n.textContent, size: parseFloat(getComputedStyle(n).fontSize), whole: n.scrollWidth <= (n as HTMLElement).offsetWidth + 1 && box(n).right <= r.right + 1 && box(n).left >= r.left - 1, inView: r.left >= 0 && r.right <= innerWidth, gun: !!d.querySelector('.cp-dot-gun svg') }
       })
       const hold = box(document.querySelector('.cp-hold')!)
-      return { tabs, title: box(document.querySelector('.cp-nameplate')!).height, line: (document.querySelector('.cp-line') as HTMLElement).offsetHeight, gutters: [hold.left, innerWidth - hold.right] }
+      return { tabs, title: box(document.querySelector('.cp-nameplate')!).height, line: (document.querySelector('.cp-line') as HTMLElement).offsetHeight, fold: (document.querySelector('.cp-fold') as HTMLElement).offsetHeight, gutters: [hold.left, innerWidth - hold.right] }
     })
     const s = JSON.stringify({ size, m })
     expect(m.tabs.map((t) => t.name), s).toEqual(['Ghost', 'Butcher', 'Gunslinger', 'Wirewitch', 'Fixer'])
@@ -588,7 +594,9 @@ test('the phone class pick names every class on a tab', async ({ page, hasTouch 
       expect(t.whole && t.inView && t.gun, s).toBe(true)
     }
     expect(m.title, s).toBeLessThanOrEqual(80)
-    expect(m.line, s).toBeGreaterThan(0)
+    // Plan item 559: her line starts folded upright (she speaks it as the subtitle); its toggle is there to open it.
+    expect(m.line, s).toBe(0)
+    expect(m.fold, s).toBeGreaterThan(0)
     expect(Math.abs(m.gutters[0]! - m.gutters[1]!), s).toBeLessThanOrEqual(2)
   }
 })

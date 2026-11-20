@@ -197,8 +197,11 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const fold = button("cp-fold", words);
   // Plan item 375: her line shows from the start (the smaller class name and the named tabs leave it room); the
   // fold still tucks it away.
-  root.classList.add("cp-quote-open");
-  fold.setAttribute("aria-expanded", "true");
+  // Plan item 559: except on an upright phone, where item 518 has her speak it as the stage's subtitle: the column's
+  // copy starts folded there (it held a 40 px gap over the file while she spoke), one tap away.
+  const quoteOpen = !(typeof matchMedia === "function" && matchMedia("(max-width: 700px) and (orientation: portrait)").matches);
+  root.classList.toggle("cp-quote-open", quoteOpen);
+  fold.setAttribute("aria-expanded", String(quoteOpen));
   fold.setAttribute("aria-controls", "cp-line");
   el("span", "cp-fold-label", fold, "Her line");
   fold.addEventListener("click", () => {
@@ -224,7 +227,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   el("span", "cp-key-avg", key, "Average");
   el("span", "cp-key-cls", key, "Other classes");
   const attrs = el("dl", "cp-attrs", sheet);
-  const bars = new Map<AttributeId, { row: HTMLElement; n: HTMLElement; v: number }>();
+  const bars = new Map<AttributeId, { row: HTMLElement; n: HTMLElement; d: HTMLElement; mean: number; v: number }>();
   for (const a of ATTRIBUTES) {
     const row = el("div", "cp-attr stat-dial", attrs);
     el("dt", "", row, ATTRIBUTE_LABEL[a]);
@@ -243,7 +246,10 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const mean = CLASS_IDS.reduce((t, c) => t + CLASS_START_ATTRIBUTES[c][a], 0) / CLASS_IDS.length;
     el("span", "cp-avg", bar).style.setProperty("--t", String(mean / ATTR_MAX));
     const n = el("span", "cp-attr-n", dd, "0");
-    bars.set(a, { row, n, v: 0 });
+    // Plan item 559: on an upright phone her lead over the five classes' average, as the desktop's edge reads it
+    // ('+7'): the bars' 6 px ticks against the field were unreadable there (hidden at D, where the dials do this).
+    const d = el("span", "cp-attr-d", dd);
+    bars.set(a, { row, n, d, mean, v: 0 });
   }
   const weapon = el("div", "cp-weapon", sheet);
   const trees = el("ul", "cp-trees", sheet);
@@ -419,6 +425,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
 
     // The bars count up from where they were to the new class's numbers over 350 ms.
     const start = CLASS_START_ATTRIBUTES[cls];
+    for (const [a, b] of bars) {
+      const lead = Math.round(start[a] - b.mean);
+      b.d.textContent = lead > 0 ? `+${lead}` : lead < 0 ? `\u2212${-lead}` : "avg";
+      b.d.dataset.sign = lead > 0 ? "up" : lead < 0 ? "down" : "even";
+      b.d.setAttribute("aria-label", lead === 0 ? "the average" : `${Math.abs(lead)} ${lead > 0 ? "above" : "below"} the average`);
+    }
     const from = new Map([...bars].map(([a, b]) => [a, b.v]));
     const t0 = performance.now();
     cancelAnimationFrame(countRaf);

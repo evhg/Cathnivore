@@ -3412,3 +3412,21 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp[data-speaking] .cp-line { opacity: 0; animation: none; transition: opacity 160ms ease; }
   .cp .cp-line { transition: opacity 260ms ease; }
 }
+
+/* Plan item 559: the phone's stat rows read her lead over the five classes' average ('+7'), not the 6 px ticks of
+   item 397 (their key goes with them); desktop keeps its dials. */
+.cp-attr-d { display: none; }
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-attr-d {
+    display: inline-block;
+    min-width: 3ch;
+    font: 800 var(--fs-3) / 1 var(--font-ui);
+    font-stretch: var(--wdth-label);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--card-ink-2);
+  }
+  .cp-attr-d[data-sign="up"] { color: var(--stamp-red); }
+  .cp-sheet[data-dossier] :is(.cp-mark, .cp-avg, .cp-attrs-key) { display: none; }
+  .cp-sheet[data-dossier] .cp-attr-v { grid-template-columns: minmax(0, 1fr) 22px auto; } /* px-ok: item 397's number column */
+}
