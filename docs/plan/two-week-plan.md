@@ -5457,7 +5457,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - campaign, campaign-map, campaign-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 557. [ ] Hedgerow 3D: Cath reads as herself on the field
+## 557. [ ] Hedgerow 3D: Cath reads as herself on the field *(lane B, in progress)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `hedge-l21-3d-D` (150-235 x 505-640): Cath is a low-poly block whose face is a 15 px dark smudge; hair and jacket don't read as the character bible. `hedge-l21-3d-P` (15-45 x 485-545): an unreadable sliver. She's the weakest model on the field.
 - **Build:**
