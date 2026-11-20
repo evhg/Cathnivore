@@ -279,3 +279,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-20 11:20 lane A (556): the bunting is labelled by a third slate cell, 'Chapters won', rather than words on the string (no room between flags); won flags carry a tick instead of the number. Chapters 2 and 5 got shorter teasers so the 14 px letters hold them in two lines.
 - 2026-11-20 11:27 lane A (560): ns-title-P kept: the Ledger cutting clears her umbrella arm; narrowing it at 375x667 wrapped the headline over The List.
 - 2026-11-20 11:21 lane B (557): scaled and recoloured the existing 3D Cath rather than rebuild her: item 310's hair, jacket and painted face were already the bible's; she only read small and pale-legged.
+- 2026-11-20 12:21 lane B (558): closed by decision: keep item 122's one Cath at D over a rail bust (no owner to ask; 14 specs and the rail budget rest on it).
