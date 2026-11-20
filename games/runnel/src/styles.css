@@ -3930,6 +3930,12 @@ body[data-mode='practice'] #week-slot {
   /* the grass and fallow green to two greens, not one, so the patchwork still reads field by field */
   #valley-paint[data-greened] :is(.vl-f-grass, .vl-f-fallow), #valley-paint :is(.vl-f-grass, .vl-f-fallow)[data-wet] { fill: color-mix(in srgb, color-mix(in srgb, var(--wet-field) 70%, var(--vl-meadow)) var(--vk), var(--paper)); }
   #valley-paint[data-greened] .vl-f-crop, #valley-paint .vl-f-crop[data-wet] { fill: color-mix(in srgb, color-mix(in srgb, var(--wet-field) 76%, var(--tile-rim)) var(--vk), var(--paper)); }
+  /* Plan item 567 slice 2: each wet plot's sprouts come up one after another (main.ts makes them); dry, they sink back. */
+  #valley-paint .vl-sprout { fill: color-mix(in srgb, var(--wet-field) 78%, var(--ink)); stroke: color-mix(in srgb, var(--wet-field) 78%, var(--ink)); stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0); opacity: 0; transition: transform 260ms ease-out, opacity 260ms ease-out; }
+  #valley-paint .vl-sprouts[data-wet] .vl-sprout { transform: scale(1); opacity: 0.9; transition-duration: 380ms; transition-timing-function: cubic-bezier(.3, 1.5, .5, 1); }
+  #valley-paint .vl-sprouts[data-wet] .vl-sprout-0 { transition-delay: 250ms; }
+  #valley-paint .vl-sprouts[data-wet] .vl-sprout-1 { transition-delay: 400ms; }
+  #valley-paint .vl-sprouts[data-wet] .vl-sprout-2 { transition-delay: 550ms; }
   #valley-paint[data-greened] .vl-w1 { transition-delay: 90ms; }
   #valley-paint[data-greened] .vl-w2 { transition-delay: 180ms; }
   #valley-paint[data-greened] .vl-w3 { transition-delay: 270ms; }
@@ -4832,6 +4838,8 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 @media (prefers-reduced-motion: reduce) {
   /* Plan item 308: the valley greens in one short fade, no wave. */
   .vl-f { transition-duration: 300ms; }
+  /* Plan item 567: the sprouts fade in place, no transform. */
+  #valley-paint .vl-sprout, #valley-paint .vl-sprouts[data-wet] .vl-sprout { transform: none; transition: opacity 300ms; }
   #valley-paint[data-greened] .vl-f { transition-delay: 0ms; }
 }
 /* Plan item 315: the notebook's inked glyph size (46 px) doesn't shrink the steps' tiles. */

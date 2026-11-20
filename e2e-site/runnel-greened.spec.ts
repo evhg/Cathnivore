@@ -87,4 +87,20 @@ test('watered fields green the valley plots beside them during play', async ({ p
   }))
   expect(m.wetFields, JSON.stringify(m)).toBeGreaterThan(0)
   expect(m.wetPlots, JSON.stringify(m)).toBeGreaterThanOrEqual(2)
+  // Plan item 567 slice 2: each wet plot's sprouts come up
+  await expect(page.locator('#valley-paint .vl-sprouts[data-wet]')).toHaveCount(m.wetPlots)
+})
+
+test('under reduced motion the valley sprouts fade in place, no transform', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, seenHelp: true, results: {} })))
+  await page.goto('/runnel/?shotsolve')
+  await page.locator('[data-last]').waitFor()
+  const ch = page.locator('#board g.cell.channel:not([data-last])').first()
+  for (let k = 0; k < 6; k++) await ch.click({ force: true })
+  const sprout = page.locator('#valley-paint .vl-sprouts[data-wet] .vl-sprout').first()
+  await expect(sprout).toBeAttached()
+  const t = await sprout.evaluate((el) => ({ transform: getComputedStyle(el).transform, prop: getComputedStyle(el).transitionProperty }))
+  expect(t.transform).toBe('none')
+  expect(t.prop).not.toContain('transform')
 })

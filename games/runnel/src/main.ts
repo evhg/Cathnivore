@@ -1164,7 +1164,32 @@ function render(): void {
         }
         if (best >= 0 && flow.wet.has(best)) wetPlots.add(p.el)
       }
-      for (const p of plots) p.el.toggleAttribute('data-wet', wetPlots.has(p.el))
+      for (const p of plots) {
+        const wet = wetPlots.has(p.el)
+        p.el.toggleAttribute('data-wet', wet)
+        // Plan item 567 slice 2: three sprouts in the plot come up one after another as it greens (styles.css staggers
+        // them; made once per plot, in the plot's own SVG units, so they sit in it however the valley scales).
+        let sp = p.el.nextElementSibling
+        if (!sp?.classList.contains('vl-sprouts') && wet) {
+          const b = p.el.getBBox()
+          const k = Math.min(b.width, b.height) * 0.07
+          if (k > 0) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+            g.setAttribute('class', 'vl-sprouts')
+            g.setAttribute('aria-hidden', 'true')
+            g.innerHTML = [[0.32, 0.58], [0.52, 0.44], [0.7, 0.62]]
+              .map(([fx, fy], j) => {
+                const x = b.x + b.width * fx!
+                const y = b.y + b.height * fy!
+                return `<path class="vl-sprout vl-sprout-${j}" d="M${x} ${y}v${-k}m0 ${k * 0.4}c${-k * 0.5} 0 ${-k * 0.7} ${-k * 0.3} ${-k * 0.7} ${-k * 0.6}c${k * 0.5} 0 ${k * 0.7} ${k * 0.3} ${k * 0.7} ${k * 0.6}m0 ${-k * 0.25}c${k * 0.45} 0 ${k * 0.6} ${-k * 0.3} ${k * 0.6} ${-k * 0.55}c${-k * 0.45} 0 ${-k * 0.6} ${k * 0.3} ${-k * 0.6} ${k * 0.55}" stroke-width="${Math.max(0.6, k * 0.12)}"/>`
+              })
+              .join('')
+            p.el.after(g)
+            sp = g
+          }
+        }
+        if (sp?.classList.contains('vl-sprouts')) sp.toggleAttribute('data-wet', wet)
+      }
     }
   }
   const wetShare = flow.solved ? 1 : flow.wet.size / playable
