@@ -2596,6 +2596,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       // Plan item 241: the stop's own painted landmark, in its act's palette.
       mark.innerHTML = stopArtSvg(lv.id);
       mark.dataset.stopArt = stopArtKey(lv.id);
+      // Plan item 471: the stop names its landmark, so no two stops side by side share one (e2e).
+      b.dataset.landmark = stopArtKey(lv.id);
       // Plan item 73: the coin is a painted vignette of the stop (its landmark on its own patch of ground), the
       // number a small badge on its rim; greyed until the stop is open.
       numEl.textContent = "";

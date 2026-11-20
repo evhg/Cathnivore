@@ -5772,6 +5772,14 @@ img.act-scene {
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait img { width: 36px; height: 36px; }
   #screen-select li.act.act-has-card .lcard-play { width: 100%; }
 }
+/* Plan item 471: on a desktop 860 px tall or more each stop is a little diorama of its landmark, 112 px (the boss lot
+   124), not a 72 px icon; under 860 px the 72 px coins keep act 1's trail inside the 1280x800 fold (item 372). */
+@media (min-width: 1200px) and (min-height: 860px) {
+  #screen-select li.act .node { max-width: 170px; }
+  #screen-select li.act .node .level-num { width: 112px; height: 112px; }
+  #screen-select li.act .node.level-boss .level-num { width: 124px; height: 124px; }
+  #screen-select .node .level-num.vignette .level-n { min-width: 28px; height: 28px; border-radius: 14px; }
+}
 
 /* Plan item 372 (phone): each stop's name is one tag hard by its coin on the coin's outer side (it was centred in
    its column, 15-44 px off, so a name read as the stop across the road), and a locked stop's padlock rides inside
