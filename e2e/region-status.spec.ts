@@ -1,9 +1,21 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { fillSeed } from './setupSeed'
 
 // Plan item 550 slice 1: every region carries exactly one status on its name banner's end (free, contested or held,
 // with Hollowell's piece count), labelled for screen readers, sitting on the banner and inside its hex's row.
 test('each region has one labelled status on its name banner', async ({ page, hasTouch }) => {
+  await checkStatuses(page, hasTouch)
+})
+
+// Plan item 550: on a 375 px phone Kingsmarket's disc meets a neighbour's plate at either end, so its sign slides
+// within the gap Brindle Hills and Rivermead leave.
+test('the statuses fit a 375 px phone', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'phones only')
+  await page.setViewportSize({ width: 375, height: 667 })
+  await checkStatuses(page, hasTouch)
+})
+
+async function checkStatuses(page: Page, hasTouch: boolean) {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
@@ -29,6 +41,11 @@ test('each region has one labelled status on its name banner', async ({ page, ha
         others: [...document.querySelectorAll('.map-wrap svg.map .region-sign')].filter((o) => o !== sign).map((o) => o.querySelector('.region-plaque')!.getBoundingClientRect())
           .filter((o) => b.left < o.right && o.left < b.right && b.top < o.bottom && o.top < b.bottom).length,
         size: b.height,
+        // plan item 550: the disc never covers the name's letters
+        onName: (() => {
+          const t = sign.querySelector('.region-name')!.getBoundingClientRect()
+          return s.getAttribute('data-side') === 'left' ? b.right - t.left : t.right - b.left
+        })(),
         // plan item 550: no piece or landmark prop meets the banner (plaque or disc)
         meets: [...document.querySelectorAll(`.map-wrap svg.map .region-hex[data-region="${sign.getAttribute('data-sign')}"] :is([data-piece], [data-grip-prop])`)]
           .map((g) => g.getBoundingClientRect())
@@ -42,9 +59,10 @@ test('each region has one labelled status on its name banner', async ({ page, ha
     expect(s.status).toMatch(/^(free|contested|held)$/)
     expect(s.label).toMatch(s.status === 'free' ? /: free$/ : new RegExp(`: (contested|held by Hollowell), ${s.n} Hollowell pieces?$`))
     expect(s.onEnd, JSON.stringify(s)).toBe(true)
-    // Plan item 550: 28 px across or more on a desktop, 17 on a phone (larger there reaches the next region's plate).
-    expect(s.size, s.region!).toBeGreaterThanOrEqual(hasTouch ? 17 : 28)
+    // Plan item 550: 28 px across or more on a desktop, 22 on a phone.
+    expect(s.size, s.region!).toBeGreaterThanOrEqual(hasTouch ? 22 : 28)
+    expect(s.onName, `${s.region} disc over its name`).toBeLessThanOrEqual(1)
     expect(s.meets, `${s.region} pieces on its banner`).toBe(0)
     expect(s.others, `${s.region} status on another plate`).toBe(0)
   }
-})
+}

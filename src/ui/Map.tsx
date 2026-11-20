@@ -1335,7 +1335,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               stroke="var(--ink)"
               strokeWidth={1.5}
             />
-            <text x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
+            <text x={x} data-x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
               {def.name}
             </text>
             {/* Plan item 550: one status per region on its banner's end: free (a leaf), or how many Hollowell pieces
@@ -1346,12 +1346,12 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const control = regionControl(r)
               const label = `${def.name}: ${control === 'free' ? 'free' : control === 'held' ? 'held by Hollowell' : 'contested'}${control === 'free' ? '' : `, ${n} Hollowell ${n === 1 ? 'piece' : 'pieces'}`}`
               const cy = y - HEX_R * 0.62 - 4.5
-              // Plan item 550: at least 28 px across on a desktop and about 18 on a phone, whatever the board's scale (23 on a
-              // phone hung further over the next region's plate, which Brindle Hills' disc already meets there: open, item 550).
-              const sr = Math.max(13, (9 * HEX_R) / Math.max(24, hexPx ?? 72))
+              // Plan item 550: at least 28 px across on a desktop and about 23 on a phone, whatever the board's scale
+              // (`fitPlaques` flips a disc to its plate's left end where the right would meet the next region's plate).
+              const sr = Math.max(13, (11.5 * HEX_R) / Math.max(24, hexPx ?? 72))
               const k = sr / 11
               return (
-                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr * 0.8)} ${cy})`}>
+                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr + 1)} ${cy})`}>
                   <title>{label}</title>
                   <circle r={sr} className="region-status-disc" />
                   <g transform={`scale(${k.toFixed(3)})`}>
@@ -1597,7 +1597,7 @@ function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: La
 
 // Sizes each region's plaque to its name as actually set (attributes only: CSP allows no style attributes).
 function fitPlaques(svg: SVGSVGElement) {
-  const discs: Array<{ status: SVGGElement; cx: number; w: number }> = []
+  const signs: Array<{ sign: Element; text: SVGTextElement; plate: SVGRectElement; status: SVGGElement | null; cx: number; w: number }> = []
   const plates: Array<{ x0: number; x1: number; y0: number; y1: number; sign: Element }> = []
   for (const sign of Array.from(svg.querySelectorAll('.region-sign'))) {
     const text = sign.querySelector<SVGTextElement>('.region-name')
@@ -1610,24 +1610,54 @@ function fitPlaques(svg: SVGSVGElement) {
       continue
     }
     if (!w) continue
-    const cx = Number(text.getAttribute('x'))
-    plate.setAttribute('x', String(cx - w / 2 - 8))
-    plate.setAttribute('width', String(w + 16))
+    // The hex's own centre (`data-x`): a sign slid aside below is placed afresh on every fit.
+    const cx = Number(text.getAttribute('data-x') ?? text.getAttribute('x'))
     const y0 = Number(plate.getAttribute('y'))
     plates.push({ x0: cx - w / 2 - 8, x1: cx + w / 2 + 8, y0, y1: y0 + Number(plate.getAttribute('height')), sign })
-    const status = sign.querySelector<SVGGElement>('.region-status')
-    if (status) discs.push({ status, cx, w })
+    signs.push({ sign, text, plate, status: sign.querySelector<SVGGElement>('.region-status'), cx, w })
   }
+  const GAP = 3
+  const rowOf = (sign: Element, y0: number, y1: number) => plates.filter((p) => p.sign !== sign && p.y0 < y1 && y0 < p.y1)
   // Plan item 550: the status disc rides the plaque's right end, or its left end where the right would meet the next
-  // region's plate (a phone's middle row: Brindle Hills beside Kingsmarket).
-  for (const { status, cx, w } of discs) {
-    const r = Number(status.getAttribute('data-r'))
-    const off = w / 2 + Math.max(14, r * 0.8)
+  // region's plate (a phone's middle row: Brindle Hills beside Kingsmarket). Where both ends would (Kingsmarket between
+  // Brindle Hills and Rivermead on a 375 px phone), the sign slides within the gap its neighbours leave, and the disc
+  // shrinks only if even that is too narrow.
+  for (const g of signs) {
+    if (!g.status) continue
+    const r = Number(g.status.getAttribute('data-r'))
+    const cy = Number(g.status.getAttribute('data-cy'))
+    const own = plates.find((p) => p.sign === g.sign)!
+    const row = rowOf(g.sign, Math.min(own.y0, cy - r), Math.max(own.y1, cy + r))
+    const lo = Math.max(-Infinity, ...row.filter((p) => p.x1 <= g.cx).map((p) => p.x1)) + GAP
+    const hi = Math.min(Infinity, ...row.filter((p) => p.x0 >= g.cx).map((p) => p.x0)) - GAP
+    const reach = (rr: number) => g.w / 2 + Math.max(14, rr + 1) + rr
+    if (g.cx + reach(r) <= hi || g.cx - reach(r) >= lo) continue
+    // the sign's span with the disc on its right: [cx - w/2 - 8, cx + reach]
+    const span = (rr: number) => reach(rr) + g.w / 2 + 8
+    let rr = r
+    while (rr > 8 && span(rr) > hi - lo) rr -= 0.5
+    const dx = Math.max(lo - (g.cx - g.w / 2 - 8), Math.min(0, hi - (g.cx + reach(rr))))
+    g.cx += dx
+    own.x0 += dx
+    own.x1 += dx
+    g.status.setAttribute('data-fit-r', rr.toFixed(1))
+  }
+  for (const g of signs) {
+    g.text.setAttribute('x', String(g.cx))
+    g.plate.setAttribute('x', String(g.cx - g.w / 2 - 8))
+    g.plate.setAttribute('width', String(g.w + 16))
+  }
+  for (const { status, cx, w, sign } of signs) {
+    if (!status) continue
+    const r0 = Number(status.getAttribute('data-r'))
+    const r = Number(status.getAttribute('data-fit-r') ?? r0)
+    status.removeAttribute('data-fit-r')
+    const off = w / 2 + Math.max(14, r + 1)
     const cy = Number(status.getAttribute('data-cy'))
-    const sign = status.closest('.region-sign')
-    const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r < p.x1 && p.x0 < x + r && cy - r < p.y1 && p.y0 < cy + r)
+    const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r - GAP < p.x1 && p.x0 < x + r + GAP && cy - r < p.y1 && p.y0 < cy + r)
     const left = meets(cx + off) && !meets(cx - off)
-    status.setAttribute('transform', `translate(${left ? cx - off : cx + off} ${cy})`)
+    const scale = r < r0 ? ` scale(${(r / r0).toFixed(3)})` : ''
+    status.setAttribute('transform', `translate(${left ? cx - off : cx + off} ${cy})${scale}`)
     if (left) status.setAttribute('data-side', 'left')
     else status.removeAttribute('data-side')
   }
