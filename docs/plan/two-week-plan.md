@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-20T01:24:03Z
 
 
 
@@ -5231,5 +5230,110 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `games-P` (30-205 x 515-555): 'Play today's Runnel' reads as a link, not a button; the Cathnivore card's Play button crowds its caption (285-355 x 790-830). **Checked 22:45 lane B, kept:** it is a framed chalkboard sign whose underline marks the primary choice; the card's Play keeps 8 px from its caption.
 - `runnel-D` (385-685 x 408-480): Cath's bubble overlaps the board's left edge. **Checked 22:50 lane B, kept:** it sits inside the field's frame (the frame's inner edge is about 390), on open field clear of every tile, pointing at the first one.
 - Not taken from this critique: the full-body Cath (portfolio, Runnel) was item 524, done today, re-judge it at the next planning before reopening; `ns-title-P`'s framing was the first SwiftShader frame (about one frame in 30 s headless), not the settled title.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 543. [ ] NIGHT SHIFT Cath in 3D: glossy waved hair, a coat with cloth, gloved hands with fingers
+- **Why:** plan1120a critique (2026-11-20 01:35): apart from her face (item 319), her 3D figure reads as a placeholder in the 18+ game's key art.
+  - Hair: matte black strands like cables, no shine band, no waves (ns-title-D 930-1110 x 265-640; ns-play-D 600-860 x 160-830). The bible asks for 'glossy… soft waves… a light shine band'.
+  - Coat: one flat grey, no weave, seams or roughness change.
+  - Hands: gloved claws.
+  - The ink outline breaks into a black halo round the hood on the phone pick (ns-play-P at 2x 300-520 x 230-420).
+- **Build:** `games/cathode/src/render/frontcath.ts`:
+  - Clump the hanging locks into wider waved cards with item 254's shine band visible at title distance.
+  - The trench's wool takes a twill normal and roughness variation, with lapels and belt edges that catch the key.
+  - The gloves get rounded finger segments.
+  - Clamp the ink hull's width in screen space on a phone.
+- **Accept:**
+  - In a `?shot` frame, 3% or more of the pixels in her hair's box have luminance over 0.45.
+  - The coat box's luminance spread is at least 1.5x today's (measure first, record it here).
+  - The 2 px ring outside the hood's silhouette at the phone pick has no pure-black pixels.
+  - Rerun `cathode-front`, `classpick` and `classpose` (P and D) and `scripts/cathode-perf.mjs` alone.
+  - Re-render the posters and key art.
+- **Size:** 3
+
+## 544. [ ] NIGHT SHIFT title: one reading order, nothing on Cath
+- **Why:** `ns-title-D`/`-P` (plan1120a): the menu, the Ledger and The List are three equal paper rectangles with no order (VISION 1, one focal point).
+  - The desktop Ledger sits mid-screen against her umbrella (415-765 x 220-515).
+  - On the phone, the Ledger crosses the umbrella's shaft and her coat (at 2x 30-395 x 805-1140).
+  - Caveat: these were headless live frames that may not have settled; measure the settled `?shot&t=8` frame first.
+- **Build:** `games/cathode/src/main.ts` (`placeDossier`) and `styles/front.css`:
+  - One column left of her: the menu on top, the Ledger as a smaller clipping under it, The List at the foot.
+  - Nothing over her projected head-and-torso box.
+  - On a phone the Ledger folds to a headline strip that opens on tap.
+- **Accept:**
+  - At 390x844 and 1440x900, the menu, Ledger and List rects don't meet `faceBox()` or the torso part of `figureBox(true)`.
+  - The desktop Ledger's right edge is at or left of 45% of the width.
+  - The menu's tab order is unchanged.
+  - `cathode-front`, `cathode-frontpage` and title specs pass.
+  - Re-render the posters if a poster source changes.
+- **Size:** 2
+
+## 545. [ ] Runnel: the board owns the screen
+- **Why:** `runnel-D`/`-P` (plan1120a), VISION 2:
+  - The four hexes (570-1230 x 110-740) float on a valley whose patches are as saturated as the tiles.
+  - The left panel is a plain ruled list (55-345 x 195-590).
+- **Build:** `games/runnel/`:
+  - Behind the board, the valley falls off in saturation and brightness away from the board's hull (a vignette layer).
+  - The board stands on a paper plinth with a soft shadow, and is scaled to fill its stage.
+  - The rail becomes an illustrated field notebook: inked tile icons, a margin, the 'Up next' card aligned to one left edge.
+- **Accept:**
+  - At 1440x900 the board's box is 0.55 or more of the stage width.
+  - Mean saturation outside the hull is at most 0.6x the inside.
+  - Tile vs neighbouring backdrop luminance differs by 0.12 or more.
+  - The Runnel lesson and daily specs pass.
+  - Re-shoot Runnel key art if its sources change.
+- **Size:** 2
+
+## 546. [ ] /games/ and portfolio: Hedgerow's key art from its 3D field, one Play button style
+- **Why:** `games-D`, `portfolio-D` (plan1120a): first impressions are stale and mixed.
+  - The Hedgerow card and the portfolio tile show the old 2D field while the game opens in 3D.
+  - The four Play buttons use four unrelated styles (cream, blue pill, yellow, red; games-D y 825-870).
+  - The Runnel card's Cath wears a pink apron, off the bible.
+- **Build:**
+  - `scripts/keyart.mjs`: Hedgerow's frame from the 3D renderer (a `?keyart` 3D frame, seeded `hedgerow:v1`, see CLAUDE.md on 3D shots).
+  - One CTA component on `/games/` cards, its accent colour per game.
+  - The Runnel card's Cath in the bible's look.
+- **Accept:**
+  - `tests/keyart-fresh.test.ts` passes.
+  - The four CTAs have identical computed height, radius and font family.
+  - The Hedgerow poster shows the 3D field (its dominant colours match a 3D frame).
+  - `games-*` and `portfolio-*` specs pass; shots P and D.
+- **Size:** 2
+
+## 547. [ ] Hedgerow act map: the terrain at full colour, composed round the trail
+- **Why:** `hedge-menu-D`/`-P` (plan1120a): the field reads as a 50% overlay, its props scattered clip-art with no composition (200-1100 x 430-740), Cath about 160 px tucked on a stop. The terrain, not the stops (item 471).
+- **Build:** after item 471 (lane A) lands. `games/hedgerow/src/map.ts` and styles:
+  - The act's ground in full-strength tokens with paper texture and the sun's light from the top right.
+  - The props in two or three vignettes per act, off the trail.
+  - Cath 240 px or more with a ground shadow.
+- **Accept:**
+  - Mean saturation of the map's ground 0.35 or more (about 0.15 today).
+  - Cath 240 px or more at 1440x900.
+  - No prop box meets a stop label.
+  - `hedgerow-map` specs pass; shots P and D.
+- **Size:** 2
+
+## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch
+- `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot.
+- `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't.
+- `cath-setup-D`:
+  - (105-255 x 170-215) 'Two at the table' clipped against 'You and an AI'.
+  - (530-625 x 168-200) Tomas Reed's 'Market Day' tag wraps.
+  - (995-1140 x 565-775) the week's sign covers Cath's torso and arm (also in 537's list: check).
+- `cath-game-D` (18-335 x 600-735): about 145 px of dead rail between '5 more not yet' and the ledger.
+- `cath-title-D`/`-P` footer small print about 11 px, low contrast on brown (D 310-1130 x 872-886; P y 820-835).
+- `hedge-l21-3d-P` (280-345 x 740-760): the tray label cut to 'Radio Mas'.
+- Hedgerow D (l21, l34; about y 680-692): the 'Coming up' bars and tags clipped by the panel's foot.
+- `hedge-l21-2d-D` (155-305 x 340-357): 'Lifestyle influencer' hangs off the board over its frame.
+- `hedge-menu-P` (265-385 x 512-545): 'Brand Ambassador' label over the terrain.
+- `ns-title-D` (565-740 x 330-390): the Ledger's italic body about 11 px.
+- `ns-play-P`:
+  - (at 2x 325-595 x 872-898) 'GUNSLINGER' butts 'WIREWITCH'.
+  - The CTA reads only 'HOLD'.
+- `ns-play-D` (998-1100 x 438-455): '+7 25 · 18 avg' is cryptic; label it.
+- `runnel-D` (165-265 x 635-745): the 'Up next' card's text off its heading's left edge.
+- `runnel-P` (265-385 x 158-185): step 3's label wraps where the others don't.
+- `portfolio-D`: Cath's bubble says 'Hover one' (wrong on touch: say 'Pick one' or detect hover).
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
