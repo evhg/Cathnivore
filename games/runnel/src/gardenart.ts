@@ -141,6 +141,8 @@ export function beaWateringSvg(title?: string): string {
     c(-7, -8, 2.2, 'ga-hair') + c(4.2, -8.5, 2.2, 'ga-hair') + c(-7, -10, 0.9, 'ga-yellow') + c(4.2, -10.5, 0.9, 'ga-yellow') +
     c(-0.2, -7, 0.55, 'ga-face') + c(-3, -7, 0.55, 'ga-face') +
     p('M4 0 L9 1', 'ga-arm') +
+    // Plan item 567: her free arm, raised to wave (shown only as she reaches the garden at a solve; styles.css)
+    `<g class="ga-wave">${p('M-5 0 L-10 -8', 'ga-arm')}${c(-10.3, -8.8, 1.4, 'ga-skin')}</g>` +
     p('M8 -1 h6 v6 h-6 Z', 'ga-can') + p('M14 0 L18 -3', 'ga-can-spout') + p('M8 -1 Q11 -5 14 -1', 'ga-can-handle') +
     c(18.5, 0, 0.7, 'ga-water') + c(19, 2.5, 0.7, 'ga-water') + c(18, 5, 0.7, 'ga-water')
   return svg(art, title, ' ga-bea')

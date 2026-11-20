@@ -3748,6 +3748,10 @@ body[data-mode='practice'] #week-slot {
   68% { transform: translate(-10px, -5px); }
   100% { transform: translate(0, 0); opacity: 1; }
 }
+/* Plan item 567: as she reaches the garden Bea waves her free arm three times (hidden on every other Bea). */
+.ga-bea .ga-wave { display: none; }
+.bea-runner .ga-wave { display: inline; transform-box: fill-box; transform-origin: 100% 100%; animation: bea-wave 300ms ease-in-out 1950ms 4 alternate both; }
+@keyframes bea-wave { from { rotate: -14deg; } to { rotate: 22deg; } }
 @keyframes bea-drip {
   0% { opacity: 0; transform: translateY(-2px); }
   40% { opacity: 1; }
@@ -3761,6 +3765,7 @@ body[data-mode='practice'] #week-slot {
     animation: none;
     opacity: 1;
   }
+  .bea-runner .ga-wave { animation: none; }
 }
 
 /* Plan item 68: on an upright phone the daily sits in its farm too: the spring house in the top-left corner the

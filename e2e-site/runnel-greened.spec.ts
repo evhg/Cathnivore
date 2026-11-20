@@ -104,3 +104,14 @@ test('under reduced motion the valley sprouts fade in place, no transform', asyn
   expect(t.transform).toBe('none')
   expect(t.prop).not.toContain('transform')
 })
+
+test('plan item 567: Bea waves as she reaches her garden at a solve, and only then', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, seenHelp: true, results: {} })))
+  await page.goto('/runnel/?shotsolve')
+  await page.locator('[data-last]').waitFor()
+  await expect(page.locator('.bea-waiting .ga-wave')).toBeHidden()
+  await page.locator('[data-last]').click({ force: true })
+  const wave = page.locator('.bea-runner .ga-wave')
+  await expect(wave).toBeAttached()
+  expect(await wave.evaluate((el) => getComputedStyle(el).animationName)).toBe('bea-wave')
+})
