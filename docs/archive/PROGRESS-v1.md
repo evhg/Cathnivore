@@ -4246,3 +4246,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-19 19:21 lane B: 526 tried three framings (waist-up crop; stage past the menu plate; width fit), all reverted: each trades her coat under the plate, her face off screen, or a smaller Cath. Handed back with findings.
 - 2026-11-19 20:21 lane B: 319 slice 97 (skin wraps the direct lights: the lower face's midline split gone, seven other suspects ruled out by test); posters and key art re-rendered; classpick specs run.
 - 2026-11-19 21:21 lane B: 526 done (waist-up phone title, narrower menu plate at --fs-3, cathode-front :212 rewritten for the portrait); 27 phone title specs pass; a chin-shade tweak for 319 tried and dropped (no visible change).
+- 2026-11-19 23:21 lane B: 538 slice 1 (the gun mat, CSS); classpick specs P and D run.
