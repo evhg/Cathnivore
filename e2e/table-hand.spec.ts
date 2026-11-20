@@ -31,11 +31,40 @@ async function expectWholeCards(page: Page, what: string) {
     }
 }
 
+// Plan item 566: no card lies over another card's keys, price, (i) or name: the point at each one's middle (and a
+// name's end) hits its own card.
+async function expectNothingCovered(page: Page, what: string) {
+  await page.waitForTimeout(400)
+  const covered = await page.evaluate(() => {
+    const out: string[] = []
+    for (const card of document.querySelectorAll<HTMLElement>('.table-hand [data-hand-card]')) {
+      const face = card.querySelector(':scope > button:first-child')
+      for (const p of card.querySelectorAll<HTMLElement>('button, .action-cost, .tooltip-trigger, .action-name')) {
+        if (p === face) continue
+        const range = document.createRange()
+        range.selectNodeContents(p)
+        const rects = p.classList.contains('action-name') ? [...range.getClientRects()] : [p.getBoundingClientRect()]
+        for (const b of rects) {
+          if (!b.width) continue
+          const pts = p.classList.contains('action-name') ? [b.x + b.width / 2, b.right - 3] : [b.x + b.width / 2]
+          for (const x of pts) {
+            const hit = document.elementFromPoint(x, b.y + b.height / 2)?.closest('[data-hand-card]')
+            if (hit !== card) out.push(`${card.textContent?.slice(0, 30)}: ${p.className || p.tagName} under ${hit?.textContent?.slice(0, 20)}`)
+          }
+        }
+      }
+    }
+    return out
+  })
+  expect(covered, what).toEqual([])
+}
+
 // Plan item 149: on a big desktop the cards this turn can play are a hand at the table's bottom edge: one card per
 // playable action (the same cards the Actions list leads with at other sizes), each 110 px or taller, none meeting a
 // region, inside the viewport, and no page scroll. What can't be played yet stays in the Actions column.
 test('the actions are a hand of cards at the table edge at D', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only; the phone keeps its strip of art cards')
+  test.setTimeout(90_000)
   for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await page.setViewportSize({ width, height })
     await page.goto('/')
@@ -63,6 +92,17 @@ test('the actions are a hand of cards at the table edge at D', async ({ page }, 
     }
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(height)
     await expectWholeCards(page, `${width}x${height}`)
+    // Plan item 566: no card lies over another card's keys, price, (i) or name (the point at each one's middle, and
+    // a name's end, hits its own card); the hand's foot 12 px or more above the window's; the board no smaller than
+    // item 566 measured it (616 px across its hexes at 1440x900, 517 at 1280x800).
+    await expectNothingCovered(page, `${width}x${height}`)
+    const foot = await page.locator('.table-hand').evaluate((e) => e.getBoundingClientRect().bottom)
+    expect(foot, `${width}x${height}: the hand's foot`).toBeLessThanOrEqual(height - 12)
+    const board = await page.locator('.map-wrap .region-hex > polygon:first-of-type').evaluateAll((ps) => {
+      const bs = ps.map((p) => p.getBoundingClientRect())
+      return Math.max(...bs.map((b) => b.right)) - Math.min(...bs.map((b) => b.left))
+    })
+    expect(board, `${width}x${height}: the board's width`).toBeGreaterThanOrEqual(width >= 1440 ? 610 : 510)
     // Plan item 167: the producer frame is the active producer's player mat; their bust is their seat at the
     // table, so the rail shows no second portrait while they are seated there.
     await expect(page.locator('.producer-sheet [data-player-mat]')).toBeVisible()
@@ -143,4 +183,41 @@ test('no hand card ends in a bare ellipsis at D', async ({ page }, testInfo) => 
       expect(parseFloat(await p.evaluate((e) => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12)
     }
   }
+})
+
+// Plan item 566: a big mid-game turn deals its cards in rows; a Supply or Rebut card there shows each option's key
+// whole (the rows' picture-window padding squeezed the keys' labels to nothing, red on round 4 of most deals).
+test('a Supply card in rows shows its option keys whole', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop only')
+  test.setTimeout(120_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=4')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '1')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.mouse.move(5, 5)
+  await expect
+    .poll(() => page.evaluate(() => (document.querySelector('.end-screen') ? 99 : Number(document.querySelector('.map-wrap svg.map[data-round]')?.getAttribute('data-round') ?? 0))), { timeout: 90_000 })
+    .toBeGreaterThanOrEqual(4)
+  test.skip(await page.locator('.end-screen').isVisible(), 'the game ended early')
+  // the hand is dealt after Hollowell's turn plays back
+  await expect(page.locator('.table-hand [data-hand-card]').first()).toBeVisible({ timeout: 20_000 })
+  await page.waitForTimeout(1500)
+  const family = page.locator('.table-hand .action-family')
+  test.skip((await family.count()) === 0, 'no Supply or Rebut card this turn')
+  const keys = await family.first().locator('.action-family-option > button').evaluateAll((bs) =>
+    bs.map((b) => {
+      const label = b.querySelector<HTMLElement>('.action-label')!
+      const card = b.closest('.action-family')!.getBoundingClientRect()
+      const r = b.getBoundingClientRect()
+      return { text: label.textContent ?? '', w: label.getBoundingClientRect().width, cut: label.scrollWidth > label.clientWidth + 1, inside: r.right <= card.right + 0.5 }
+    }),
+  )
+  expect(keys.length).toBeGreaterThanOrEqual(1)
+  for (const k of keys) {
+    expect(k.w, k.text).toBeGreaterThan(20)
+    expect(k.cut, k.text).toBe(false)
+    expect(k.inside, k.text).toBe(true)
+  }
+  await expectNothingCovered(page, 'round 4')
 })

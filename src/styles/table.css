@@ -3382,8 +3382,9 @@ html.no-animations .table-cath-line { animation: none; }
      window a share of it. */
   .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 20px), 100px); width: var(--hand-card-w, 214px); height: 90px; }
   .game-layout .table-hand[data-rows] .action-item[data-wide] { width: calc(var(--hand-card-w, 214px) * 1.19); }
+  /* (not a Supply/Rebut card's option keys: the picture window's padding squeezed their labels to nothing, plan item 566) */
   .game-layout .table-hand[data-rows] .action-item > button:first-child,
-  .game-layout .table-hand[data-rows] .action-item .action-card-draggable { position: relative; padding-left: calc(var(--win) + 12px); }
+  .game-layout .table-hand[data-rows] .action-item:not(.action-family) .action-card-draggable { position: relative; padding-left: calc(var(--win) + 12px); }
   .game-layout .table-hand[data-rows] .action-item .action-label > svg.action-art[data-scene] {
     position: absolute;
     left: 6px;
