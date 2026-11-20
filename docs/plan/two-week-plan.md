@@ -5396,7 +5396,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-front and cathode-title specs pass (P and D); posters re-rendered if the title's sources change; shots P, D and 844x390.
 - **Size:** 2
 
-## 553. [ ] The bugs from the 2026-11-20 05:00 critique, fixed as one batch
+## 553. [ ] The bugs from the 2026-11-20 05:00 critique, fixed as one batch *(lane A, in progress)*
 - `cath-game-D` (1218-1398 x 350-435): the producers' bubble 'Favourite pair, she says. Mara, she means me.' has its tail on Mara, but Tomas is speaking. Name or point at the speaker.
 - `cath-game-D` (1000-1150 x 820-860): 'Supply 1 Outlet · Brindle Hills' wraps with a stray leading '·'.
 - `cath-game-P` (300-370 x 595-612): the '9 more' pill overlaps the top-right of the last fanned card.
