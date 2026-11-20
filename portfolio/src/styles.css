@@ -1995,7 +1995,7 @@ h1 {
     height: 5%;
     left: 4%;
     right: 4%;
-    z-index: var(--z-base);
+    z-index: var(--z-glow);
     background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 92%, transparent), color-mix(in srgb, var(--ink) 50%, transparent) 60%, transparent);
   }
   /* her line, a bubble with its tail to her */
