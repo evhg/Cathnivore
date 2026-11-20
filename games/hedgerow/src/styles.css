@@ -5801,8 +5801,11 @@ img.act-scene {
   #screen-select li.act .node.level-boss .level-num { width: 84px; height: 84px; }
   #screen-select li.act .node .level-name { font-size: var(--fs-body); }
   #screen-select li.act.act-has-card .lcard-cath-face { margin: 0; }
-  #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait { width: 40px; height: 40px; }
+  /* plan item 560: the portrait sits inside its slip, ring and all (its 2 px ring and 3 px drop ran past the slip's top
+     and foot and read as laid over the border): a 1.5 px ring, no drop; the words 12 px clear of the counter badge */
+  #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait { width: 40px; height: 40px; box-shadow: 0 0 0 1.5px var(--line); }
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait img { width: 36px; height: 36px; }
+  #screen-select li.act.act-has-card .lcard-enemies li { padding-left: 4px; gap: 12px; }
   #screen-select li.act.act-has-card .lcard-play { width: 100%; }
 }
 /* Plan item 471: on a desktop 860 px tall or more each stop is a little diorama of its landmark, 112 px (the boss lot
