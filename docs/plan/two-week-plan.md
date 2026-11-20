@@ -5500,7 +5500,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-classpick specs pass (P, D); cathode-type test; shots P and D.
 - **Size:** 1
 
-## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(handed back 2026-11-20 08:35 by lane A after slice 1: the setup preview's discs, the producer stamps, Back to Title, the MUM postcard and 'This week' done or checked below; the rest open)*
+## 560. [ ] The bugs from the 2026-11-20 08:15 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique; check each at 2x before fixing)*
 - `cath-setup-D` (530-625 x 168-205): Tomas's 'Market Day' badge wraps and crowds the card edge; (715-800 x 135-160) 'Dr Ines Farrow' wraps. **Fixed 08:25 lane A:** a desktop nameplate's stamp drops its picture at every width (was 1100-1279 only), so 'Market Day' and 'On Air' keep one line at 1280-1600; 'Dr Ines Farrow' and 'Second Opinion' stay two balanced lines (kept: the card can't take either on one).
 - `cath-setup-D` (125-350 x 730-765): the pin labels about 12 px; 'This week' red on cream, low contrast. **Checked, kept (that half):** the labels are `--fs-caption` (13-14 px) and 'This week' is #873D2D on cream, about 7:1. (1185-1240 x 805-820): 'OPEN' above Start about 10 px pale on green.
