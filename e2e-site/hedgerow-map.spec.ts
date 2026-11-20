@@ -764,9 +764,9 @@ test('plan item 471: on a phone the next stop opens clear of the level card', as
 })
 
 // Plan item 547: the act's ground in full colour (every act's land, played or not, at a mean HSV saturation of 0.35
-// or more; about 0.15 before), Cath 240 px or more at 1440x900 standing on her shadow, and the props stood as
-// vignettes on patches of ground, every prop clear of every stop's name.
-test('plan item 547: full-colour ground, a 240 px Cath and props as vignettes', async ({ page }, testInfo) => {
+// or more; about 0.15 before), Cath standing on her shadow, and the props stood as vignettes on patches of ground,
+// every prop clear of every stop's name. (Plan item 564 brought her back to scale: 118 px up to 1.2x a stop's coin.)
+test('plan item 547: full-colour ground, Cath to scale and props as vignettes', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'site-desktop', 'desktop sizes')
   await page.setViewportSize({ width: 1440, height: 900 })
   await seed(page, 13)
@@ -801,14 +801,50 @@ test('plan item 547: full-colour ground, a 240 px Cath and props as vignettes', 
     return {
       sats,
       cath: you.getBoundingClientRect().height,
+      coin: document.querySelector('.node.next .level-num')!.getBoundingClientRect().height,
       shadow: getComputedStyle(you, '::after').content !== 'none',
       pads: li.querySelectorAll('.scenery .prop-pad').length,
       hits: props.filter((p) => names.some((n) => ov(p.getBoundingClientRect(), n))).map((p) => p.dataset.prop),
     }
   })
   for (const [act, s] of Object.entries(m.sats)) expect(s, `act ${act} ground`).toBeGreaterThanOrEqual(0.35)
-  expect(m.cath).toBeGreaterThanOrEqual(240)
+  expect(m.cath).toBeGreaterThanOrEqual(118)
+  expect(m.cath).toBeLessThanOrEqual(m.coin * 1.2 + 0.5)
   expect(m.shadow).toBe(true)
   expect(m.pads).toBeGreaterThanOrEqual(2)
   expect(m.hits).toEqual([])
+})
+
+// Plan item 564: at 1440x900 a field path crosses the band between the rows (y 470-700 on act 1), props keep off it,
+// and Cath is at most 1.2x a stop's coin and clear of every stop's name, stars and tag.
+test('plan item 564: a field path joins the rows and Cath walks to scale', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'desktop sizes')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  for (const n of [0, 13, 24]) {
+    await seed(page, n)
+    await page.locator('.level-card').waitFor()
+    await page.waitForTimeout(800)
+    const m = await page.evaluate(() => {
+      const you = document.querySelector<HTMLElement>('.node.next .you')!
+      const li = you.closest('li.act')!
+      const coins = [...li.querySelectorAll('.stop .level-num')].map((e) => e.getBoundingClientRect())
+      const top = coins.slice(0, 5).reduce((a, r) => Math.max(a, r.bottom), 0)
+      const foot = coins.slice(5, 10).reduce((a, r) => Math.min(a, r.top), 1e9)
+      const bed = li.querySelector<SVGPathElement>('.foot-bed')!
+      const k = bed.getScreenCTM()!
+      let mid = 0
+      const len = bed.getTotalLength()
+      for (let s = 0; s <= len; s += len / 60) {
+        const p = bed.getPointAtLength(s).matrixTransform(k)
+        if (p.y > top && p.y < foot) mid++
+      }
+      const y = you.getBoundingClientRect()
+      const ov = (a: DOMRect, b: DOMRect) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1
+      const labels = [...li.querySelectorAll('.stop .level-name, .stop .level-stars, .stop .start-tag')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0)
+      return { mid, h: y.height, coin: coins[0]!.height, hits: labels.filter((r) => ov(y, r)).length }
+    })
+    expect(m.mid, `${n} won: path points between the rows`).toBeGreaterThanOrEqual(20)
+    expect(m.h).toBeLessThanOrEqual(m.coin * 1.2 + 0.5)
+    expect(m.hits, `${n} won: labels under Cath`).toBe(0)
+  }
 })

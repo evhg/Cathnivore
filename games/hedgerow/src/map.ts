@@ -1634,8 +1634,41 @@ function drawLane(svg: SVGSVGElement, lane: [number, number][], detours: Array<[
   const walked = Math.min(w0 + detours.filter(([at]) => at < w0).length, full.length - 1);
   for (const pl of svg.querySelectorAll("path")) {
     const cls = pl.getAttribute("class");
+    if (cls?.startsWith("foot-")) continue;
     pl.setAttribute("d", cls === "lane-walked" ? (walked > 0 ? trailPath(full.slice(0, walked + 1)) : "") : trailPath(full));
   }
+}
+
+/**
+ * Plan item 564: on the rows road the band between the two rows was empty ground (hedge-menu-D, y 470-700). A field
+ * path leaves the lane between the third and fourth stops, winds down and west through the band in an S, and joins
+ * row 2 between its last two stops: the two rows read as one country. Lane order: row 1 runs west to east (stops
+ * 0-4), row 2 east to west (5-9). None on the vertical road (a phone), or with fewer than ten stops.
+ */
+export function footpathPoints(pts: [number, number][]): [number, number][] {
+  if (pts.length < 10) return [];
+  const mid = (a: [number, number], b: [number, number]): [number, number] => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const a = mid(pts[2]!, pts[3]!);
+  const b = mid(pts[8]!, pts[9]!);
+  const d = b[1] - a[1];
+  if (d <= 0) return [];
+  const x = (t: number): number => Math.round((a[0] + (b[0] - a[0]) * t) * 10) / 10;
+  const y = (t: number): number => Math.round((a[1] + d * t) * 10) / 10;
+  // (the S: out a little east of the straight line near the top, west of it near the foot)
+  const dx = Math.abs(b[0] - a[0]) * 0.18;
+  return [
+    a,
+    [x(0.06) + dx * 0.4, y(0.3)],
+    [x(0.38) + dx * 0.5, y(0.47)],
+    [x(0.66) - dx * 0.5, y(0.55)],
+    [x(0.94) - dx * 0.4, y(0.74)],
+    b,
+  ];
+}
+
+function drawFootpath(svg: SVGSVGElement, pts: [number, number][]): void {
+  const d = trailPath(footpathPoints(pts));
+  for (const pl of svg.querySelectorAll("path[class^='foot-']")) pl.setAttribute("d", d);
 }
 
 /** Threads each act's lane through the real centres of its nodes (and from the cottage door), in the svg's 0-100 box. */
@@ -1742,11 +1775,11 @@ function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElemen
     .filter(({ b }) => b.width > 0)
     .map(({ b, m }) => ({ left: b.left - m, right: b.right + m, top: b.top - m, bottom: b.bottom + m, width: b.width + 2 * m }));
   const out = you.dataset.side === "right" ? 1 : -1;
-  // Plan item 547: at her full 244 px (a tall desktop) she may reach up into the row above; with no clear spot she
-  // stands at 70% (the old 172 px) rather than over a name.
-  for (const k of [1, 0.7]) {
+  // Plan item 547: at her full height on a tall desktop (132 px since item 564) she may reach up into the row above;
+  // with no clear spot she stands at 90% (119 px) rather than over a name.
+  for (const k of [1, 0.9]) {
     if (k < 1) {
-      if (getComputedStyle(you).height !== "244px") return;
+      if (getComputedStyle(you).height !== "132px") return;
       you.style.setProperty("--you-k", String(k));
     }
     const r = boxIn(you, trail);
@@ -1857,6 +1890,9 @@ function layoutLanes(list: HTMLElement): void {
       li.style.setProperty("--gate-x", `${Math.round(box.left + (pts[pts.length - 1]![0] / 100) * box.width - lb.left)}px`);
     }
     drawLane(svg, [start, ...pts], detours);
+    // (only where the rows stand 140 px or more apart: a landscape phone's 105 px band crowded the names)
+    const gap = pts.length >= 10 ? ((pts[9]![1] - pts[0]![1]) / 100) * box.height : 0;
+    drawFootpath(svg, vertical || gap < 140 ? [] : pts);
     scenery.push([trail, svg, vertical]);
   }
   // Every lane is drawn before any prop is measured, so the layout is read once rather than once an act.
@@ -1905,10 +1941,11 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
     const r = el.getBoundingClientRect();
     if (r.width > 0) obstacles.push({ left: r.left - tb.left, top: r.top - tb.top, right: r.right - tb.left, bottom: r.bottom - tb.top, width: r.width });
   }
-  const bed = svg.querySelector<SVGPathElement>(".lane-bed");
   const lane: [number, number][] = [];
   const box = svg.getBoundingClientRect();
-  if (bed?.getAttribute("d")) {
+  // (plan item 564: the field path too, so no prop stands on it)
+  for (const bed of svg.querySelectorAll<SVGPathElement>(".lane-bed, .foot-bed")) {
+    if (!bed.getAttribute("d")) continue;
     // About 80 points along the bed (getPointAtLength is slow), with the straight runs between filled in every 4 px.
     const len = bed.getTotalLength();
     let last: [number, number] | null = null;
@@ -2551,6 +2588,14 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     const walkedTo = nextIdx >= 0 ? nextIdx + 1 : lvs.every((lv) => data.stars[String(lv.id)]) ? lvs.length + 1 : 0;
     path.dataset.walked = String(walkedTo);
     path.dataset.exit = lvs.length === 10 ? "1" : "";
+    // Plan item 564: a field path (drawn under the lane, so the lane covers where it joins) through the band between
+    // the rows; layoutLanes threads it once the stops are laid out.
+    for (const cls of ["foot-edge", "foot-bed", "foot-tread"]) {
+      const pl = document.createElementNS(svgNS, "path");
+      pl.setAttribute("class", cls);
+      pl.setAttribute("vector-effect", "non-scaling-stroke");
+      path.append(pl);
+    }
     for (const cls of ["lane-hedge", "lane-hedge-lit", "lane-edge", "lane-bed", "lane-walked", "lane-ruts"]) {
       const pl = document.createElementNS(svgNS, "path");
       pl.setAttribute("class", cls);

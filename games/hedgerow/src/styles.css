@@ -279,6 +279,21 @@ button {
   stroke-width: 1.5;
   stroke-dasharray: 5 7;
 }
+/* Plan item 564: the field path through the band between the rows: narrower than the lane, no hedge, a trodden line
+   down its middle, so it reads as a footpath across the fields joining the two rows. */
+.trail-path .foot-edge {
+  stroke: color-mix(in srgb, var(--soil) 42%, transparent);
+  stroke-width: 11;
+}
+.trail-path .foot-bed {
+  stroke: color-mix(in srgb, var(--wheat) 55%, var(--paper));
+  stroke-width: 7;
+}
+.trail-path .foot-tread {
+  stroke: color-mix(in srgb, var(--soil) 30%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 6;
+}
 /* The country the lane crosses: one painted patchwork per act (--ground, set by map.ts), behind everything. */
 .trail {
   background: var(--ground) center / 100% 100% no-repeat;
@@ -5232,10 +5247,10 @@ img.act-scene {
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 22px); }
 }
 @media (min-width: 1100px) and (min-height: 860px) {
-  /* plan item 250: 120 px at D; plan item 441: 172 px; plan item 547: 244 px, the map's guide at the scale of its
-     landmarks, standing on her own shadow */
-  #screen-select .node.next .you { right: calc(100% - 50px * var(--you-k, 1)); width: calc(110px * var(--you-k, 1)); height: calc(244px * var(--you-k, 1)); }
-  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 50px * var(--you-k, 1)); }
+  /* plan item 250: 120 px at D; plan item 441: 172 px; plan item 547: 244 px; plan item 564: 132 px, at most 1.2x a
+     stop's 112 px coin, so she walks the trail to scale and keeps off the row above's names */
+  #screen-select .node.next .you { right: calc(100% - 28px * var(--you-k, 1)); width: calc(60px * var(--you-k, 1)); height: calc(132px * var(--you-k, 1)); }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 28px * var(--you-k, 1)); }
 }
 /* Plan item 547: her shadow on the ground, cast away from the sun (top right), held still while she bobs */
 #screen-select .node.next .you::after {
