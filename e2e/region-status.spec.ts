@@ -66,3 +66,20 @@ async function checkStatuses(page: Page, hasTouch: boolean) {
     expect(s.others, `${s.region} status on another plate`).toBe(0)
   }
 }
+
+// Plan item 560: the setup's board preview fits its discs too (it measures its board after the first paint).
+test("the setup preview's statuses meet no other plate", async ({ page }) => {
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await expect(page.locator('svg.map .region-status').first()).toBeVisible()
+  await page.waitForTimeout(800)
+  const hits = await page.evaluate(() => {
+    const signs = [...document.querySelectorAll('svg.map .region-sign')]
+    return signs.flatMap((sign) => {
+      const b = sign.querySelector('.region-status')!.getBoundingClientRect()
+      return signs.filter((o) => o !== sign).map((o) => o.querySelector('.region-plaque')!.getBoundingClientRect())
+        .filter((o) => b.left < o.right && o.left < b.right && b.top < o.bottom && o.top < b.bottom).map(() => sign.getAttribute('data-sign'))
+    })
+  })
+  expect(hits).toEqual([])
+})

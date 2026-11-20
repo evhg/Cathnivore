@@ -890,7 +890,8 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     return () => {
       live = false
     }
-  }, [active.length])
+    // hexPx: a measured board re-renders each status disc's size and estimated place, so it's fitted again.
+  }, [active.length, hexPx])
 
   return (
     <svg ref={svgRef} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
