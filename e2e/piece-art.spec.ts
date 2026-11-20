@@ -4,7 +4,9 @@ import { test, expect } from '@playwright/test'
 // lip no longer reserves room for item 172's old pile of copies) and the producers stand on wider turned-wood
 // standees, about 1.2x their old art. Slice 1's ratchet on a fixed deal (was 39 / 32 px at D and 22 / 18 at P,
 // round 1 / round 6): the median piece's art 42 / 35 px wide at 1440x900 and 24 / 20 at 390x844, none under 28 / 16.
-// The item's 48 / 28 needs the landmark to yield room in crowded hexes (slice 2).
+// Slice 2 (the row steps off the middle column so the landmark stands beside it; no room kept for item 550's retired
+// threat badge): 48.5 / 38.5 at D and 27.5 / 21.9 at P. The item's 48 holds at D round 1; 28 at P needs a tighter
+// three-stack row (slice 3).
 for (const round of [1, 6]) {
   test(`pieces are miniatures at round ${round}`, async ({ page }, info) => {
     test.setTimeout(120_000)
@@ -34,7 +36,7 @@ for (const round of [1, 6]) {
     expect(widths.length).toBeGreaterThan(0)
     const sorted = widths.map((p) => p.w).sort((a, b) => a - b)
     const median = sorted[Math.floor(sorted.length / 2)]!
-    const floor = desktop ? (round === 1 ? 42 : 35) : round === 1 ? 24 : 20
+    const floor = desktop ? (round === 1 ? 48 : 38) : round === 1 ? 27 : 21
     expect(median, `median piece art ${JSON.stringify(widths)}`).toBeGreaterThanOrEqual(floor)
     for (const p of widths) expect(p.w, `${p.kind} art`).toBeGreaterThanOrEqual(desktop ? 28 : 16)
   })

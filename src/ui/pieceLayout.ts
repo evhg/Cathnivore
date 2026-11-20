@@ -108,7 +108,11 @@ function row(ws: number[]): number[] {
   return out
 }
 
-function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1, eScale = scale, side = false): { rects: PieceRect[]; enemyY: number; producerY: number } {
+/** Plan item 554 slice 2: the pieces' row may step off the hex's middle column (tile units), so a large landmark
+ *  stands beside them on the other flank rather than the pieces shrinking to leave it the foot of the hex. */
+export const ROW_SHIFTS = [0, 14, -14, 24, -24, 32, -32] as const
+
+function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1, eScale = scale, side = false, dx = 0): { rects: PieceRect[]; enemyY: number; producerY: number } {
   const out: PieceRect[] = []
   const lw = input.labelWidth / 2
   out.push({ kind: 'label', x0: -lw, y0: LABEL_Y - 15, x1: lw, y1: LABEL_Y - 15 + LABEL_H })
@@ -130,13 +134,13 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   const pws = Array.from({ length: input.producers }, (_, k) => PRODUCER_W * scale + ((input.stallCounts?.[k] ?? COUNT_FROM) >= COUNT_FROM ? countR * 0.35 : 0))
   // Plan item 282: side by side, Hollowell's stacks and the producers share one row across the hex's wide middle,
   // standing on one ground line (the stacks' feet are the producers' baseline).
-  const xs = side ? row([...ws, ...pws]) : row(ws)
+  const xs = (side ? row([...ws, ...pws]) : row(ws)).map((x) => x + dx)
   xs.slice(0, ws.length).forEach((x, k) => {
     const top = enemyY - (STACK_H * eScale) / 2 - (ornaments ? ORNAMENT_H * eScale : 0) - (counted(slots[k]!) ? countR * 0.5 : 0)
     out.push({ kind: slots[k]!, x0: x, y0: top, x1: x + ws[k]!, y1: bottom })
   })
   const producerY = side && slots.length ? bottom - PRODUCER_H * scale * 0.4 : Math.max(PRODUCER_Y, (slots.length ? bottom : ceil) + GAP + PRODUCER_H * scale * 0.6)
-  ;(side ? xs.slice(ws.length) : row(pws)).forEach((x, k) =>
+  ;(side ? xs.slice(ws.length) : row(pws).map((x) => x + dx)).forEach((x, k) =>
     // The art's base shadow reaches 2.2 units past the slot's foot (ProducerMini), so the slot reaches it too.
     out.push({ kind: 'producer', i: k, x0: x, y0: producerY - PRODUCER_H * scale * 0.6, x1: x + pws[k]!, y1: producerY + PRODUCER_H * scale * 0.4 + 2.4 * scale }),
   )
@@ -210,10 +214,11 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
   if (input.badge)
     for (let k = badgeK; k > 1 + 1e-9; k = Math.round((k - 0.05) * 100) / 100)
       for (let scale = start; scale >= (lmMin > 0 ? Math.max(pieceFloor, stallFloor) : stallFloor) - 1e-9; scale = Math.round((scale - 0.05) * 100) / 100)
-        for (const ornaments of tryOrnaments) {
-          const p = place(input, scale, ornaments, countR, k)
-          if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start, lmMin)
-        }
+        for (const ornaments of tryOrnaments)
+          for (const dx of ROW_SHIFTS) {
+            const p = place(input, scale, ornaments, countR, k, scale, false, dx)
+            if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start, lmMin, dx)
+          }
   if (badgeOnly) return null
   // Item 341: the pieces give the landmark room only down to their nominal size; below that, it takes what's left.
   const floor = lmMin > 0 ? Math.max(pieceFloor, stallFloor) : 0.35
@@ -221,10 +226,11 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
     for (const ornaments of tryOrnaments)
       // Item 341: with a landmark to keep room for, the stacks and stalls may also stand in one row across the
       // hex's wide middle, which frees its lower half for the landmark.
-      for (const side of lmMin > 0 && input.producers && (input.outlets || input.buyouts || input.doubt) ? [false, true] : [false]) {
-        const p = place(input, scale, ornaments, countR, 1, scale, side)
-        if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin)
-      }
+      for (const side of lmMin > 0 && input.producers && (input.outlets || input.buyouts || input.doubt) ? [false, true] : [false])
+        for (const dx of ROW_SHIFTS) {
+          const p = place(input, scale, ornaments, countR, 1, scale, side, dx)
+          if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin, dx)
+        }
   if (lmMin > 0) return null
   const scale = 0.35
   return { ...place(input, scale, false, countR), scale, enemyScale: scale, ornaments: false, countR, badgeK: 1 }
@@ -232,11 +238,11 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
 
 /** Plan item 282: with the producers placed at the tray's scale, Hollowell's stacks take the largest scale up to
  *  `start` (the hex's own ceiling) that still fits beside them. */
-function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number): PieceTray {
+function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx = 0): PieceTray {
   if (!input.producers || !(input.outlets || input.buyouts || input.doubt)) return t
   for (let e = start; e > t.scale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
     for (const side of [false, true]) {
-      const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side)
+      const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side, dx)
       if (fits(p.rects, lmMin)) return { ...t, ...p, enemyScale: e }
     }
   return t

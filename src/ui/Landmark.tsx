@@ -9,7 +9,9 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
   switch (kind) {
     case 'cross':
       return (
-        <g {...INK}>
+        // Plan item 554: 1.5 down, so its finial (-14 with item 279's taller shaft) sits inside the 26-unit box the
+        // board keeps clear for it (landmarkSpot's ART_HALF 13): a stack placed just above it met its top.
+        <g {...INK} transform="translate(0 1.5)">
           {/* Plan item 279: a broader stepped plinth and a taller shaft, so it holds 28 px on a phone like the rest. */}
           <path d="M-12 11 H12 V7 H-12 Z M-8.5 7 V3 H8.5 V7" fill="var(--region-capital)" />
           <path d="M-1.8 3 V-10 H1.8 V3 Z" fill="var(--paper)" />

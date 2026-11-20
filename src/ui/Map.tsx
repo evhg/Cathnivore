@@ -445,7 +445,9 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = 
   const shift = ((copies - 1) * off) / 2
   return (
     <g className="producer-mini stall-pin" data-producer={pid} data-face={face ?? 'neutral'}>
-      <ellipse cx={cx + 1.2 * s} cy={foot + 3 * s} rx={12.6 * s} ry={3.4 * s} className="token-shadow" />
+      {/* Plan item 554: the cast shadow kept inside its slot (it reached 0.8 units a scale past the right edge, onto a
+          landmark the layout had placed just clear of the slot) */}
+      <ellipse cx={cx + 0.6 * s} cy={foot + 3 * s} rx={12.4 * s} ry={3.4 * s} className="token-shadow" />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill="black" opacity={0.28} />
       <ellipse cx={cx} cy={foot} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
@@ -967,7 +969,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             stallCounts: stalls.map(([, n]) => n),
             scheme: false,
             labelWidth: REGIONS[id].name.length * 8.6 + 16,
-            badge: squeezeTargets.includes(id) || expandTargets.includes(id),
+            // Plan item 554: no room kept for a threat badge: item 550 made the target the hex's lit rim (threat-edge),
+            // so the badge box only cost a targeted hex's pieces their size.
+            badge: false,
           },
           hexPx,
         )
