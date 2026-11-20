@@ -5681,7 +5681,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the board covers 60%+ of each poster crop; no flat cream area over 15% of the poster; keyart-fresh passes; shots of portfolio and /games/ P and D.
 - **Size:** 1
 
-## 578. [ ] The bugs from the 2026-11-20 20:05 critique, fixed as one batch
+## 578. [ ] The bugs from the 2026-11-20 20:05 critique, fixed as one batch *(lane A, in progress)*
 - `cath-game-D` 740-875 x 133-160 (and 625-785 / 830-995 x 313-340): status discs touch the last letter of Highmoor, Brindle Hills, Kingsmarket; same in `cath-setup-D` 550-680 x 285-312.
 - `cath-setup-D` 985-1120 x 565-775: the 'This week at the market / Dry Spell' card overlaps the board's right hex rim (885-990).
 - `ns-play-D` 590-870 x 790-830: a ghosted duplicate of 'Nobody hears the shot...' at her feet (item 344 found this was the subtitle mid-reveal: check timing before fixing).
