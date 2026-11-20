@@ -83,10 +83,19 @@ const ui = {
   toast: $<HTMLParagraphElement>('toast'),
 }
 
-const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'), () => {
-  placeValleyCath()
-  placeValleyFolk()
-})
+const host = createHost($<HTMLSpanElement>('host-face'), $<HTMLParagraphElement>('host-line'), document.getElementById('valley-cath'), () => scheduleValleyPlace())
+/** Cath's spot (and her line's) and the folk round her, placed once on the next frame however many renders and lines
+ *  asked for it: each placement measures the valley, and the lesson's handover ran it three times in one task, holding
+ *  the daily's board past 1.5 s on a busy CI (E2E red on 03c4226). */
+let valleyPlaceFrame = 0
+function scheduleValleyPlace(): void {
+  if (valleyPlaceFrame) return
+  valleyPlaceFrame = requestAnimationFrame(() => {
+    valleyPlaceFrame = 0
+    placeValleyCath()
+    placeValleyFolk()
+  })
+}
 $<HTMLDivElement>('help-cath').innerHTML = cathMarkup('wink', 'face')
 
 const data = load()
@@ -515,7 +524,8 @@ function placeDitch(): void {
     svg.removeAttribute('data-running')
     svg.removeAttribute('data-full')
   } else if (!svg.hasAttribute('data-running') && !svg.hasAttribute('data-full')) {
-    if (garden.dataset.garden === undefined) svg.setAttribute('data-full', '') // a board opened already watered
+    // a board opened already solved (a field merely wet at the first placement still runs its water in)
+    if (garden.dataset.garden === undefined && solved) svg.setAttribute('data-full', '')
     else {
       svg.setAttribute('data-running', '')
       ditchRun = window.setTimeout(() => {
@@ -1235,8 +1245,7 @@ function render(): void {
   const folk = document.getElementById('valley-folk')
   folk?.toggleAttribute('data-working', [...flow.wet].some((i) => puzzle.cells[i]!.kind === 'field'))
   folk?.toggleAttribute('data-cheer', flow.solved)
-  placeValleyCath()
-  placeValleyFolk()
+  scheduleValleyPlace()
   if (game.taps > 0) {
     const fields = [...flow.wet].filter((i) => puzzle.cells[i]!.kind === 'field').length
     host.react(flow.wet.size / playable, flow.solved, fields, flow.leaks.size > 0)
