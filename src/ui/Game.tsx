@@ -1244,7 +1244,35 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // A name that no longer fits its face with the strip kept is set tighter first (item 218: the picture window
     // leaves less height); only then does it take the strip back (it's still read whole).
     for (const c of cards) if (overflows(c)) c.dataset.dense = ''
-    for (const c of cards) if (overflows(c)) c.style.setProperty('--lap', '0px')
+    const open = new Set<number>()
+    cards.forEach((c, i) => { if (overflows(c)) { c.style.setProperty('--lap', '0px'); if (i < cards.length - 1) open.add(i) } })
+    // Plan item 566: a card that took its strip back is never covered there: in one row the next card is dealt clear
+    // of it, the others overlapping a little more to make the room (at most a fifth of a card, as ever). The 1440x900
+    // critique's 'Harbour Stall Licence' ran under Graft.
+    if (rows.length === 1 && open.size > 0) {
+      const n = cards.length
+      const sum = widths.reduce((x, y) => x + y, 0)
+      const CLEAR = 2
+      const rest = n - 1 - open.size
+      const step = rest > 0 ? Math.min(-LAP, (room - sum - CLEAR * open.size) / rest) : 0
+      if (rest === 0 || step >= -0.2 * Math.min(...widths) - 0.01) {
+        const width = sum + CLEAR * open.size + step * rest
+        const was = cards.map((c) => ['--x', '--lap', '--lap-i'].map((k) => c.style.getPropertyValue(k)))
+        let x = padL + Math.max(0, room - width)
+        cards.forEach((card, i) => {
+          card.style.setProperty('--x', `${x.toFixed(1)}px`)
+          const s = i === n - 1 ? 0 : open.has(i) ? CLEAR : step
+          if (!open.has(i)) {
+            card.style.setProperty('--lap', i < n - 1 ? `${Math.max(0, Math.round(-s))}px` : '0px')
+            card.style.setProperty('--lap-i', i < n - 1 ? `${Math.max(0, Math.round(-s))}px` : '0px')
+          }
+          x += widths[i]! + s
+        })
+        // the others overlap more now: if that pushes another name off its face, the deal stays as it was
+        if (cards.some((c, i) => !open.has(i) && i < n - 1 && overflows(c)))
+          cards.forEach((c, i) => ['--x', '--lap', '--lap-i'].forEach((k, j) => c.style.setProperty(k, was[i]![j]!)))
+      }
+    }
     }
     fan()
     window.addEventListener('resize', fan)
