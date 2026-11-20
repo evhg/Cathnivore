@@ -21,3 +21,14 @@
   inset: 0;
   border-radius: 0;
 }
+
+/* Plan item 577: the poster's table is the market's gingham cloth, not bare cream either side of the board (Runnel,
+   NIGHT SHIFT and Hedgerow fill their frames; this one read as a small board on blank paper). The Setup's own cloth
+   (global.css, item 67), a touch stronger, with the light falling off toward the frame's edges. */
+[data-keyart] .map-wrap {
+  background:
+    radial-gradient(ellipse 62% 70% at 50% 50%, transparent 55%, color-mix(in srgb, var(--wood) 30%, transparent)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--clay) 18%, transparent) 0 22px, transparent 22px 44px),
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--clay) 18%, transparent) 0 22px, transparent 22px 44px),
+    var(--paper);
+}

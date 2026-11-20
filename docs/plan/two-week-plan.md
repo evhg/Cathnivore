@@ -5675,7 +5675,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 levels 21 and 34 differ in that strip (2,000+ px pixel-diff region); the depot box meets neither the lane nor queued vans; key art re-shot (keyart-fresh).
 - **Size:** 1
 
-## 577. [ ] Site: Cathnivore's poster as full-bleed as the other three *(lane B, in progress)*
+## 577. [x] Site: Cathnivore's poster as full-bleed as the other three *(done 2026-11-20 20:45, lane B: the `?keyart` frame lays the market's gingham cloth (the desktop Setup's, item 67, a touch stronger) under the board with the light falling off to the edges, so no flat cream is left; the board already fills the frame's height (a tighter crop cut the region names). Key art re-shot (`npm run keyart cathnivore`), keyart-fresh, keyart, games-cards and portfolio specs pass P and D. Shots scratchpad s577, ka-cath.png)*
 - **Why:** `portfolio-D` 640-925 x 155-340: a small board on blank cream while Runnel, NIGHT SHIFT and Hedgerow fill their frames; same on `games-D` 112-400 x 540-740 and `games-P` 20-375 x 605-810.
 - **Build:** keep `?keyart` table-only (item 116) but crop to the board plus the gingham cloth, a crate and the bunting edge; `npm run keyart cathnivore`.
 - **Accept:** the board covers 60%+ of each poster crop; no flat cream area over 15% of the poster; keyart-fresh passes; shots of portfolio and /games/ P and D.
