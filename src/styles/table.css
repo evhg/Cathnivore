@@ -2965,6 +2965,8 @@ html.no-animations .cath-companion .cameo {
     height: 264px;
     overflow: hidden;
     filter: drop-shadow(0 4px 4px rgb(var(--shadow-ink) / .22));
+    /* Plan item 555: a new face (or pose) fades in over 200 ms instead of snapping */
+    animation: table-cath-face 200ms ease-out;
   }
   .table-cath-figure .cath-art,
   .table-cath-figure svg {
@@ -6401,3 +6403,7 @@ html.no-animations .plan-plaque-tab[data-slot] { animation: none; }
   .table-head .plan-strip[data-corp] { gap: var(--sp-2); }
   .table-head .plan-strip[data-corp] .plan-strip-target .plan-chip { letter-spacing: -.012em; }
 }
+
+@keyframes table-cath-face { from { opacity: .35; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .table-cath-figure { animation: none; } }
+html.no-animations .table-cath-figure { animation: none; }

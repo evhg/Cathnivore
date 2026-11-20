@@ -3836,7 +3836,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 </span>
               )}
             </p>
-            <span className="table-cath-figure" aria-hidden="true" key={`${cathPose ?? 'rest'}-${cathBeat.n}`}>
+            {/* Plan item 555: keyed by her expression too, so a change of face fades in over 200 ms (table.css). */}
+            <span className="table-cath-figure" aria-hidden="true" key={`${cathPose ?? 'rest'}-${cathBeat.n}-${cathReaction.expression}`}>
               <CathArt framing="half" pose={cathPose ?? SCREEN_POSE['cathnivore:game']} expression={cathReaction.expression} animate />
             </span>
           </section>

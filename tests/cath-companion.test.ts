@@ -12,6 +12,14 @@ describe("Cath's in-game reactions", () => {
     expect(CATH_REACTION_EXPRESSION.squeeze).not.toBe('delighted')
   })
 
+  // Plan item 555: the table's game events reach at least four of her faces (a liberation, an Expand, a Squeeze, a
+  // sale...), so she visibly reacts to the game rather than holding one look.
+  it('reaches at least four distinct expressions from game events', () => {
+    const reached = new Set(Object.values(CATH_REACTION_EXPRESSION))
+    expect(reached.size, [...reached].join(',')).toBeGreaterThanOrEqual(4)
+    for (const face of ['delighted', 'determined', 'worried', 'wink'] as const) expect(reached.has(face), face).toBe(true)
+  })
+
   it('gives every reaction one of her five expressions', () => {
     const faces = new Set(['smirk', 'delighted', 'determined', 'worried', 'wink'])
     for (const [reaction, face] of Object.entries(CATH_REACTION_EXPRESSION)) expect(faces.has(face), reaction).toBe(true)
