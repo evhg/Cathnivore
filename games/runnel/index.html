@@ -97,6 +97,12 @@
           <path class="vl-trickle vl-trickle-far" pathLength="100" d="M128 128C175 190 70 215 45 330S60 560 40 680 55 850 120 885 300 912 520 908 820 902 880 898" />
           <path class="vl-trickle" pathLength="100" d="M128 128C175 190 70 215 45 330S60 560 40 680 55 850 120 885 300 912 520 908 820 902 880 898" />
           <path class="vl-water" id="valley-water" pathLength="100" d="M128 128C175 190 70 215 45 330S60 560 40 680 55 850 120 885 300 912 520 908 820 902 880 898" />
+          <!-- Plan item 545: the board owns the screen: the valley falls back toward the paper away from the board. -->
+          <radialGradient id="vl-focus-g" cx="0.6" cy="0.46" r="0.62">
+            <stop offset="0.42" class="vl-focus-in" />
+            <stop offset="1" class="vl-focus-out" />
+          </radialGradient>
+          <rect class="vl-focus" width="1000" height="1000" fill="url(#vl-focus-g)" />
         </svg>
         <svg id="board" class="board" role="group" aria-label="Puzzle board"></svg>
         <div class="farm-deco" aria-hidden="true">

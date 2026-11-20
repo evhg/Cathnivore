@@ -3872,6 +3872,12 @@ body[data-mode='practice'] #week-slot {
     border-radius: 20px;
     overflow: hidden;
   }
+  /* Plan item 545: the valley a step quieter than the board's tiles, and washed toward the paper away from the board,
+     so the puzzle reads first (the patches were as saturated as the tiles). */
+  .valley { filter: saturate(.72); }
+  .vl-focus { pointer-events: none; }
+  .vl-focus-in { stop-color: var(--paper); stop-opacity: 0; }
+  .vl-focus-out { stop-color: var(--paper); stop-opacity: .42; }
   .vl-sky-top { stop-color: color-mix(in srgb, var(--vl-sky-top, var(--band)) var(--vk), var(--paper)); }
   .vl-sky-low { stop-color: color-mix(in srgb, var(--vl-sky-low, var(--band-2)) var(--vk), var(--paper)); }
   .vl-hill-far { fill: color-mix(in srgb, var(--vl-far, var(--lip-meadow)) var(--vk), var(--paper)); }
@@ -4204,7 +4210,7 @@ body[data-mode='practice'] #week-slot {
    glows. */
 .in-lesson .cell:not(.lesson-target) .tile { opacity: 1; }
 /* Plan item 229: a lesson quiets the valley without greying it (.8 brightness and .75 saturation on a rain day left slate). */
-.in-lesson .valley { filter: brightness(.92) saturate(.9); transition: filter 400ms ease; }
+.in-lesson .valley { filter: brightness(.92) saturate(.65); transition: filter 400ms ease; }
 
 /* ---- key art (plan item 116) ---- */
 /* `?keyart`, set on <html> by main.ts: the site poster's frame. The valley, the board and the farm fill the
