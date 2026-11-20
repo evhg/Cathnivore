@@ -5601,7 +5601,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Runnel specs pass; shots P and D, before and after a solve.
 - **Size:** 2
 
-## 568. [ ] Hedgerow 2D: the 3D field's colour, and a desktop field without dead margins
+## 568. [ ] Hedgerow 2D: the 3D field's colour, and a desktop field without dead margins *(lane B, in progress)*
 *(planned 2026-11-20 15:20, lane A, plan1120p critique)*
 - **Why:** the 2D renderer is the no-WebGL fallback and the test path. `hedge-l21-2d-D`: the beds (380-830 x 180-800) read teal-grey under a haze and the lane is a pale cream maze; the depot hangs off the field's left edge over the shore (150-320 x 410-550); at D the green margins either side of the field are flat. `hedge-l34-2d-P` has the same grey veil.
 - **Build:** item 561's grade in 2D: warmer, more saturated beds, a darker lane shade with pale kerbs, the haze lifted (`sunGrade`/`ambient` in render.ts); the field's surround at D drawn as hedge and shore (not flat colour); the depot inside the field frame.
