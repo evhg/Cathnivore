@@ -17,7 +17,9 @@
   --z-booth: 0;
   --z-booth-cath: 1;
   --z-booth-counter: 2;
-  --z-booth-words: 3;
+  /* plan item 563: at D Cath steps out in front of her counter */
+  --z-booth-host: 3;
+  --z-booth-words: 4;
   /* plan item 332: a poster's art, its loop, the scrim and its logotype, back to front */
   --z-poster-scrim: 2;
   --z-poster-logo: 3;

@@ -76,6 +76,28 @@ function produce(x1: number, x2: number, y: number): string {
   return o
 }
 
+/** A slatted wooden crate w wide with its foot at y, heaped with one kind of produce (`k` picks the colour). */
+function crate(x: number, w: number, y: number, k: number): string {
+  if (w < 40) return ''
+  const veg = ['#d9532e', '#8fbf4a', '#e8a53a', '#7a3a6b', '#c94a3a', '#9ccf5a']
+  const h = 46
+  const t = y - h
+  let o = `<rect x="${r(x)}" y="${r(t)}" width="${r(w)}" height="${h}" rx="3" fill="#b9814a"/>`
+  for (let i = 1; i < 3; i++) o += `<rect x="${r(x)}" y="${r(t + (h / 3) * i - 2)}" width="${r(w)}" height="3" fill="#6b3f24" opacity=".5"/>`
+  o += `<rect x="${r(x)}" y="${r(t)}" width="${r(w)}" height="4" rx="2" fill="#ffe2aa" opacity=".5"/>`
+  o += `<rect x="${r(x + 4)}" y="${r(t + 4)}" width="6" height="${h - 6}" fill="#6b3f24" opacity=".45"/><rect x="${r(x + w - 10)}" y="${r(t + 4)}" width="6" height="${h - 6}" fill="#6b3f24" opacity=".45"/>`
+  // the heap: two rows of fruit, the back row higher
+  let i = 0
+  for (const [dy, inset] of [[-14, 10], [-4, 4]] as const) {
+    for (let cx = x + inset + 8; cx <= x + w - inset - 8; cx += 15, i++) {
+      const rr = 8 + ((i * 5) % 3)
+      o += `<circle cx="${r(cx)}" cy="${r(t + dy + 6)}" r="${rr}" fill="${veg[(k + (i % 2)) % veg.length]}"/>`
+      o += `<circle cx="${r(cx - rr * 0.35)}" cy="${r(t + dy + 6 - rr * 0.4)}" r="${r(rr * 0.3)}" fill="#fff" opacity=".28"/>`
+    }
+  }
+  return o
+}
+
 let back: SVGSVGElement | null = null
 let front: SVGSVGElement | null = null
 
@@ -119,10 +141,12 @@ export function drawBooth(): void {
   s += `<rect x="${r(board.l - 7)}" y="${r(board.t - 7)}" width="${r(board.r - board.l + 14)}" height="4" rx="2" fill="#d9a15f" opacity=".6"/>`
   s += `<rect x="${r(board.l)}" y="${r(board.t)}" width="${r(board.r - board.l)}" height="${r(board.b - board.t)}" rx="3" fill="#232b28"/>`
   s += awning(x1, x2, roof)
-  // The counter: in front of Cath from the left post to just past her, its top at her hips, its foot on the rail.
+  // The counter: from the left post to the slate board, its top at her hips, its foot on the rail.
   // Plan item 326: 58% (was 60%), so the fruit meets her jacket hem and no trouser band shows above it.
+  // Plan item 563: she stands in front of it, whole (the counter layer sits behind her), so it runs on to the board
+  // and its price board hangs on the stretch beside her.
   const top = c.t + ch * 0.58
-  const cr = Math.min(c.r + 70, board.l - 22)
+  const cr = Math.max(c.r + 70, board.l - 22)
   let f = ''
   f += produce(x1 - 6, cr, top + 2)
   f += `<rect x="${r(x1 - 14)}" y="${r(top)}" width="${r(cr - x1 + 14)}" height="16" rx="4" fill="#d9a15f"/>`
@@ -132,8 +156,8 @@ export function drawBooth(): void {
   for (let x = x1 + 18; x < cr - 8; x += 26) planks += `M${r(x)} ${r(top + 17)}V${r(rail)}`
   f += `<path d="${planks}" stroke="#6b3f24" stroke-width="2" opacity=".55"/>`
   f += `<rect x="${r(x1 - 8)}" y="${r(top + 15)}" width="${r(cr - x1 + 2)}" height="10" fill="#1a1119" opacity=".3"/>`
-  // the chalk price board hung on the counter's front
-  const sx = (x1 + cr) / 2
+  // the chalk price board hung on the counter's front, beside her
+  const sx = cr - c.r > 170 ? (c.r + cr) / 2 : (x1 + cr) / 2
   const sy = top + (rail - top) * 0.52
   f += `<rect x="${r(sx - 66)}" y="${r(sy - 17)}" width="132" height="34" rx="4" fill="#2b3330" stroke="#6b3f24" stroke-width="3"/>`
   f += `<text x="${r(sx)}" y="${r(sy + 6)}" fill="#f4efe2" font-family="Georgia,serif" font-size="17" font-weight="700" text-anchor="middle">FRESH · FREE</text>`
@@ -154,6 +178,10 @@ export function drawBooth(): void {
       f += `<path d="M${r(x - 8)} ${r(y)}L${r(x + 8)} ${r(y)}L${r(x)} ${r(y + 16)}Z" fill="${cols[i % cols.length]}" opacity=".92"/>`
     }
   }
+  // Plan item 563: crates of produce stacked at the counter's foot on her other side, so the stall's front is stocked
+  f += crate(x1 - 4, Math.min(c.l + 26, x1 + 104) - x1 + 4, rail, 0)
+  f += crate(x1 + 8, Math.min(c.l + 8, x1 + 86) - x1 - 8, rail - 50, 3)
+  if (cr - c.r > 300) f += crate(cr - 96, 84, rail, 5)
   if (!back) {
     back = layer('hero-booth')
     hero.prepend(back)

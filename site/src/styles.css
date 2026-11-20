@@ -1890,7 +1890,8 @@ body {
   .ready .hero-booth,
   .ready .hero-counter { opacity: 1; }
   .hero-booth { z-index: var(--z-booth); filter: drop-shadow(0 14px 22px var(--shadow-deep)); }
-  .hero[data-booth] .hero-cath { position: relative; z-index: var(--z-booth-cath); }
+  /* Plan item 563: she stands in front of her counter, whole, the stall's host rather than a bust over the fruit */
+  .hero[data-booth] .hero-cath { position: relative; z-index: var(--z-booth-host); }
   .hero-counter { z-index: var(--z-booth-counter); filter: drop-shadow(0 -2px 6px var(--shadow-art)); }
   .hero[data-booth] .hero-text,
   .hero[data-booth] .hero-games,
@@ -2098,7 +2099,8 @@ body {
    board drawn round them by booth.ts) narrow to the right so the board is about a third of the width. */
 @media (min-width: 1100px) and (min-aspect-ratio: 1/1) {
   .hero[data-booth] { grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); }
-  .hero[data-booth] .hero-cath { height: min(44vh, 400px); }
+  /* Plan item 563: 440 px (1.1x), pulled up into the hero's top padding so the posters below don't move */
+  .hero[data-booth] .hero-cath { height: min(49vh, 440px); margin-top: calc(min(44vh, 400px) - min(49vh, 440px)); }
   .hero[data-booth] .hero-text { max-width: 440px; }
   .hero[data-booth] .hero-text .title { font-size: clamp(3rem, 5.4vw, 5rem); }
 }

@@ -66,10 +66,12 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
       return { hero: hero.width, back: box(document.querySelector('.hero-booth')!), counter: box(document.querySelector('.hero-counter')!), rail, cath: { l: cath.left, r: cath.right, t: cath.top, b: cath.bottom }, words: { l: words.left, r: words.right, t: words.top, b: words.bottom }, zc: z('#hero-cath'), zf: z('.hero-counter'), zb: z('.hero-booth') }
     })
     expect((m.back.r - m.back.l) / m.hero).toBeGreaterThanOrEqual(0.35)
-    // the counter's foot on the rail, in front of Cath and over her lower body, clear of the buttons
+    // the counter's foot on the rail, its top at her hips, clear of the buttons; plan item 563: she stands in front of
+    // it, whole, 300 px or more of her above the rail
     expect(Math.abs(m.counter.b - m.rail)).toBeLessThanOrEqual(4)
     expect(m.zb).toBeLessThan(m.zc)
-    expect(m.zf).toBeGreaterThan(m.zc)
+    expect(m.zf).toBeLessThan(m.zc)
+    if (vp.width >= 1440) expect(m.cath.b - m.cath.t).toBeGreaterThanOrEqual(300)
     expect(m.counter.t).toBeGreaterThan(m.cath.t + (m.cath.b - m.cath.t) * 0.45)
     expect(m.counter.l).toBeLessThan(m.cath.l)
     expect(m.counter.r).toBeGreaterThan(m.cath.r)
