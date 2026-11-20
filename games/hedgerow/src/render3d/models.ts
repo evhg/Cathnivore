@@ -12,6 +12,7 @@ import { wornOutfit } from "../wardrobe";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { EnemyKind, LandmarkKind, MegaId, TowerKind } from "../engine";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { bubble, C, chrome, duskLamps, glass, gloss, glow, matte, metal, plastic, shoreFade, shoreFoam } from "./palette";
 
 type M = THREE.Material;
@@ -37,6 +38,10 @@ function mesh(g: THREE.BufferGeometry, mat: M, x = 0, y = 0, z = 0): THREE.Mesh 
 const boxGeo = (w: number, h: number, d: number) => geo(`box${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d));
 /** A box standing on y. */
 const box = (w: number, h: number, d: number, mat: M, x = 0, y = 0, z = 0) => mesh(boxGeo(w, h, d), mat, x, y + h / 2, z);
+/** Plan item 539: a box with rounded edges standing on y, so a van's body catches a highlight along each edge
+ * instead of reading as a flat-shaded block from the field camera. */
+const rbox = (w: number, h: number, d: number, r: number, mat: M, x = 0, y = 0, z = 0) =>
+  mesh(geo(`rbox${w},${h},${d},${r}`, () => new RoundedBoxGeometry(w, h, d, 2, r)), mat, x, y + h / 2, z);
 /** Plan item 269: pale shallows fading in from all four edges of a w x d sheet of water whose top is at y. */
 let shoreMat: THREE.MeshStandardMaterial | null = null;
 /** Plan item 429: a pool of w by d as a flat rounded shape whose edge wanders (24 segments a corner, the long edges
@@ -1356,7 +1361,10 @@ interface VehicleOpts {
 /** A wheel (axle along Z) that spins about its own local Y: tyre, chrome hubcap, a spoke so the spin shows. */
 function wheel(r: number, x: number, z: number): THREE.Group {
   const w = new THREE.Group();
-  w.add(cyl(r, r, 0.05, matte("#1d1b1b", 0.9, false), 0, -0.025, 0, 12));
+  const tyre = cyl(r, r, 0.05, matte("#1d1b1b", 0.9, false), 0, -0.025, 0, 12);
+  // Plan item 539 (tests): the tyre is tagged, so a scene-graph check can count a vehicle's wheels.
+  tyre.userData.tyre = true;
+  w.add(tyre);
   w.add(cyl(r * 0.55, r * 0.55, 0.056, chrome("#c9d0d8"), 0, -0.028, 0, 6));
   w.add(box(r * 0.9, 0.058, 0.012, metal("#5a5e63"), 0, -0.029, 0));
   w.rotation.x = Math.PI / 2;
@@ -1371,8 +1379,8 @@ function vehicle(o: VehicleOpts): THREE.Group {
   const bodyMat = o.matteBody ? matte(o.body, 0.7, false) : plastic(o.body);
   const wr = 0.07;
   const cabMat = o.cab ? plastic(o.cab) : bodyMat;
-  g.add(box(o.len * 0.72, o.h, w, bodyMat, -o.len * 0.14, wr, 0));
-  g.add(box(o.len * 0.26, o.h * 0.78, w * 0.96, cabMat, o.len * 0.36, wr, 0));
+  g.add(rbox(o.len * 0.72, o.h, w, 0.035, bodyMat, -o.len * 0.14, wr, 0));
+  g.add(rbox(o.len * 0.26, o.h * 0.78, w * 0.96, 0.04, cabMat, o.len * 0.36, wr, 0));
   // Skirt under the body, so the wheels sit in arches rather than floating beside a box.
   g.add(box(o.len * 0.98, 0.04, w * 0.9, matte("#26282d", 0.6, false), 0, wr - 0.03, 0));
   // Windscreen, side windows (lit from inside), a grille, bumpers, mirrors, head- and tail-lights.
@@ -1900,6 +1908,7 @@ export function buildEnemy(kind: EnemyKind): THREE.Group {
   g.scale.multiplyScalar(enemyScale(kind));
   root.add(g);
   root.userData.inner = g;
+  root.userData.kind = kind;
   root.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;
   });
@@ -2803,17 +2812,40 @@ export function buildTree(kind: "oak" | "pine" | "dead", rand: () => number, lea
 
 /** Plan item 66: an old scarecrow out on the verge (scenery, not the tower: no hat brim, a sack head, a tilt). */
 export function buildScarecrowProp(): THREE.Group {
+  // Plan item 539: a dressed scarecrow, not sticks: a patched coat with straw at its cuffs and hem, a stitched sack
+  // face and a wide-brimmed hat.
   const wood = matte("#8a6a44", 0.8);
-  const shirt = matte("#b5523b", 0.85);
+  const coat = matte("#b5523b", 0.85);
+  const patch = matte("#6f8a4e", 0.9);
+  const patch2 = matte("#d9b56a", 0.9);
   const sack = matte("#d8c08a", 0.9);
   const straw = matte("#e6c768", 0.9);
+  const hat = matte("#7a5a36", 0.85);
+  const band = matte("#3a3a52", 0.7);
+  const ink = matte(C.ink, 0.6);
   const g = group(
-    cyl(0.012, 0.014, 0.5, wood, 0, 0, 0, 6),
-    box(0.3, 0.018, 0.018, wood, 0, 0.36, 0),
-    box(0.11, 0.12, 0.05, shirt, 0, 0.3, 0),
-    ball(0.042, sack, 0, 0.47, 0, 1),
-    cyl(0.03, 0.05, 0.03, straw, 0, 0.5, 0, 8),
+    cyl(0.014, 0.016, 0.5, wood, 0, 0, 0, 6),
+    box(0.34, 0.02, 0.02, wood, 0, 0.36, 0),
+    // the coat: a body, two sleeves along the crossbar, a straw tuft under the hem
+    rbox(0.13, 0.15, 0.07, 0.015, coat, 0, 0.24, 0),
+    rbox(0.24, 0.045, 0.05, 0.012, coat, 0, 0.345, 0),
+    rot(cone(0.06, 0.06, straw, 0, 0.19, 0, 7), Math.PI),
+    // patches sewn on the front and a sleeve
+    box(0.04, 0.04, 0.004, patch, -0.03, 0.27, 0.036),
+    box(0.035, 0.03, 0.004, patch2, 0.035, 0.31, 0.036),
+    box(0.04, 0.03, 0.004, patch, 0.09, 0.352, 0.026),
+    // the stitched sack head: eyes and a mouth line
+    ball(0.045, sack, 0, 0.42, 0, 1),
+    ball(0.008, ink, -0.016, 0.43, 0.04, 0),
+    ball(0.008, ink, 0.016, 0.43, 0.04, 0),
+    box(0.03, 0.004, 0.004, ink, 0, 0.403, 0.04),
+    // the hat: a wide brim, a crown and its band
+    cyl(0.085, 0.085, 0.012, hat, 0, 0.452, 0, 12),
+    cyl(0.04, 0.048, 0.06, hat, 0, 0.46, 0, 10),
+    cyl(0.049, 0.049, 0.014, band, 0, 0.464, 0, 10),
   );
+  // straw bursting from each cuff
+  for (const sd of [-1, 1]) g.add(rot(cone(0.022, 0.05, straw, sd * 0.14, 0.3425, 0, 6), 0, 0, (-sd * Math.PI) / 2));
   g.rotation.z = 0.08;
   g.traverse((o) => {
     if ((o as THREE.Mesh).isMesh) o.castShadow = true;

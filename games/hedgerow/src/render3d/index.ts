@@ -1115,6 +1115,22 @@ export class Renderer3D {
     return (Math.abs(a - b) / 2) * this.h;
   }
 
+  /** Plan item 539 (tests): each lane vehicle's wheel count and distinct materials, and the crop shapes on the field. */
+  lookStats(): { vehicles: Array<{ kind: string; wheels: number; mats: number }>; cropShapes: number } {
+    const vehicles: Array<{ kind: string; wheels: number; mats: number }> = [];
+    for (const v of this.enemies.values()) {
+      const wheels = (v.obj.userData.wheels as THREE.Object3D[] | undefined) ?? ((v.obj.userData.inner as THREE.Object3D | undefined)?.userData.wheels as THREE.Object3D[] | undefined);
+      if (!wheels) continue;
+      const mats = new Set<THREE.Material>();
+      v.obj.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh) for (const x of Array.isArray(m.material) ? m.material : [m.material]) mats.add(x);
+      });
+      vehicles.push({ kind: String(v.obj.userData.kind ?? ""), wheels: wheels.length, mats: mats.size });
+    }
+    return { vehicles, cropShapes: this.crops?.shapesShown() ?? 0 };
+  }
+
   /** Plan item 98: each gate sign's on-screen centre and letter cap height, in CSS px (tests hold it at 11 px). */
   /** Plan item 410 (tests): the roughness of each queued vehicle's and depot's main surface (its biggest unlit
    * mesh), and the median over the farm's scenery, so a spec can hold the corporations glossy against the farm. */
