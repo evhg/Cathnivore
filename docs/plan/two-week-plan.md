@@ -5383,7 +5383,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cath-full-body, cath, campaign, hedgerow-map, games-cath and runnel host specs pass; keyart-fresh passes after the re-shoot; shots P and D of each use.
 - **Size:** 1
 
-## 552. [ ] NIGHT SHIFT phone title: the menu on the Ledger's index cutting, as on desktop
+## 552. [ ] NIGHT SHIFT phone title: the menu on the Ledger's index cutting, as on desktop *(lane B, in progress)*
 - **Why:** `ns-title-D` has item 536's newsprint index; `ns-title-P` (2x shot, 50-210 x 455-745) has bare white words on black (NEW CASE, CASE BOARD, SETTINGS, CREDITS), and the Ledger cutting (y 805-1140) floats apart from them.
 - **Build:**
   - On an upright phone, the four entries on one pinned newsprint cutting (item 536's paper and masthead), tilted about 1 degree, clear of Cath's face.
