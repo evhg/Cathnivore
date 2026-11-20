@@ -5664,6 +5664,12 @@ img.act-scene {
   #screen-select .trail > .stop.vc1 .node > * { grid-column: 1; }
   #screen-select .trail > .stop.vc1 .node > .level-num { grid-column: 2; }
   #screen-select .trail > .stop.vc1 .node .level-name { text-align: right; }
+  /* Plan item 569: each stop a diorama of its landmark 64 px across on an upright phone (was a 44 px coin whose
+     landmark read as an icon), the boss lot 68 */
+  #screen-select .trail .node > .level-num { width: 64px; height: 64px; }
+  #screen-select .trail .node.level-boss > .level-num { width: 68px; height: 68px; }
+  /* (the bends 4 px apart, not 22: the coins' 20 px more would push the next act's peek below the fold, item 153) */
+  #screen-select .trail { row-gap: 4px; }
 }
 
 /* Plan item 314: a locked stop is a warm sepia print, not a grey one: the coin a parchment wash, its landmark in
@@ -5836,8 +5842,9 @@ img.act-scene {
    its column, 15-44 px off, so a name read as the stop across the road), and a locked stop's padlock rides inside
    that tag instead of floating on its own pill above it. */
 @media (max-width: 599px) {
-  #screen-select .trail .node { grid-template-columns: 50px minmax(0, 1fr); column-gap: 4px; }
-  #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 50px; }
+  /* (plan item 569: 76 px for its 64 px diorama, so the number badge on the rim stays clear of the name) */
+  #screen-select .trail .node { grid-template-columns: 76px minmax(0, 1fr); column-gap: 4px; }
+  #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 76px; }
   #screen-select .trail .node .level-name { justify-self: start; }
   #screen-select .trail > .stop.vc1 .node .level-name { justify-self: end; }
   /* Plan item 406: a long name (to 152 px at 14 px) can't fit the 117 px beside its coin, so its two lines split
