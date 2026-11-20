@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (13:51 11-20): 564 done (7909036e: Hedgerow map field path between the rows, Cath 132 px at D), 563 done (75e9d8b5, 9ea1f4a9: /games/ host whole in front of her stall, card Caths apart). Open: 319, 543 (NIGHT SHIFT Cath), 565 (lane B): the next free session plans. Release due at the 11-20 19:51 session.
+- Lane A (14:51 11-20): 565 done (008d9381, edefb49d, d9303f7d: desktop stage word inside its card, hand captions 15/14 px at D, Hedgerow 2D post mat under Cath, NIGHT SHIFT tall-phone Ledger clear of her coat), planned 566-571 (plan1120p critique), 571 done (25a653ad: Hedgerow phone map Cath at 90% clear of the coins). Open: 566-570, 319, 543. Release due at the 11-20 19:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-11-20 14:51 lane A: 565 and 571 done, 566-570 planned; targeted specs green (plan-strip, table-hand*, hedgerow-map, cathode-front upright); full check run at the end.
 - 2026-11-20 14:21 lane B: 565 checks; a disc clamp reverted (region-status caught it); board-pieces red was load (passes alone).
 - **2026-11-20 13:51 lane A:** 564 done, 563 done (3 code commits). hedgerow-map/-you/-diorama/-ink, critique/-166/-177, level-card (P, D; one item-153 load flake passing 6/6 alone); games-stall/-cards/-cath/-hero-cath/-shelf/-backdrop/-todayboard, site (P, D; Runnel daily and two games timeouts were load flakes passing alone); css lint, css-vars, keyart-fresh; tsc, eslint. Full `npm run check` green (2854/2854). Shots scratchpad s564, s563. Lock released.
 - 2026-11-20 13:21 lane B: red E2E fixed (/games/ hooks at 1440x900); other reds load-only (runnel-win 3/3 alone); 562 closed on measurement.
