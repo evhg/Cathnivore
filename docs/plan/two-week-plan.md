@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-20T04:55Z
+
 
 
 
@@ -5339,5 +5339,76 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `runnel-D` (165-265 x 635-745): the 'Up next' card's text off its heading's left edge. **Fixed 03:30 lane A (also item 545's 'Up next' left edge):** 'Up next today' runs across the card's top from the picture's left edge; name and sky beside the picture.
 - `runnel-P` (265-385 x 158-185): step 3's label wraps where the others don't. **Checked, kept:** steps 2 and 3 both wrap to two lines; step 1 is short.
 - `portfolio-D`: Cath's bubble says 'Hover one' (wrong on touch: say 'Pick one' or detect hover). **Fixed 01:45 lane B:** 'Pick one and I'll show you round'; portfolio-present passes.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 549. [ ] Cathnivore desktop: the left rail filled, with the goal you're saving for shown large
+- **Why:** `cath-game-D` (plan1120f, 05:00 critique): the rail (15-335 x 85-880) is a stack of small forms, and 560-730 is empty above a one-line ledger. Meanwhile Cath's italic aside card (358-548 x 208-376) is a third voice beside the event card and the producers' bubble.
+- **Build:**
+  - The first improvement you're saving for shown large in the empty band (about 280x170): its art, the cost and a progress fill. The other goals stay as thumbnails above, with "7 more" as a small fanned deck behind it.
+  - The resource tiles' glyphs and counts larger, read as objects on the mat (crate, coin stack, rosette).
+  - Cath's hushed aside moves into her one card, as its second line, so the table has one Cath voice.
+- **Accept:**
+  - At 1440x900, no vertical gap over 40 px between the rail's visible children.
+  - The goal card is at least 240 px wide and its progress fill matches the saved count.
+  - The resource glyphs are at least 48 px tall.
+  - The board keeps item 501's share. `saving-goal`, `player-mat`, `desktop-top-rail` and `desktop-no-scroll` pass; shots P and D (P unchanged).
+- **Size:** 2
+
+## 550. [ ] Cathnivore board: one status per region, fewer and larger glyphs
+- **Why:** `cath-game-D` (590-1110 x 130-720) and `cath-game-P` (15-375 x 135-470): each hex carries 4-7 glyphs of 15-25 px (Hollowell minis, small H signboards, '?' scout pins with '2' discs, EXPAND tags), all Hollowell orange, so a region's state can't be read without hovering. On the phone the '2' discs and signs are about 12 px, and EXPAND tags sit on Highmoor's and Brindle Hills' art.
+- **Build:**
+  - One plaque per region on its name banner: free, contested or held, plus the count of Hollowell pieces. It replaces the separate number discs.
+  - The small H signboards fold into the minis. A region shows at most one mini per kind, with the count on the plaque.
+  - Hollowell's next targets (from the plan plaque, item 531) stay as the hex's lit edge, not an extra tag over the art.
+  - The region's landmark art stays the largest thing in each hex.
+- **Accept:**
+  - At 1440x900, no more than 3 glyphs per hex besides the landmark and the banner.
+  - Every glyph is at least 28 px at D and 22 px at P.
+  - Every region has exactly one `[data-region-status]` with a text label for screen readers.
+  - No glyph box meets a region-name banner box.
+  - Board specs (board-*, map-key, turn-show) pass; shots P and D, at round 1 and round 6.
+- **Size:** 2
+
+## 551. [ ] Shared Cath: full-length trousers and boots that read as tailored clothes
+- **Why:** every full-figure Cath (`runnel-D` 448-505 x 715-835, `portfolio-D` 1298-1352 x 395-545, `hedge-menu-D` 165-200 x 330-410) has thin pale legs that read as tights or a doll's limbs. Item 305 made the trousers oatmeal (#D3BE98) to match the portrait; the colour is fine, the cut isn't.
+- **Build:** in `shared/cath/`:
+  - A straight-leg trouser that's wider than the leg under it, with a pressed crease, a hem break over the boot, and the jacket hem overlapping the waist.
+  - A mid tone a step darker than today (camel rather than cream), so the trouser separates from her skin and the paper behind her.
+  - Ankle boots with a small heel and a highlight; a leaf or gingham touch kept (the bible's cute touch).
+  - Every pose picks it up; key art re-shot.
+- **Accept:**
+  - The hip-to-boot band's mean lightness under 0.6 and its width at the knee at least 1.4x the leg's width today, measured in the cath-full-body test.
+  - Every full-figure export has `[data-cath-legwear]`.
+  - cath-full-body, cath, campaign, hedgerow-map, games-cath and runnel host specs pass; keyart-fresh passes after the re-shoot; shots P and D of each use.
+- **Size:** 1
+
+## 552. [ ] NIGHT SHIFT phone title: the menu on the Ledger's index cutting, as on desktop
+- **Why:** `ns-title-D` has item 536's newsprint index; `ns-title-P` (2x shot, 50-210 x 455-745) has bare white words on black (NEW CASE, CASE BOARD, SETTINGS, CREDITS), and the Ledger cutting (y 805-1140) floats apart from them.
+- **Build:**
+  - On an upright phone, the four entries on one pinned newsprint cutting (item 536's paper and masthead), tilted about 1 degree, clear of Cath's face.
+  - The Ledger's headline as that cutting's lead story, so the menu and the headline are one paper object.
+  - The List strip kept below.
+- **Accept:**
+  - At 390x844 the menu links sit inside one `[data-index-cutting]` with paper luminance over 0.7.
+  - The cutting doesn't meet Cath's head box on the settled `?shot` frame.
+  - Each link at least 44 px tall.
+  - cathode-front and cathode-title specs pass (P and D); posters re-rendered if the title's sources change; shots P, D and 844x390.
+- **Size:** 2
+
+## 553. [ ] The bugs from the 2026-11-20 05:00 critique, fixed as one batch
+- `cath-game-D` (1218-1398 x 350-435): the producers' bubble 'Favourite pair, she says. Mara, she means me.' has its tail on Mara, but Tomas is speaking. Name or point at the speaker.
+- `cath-game-D` (1000-1150 x 820-860): 'Supply 1 Outlet · Brindle Hills' wraps with a stray leading '·'.
+- `cath-game-P` (300-370 x 595-612): the '9 more' pill overlaps the top-right of the last fanned card.
+- `cath-setup-P` (30-375 x 575-600): Solo/Hot-seat descriptors about 11 px, grey on cream.
+- `cath-campaign-D`: 'Brindle Hills' (140-245 x 450-505) and 'Shingle Bay' (440-545 x 620-675) labels touch the bunting above them.
+- `runnel-D` (415-550 x 75-175): the spring house's pipe ends about 20 px short of the spring tile.
+- `hedge-menu-P` (230-260 x 225-260): Cath half hides stop 22's coin.
+- `hedge-l21-3d-D` (115-215 x 680-800): a neighbour lies flat across the crops with a rake (a work pose reads as a fall).
+- `hedge-l34-2d-D`: the 'Same-Day van' label (330-455 x 708-728) over its vans; 'Box Lorry' (250-345 x 240-258) over the lorry.
+- `ns-title-D` (905-960 x 470-540): Cath's glove passes through the umbrella shaft.
+- `ns-play-P` (2x, y 1030-1130): an empty band between 'HER LINE' and the stat sheet.
+- `portfolio-D` (1100-1220 x 445-520), `games-D` (890-960 x 630-700): purple glow blobs in Hedgerow's key art read as a glitch at thumbnail size.
+- `games-P` (30-380 x 512-558): 'Play today's Runnel' thin italic, low contrast; 'Browse the games' reads disabled.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
