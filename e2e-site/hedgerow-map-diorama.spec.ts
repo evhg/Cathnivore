@@ -90,7 +90,7 @@ test('each stop its own landmark: 64 px on a phone, no two silhouettes alike in 
         const dist = a.bits[i]!.reduce((n, b, k) => n + (b !== a.bits[j]![k] ? 1 : 0), 0)
         if (dist <= 10) alike.push(`act ${a.act + 1}: ${a.keys[i]} / ${a.keys[j]} ${dist}`)
       }
-  // A ratchet while item 569 redraws the landmarks: 155 of the 450 pairs were alike on 2026-11-20 (cottage, stall,
-  // barn and van all low boxes; mast and lighthouse both a mast); the item is done at none.
-  expect(alike.length, alike.join('\n')).toBeLessThanOrEqual(155)
+  // 155 of the 450 pairs were alike on 2026-11-20 (cottage, stall, barn and van all low boxes; mast and lighthouse
+  // both a mast) until item 569 slice 2 redrew 30 landmarks to their own outlines.
+  expect(alike, alike.join('\n')).toEqual([])
 })

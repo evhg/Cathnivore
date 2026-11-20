@@ -50,17 +50,18 @@ const tree = (x: number, y: number, r: number, p: Pal, fruit?: string): string =
 const wheel = (x: number, y: number, r = 1.3): string => C(x, y, r, "#2b2320") + dot(x, y, r * 0.4, "#9a948a");
 
 const ART: Record<string, (p: Pal) => string> = {
+  // Plan item 569: Cath's cottage stands to the left with its chimney, an apple tree beside it, so it reads apart from
+  // the barns, inns and halls (each a house-shaped block).
   cottage: (p) =>
-    R(13.4, 3.6, 1.4, 3.4, p.wall) +
-    R(4, 10, 7, 6.4, p.wall) +
-    P(p.wall, "M11 10l5-1.7v8.1H11z") +
-    SH("M11 10l5-1.7v8.1H11z") +
-    P(p.roof, "M7.5 5.2l5.8-1.6 3.9 4.6-5.2 2.2z") +
-    SH("M7.5 5.2l5.8-1.6 3.9 4.6-5.2 2.2z", 0.15) +
-    P(p.roof, "M3 10.4L7.5 5.2l4.5 5.2z") +
-    HI("M4.6 9.6L7.5 6.3l1 1.1-3 2.6z") +
-    R(6.6, 12.6, 1.8, 3.8, p.wood) +
-    R(12.4, 11.1, 2.2, 1.9, "#f6d27a"),
+    R(8.2, 4.4, 1.4, 3.4, p.wall) +
+    R(1.8, 9.8, 8.6, 6.6, p.wall) +
+    SH("M7.6 9.8h2.8v6.6H7.6z", 0.16) +
+    P(p.roof, "M.8 10.4L6.1 3.6l5.3 6.8z") +
+    HI("M2.6 9.6l3.5-4.5.9 1.1-3.3 3.4z") +
+    R(4.6, 12.4, 1.8, 4, p.wood) +
+    R(7.4, 11.6, 1.8, 1.7, "#f6d27a") +
+    `<circle cx="8.9" cy="2.6" r=".8" fill="#fffbe8" opacity=".7"/>` +
+    tree(15.4, 9.6, 3.2, p, "#d9473b"),
   windmill: (p) => {
     let o = P(p.wall, "M7.4 16.4L8.6 7.2h2.8l1.2 9.2z") + SH("M10 7.2h1.4l1.2 9.2H10z") + R(9.3, 13.4, 1.4, 3, p.wood) + P(p.roof, "M8.2 7.6a1.8 1.9 0 013.6 0z");
     for (const a of [-0.6, 0.97, 2.54, 4.11]) {
@@ -75,34 +76,45 @@ const ART: Record<string, (p: Pal) => string> = {
   },
   orchard: (p) => tree(6, 9.5, 3.4, p, "#d9473b") + tree(13.6, 10.6, 3, p, "#e8a33a"),
   oaks: (p) => tree(5.6, 10.6, 2.9, p) + tree(12.4, 8.6, 4.2, p),
+  // Plan item 569: a tall gambrel barn with its hayloft door and a weathervane, the biggest building on the farm.
   barn: (p) =>
-    P(p.roof, "M3.8 16.4V9.8l6.2-4.4 6.2 4.4v6.6z") +
-    SH("M10 5.4l6.2 4.4v6.6H10z", 0.16) +
-    P("#4a3a32", "M3 10.3l7-5 7 5-.9.8L10 6.7l-6.1 4.4z") +
-    R(7.4, 11.6, 5.2, 4.8, p.wood) +
-    L("M7.4 11.6l5.2 4.8M12.6 11.6l-5.2 4.8", PAPER, 0.7) +
-    R(9, 8.2, 2, 1.7, "#f6d27a"),
+    L("M10 3.2V.8M8.8 1.6h2.4", INK, 0.5) +
+    P(p.roof, "M3.4 16.4V8.2l2.2-3.4L10 3.2l4.4 1.6 2.2 3.4v8.2z") +
+    SH("M10 3.2l4.4 1.6 2.2 3.4v8.2H10z", 0.16) +
+    P("#4a3a32", "M2.6 8.6l2.8-4.4L10 2.4l4.6 1.8 2.8 4.4-.9.6-2.5-3.8L10 3.8 6 5.4 3.5 9.2z") +
+    R(7.2, 11.2, 5.6, 5.2, p.wood) +
+    L("M7.2 11.2l5.6 5.2M12.8 11.2l-5.6 5.2", PAPER, 0.7) +
+    R(8.8, 6.4, 2.4, 2.4, p.wood) +
+    L("M8.8 6.4l2.4 2.4M11.2 6.4l-2.4 2.4", PAPER, 0.5),
   hive: (p) =>
-    R(4.6, 15.2, 10.8, 1.2, p.wood) +
-    P("#e2bf62", "M5 15.2C5 9.6 7.2 6.2 10 6.2s5 3.4 5 9z") +
-    SH("M10 6.2c2.8 0 5 3.4 5 9h-5z", 0.15) +
-    L("M5.5 12.4q4.5 1.6 9 0M6.4 9.6q3.6 1.3 7.2 0M5.1 14.6q4.9 1.4 9.8 0", "#a07a24", 0.6) +
-    P(INK, "M8.9 15.2a1.1 1.2 0 012.2 0z") +
-    dot(15.6, 6, 0.7, "#e2bf62") + L("M15.2 5.4l.4-.9M16 5.4l.4-.8", INK, 0.4) + dot(4.2, 8, 0.6, "#e2bf62"),
+    L("M15.4 16.4V6.4", p.leaf, 0.9) +
+    P(p.leaf, "M15.4 11.6q-2.6-.2-3-2 2.4-.2 3 2zM15.4 13.4q2.4-.4 2.8-2.2-2.2 0-2.8 2.2z") +
+    C(15.4, 4.6, 2.6, "#f2b53a") +
+    dot(15.4, 4.6, 1.2, "#7a5232") +
+    R(1.6, 15.2, 10.4, 1.2, p.wood) +
+    P("#e2bf62", "M2 15.2C2 10.8 4 8 6.8 8s4.8 2.8 4.8 7.2z") +
+    SH("M6.8 8c2.8 0 4.8 2.8 4.8 7.2H6.8z", 0.15) +
+    L("M2.5 12.6q4.3 1.4 8.6 0M3.6 10.2q3.2 1.1 6.4 0M2.2 14.6q4.6 1.3 9.2 0", "#a07a24", 0.6) +
+    P(INK, "M5.7 15.2a1.1 1.2 0 012.2 0z") +
+    dot(11.6, 6.4, 0.6, "#e2bf62") + L("M11.2 5.8l.4-.9M12 5.8l.4-.8", INK, 0.4) + dot(2.6, 6.8, 0.6, "#e2bf62"),
+  // Plan item 569: a post-and-rail fence running away into the field, small at the back (left) and tall at the front.
   fence: (p) =>
-    P(p.wood, "M3 16.2l.6-7.4 1.4.2-.2 7.3z") +
-    P(p.wood, "M8.6 16.4l-.3-8 1.5-.1.3 8.1z") +
-    P(p.wood, "M14 16.2l.8-7.6 1.4.3-.6 7.4z") +
-    P("#a37a50", "M3.3 10.6l12.4-.6.1 1.4-12.4.7z") +
-    P("#a37a50", "M3.4 13.4l12.3.4-.1 1.4-12.3-.3z") +
-    L("M17 16.2q.4-1.6 1.2-2.2M17.6 16.3q.1-1.3.8-1.6", p.leaf, 0.7),
+    `<g transform="matrix(-1 0 0 1 20 0)">` +
+    P(p.wood, "M1 16.4V3.6l2.2-.4v13.2z") +
+    P(p.wood, "M7 16.4V6.6l1.8-.2v10z") +
+    P(p.wood, "M12.2 16.4V9.4l1.4-.2v7.2z") +
+    P(p.wood, "M16.6 16.4v-4.8l1.2-.1v4.9z") +
+    P("#a37a50", "M2 5.2l16.6 6.8-.1 1.2L2 6.8zM2 10.2l16.6 4v1.2L2 11.8z") +
+    SH("M1 3.6l1-.2v13H1z", 0.2) +
+    L("M8.4 16.2q.4-1.6 1.2-2.2M9 16.3q.1-1.3.8-1.6M14.6 16.2q.4-1.4 1-1.8", p.leaf, 0.7) +
+    `</g>`,
   van: () =>
-    P("#f4f1ea", "M2.4 15.4V8.8h9.8l3 2.8h2.6v3.8z") +
-    SH("M2.4 13.6h15.4v1.8H2.4z", 0.15) +
-    P(HOLLOWELL, "M2.4 12h15.4v1.4H2.4z") +
-    P("#9cc3d8", "M12.6 9.5l2 1.9h-2z") +
-    wheel(5.6, 15.5) +
-    wheel(14.2, 15.5),
+    P("#f4f1ea", "M1.2 15.4v-5h11.4l2.8 2.2h3.4v2.8z") +
+    SH("M1.2 14h17.6v1.4H1.2z", 0.15) +
+    P(HOLLOWELL, "M1.2 12.6h17.6v1.2H1.2z") +
+    P("#9cc3d8", "M13 11l2 1.6h-2z") +
+    wheel(4.6, 15.5) +
+    wheel(15, 15.5),
   survey: (p) =>
     L("M10 8.6L6.4 16.2M10 8.6l3.6 7.6M10 8.6v7.8", p.wood, 0.9) +
     R(8.2, 6.4, 3.6, 2.2, "#e2bf62") +
@@ -117,16 +129,21 @@ const ART: Record<string, (p: Pal) => string> = {
     R(14.4, 11, 1.4, 1.8, INK) +
     L("M10 9.3V2.6", INK, 0.7) +
     P(p.accent, "M10 2.6l4.6 1.4L10 5.6z"),
+  // Plan item 569: a market stall reads as its striped awning, the full width, held high over an open front and a
+  // low counter (the gap between them is what tells it from a house).
   stall: (p) => {
-    let scallop = "M3 9.4";
-    for (let i = 0; i < 5; i++) scallop += "a1.4 1.4 0 002.8 0";
+    let scallop = "M.8 7.8";
+    for (let i = 0; i < 7; i++) scallop += "a1.31 1.31 0 002.63 0";
+    let stripes = "";
+    for (let i = 0; i < 4; i++) stripes += `M${r1(2.2 + i * 4.4)} 3.2h2.2l.5 4.6h-2.2z`;
     return (
-      L("M4.2 9.4v7M15.8 9.4v7", p.wood, 0.9) +
-      R(3.6, 12.4, 12.8, 4, p.wood) +
-      SH("M3.6 14.6h12.8v1.8H3.6z", 0.18) +
-      dot(5.6, 11.8, 1, "#d9473b") + dot(7.8, 11.7, 1, "#e8a33a") + dot(10.1, 11.8, 1, "#7fa84a") + dot(12.4, 11.7, 1, "#d9473b") + dot(14.4, 11.8, 1, "#e2bf62") +
-      P(p.accent, "M3 9.4l1.6-3.4h10.8l1.6 3.4z") +
-      P(PAPER, "M7.2 6h2l-.5 3.4H6.2zM11 6h2l.8 3.4h-2.4z") +
+      L("M2.6 7.8v8.6M17.4 7.8v8.6", p.wood, 0.9) +
+      R(2.4, 13.8, 15.2, 2.6, p.wood) +
+      SH("M2.4 15.4h15.2v1H2.4z", 0.18) +
+      dot(5, 13.4, 0.9, "#d9473b") + dot(7.6, 13.3, 0.9, "#e8a33a") + dot(10.2, 13.4, 0.9, "#7fa84a") + dot(12.8, 13.3, 0.9, "#d9473b") + dot(15.2, 13.4, 0.9, "#e2bf62") +
+      P(p.accent, "M.8 7.8L2 3.2h16l1.2 4.6z") +
+      P(PAPER, stripes) +
+      SH("M.8 7.8l.3-1.2h17.8l.3 1.2z", 0.15) +
       P(p.accent, scallop + "z")
     );
   },
@@ -139,63 +156,85 @@ const ART: Record<string, (p: Pal) => string> = {
     P("#fbfaf4", "M13.4 16c-.4-2 .6-3.6 2.2-3.6 1 0 1.5.6 1.6 1.4l1 .3-1 .5c0 .9-.7 1.4-1.6 1.4z") +
     dot(16.6, 12.4, 0.5, "#d9473b") +
     `<ellipse cx="3.6" cy="15.6" rx="1" ry="1.3" fill="#f3e3c4" ${S}/>`,
+  // Plan item 569: a price tag hung low on a short stake, the string looping to a nail.
   pricetag: (p) =>
-    L("M10 16.4V9", p.wood, 1.1) +
-    P(p.accent, "M3.4 7.4l3.2-3.2h10v6.4h-10z") +
-    SH("M3.4 7.4h13.2v3.2h-10z", 0.15) +
-    C(6.4, 7.4, 0.8, PAPER) +
-    L("M9 6.2h5.6M9 8.6h4", PAPER, 0.9),
+    L("M4.4 16.4V6.6", p.wood, 1.1) +
+    L("M4.4 7.2q2.6 0 3.4 2.4", INK, 0.5) +
+    P(p.accent, "M6.2 11.2l3-3h9.4v6h-9.4z") +
+    SH("M6.2 11.2h12.4v3h-9.4z", 0.15) +
+    C(9, 11.2, 0.8, PAPER) +
+    L("M11.4 10.2h5.2M11.4 12.4h3.8", PAPER, 0.9),
   inn: (p) =>
-    R(3, 9.6, 9, 6.8, p.wall) +
-    SH("M9 9.6h3v6.8H9z", 0.15) +
-    P(p.roof, "M2.4 10l3-4.2h6l3 4.2z") +
-    R(4.6, 11.2, 2, 1.8, "#f6d27a") +
-    R(8.4, 12.6, 2, 3.8, p.wood) +
-    L("M12 8.6h4.6M15.6 8.6v1.2", INK, 0.7) +
-    R(13.8, 9.8, 3.6, 3.2, p.accent) +
-    `<ellipse cx="15.6" cy="11.4" rx=".9" ry="1.1" fill="#f6d27a"/>`,
+    R(8.6, 7.4, 8.4, 9, p.wall) +
+    SH("M14.4 7.4H17v9h-2.6z", 0.15) +
+    P(p.roof, "M7.8 7.8l2.6-4.6h4.8l2.6 4.6z") +
+    R(10, 9, 2, 1.8, "#f6d27a") + R(13.6, 9, 2, 1.8, "#f6d27a") +
+    R(11.8, 12.6, 2.2, 3.8, p.wood) +
+    L("M8.6 8.6H2.4M3.6 8.6v1.2", INK, 0.7) +
+    R(1.6, 9.8, 4.2, 3.6, p.accent) +
+    `<ellipse cx="3.7" cy="11.6" rx="1" ry="1.2" fill="#f6d27a"/>`,
+  // Plan item 569: the old stones as a trilithon, two uprights and a lintel laid over them, the sky through the middle.
   stones: (p) =>
-    P("#a9a49a", "M3.4 16.4l.4-6.6c.8-1 2.2-1 2.8 0l.4 6.6z") +
-    P("#b6b1a6", "M8.2 16.4l.2-9.4c1-1.2 2.6-1.2 3.4 0l.2 9.4z") +
-    SH("M10.4 6.4c.6.1 1 .3 1.4.6l.2 9.4h-1.6z", 0.2) +
-    P("#a09a8e", "M13.6 16.4l.6-5.6c.8-.8 2-.8 2.6 0l.4 5.6z") +
-    HI("M2 13.4q4-1.2 8 0t8 0v1.4q-4 1-8 0t-8 0z", 0.55) +
-    L("M5 14.2q2-.6 4 0", p.leaf, 0.5),
+    P("#a9a49a", "M3 16.4l.4-10h4l.4 10z") +
+    P("#b6b1a6", "M12.2 16.4l.4-10h4l.4 10z") +
+    SH("M5.8 6.4h1.6l.4 10H6zM15 6.4h1.6l.4 10H15z", 0.2) +
+    P("#a09a8e", "M1.8 6.6l.4-2.6h15.6l.4 2.6z") +
+    HI("M2.4 4.6h15.2v.6H2.4z", 0.4) +
+    P("#b6b1a6", "M8.6 16.4l.2-2.4c.6-.6 1.8-.6 2.4 0l.2 2.4z") +
+    L("M8.4 15.6q1.6-.6 3.2 0", p.leaf, 0.5),
+  // Plan item 569: Hollowell's lorry with a tall box, the cab low at the front.
   truck: () =>
-    P("#f4f1ea", "M2.2 14.6V6.8h10v7.8z") +
-    SH("M2.2 12.6h10v2H2.2z", 0.15) +
-    P(HOLLOWELL, "M2.2 9.6h10v1.6h-10z") +
+    P("#f4f1ea", "M1.4 14.6V3.8h10.8v10.8z") +
+    SH("M1.4 12.6h10.8v2H1.4z", 0.15) +
+    SH("M9.8 3.8h2.4v8.8H9.8z", 0.12) +
+    P(HOLLOWELL, "M1.4 7.6h10.8v1.8H1.4z") +
     P("#c94f2c", "M12.2 14.6V9h3.4l2.4 2.8v2.8z") +
     P("#9cc3d8", "M13.2 9.8h2.1l1.5 1.8h-3.6z") +
     wheel(4.6, 15.2) + wheel(7.6, 15.2) + wheel(15.2, 15.2),
+  // Plan item 569: the radio mast stands to the left, its transmitter hut beside it, so it reads apart from the
+  // lighthouse's tall column.
   mast: (p) => {
     let br = "";
-    for (let y = 14.6; y > 6; y -= 2.2) br += `M${r1(7.6 + (16.4 - y) * 0.2)} ${r1(y)}L${r1(12.4 - (16.4 - y + 2.2) * 0.2)} ${r1(y - 2.2)}`;
+    for (let y = 14.6; y > 6; y -= 2.2) br += `M${r1(3.6 + (16.4 - y) * 0.2)} ${r1(y)}L${r1(8.4 - (16.4 - y + 2.2) * 0.2)} ${r1(y - 2.2)}`;
     return (
-      L("M7.2 16.4L9.4 4.6M12.8 16.4L10.6 4.6", "#8a8f96", 0.9) +
+      L("M3.2 16.4L5.4 4.6M8.8 16.4L6.6 4.6", "#8a8f96", 0.9) +
       L(br, "#8a8f96", 0.5) +
-      C(10, 3.8, 1, p.accent) +
-      L("M13.2 2.4a3 3 0 010 3.2M14.8 1.4a4.6 4.6 0 010 5.2M6.8 2.4a3 3 0 000 3.2M5.2 1.4a4.6 4.6 0 000 5.2", p.accent, 0.6)
+      C(6, 3.8, 1, p.accent) +
+      L("M9.2 2.4a3 3 0 010 3.2M10.8 1.4a4.6 4.6 0 010 5.2M2.8 2.4a3 3 0 000 3.2M1.2 1.4a4.6 4.6 0 000 5.2", p.accent, 0.6) +
+      R(10.6, 11, 7.4, 5.4, "#cfd2cc") +
+      SH("M15.6 11H18v5.4h-2.4z", 0.18) +
+      P(p.roof, "M10 11.2l1.2-1.6h6.4l1 1.6z") +
+      R(12, 12.8, 1.8, 1.4, "#f6d27a") +
+      L("M8.6 12.4h2", "#3a3530", 0.6)
     );
   },
+  // Plan item 569: a beach hut up on its stilts, striped and narrow, steps down to the sand.
   hut: (p) =>
-    R(6, 8.8, 8, 7.6, PAPER) +
-    P(p.accent, "M7.4 8.8h1.6v7.6H7.4zM10.6 8.8h1.6v7.6h-1.6z") +
-    SH("M12.2 8.8H14v7.6h-1.8z", 0.18) +
-    P(p.roof, "M5 9.2l5-4.2 5 4.2z") +
-    R(8.8, 12, 2.4, 4.4, p.wood) +
-    L("M3 16.6q1-.6 2 0", p.water, 0.6),
+    L("M7.2 11.6v4.8M12.8 11.6v4.8", p.wood, 0.8) +
+    R(6.4, 4.8, 7.2, 7, PAPER) +
+    P(p.accent, "M7.6 4.8h1.4v7H7.6zM10.4 4.8h1.4v7h-1.4z") +
+    SH("M12 4.8h1.6v7H12z", 0.18) +
+    P(p.roof, "M5.4 5.2L10 1.4l4.6 3.8z") +
+    R(9, 8, 2, 3.8, p.wood) +
+    L("M13.6 11.6l2.4 4.8M14.4 13.2h1M15.2 14.8h1", p.wood, 0.6) +
+    L("M2.6 16.6q1-.6 2 0", p.water, 0.6),
   parcel: (p) =>
-    P("#d9b07a", "M4 10h8.4v6.4H4z") +
-    P("#ecc996", "M4 10l3-2.6h8.4L12.4 10z") +
-    P("#b98e5a", "M12.4 10l3-2.6v6.4l-3 2.6z") +
-    L("M8.2 10v6.4M5.5 8.7h8.4", p.accent, 1) +
-    P(p.accent, "M9.6 7.8c-1.6-1.8-3.4-1-2.4.2zM9.6 7.8c1.4-2 3.4-1.2 2.4.1z"),
+    P("#d9b07a", "M1.6 11h9.4v5.4H1.6z") +
+    P("#ecc996", "M1.6 11l2.4-2h9.4L11 11z") +
+    P("#b98e5a", "M11 11l2.4-2v5.4L11 16.4z") +
+    L("M6.3 11v5.4M2.8 10h9.4", p.accent, 1) +
+    P("#d9b07a", "M10.6 6.4h5.4v4.4h-5.4z") +
+    P("#ecc996", "M10.6 6.4l1.6-1.4h5.4L16 6.4z") +
+    P("#b98e5a", "M16 6.4l1.6-1.4v4.4L16 10.8z") +
+    L("M13.3 6.4v4.4", p.accent, 0.8) +
+    P(p.accent, "M13.3 5.6c-1.4-1.6-3-.9-2.1.2zM13.3 5.6c1.2-1.8 3-1.1 2.1.1z"),
+  // Plan item 569: a round thought bubble high up, trailing little puffs down to the ground.
   bubble: (p) =>
-    P(PAPER, "M3.2 3.6h13.6v7.2h-6.4l-3.2 3v-3H3.2z") +
-    SH("M3.2 9.2h13.6v1.6H3.2z", 0.1) +
-    dot(6.6, 7.2, 0.9, p.accent) + dot(10, 7.2, 0.9, p.accent) + dot(13.4, 7.2, 0.9, p.accent) +
-    P("#e2564a", "M15 15.6l-1.6-1.5a1 1 0 011.6-1.2 1 1 0 011.6 1.2z"),
+    `<ellipse cx="11" cy="6.2" rx="7.8" ry="4.6" fill="${PAPER}" ${S}/>` +
+    SH("M3.6 7.6a7.8 4.6 0 0014.8 0z", 0.1) +
+    C(4.4, 12.6, 1.4, PAPER) + C(2.6, 15.2, 0.9, PAPER) +
+    dot(8.6, 6.4, 0.9, p.accent) + dot(11.4, 6.4, 0.9, p.accent) + dot(14.2, 6.4, 0.9, p.accent) +
+    P("#e2564a", "M15.4 15.6l-1.6-1.5a1 1 0 011.6-1.2 1 1 0 011.6 1.2z"),
   sunset: (p) =>
     P("#f6b04a", "M4 13a6 6 0 0112 0z") +
     HI("M6 12a4 4 0 014-4v4z", 0.3) +
@@ -217,34 +256,43 @@ const ART: Record<string, (p: Pal) => string> = {
     P(INK, "M8 3.4L10 1.6l2 1.8z") +
     HI("M11.6 4L18.4 2.4v3.6z", 0.5) +
     HI("M8.4 4L1.6 2.4v3.6z", 0.5),
+  // Plan item 569: the sandbags laid as a long, low flood wall, two courses the plot's full width.
   sandbags: (p) => {
-    let o = P(p.water, "M1.4 16.2q2-.8 4 0t4 0v.6H1.4z");
-    const bag = (x: number, y: number): string => P("#cdb486", `M${r1(x)} ${r1(y)}c0-1 .8-1.6 2.2-1.6s2.2.6 2.2 1.6-.8 1.6-2.2 1.6-2.2-.6-2.2-1.6z`) + L(`M${r1(x + 0.6)} ${r1(y - 0.8)}v1.6`, "#9a8058", 0.4);
-    for (const [x, y] of [[5, 15], [9.4, 15], [13.8, 15], [7.2, 12.4], [11.6, 12.4], [9.4, 9.8]] as const) o += bag(x - 2.2, y);
-    return o;
+    let o = "";
+    const bag = (x: number, y: number): string => P("#cdb486", `M${r1(x)} ${r1(y)}c0-1 .8-1.6 2.2-1.6s2.2.6 2.2 1.6-.8 1.6-2.2 1.6-2.2-.6-2.2-1.6z`) + L(`M${r1(x + 0.6)} ${r1(y - 0.8)}v1.6`, "#9a8456", 0.4);
+    for (const x of [0.8, 5.2, 9.6, 14]) o += bag(x, 15);
+    for (const x of [3, 7.4, 11.8]) o += bag(x, 12.6);
+    return o + L("M16.4 11.6q.8-1.2 1.6-.4t1.6-.2", p.water, 0.6);
   },
   bridge: (p) =>
-    P(p.water, "M1.6 13.6h16.8v3.2H1.6z") +
-    P("#bcae96", "M1.6 9.4h16.8v4.8h-3.6a4.8 4.2 0 00-9.6 0H1.6z") +
-    SH("M1.6 12.6h16.8v1.6h-3.6c-.2-.6-.5-1.1-.9-1.6H5.7c-.4.5-.7 1-.9 1.6H1.6z", 0.15) +
-    P("#a8997e", "M1.4 8.2h17.2v1.2H1.4z") +
-    L("M5 11h2M12 10.8h2.4M8.6 10.2h1.6", "#8a7a62", 0.5) +
-    L("M7 15.6h2M11.4 16.2h2", "#fff5d8", 0.5),
+    `<ellipse cx="10" cy="15.6" rx="5.4" ry="1" fill="${p.water}"/>` +
+    P("#bcae96", "M.8 16.4V8.6h18.4v7.8h-3.4V14a5.8 5.4 0 00-11.6 0v2.4z") +
+    SH("M15.8 14v2.4h3.4V11.4h-4.6a5.6 5.6 0 011.2 2.6z", 0.15) +
+    P("#a8997e", "M.4 6.8h19.2v1.8H.4z") +
+    L("M1.6 6.8V5.2M5 6.8V5.2M8.4 6.8V5.2M11.6 6.8V5.2M15 6.8V5.2M18.4 6.8V5.2M1.6 5.2h16.8", "#8a7a62", 0.6) +
+    L("M2.4 11h1.8M16 10.6h2M8.6 9.8h1.8", "#8a7a62", 0.5),
+  // Plan item 569: a tall, slim grain silo to the left, a conveyor running down to its low shed on the right.
   silo: (p) =>
-    R(9, 6.4, 5.4, 10, "#cfd2cc") +
-    SH("M12.2 6.4h2.2v10h-2.2z", 0.18) +
-    P("#b9bdb6", "M9 6.4a2.7 2.2 0 015.4 0z") +
-    L("M9 9.6h5.4M9 12.8h5.4", "#9aa098", 0.5) +
-    P(p.roof, "M2.6 16.4v-5l3.2-2.6 3.2 2.6v5z") +
-    R(4.6, 13, 2.4, 3.4, p.wood),
+    R(3, 3.6, 5, 12.8, "#cfd2cc") +
+    SH("M6 3.6h2v12.8H6z", 0.18) +
+    P("#b9bdb6", "M3 3.6a2.5 2.4 0 015 0z") +
+    L("M3 6.8h5M3 10h5M3 13.2h5", "#9aa098", 0.5) +
+    L("M8 5.2l5.4 5.6", "#7a7670", 0.8) +
+    P(p.roof, "M10.6 16.4v-3.8l3.8-2.6 4 2.6v3.8z") +
+    R(13.2, 13.4, 2.4, 3, p.wood),
+  // Plan item 569: the bulldozer long and low on its tracks, the cab and exhaust up at the back, the blade raised at
+  // the front (drawn facing right, mirrored to face left so it reads apart from the fence and the lorry).
   dozer: () =>
-    P("#3a3530", "M3.2 14.2h9.6a1.2 1.2 0 010 2.4H3.2a1.2 1.2 0 010-2.4z") +
-    P("#e8b23a", "M3.2 14.2V10.4h3V7.6h4.6l.8 2.8h1.6v3.8z") +
-    SH("M3.2 12.8h10v1.4h-10z", 0.18) +
-    P("#9cc3d8", "M6.9 8.3h3.2l.5 2H6.9z") +
-    P("#7a7670", "M14 9.4l2.6-.4 1.4 7.4-3.6.2z") +
-    L("M13.2 11.8l1.2-.2", INK, 0.8) +
-    dot(4.2, 15.4, 0.5, "#9a948a") + dot(7.8, 15.4, 0.5, "#9a948a") + dot(11.4, 15.4, 0.5, "#9a948a"),
+    `<g transform="matrix(-1 0 0 1 20 0)">` +
+    P("#3a3530", "M5.4 13.6h12a1.4 1.4 0 010 2.8h-12a1.4 1.4 0 010-2.8z") +
+    P("#e8b23a", "M5.2 13.6v-3.4h7.4V5.4h5.2v8.2z") +
+    SH("M5.2 12.4h12.6v1.2H5.2z", 0.18) +
+    P("#9cc3d8", "M13.4 6.4h3.4v3h-3.4z") +
+    R(8.2, 6.6, 1, 3.6, "#3a3530") +
+    P("#7a7670", "M.6 9.2l3.2-.6 1 7.8H1.2z") +
+    L("M3.8 11.8l1.6.2", INK, 0.8) +
+    dot(6.6, 15, 0.5, "#9a948a") + dot(11.4, 15, 0.5, "#9a948a") + dot(16.2, 15, 0.5, "#9a948a") +
+    `</g>`,
   well: (p) =>
     L("M5.6 12V5.4M14.4 12V5.4", p.wood, 0.9) +
     P(p.roof, "M4 6l6-3.2 6 3.2z") +
@@ -254,21 +302,24 @@ const ART: Record<string, (p: Pal) => string> = {
     SH("M12.2 11.6h3.4v4.6h-3.4z", 0.18) +
     P(p.water, "M4.4 11.6c0-.8 2.4-1.4 5.6-1.4s5.6.6 5.6 1.4-2.4 1.2-5.6 1.2-5.6-.4-5.6-1.2z") +
     L("M6.6 13.4h1.8M10.6 14.6h2", "#8a7a62", 0.5),
+  // Plan item 569: a two-peaked marquee, wide and low, so a field of campaign tents doesn't read as a gable.
   tent: (p) =>
-    P(p.accent, "M2.4 16.4L10 4.8l7.6 11.6z") +
-    P(PAPER, "M10 4.8l-2.6 11.6h2zM10 4.8l2.6 11.6h-2z") +
-    SH("M10 4.8l7.6 11.6H10z", 0.14) +
-    P(INK, "M8.6 16.4L10 11.6l1.4 4.8z") +
-    L("M10 4.8V2.4", INK, 0.6) +
-    P(p.accent, "M10 2.4l2.4.7-2.4.8z"),
+    P(p.accent, "M1.2 16.4v-5.2L5.4 4.6l4.6 5.2 4.6-5.2 4.2 6.6v5.2z") +
+    P(PAPER, "M5.4 4.6L4 16.4h2.2zM14.6 4.6l-1.4 11.8h2.2z") +
+    SH("M10 9.8l4.6-5.2 4.2 6.6v5.2H10z", 0.14) +
+    P(INK, "M8.4 16.4L10 12.2l1.6 4.2z") +
+    L("M5.4 4.6V2.2M14.6 4.6V2.2", INK, 0.6) +
+    P(p.accent, "M5.4 2.2l2.2.7-2.2.8zM14.6 2.2l2.2.7-2.2.8z"),
+  // Plan item 569: a sailing dinghy with one tall, narrow gaff sail over a long low hull.
   boat: (p) =>
-    P(p.water, "M1.4 14.6h17.2v2H1.4z") +
-    P(p.roof, "M2.8 12.2h14.4l-2.2 3.4H5z") +
-    HI("M3.4 12.2h13.6l-.4.7H3.8z", 0.45) +
-    L("M9.6 12.2V2.6", p.wood, 0.8) +
-    P(PAPER, "M10 3v8.4h5.6z") +
-    SH("M10 8l5.6 3.4H10z", 0.1) +
-    P(p.accent, "M9.6 2.6l-2.2.6 2.2.6z"),
+    L("M1.4 16.4q1.2-.6 2.4 0M16.2 16.4q1.2-.6 2.4 0", p.water, 0.6) +
+    P(p.roof, "M1.2 12.4h17.6l-2.4 3.4H3.4z") +
+    HI("M1.8 12.4h16.4l-.4.7H2.2z", 0.45) +
+    L("M10 12.4V1", p.wood, 0.8) +
+    P(PAPER, "M10.4 1.6l3.4 1.4v8.8h-3.4z") +
+    SH("M12.2 2.3l1.6.7v8.8h-1.6z", 0.1) +
+    P(PAPER, "M9.6 3v8.8H7.2z") +
+    P(p.accent, "M10 1l-2 .6 2 .6z"),
   ship: (p) =>
     P(p.water, "M1 15.4h18v1.4H1z") +
     R(3.4, 8.4, 2.8, 3.6, PAPER) +
@@ -279,27 +330,31 @@ const ART: Record<string, (p: Pal) => string> = {
     R(9.8, 7.2, 2.8, 2.4, "#c9a43a") +
     P("#3d4a5a", "M1.4 12h17.2l-1.8 3.6H3.4z") +
     P(p.accent, "M1.9 13.4h16.2l-.3.6H2.2z"),
+  // Plan item 569: the courthouse the full width of its plot under one tall pediment, as grand as it means to be.
   court: (p) =>
-    P(p.wall, "M2.6 7.6L10 3.4l7.4 4.2z") +
-    HI("M4.6 7l5.4-3v1.4z", 0.35) +
-    R(3, 7.6, 14, 1.2, p.wall) +
-    R(4.2, 8.8, 1.6, 6, p.wall) + R(7.4, 8.8, 1.6, 6, p.wall) + R(11, 8.8, 1.6, 6, p.wall) + R(14.2, 8.8, 1.6, 6, p.wall) +
-    SH("M5 8.8h.8v6H5zM8.2 8.8H9v6h-.8zM11.8 8.8h.8v6h-.8zM15 8.8h.8v6H15z", 0.2) +
-    R(2.4, 14.8, 15.2, 1.6, "#cfc5b2") +
-    C(10, 6.2, 0.8, p.accent),
+    P(p.wall, "M.6 5.4L10 .6l9.4 4.8z") +
+    HI("M3.2 4.8L10 1.4v1.4z", 0.35) +
+    R(.8, 5.4, 18.4, 1.6, p.wall) +
+    R(2, 7, 1.8, 7.8, p.wall) + R(5.6, 7, 1.8, 7.8, p.wall) + R(9.1, 7, 1.8, 7.8, p.wall) + R(12.6, 7, 1.8, 7.8, p.wall) + R(16.2, 7, 1.8, 7.8, p.wall) +
+    SH("M3 7h.8v7.8H3zM6.6 7h.8v7.8h-.8zM10.1 7h.8v7.8h-.8zM13.6 7h.8v7.8h-.8zM17.2 7h.8v7.8h-.8z", 0.2) +
+    R(.4, 14.8, 19.2, 1.6, "#cfc5b2") +
+    C(10, 3.6, 0.9, p.accent),
   scroll: (p) =>
-    P(PAPER, "M5 3.4h9.6v11.2H5z") +
-    P("#ecdcb8", "M4 3.4a1 1 0 011-1h9.6a1 1 0 010 2H5a1 1 0 01-1-1zM4.4 14.6a1 1 0 011-1h9.6a1 1 0 010 2H5.4a1 1 0 01-1-1z") +
-    L("M6.6 6.4h6.4M6.6 8.2h6.4M6.6 10h4.2", "#8a7a62", 0.5) +
-    C(12.6, 11.8, 1.4, p.accent) +
-    P(p.accent, "M12 13l-.6 2.2.9-.5.6.7.2-2.2z"),
+    P(PAPER, "M3 6.4h14v6.4H3z") +
+    P("#ecdcb8", "M1.4 5.4a1 1 0 011-1h1.6a1 1 0 011 1v8.4a1 1 0 01-1 1H2.4a1 1 0 01-1-1zM15 5.4a1 1 0 011-1h1.6a1 1 0 011 1v8.4a1 1 0 01-1 1H16a1 1 0 01-1-1z") +
+    SH("M5 11.4h10v1.4H5z", 0.12) +
+    L("M6.4 8.2h7.2M6.4 10h5", "#8a7a62", 0.5) +
+    C(12.8, 11.4, 1.4, p.accent) +
+    P(p.accent, "M12.2 12.6l-.6 2.4.9-.5.6.7.2-2.4z"),
+  // Plan item 569: the gavel raised high to the right, its sounding block waiting low on the left.
   gavel: (p) =>
-    P(p.wood, "M3.6 16.4v-1.8c0-.6 1.6-1 4-1s4 .4 4 1v1.8z") +
-    P("#a37a50", "M3.6 14.6c0-.6 1.6-1 4-1s4 .4 4 1-1.6 1-4 1-4-.4-4-1z") +
-    L("M10.2 10.6l6.2 5", p.wood, 1.1) +
-    P(p.wood, "M6.6 9.4l4-4.6 2.6 2.2-4 4.6z") +
-    SH("M11.6 6l1.6 1.4-4 4.6-1.6-1.4z", 0.2) +
-    P(p.accent, "M7.5 8.4l4-4.6.7.6-4 4.6zM9.6 10.2l4-4.6.7.6-4 4.6z"),
+    P(p.wood, "M1.4 16.4v-1.8c0-.6 1.6-1 4-1s4 .4 4 1v1.8z") +
+    P("#a37a50", "M1.4 14.6c0-.6 1.6-1 4-1s4 .4 4 1-1.6 1-4 1-4-.4-4-1z") +
+    L("M8.4 12.6l5.6-6.4", p.wood, 1.1) +
+    P(p.wood, "M10.8 4.2l4.2-3.4 3.4 4.2-4.2 3.4z") +
+    SH("M16.7 2.9l1.7 2.1-4.2 3.4-1.7-2.1z", 0.2) +
+    P(p.accent, "M11.8 5.4l4.2-3.4.6.7-4.2 3.4zM13.6 7.6l4.2-3.4.6.7-4.2 3.4z") +
+    L("M6.6 11.4l-1-1.4M4.2 12l-1.4-.8M8.4 11l.2-1.6", INK, 0.5),
   ballot: (p) =>
     P(PAPER, "M8.4 8.6l1-6.2 4.2.8-1 6z") +
     L("M10 5.8l1 1 1.6-2.2", p.accent, 0.7) +
@@ -328,25 +383,33 @@ const ART: Record<string, (p: Pal) => string> = {
       R(7.4, 14.2, 2, 2.2, "#4a5662")
     );
   },
+  // Plan item 569: a row of server cabinets, long and low, a dish on top listening.
   server: (p) =>
-    R(5.6, 3.4, 8.8, 13, "#3d444c") +
-    P("#2b3036", "M14.4 3.4l1.8-1v13l-1.8 1z") +
-    R(6.6, 5, 6.8, 2, "#59626c") + R(6.6, 8, 6.8, 2, "#59626c") + R(6.6, 11, 6.8, 2, "#59626c") +
-    dot(7.6, 6, 0.4, "#7fe08a") + dot(8.8, 6, 0.4, p.accent) + dot(7.6, 9, 0.4, "#7fe08a") + dot(7.6, 12, 0.4, p.accent) +
-    L("M14.6 14.4q2.4.4 3 2", "#2b2320", 0.6),
+    R(1.4, 9.4, 17.2, 7, "#3d444c") +
+    L("M7.2 9.4v7M12.8 9.4v7", "#2b3036", 0.6) +
+    R(2.2, 10.6, 4.2, 1.4, "#59626c") + R(8, 10.6, 4.2, 1.4, "#59626c") + R(13.6, 10.6, 4.2, 1.4, "#59626c") +
+    R(2.2, 13, 4.2, 1.4, "#59626c") + R(8, 13, 4.2, 1.4, "#59626c") + R(13.6, 13, 4.2, 1.4, "#59626c") +
+    dot(3, 11.3, 0.4, "#7fe08a") + dot(8.8, 11.3, 0.4, p.accent) + dot(14.4, 11.3, 0.4, "#7fe08a") + dot(3, 13.7, 0.4, p.accent) +
+    L("M14.8 9.4V6.6", INK, 0.6) +
+    P("#cfd2cc", "M12.2 6.4a2.8 2.8 0 005.2-2.4z") +
+    L("M14.8 5.2l1.4-2", INK, 0.5),
+  // Plan item 569: the lectern stands up on a stage the plot's full width, the microphone bent toward it.
   podium: (p) =>
-    P(p.wood, "M6 16.4l1-6.2h6l1 6.2z") +
-    SH("M10 10.2h3l1 6.2h-4z", 0.18) +
-    P("#a37a50", "M5.4 10.6l1-2h7.2l1 2z") +
-    C(10, 13, 1.5, p.accent) +
-    L("M11.6 8.6l1.6-3", INK, 0.5) +
-    `<ellipse cx="13.5" cy="5" rx=".9" ry="1.2" fill="#3a3530" ${S}/>`,
+    P("#a37a50", "M.8 16.4v-2.6h18.4v2.6z") +
+    SH("M.8 15.4h18.4v1H.8z", 0.2) +
+    P(p.wood, "M7 13.8l.8-8h4.4l.8 8z") +
+    SH("M10 5.8h2.2l.8 8H10z", 0.18) +
+    P("#a37a50", "M6.4 6.2l.8-1.8h5.6l.8 1.8z") +
+    C(10, 9.6, 1.4, p.accent) +
+    L("M11.8 4.4l1.6-2.4", INK, 0.5) +
+    `<ellipse cx="13.7" cy="1.8" rx=".9" ry="1.1" fill="#3a3530" ${S}/>`,
   chart: (p) =>
-    L("M5.2 16.4l1.6-4M14.8 16.4l-1.6-4", p.wood, 0.8) +
-    R(3.6, 3.6, 12.8, 9.4, PAPER) +
-    `<path d="M5.6 11.6h1.8V9.4H5.6zM8.4 11.6h1.8V8H8.4zM11.2 11.6H13V6.2h-1.8z" fill="${p.accent}"/>` +
-    L("M5.6 8l3-1.8 2.6.6 3.6-2.6", "#3a7a4a", 0.7) +
-    P("#3a7a4a", "M14.8 4.2l.4 1.2-1.2.2z"),
+    L("M6 16.4l2.2-7M14 16.4l-2.2-7M10 9.4v7", p.wood, 0.9) +
+    R(3.4, 1.8, 13.2, 8.4, PAPER) +
+    SH("M3.4 9h13.2v1.2H3.4z", 0.12) +
+    `<path d="M5.4 8.8h1.8V6.8H5.4zM8.2 8.8H10V5.4H8.2zM11 8.8h1.8V3.8H11z" fill="${p.accent}"/>` +
+    L("M5.4 5.4l3-1.6 2.6.5 3.6-2", "#3a7a4a", 0.7) +
+    P("#3a7a4a", "M14.6 2.3l.4 1.2-1.2.2z"),
   parachute: (p) =>
     P("#e8b23a", "M3 8.2a7 5.2 0 0114 0q-1.75-1-3.5 0-1.75-1-3.5 0-1.75-1-3.5 0-1.75-1-3.5 0z") +
     P(PAPER, "M8.2 3.4c-.8 1.4-1.2 3-1.2 4.8q1.5-.8 3 0c0-1.8-.4-3.6-1.8-4.8z") +
@@ -369,35 +432,43 @@ const ART: Record<string, (p: Pal) => string> = {
     L("M3.4 16.4V5M16.6 16.4V5", p.wood, 1) +
     L("M3.4 5.6q6.6 3.4 13.2 0M3.4 8.4q6.6 3 13.2 0M3.4 11.2q6.6 2.6 13.2 0M6 6.6v6.4M8.6 7.6v6.4M11.4 7.6v6.4M14 6.6v6.4", "#8a7a62", 0.45) +
     C(6, 6.8, 0.8, p.accent) + C(10, 7.8, 0.8, p.accent) + C(14, 6.8, 0.8, p.accent),
+  // Plan item 569: the clinic a long, low block with its red cross held high on a sign.
   clinic: () =>
-    P("#f2f2ee", "M3 16.4V8.4h10.4v8z") +
-    P("#d6d8d4", "M13.4 8.4l3.4-1.8v8l-3.4 1.8z") +
-    P("#e4e6e2", "M3 8.4l3.4-1.8h10.4l-3.4 1.8z") +
-    P("#d9473b", "M7.3 9.6h1.8v1.6h1.6V13H9.1v1.6H7.3V13H5.7v-1.8h1.6z") +
-    P(HOLLOWELL, "M3 15.2h10.4v1.2H3z"),
+    P("#f2f2ee", "M1 16.4v-6h14.6v6z") +
+    P("#d6d8d4", "M15.6 10.4l3.2-1.6v6l-3.2 1.6z") +
+    P("#e4e6e2", "M1 10.4l3.2-1.6h14.6l-3.2 1.6z") +
+    R(3, 12, 2, 1.8, "#9cc3d8") + R(7, 12, 2, 1.8, "#9cc3d8") + R(11, 12, 2, 1.8, "#9cc3d8") +
+    L("M8.6 8.8V6.4", INK, 0.6) +
+    R(5.8, 1.6, 5.6, 4.8, "#fbfaf4") +
+    P("#d9473b", "M7.8 2.2h1.6v1.4h1.4v1.6H9.4v1.4H7.8V5.2H6.4V3.6h1.4z") +
+    P(HOLLOWELL, "M1 15.2h14.6v1.2H1z"),
+  // Plan item 569: one tall bottle and a little one well apart, so a pair of bottles doesn't read as a block.
   bottle: (p) =>
-    P(p.water, "M5.4 16.4v-7c0-1 1.4-1.6 1.4-2.8V5h2v1.6c0 1.2 1.4 1.8 1.4 2.8v7z") +
-    R(5.4, 10.6, 4.8, 2.6, PAPER) +
-    R(6.8, 4, 2, 1, p.accent) +
-    P(p.water, "M10.8 16.4v-6c0-.8 1.1-1.3 1.1-2.3V6.8h1.6v1.3c0 1 1.1 1.5 1.1 2.3v6z") +
-    R(12, 5.8, 1.6, 0.9, p.accent) +
-    HI("M6.2 9.4h.8v6.4h-.8z", 0.5),
+    P(p.water, "M3.4 16.4v-8c0-1.2 1.6-1.8 1.6-3.2V2.6h2.2v2.6c0 1.4 1.6 2 1.6 3.2v8z") +
+    R(3.4, 10.4, 5.4, 2.8, PAPER) +
+    R(4.9, 1.8, 2.4, 1, p.accent) +
+    HI("M4.2 8.6h.8v7.2h-.8z", 0.5) +
+    P(p.water, "M13.4 16.4v-3.6c0-.7.9-1.1.9-1.9v-1h1.4v1c0 .8.9 1.2.9 1.9v3.6z") +
+    R(14.2, 9.4, 1.6, 0.8, p.accent),
+  // Plan item 569: a slim clock tower whose great face overhangs it, under a tall spire.
   clocktower: (p) =>
-    R(7, 6.4, 6, 10, p.wall) +
-    SH("M11 6.4h2v10h-2z", 0.18) +
-    P(p.roof, "M6.4 6.6L10 1.4l3.6 5.2z") +
-    C(10, 9.4, 1.9, PAPER) +
-    L("M10 9.4V8.2M10 9.4l.9.5", INK, 0.5) +
-    P(p.wood, "M8.8 16.4v-2.6a1.2 1.2 0 012.4 0v2.6z") +
-    R(3, 12, 4, 4.4, p.wall) +
-    P(p.roof, "M2.6 12.2L5 10.2l2 1.8z"),
+    R(7.6, 6.4, 4.8, 10, p.wall) +
+    SH("M10.8 6.4h1.6v10h-1.6z", 0.18) +
+    P(p.roof, "M7 3.4L10 .2l3 3.2z") +
+    R(6.6, 3.4, 6.8, 1.4, p.wall) +
+    C(10, 7.8, 3.8, PAPER) +
+    SH("M10 4a3.8 3.8 0 010 7.6z", 0.1) +
+    L("M10 7.8V5.4M10 7.8l1.8 1", INK, 0.6) +
+    P(p.wood, "M8.8 16.4v-2.6a1.2 1.2 0 012.4 0v2.6z"),
+  // Plan item 569: the crown held high and wide on a slim column, as broad as the hall it rules.
   crown: (p) =>
-    R(5.2, 13.2, 9.6, 3.2, "#b7ab96") +
-    SH("M12 13.2h2.8v3.2H12z", 0.18) +
-    P("#e2bf62", "M4.8 11.6l.8-6.2 2.6 2.8L10 3.6l1.8 4.6 2.6-2.8.8 6.2z") +
-    SH("M10 3.6l1.8 4.6 2.6-2.8.8 6.2H10z", 0.15) +
-    R(4.8, 11.4, 10.4, 1.8, "#c9a43a") +
-    dot(7.4, 12.3, 0.55, p.accent) + dot(10, 12.3, 0.55, "#4d86a6") + dot(12.6, 12.3, 0.55, p.accent),
+    R(8.4, 9.2, 3.2, 7.2, "#b7ab96") +
+    SH("M10.4 9.2h1.2v7.2h-1.2z", 0.18) +
+    R(6.6, 15, 6.8, 1.4, "#b7ab96") +
+    P("#e2bf62", "M1.6 7.4l1-6 3.6 3.2L10 .8l3.8 3.8 3.6-3.2 1 6z") +
+    SH("M10 .8l3.8 3.8 3.6-3.2 1 6H10z", 0.15) +
+    R(1.6, 7.2, 16.8, 2, "#c9a43a") +
+    dot(5, 8.2, 0.6, p.accent) + dot(10, 8.2, 0.6, "#4d86a6") + dot(15, 8.2, 0.6, p.accent),
 };
 
 /** Each act's ten stops, in order (the tenth the boss), named for the level they stand for. */
