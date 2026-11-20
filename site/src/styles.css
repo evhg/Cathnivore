@@ -1529,8 +1529,10 @@ body {
   color: var(--gold-hi);
 }
 .hero-game-status[hidden] { display: none; }
-/* Plan item 560: on a wide desktop the four posters have room for the hook at 15 px (it read small under the art). */
-@media (min-width: 1200px) {
+/* Plan item 560: on a wide desktop the four posters have room for the hook at 15 px (it read small under the art).
+   Only on a tall one (960 px+): at 1440x900 a hook wrapping to a third line in CI's fonts pushed the posters past the
+   fold (games-cards :154, red on f2bfd70 and 71e472c). */
+@media (min-width: 1200px) and (min-height: 960px) {
   .hero-game-hook { font-size: 0.9375rem; }
 }
 /* Plan item 437: each poster keeps its game's wordmark, board and Play button, but the hook and today's line are
