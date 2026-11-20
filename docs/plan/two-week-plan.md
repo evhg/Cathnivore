@@ -5633,7 +5633,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-front upright specs, title-focal and keyart-fresh pass; shots P and D.
 - **Size:** 2
 
-## 571. [ ] The bugs from the 2026-11-20 15:20 critique, fixed as one batch
+## 571. [ ] The bugs from the 2026-11-20 15:20 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-20 15:20, lane A, plan1120p)*
 - `cath-game-P` (0-160 x 615-770): the fan's left cards stack so tight no title shows; the right card cut at x 390.
 - `hedge-menu-P` (80-205 x 175-262): Cath stands over stop 21's icon; 'Next / On Air' meets the stop's disc and its '21' badge.
