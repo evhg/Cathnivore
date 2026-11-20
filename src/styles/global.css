@@ -4529,7 +4529,8 @@ html.no-animations .setup .opening-preview :is(.piece-tray, .ev-heap, .ev-lanter
   .setup[data-phone-steps] .segmented.mode-picker span.mode-art { display: none; }
   .setup[data-phone-steps] .segmented.mode-picker label { display: flex; justify-content: center; padding: 6px 8px 10px; }
   .setup[data-phone-steps] .segmented.mode-picker span.mode-name { text-align: center; }
-  .setup[data-phone-steps] .mode-name small { display: inline; }
+  /* item 553: its descriptor at caption size and a darker ink (11-12 px grey on cream read faint) */
+  .setup[data-phone-steps] .mode-name small { display: inline; font-size: var(--fs-caption); font-weight: 600; color: color-mix(in srgb, var(--ink-muted) 60%, var(--ink)); }
   .setup[data-phone-steps] .market-event { padding: 5px 12px; }
   .setup[data-phone-steps] .market-event h2 { display: inline; margin: 0; }
   .setup[data-phone-steps] .market-event-deal { display: inline; margin-left: 4px; }

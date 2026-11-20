@@ -5595,8 +5595,9 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .actions .action-head-later ~ .action-item.action-item { width: 152px; height: 96px; }
   .action-tray .actions .action-head-later ~ .action-item:not([data-hand-card]) { translate: 0 3px; }
   /* the count of cards to the right hangs from the counter's lip as a tab, above the cards, not on one */
+  /* item 553: it hung 5 px into the well, over the last fanned card's lifted corner; now its foot meets the lip */
   .action-tray .actions-well:has(> .actions[data-more-right]:not([data-more-right='0']))::before {
-    top: -13px;
+    top: -17px;
     bottom: auto;
     right: 8px;
     translate: none;
@@ -6103,6 +6104,14 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
    for the CSP); the doubled class outranks the seat rules above, as the inline style it replaces did. */
 .producer-line.producer-line[data-placed="dock"] { left: var(--pl-left); right: auto; top: var(--pl-top); bottom: auto; width: var(--pl-w); min-height: var(--pl-h); max-width: none; }
 .producer-line.producer-line[data-placed="map"] { left: var(--pl-left); right: auto; width: var(--pl-w); }
+.producer-line.producer-line[data-placed="map"]::after { right: auto; left: var(--pl-tail, calc(100% - 42px)); }
+/* item 553: on every hand card (the desktop table's too) the region takes its own line, so a wrap never leads with a
+   stray '·' ('Supply 1 Outlet / · Brindle Hills' at 1440x900) */
+.action-item[data-hand-card] .action-region { display: block; }
+.action-item[data-hand-card] .action-region-dot { display: none; }
+/* item 553: the speaker named on the bubble's first line, in their colour (a desktop table seats two side by side) */
+.producer-line-who { display: block; font: 700 var(--fs-label)/1.2 var(--font-ui); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--cameo-ring, var(--wheat)) 70%, var(--ink)); }
+.counter-bench .producer-line-who { display: none; }
 
 /* Plan item 495 slice 2: from 1240 px (was 1400) the readings fold beside tomorrow's papers, so the board takes the
    status bar's row back (1280x800: board 16% -> 22% of the window). The row is about 160 px narrower there, so Pell's

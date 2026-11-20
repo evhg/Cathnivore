@@ -124,7 +124,13 @@ const shoot = {
       hg.refresh()
     })
     await p.waitForFunction(() => window.hedgerow.game().enemies.length > 8, null, { timeout: 60000 }).catch(() => {})
-    await p.waitForTimeout(2500)
+    // Item 553: shot while the wave still stood bunched at the gate, its glowing vans read as a purple blob at card
+    // size; wait until the convoy strings out along the lane (lead to tail 8 cells or more).
+    await p.waitForFunction(() => {
+      const d = window.hedgerow.game().enemies.map((e) => e.dist)
+      return d.length > 4 && Math.max(...d) - Math.min(...d) >= 8
+    }, null, { timeout: 90000 }).catch(() => {})
+    await p.waitForTimeout(1500)
     return (await p.screenshot()).toString('base64')
   },
   // The Drowned Market street, from NIGHT SHIFT's own key art (scripts/cathode-keyart.mjs renders it from the

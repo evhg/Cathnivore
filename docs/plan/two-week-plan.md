@@ -5397,18 +5397,18 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Size:** 2
 
 ## 553. [ ] The bugs from the 2026-11-20 05:00 critique, fixed as one batch *(lane A, in progress)*
-- `cath-game-D` (1218-1398 x 350-435): the producers' bubble 'Favourite pair, she says. Mara, she means me.' has its tail on Mara, but Tomas is speaking. Name or point at the speaker.
-- `cath-game-D` (1000-1150 x 820-860): 'Supply 1 Outlet · Brindle Hills' wraps with a stray leading '·'.
-- `cath-game-P` (300-370 x 595-612): the '9 more' pill overlaps the top-right of the last fanned card.
-- `cath-setup-P` (30-375 x 575-600): Solo/Hot-seat descriptors about 11 px, grey on cream.
-- `cath-campaign-D`: 'Brindle Hills' (140-245 x 450-505) and 'Shingle Bay' (440-545 x 620-675) labels touch the bunting above them.
-- `runnel-D` (415-550 x 75-175): the spring house's pipe ends about 20 px short of the spring tile.
-- `hedge-menu-P` (230-260 x 225-260): Cath half hides stop 22's coin.
-- `hedge-l21-3d-D` (115-215 x 680-800): a neighbour lies flat across the crops with a rake (a work pose reads as a fall).
-- `hedge-l34-2d-D`: the 'Same-Day van' label (330-455 x 708-728) over its vans; 'Box Lorry' (250-345 x 240-258) over the lorry.
-- `ns-title-D` (905-960 x 470-540): Cath's glove passes through the umbrella shaft.
-- `ns-play-P` (2x, y 1030-1130): an empty band between 'HER LINE' and the stat sheet.
+- `cath-game-D` (1218-1398 x 350-435): the producers' bubble 'Favourite pair, she says. Mara, she means me.' has its tail on Mara, but Tomas is speaking. Name or point at the speaker. **Fixed 05:10 lane A:** the bubble names its speaker in their colour, and a slid bubble's tail points at its own seat (`--pl-tail`).
+- `cath-game-D` (1000-1150 x 820-860): 'Supply 1 Outlet · Brindle Hills' wraps with a stray leading '·'. **Fixed 05:10 lane A:** on every hand card the region takes its own line, without the dot.
+- `cath-game-P` (300-370 x 595-612): the '9 more' pill overlaps the top-right of the last fanned card. **Fixed 05:10 lane A:** the tab's foot now meets the counter's lip (top -17 px, was -13).
+- `cath-setup-P` (30-375 x 575-600): Solo/Hot-seat descriptors about 11 px, grey on cream. **Fixed 05:10 lane A:** caption size, semibold, a darker ink.
+- `cath-campaign-D`: 'Brindle Hills' (140-245 x 450-505) and 'Shingle Bay' (440-545 x 620-675) labels touch the bunting above them. **Fixed 05:15 lane A:** over a two-line name the tape or bunting hangs 3 units higher (lowering the name instead met the landmark and Cath in campaign-map-layout's test).
+- `runnel-D` (415-550 x 75-175): the spring house's pipe ends about 20 px short of the spring tile. **Checked, kept:** at 3x the feeder leaves the stream and ends in its culvert on the terrace lip (item 186); the spring sits inside the board.
+- `hedge-menu-P` (230-260 x 225-260): Cath half hides stop 22's coin. **Checked, kept:** she stands beside 21 (right edge about x 205); coin 22 starts at x 218.
+- `hedge-l21-3d-D` (115-215 x 680-800): a neighbour lies flat across the crops with a rake (a work pose reads as a fall). **Checked, kept:** at 3x it is a standing farmer near the camera, seen from above with the hoe.
+- `hedge-l34-2d-D`: the 'Same-Day van' label (330-455 x 708-728) over its vans; 'Box Lorry' (250-345 x 240-258) over the lorry. **Checked, kept:** at 2x each tag sits clear beside its lead vehicle (item 72's staged threat).
+- `ns-title-D` (905-960 x 470-540): Cath's glove passes through the umbrella shaft. **Moved to item 543** (her 3D hands).
+- `ns-play-P` (2x, y 1030-1130): an empty band between 'HER LINE' and the stat sheet. **Left to item 538** (lane B's class pick, in progress): the sheet docks to the foot, the band is the slack.
 - `portfolio-D` (1100-1220 x 445-520), `games-D` (890-960 x 630-700): purple glow blobs in Hedgerow's key art read as a glitch at thumbnail size.
-- `games-P` (30-380 x 512-558): 'Play today's Runnel' thin italic, low contrast; 'Browse the games' reads disabled.
+- `games-P` (30-380 x 512-558): 'Play today's Runnel' thin italic, low contrast; 'Browse the games' reads disabled. **Checked, kept:** chalk 700 on the brass-lit slate and cream on the plank (5.9:1, item 222), item 409's deliberate lead.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1

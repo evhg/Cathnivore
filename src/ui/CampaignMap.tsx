@@ -414,7 +414,8 @@ export default function CampaignMap({
                   {isFree ? <Stall /> : <Outlet />}
                 </g>
               )}
-              <g transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`}>{isFree ? <Bunting /> : <HollowellTape />}</g>
+              {/* item 553: over a two-line name the tape or bunting hangs 3 units higher (its placards touched the name's caps) */}
+              <g transform={`translate(${c.x.toFixed(1)} ${(c.y - (nameLines(id).length > 1 ? 3 : 0)).toFixed(1)})`}>{isFree ? <Bunting /> : <HollowellTape />}</g>
               {/* Plan item 47: a two-word name goes on two lines, so it stays inside its own hex. */}
               <text x={c.x.toFixed(1)} y={(c.y + nameBaseline(id)).toFixed(1)} className="cmp-map-name">
                 {nameLines(id).length > 1

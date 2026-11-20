@@ -4166,10 +4166,15 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
     const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
     el.style.setProperty('--pl-left', `${left - at.left}px`)
     el.style.setProperty('--pl-w', `${width}px`)
+    // Item 553: the tail points down at whoever is speaking, wherever the slide left the bubble (it sat fixed at the
+    // bubble's right, so a slid bubble pointed at the other producer).
+    const seat = el.parentElement?.getBoundingClientRect()
+    if (seat) el.style.setProperty('--pl-tail', `${Math.min(Math.max(seat.left + seat.width / 2 - left - 7, 14), width - 28)}px`)
     el.dataset.placed = 'map'
   }, [reply])
   return (
     <span ref={ref} className={`producer-line pc-${reply.producer}`} data-producer-line={reply.producer} data-beat={reply.beat} aria-hidden="true">
+      <b className="producer-line-who">{PRODUCERS[reply.producer].name.split(' ')[0]}</b>
       {reply.line}
     </span>
   )
