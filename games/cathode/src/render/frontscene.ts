@@ -13,6 +13,7 @@
 import { gunIcon, gunReel, type GunReel } from "./gunportrait";
 import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { testFireLook } from "../game/testfire";
 import type { ClassId, TreeId } from "../sim/types";
 import { SKILL_PREVIEWS } from "../game/skillpreview";
@@ -287,13 +288,23 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // shot breaks the bottle (glass flies); later shots splinter the crate; a new class stands a fresh bottle.
   const target = new THREE.Group();
   {
-    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.36, 0.36), new THREE.MeshStandardMaterial({ color: 0x7a5434, roughness: 0.85, emissive: 0x2a190b }));
+    // Plan item 538: a real crate (it was a plain brown box): rounded edges, and slatted boards with end battens, grain
+    // and nail heads painted on every face; the warm self-light kept.
+    const crate = new THREE.Mesh(
+      new RoundedBoxGeometry(0.42, 0.36, 0.36, 2, 0.012),
+      new THREE.MeshStandardMaterial({ map: crateTexture(), color: 0xffffff, roughness: 0.85, emissive: 0x2a190b }),
+    );
     // (a faint warm self-light: upright it stands past the stoop's bulb, where unlit wood read as a black box)
     crate.position.y = 0.18;
-    const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.04, 0.24, 10), new THREE.MeshStandardMaterial({ color: 0x1f6a3a, roughness: 0.15, metalness: 0.1, emissive: 0x1d6a38 }));
+    // Plan item 538: a glass bottle's profile (a heel, straight body, a rounded shoulder into the neck), not a cylinder.
+    const BOTTLE_PROFILE: Array<[number, number]> = [[0, -0.12], [0.034, -0.12], [0.04, -0.112], [0.04, 0.04], [0.036, 0.075], [0.024, 0.105], [0.014, 0.12]];
+    const bottle = new THREE.Mesh(
+      new THREE.LatheGeometry(BOTTLE_PROFILE.map(([r, y]) => new THREE.Vector2(r, y)), 16),
+      new THREE.MeshStandardMaterial({ color: 0x1f6a3a, roughness: 0.15, metalness: 0.1, emissive: 0x1d6a38 }),
+    );
     bottle.position.y = 0.36 + 0.12;
     bottle.name = "bottle";
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.03, 0.09, 8), bottle.material);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.09, 12), bottle.material);
     neck.position.y = 0.165;
     bottle.add(neck);
     target.add(crate, bottle);
@@ -1553,4 +1564,40 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
   };
   return scene;
+}
+
+/** Plan item 538: the test-fire crate's boards (a canvas, shared by its six faces): three slatted planks with gaps
+ * and grain, darker battens at each end, a nail head at each crossing. */
+function crateTexture(): THREE.Texture {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 128;
+  const g = c.getContext("2d");
+  if (g) {
+    g.fillStyle = "#3a2414";
+    g.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 3; i++) {
+      const y = 4 + i * 41;
+      g.fillStyle = i % 2 ? "#8a603a" : "#7a5434";
+      g.fillRect(0, y, 128, 37);
+      g.strokeStyle = "rgba(40,22,10,0.35)";
+      g.lineWidth = 1;
+      for (let k = 0; k < 5; k++) {
+        g.beginPath();
+        const gy = y + 5 + k * 7;
+        g.moveTo(0, gy);
+        g.bezierCurveTo(40, gy + 2, 80, gy - 2, 128, gy + 1);
+        g.stroke();
+      }
+    }
+    g.fillStyle = "#5a3a20";
+    g.fillRect(0, 0, 16, 128);
+    g.fillRect(112, 0, 16, 128);
+    g.fillStyle = "#cbb79a";
+    for (const x of [8, 120]) for (let i = 0; i < 3; i++) g.fillRect(x - 1.5, 20 + i * 41, 3, 3);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
 }

@@ -13,6 +13,7 @@
 
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 export interface SetPropsBuild {
   /** The props' names, for the pick's checks (`data-set-props`). */
@@ -68,8 +69,13 @@ class Kit {
     if (this.cur && geo.boundingBox) (this.boxes[this.cur] ??= new THREE.Box3()).union(geo.boundingBox);
     return this;
   }
+  /** Plan item 538: every box with a small rounded bevel (a tenth of its thinnest side, up to 2 cm), so its edges catch
+   * the pick's key as a line of light instead of meeting in a hard corner: the critique read the plain boxes as a
+   * blockout. Thin glowing strips (a sheen, a screen) stay sharp boxes. */
   box(w: number, h: number, d: number, hex: number, at: [number, number, number], rot?: [number, number, number], glow = 0): this {
-    return this.add(new THREE.BoxGeometry(w, h, d), hex, at, rot, glow);
+    const r = Math.min(0.02, Math.min(w, h, d) * 0.1);
+    const g = glow || r < 0.004 ? new THREE.BoxGeometry(w, h, d) : new RoundedBoxGeometry(w, h, d, 2, r);
+    return this.add(g, hex, at, rot, glow);
   }
   cyl(rt: number, rb: number, h: number, hex: number, at: [number, number, number], rot?: [number, number, number], seg = 12, glow = 0): this {
     return this.add(new THREE.CylinderGeometry(rt, rb, h, seg), hex, at, rot, glow);
