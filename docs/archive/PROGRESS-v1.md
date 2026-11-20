@@ -4255,3 +4255,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 02:21 lane B: 546 done; 545 slice 1 (valley saturation ratio 0.76 -> 0.50); games, portfolio and 133 Runnel specs pass.
 - 2026-11-20 03:21 lane B: 545 done (board 0.68/0.89 of the stage, saturation 0.56, tile vs land 0.215); 544 closed on settled-frame measurements; 133 Runnel specs pass.
 - **2026-11-20 02:51 lane A:** 548 done (4 code commits). saving-goal (new 1440x1000/1920x1080 case), setup-steps, setup-placecards, player-mat, desktop-top-rail, disabled-actions (D, --retries=0), cathode-classpick (P, 8 passed), runnel-lesson*/critique91 (D); tsc, eslint, css lint, cathode-type, keyart-fresh; full `npm run check` passed (2836 tests). Shots e2e/screenshots/b548 (before), scratchpad sc/a* (after). Lock released.
+- 2026-11-20 05:21 lane B: 552 done (phone index cutting); NIGHT SHIFT title specs pass P and D.

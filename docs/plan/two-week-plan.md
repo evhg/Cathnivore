@@ -5561,7 +5561,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-map specs pass; shots P and D.
 - **Size:** 1
 
-## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(lane B, in progress)*
+## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(handed back 2026-11-20 12:55 by lane B: 1 fixed, 1 checked, 1 tried (marked))*
 *(planned 2026-11-20 12:45, lane B, plan1120m)*
 - `cath-setup-P` (0-45 x 240-262): Brindle Hills' '2' badge clipped at the left edge; 'Kingsmarket' runs into the '5' badge (150-265 x 240-262).
 - `cath-setup-D`: the Dry Spell sign (985-1120 x 570-775) over the board's rim and Cath's arm; Dr Ines Farrow's 'Second Opinion' tag wraps (717-810 x 175-210).
@@ -5571,8 +5571,8 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-l21-2d-D` (275-420 x 300-318): the 'Lifestyle influencer' tag floats over the sea, apart from its vehicle.
 - `hedge-l21-3d-P` (5-195 x 78-100): the 'HOLLOWELL 216 NEXT' plate sits on the depot model.
 - Hedgerow 2D (830-885 x 280-380): Cath in an orange ring on the road reads as a target.
-- `ns-play-D` (998 x 593): 'and the Pin, her steel baton.' starts lowercase as a sentence.
-- `ns-title-P` (15-195 x 422-588): the Ledger over Cath's coat and glove (item 552 noted it at 375).
-- `portfolio-P` (y 518-545): the live status line wraps.
+- `ns-play-D` (998 x 593): 'and the Pin, her steel baton.' starts lowercase as a sentence. **Fixed 12:45 lane B:** 'And the Pin, her steel baton.'
+- `ns-title-P` (15-195 x 422-588): the Ledger over Cath's coat and glove (item 552 noted it at 375). **Tried 12:50 lane B, reverted:** a narrower Ledger (38vw/148 px) clears her body but grows taller and meets The List at 375x667 (553 vs 544); it needs a shorter phone Ledger (fewer lines or a smaller photo), not a narrower one.
+- `portfolio-P` (y 518-545): the live status line wraps. **Checked, kept:** two clean lines of one sentence.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1

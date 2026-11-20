@@ -565,7 +565,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
         testFire();
       });
     }
-    el("p", "cp-weapon-pin", weapon, "and the Pin, her steel baton.");
+    el("p", "cp-weapon-pin", weapon, "And the Pin, her steel baton.");
 
     trees.replaceChildren();
     for (const t of def.trees) {
