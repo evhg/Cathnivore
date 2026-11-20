@@ -246,3 +246,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-20 02:15 lane A (471): the 112 px stops apply at 1200 px wide and 860 px tall only; 1280x800 keeps 72 px (the fold that sank the 104 px try). Closed 471 with the plastic locked coin and the sticky phone card as noted deviations.
 - 2026-11-20 02:35 lane A (548): kept lane B's 3D Hedgerow poster (item 546) over my 2D re-shoot in the rebase, and re-shot it with their script so keyart-fresh holds.
 - 2026-11-20 02:21 lane B (546): one Play shape on /games/ but each game's colours kept, a middle way between item 401's per-game signs and the critique's 'four unrelated buttons'.
+- 2026-11-20 03:21 lane B (544): closed without code: the settled title already keeps the menu, Ledger and List off Cath; the critique judged an unsettled headless frame. Planning critiques should judge NIGHT SHIFT titles on ?shot&t=8.

@@ -5254,7 +5254,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Re-render the posters and key art.
 - **Size:** 3
 
-## 544. [ ] NIGHT SHIFT title: one reading order, nothing on Cath *(lane B, in progress)*
+## 544. [x] NIGHT SHIFT title: one reading order, nothing on Cath *(closed 2026-11-20 03:45, lane B, checked and kept: measured on the settled `?shot&t=8` frame (the critique's shots were headless live frames, camera unsettled). 390x844: face 271-376 x 308-449, body from x 202; menu 7-129 x 206-392, Ledger 13-196 x 403-570, The List 16-370 x 713-806 (over her body only below the waist-up frame's foot): nothing meets her face or torso. 1440x900: face 952-1070 x 240-389, body from x 876; menu 43-288, Ledger 405-768 x 219-519, List 58-751 x 586-815: the Ledger ends 108 px short of her, and the left half reads menu, front page, The List, top to bottom. Not done: the Ledger's right edge at 53% of the width, not 45%: pulling it under the menu breaks item 536's index-beside-its-front-page, and it already clears her. Shots e2e/screenshots/plan1120e/t544-*.)*
 - **Why:** `ns-title-D`/`-P` (plan1120a): the menu, the Ledger and The List are three equal paper rectangles with no order (VISION 1, one focal point).
   - The desktop Ledger sits mid-screen against her umbrella (415-765 x 220-515).
   - On the phone, the Ledger crosses the umbrella's shaft and her coat (at 2x 30-395 x 805-1140).
