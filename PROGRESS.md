@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (15:51 11-20): 566 slice 1 (3dead2ea: a hand card whose name takes its strip back is dealt clear of its neighbour when the row has room), 566 handed back with findings (the board is height-bound; item 565's 15 px names overflow faces 8-9 px). Open: 566-570, 319, 543. Release due at the 11-20 19:51 session.
+- Lane A (16:51 11-20): 566 done (52c121fa: a Supply/Rebut card's option keys were blank in a rows hand, 8 of 12 round-4 deals; the board target revised, it's height-bound), 569 slice 1 (576ff485: phone stops 64 px; 155 alike silhouette pairs to redraw). Open: 567-570, 319, 543. Release due at the 11-20 19:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-20 16:51 lane A:** 566 done, 569 slice 1 (2 code commits). table-hand (new Supply-in-rows test), table-hand-fan, desktop-no-scroll, desktop-top-rail, saving-goal (D, --retries=0); a scripted cover check over random deals at rounds 1/4/7, 1440x900 and 1280x800 (0 of 64 after the fix); hedgerow-map*, -critique*, -level-card (P and D, 87 passed after the row-gap fix); css lint, keyart-fresh, css-vars; tsc, eslint. Full `npm run check` at the end (see below). Shots scratchpad s1r4/-after, hmap-before/-a1..a5. Lock released.
 - 2026-11-20 16:21 lane B: red E2E fixed (desktop hand name clip); 568 slice 1 (2D saturation 1.55, the pond match caps it); Hedgerow 2D specs pass.
 - **2026-11-20 15:51 lane A:** 566 slice 1 (1 code commit). table-hand, table-hand-fan, desktop-no-scroll (D, 12 passed, --retries=0); a scripted cover check over random deals at 1440x900 and 1280x800; tsc, eslint. No full check. Shots scratchpad b566. Lock released.
 - 2026-11-20 14:51 lane A: 565 and 571 done, 566-570 planned; targeted specs green (plan-strip, table-hand*, hedgerow-map, cathode-front upright); full check: one red (Hedgerow key art stale after render.ts), re-shot and green.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-20 11:21 lane B: 557 done; 42 Hedgerow 3D Cath specs pass P and D.
 - **2026-11-20 09:51 lane A:** 554 slice 1 (1 code commit). piece-art (new, P and D x3), board-pieces (P, D x3; one overlap on a random deal fixed by a 0.4 margin), board-tokens/-scales/-landmarks/-objects/-control, region-status, map-key, region-closeup, turn-show, threat-badge (P, D, --retries=0); piece/landmark/board/map units, css lint, keyart-fresh; tsc, eslint. No full check. Shots scratchpad b554 (before), e2e/screenshots (after). Lock released.
 - 2026-11-20 10:21 lane B: 555 done; table Cath specs pass except cath-pop-reaction :52 and producer-line :29, which fail on HEAD without the change too.
-- **2026-11-20 08:51 lane A:** E2E fix (critique79) and 560 slice 2 (4 code commits). critique79 (D, x6), plan-strip/plan-cards/daily/daily-postcard/daily-ritual/setup-desktop/desktop-top-rail (P, D), hedgerow-map/-map-you/-level-card/-critique/-critique166/-critique177/-map-diorama/-map-ink (P, D), games-*/site/site-hero (P, D), all --retries=0; css lint, tsc, eslint. No full check. Shots e2e/screenshots/b560 (before), a560 (after). Lock released.
