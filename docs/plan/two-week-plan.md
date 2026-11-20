@@ -5612,7 +5612,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-cath2d, hedgerow-water, the 2D level specs pass; key art re-shot if the 2D frame feeds it; shots P and D.
 - **Size:** 2
 
-## 569. [ ] Hedgerow act map: each stop its level's own landmark
+## 569. [ ] Hedgerow act map: each stop its level's own landmark *(lane A, in progress)*
 *(planned 2026-11-20 15:20, lane A, plan1120p critique)*
 - **Why:** `hedge-menu-D`: the stops (290-400 x 320-430, 60-190 x 710-830) are the same white glass coins, each a one-line icon; they read as disabled buttons, not places. On P (130-265 x 215-560) smaller copies of the same. Item 564 kept the coins and only drew the lane.
 - **Build:** each stop a small diorama on a turf plinth: that level's landmark (the radio mast, the lighthouse, the blimp...) in the act's colours, from the level's own landmark art where one exists. Locked stops in sepia with a padlock tag; won stops show their stars on a ribbon; the next stop a soft spotlight and a gold rim. Cath and the 'Next' label beside it stay clear (`cath-game`'s item 564 check).
