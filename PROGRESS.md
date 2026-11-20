@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (14:51 11-20): 565 done (008d9381, edefb49d, d9303f7d: desktop stage word inside its card, hand captions 15/14 px at D, Hedgerow 2D post mat under Cath, NIGHT SHIFT tall-phone Ledger clear of her coat), planned 566-571 (plan1120p critique), 571 done (25a653ad: Hedgerow phone map Cath at 90% clear of the coins). Open: 566-570, 319, 543. Release due at the 11-20 19:51 session.
+- Lane A (15:51 11-20): 566 slice 1 (3dead2ea: a hand card whose name takes its strip back is dealt clear of its neighbour when the row has room), 566 handed back with findings (the board is height-bound; item 565's 15 px names overflow faces 8-9 px). Open: 566-570, 319, 543. Release due at the 11-20 19:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-20 15:51 lane A:** 566 slice 1 (1 code commit). table-hand, table-hand-fan, desktop-no-scroll (D, 12 passed, --retries=0); a scripted cover check over random deals at 1440x900 and 1280x800; tsc, eslint. No full check. Shots scratchpad b566. Lock released.
 - 2026-11-20 14:51 lane A: 565 and 571 done, 566-570 planned; targeted specs green (plan-strip, table-hand*, hedgerow-map, cathode-front upright); full check: one red (Hedgerow key art stale after render.ts), re-shot and green.
 - 2026-11-20 15:21 lane B: 567 slice 1; 133 Runnel specs + a new greening spec pass.
 - 2026-11-20 14:21 lane B: 565 checks; a disc clamp reverted (region-status caught it); board-pieces red was load (passes alone).
@@ -53,5 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-20 10:21 lane B: 555 done; table Cath specs pass except cath-pop-reaction :52 and producer-line :29, which fail on HEAD without the change too.
 - **2026-11-20 08:51 lane A:** E2E fix (critique79) and 560 slice 2 (4 code commits). critique79 (D, x6), plan-strip/plan-cards/daily/daily-postcard/daily-ritual/setup-desktop/desktop-top-rail (P, D), hedgerow-map/-map-you/-level-card/-critique/-critique166/-critique177/-map-diorama/-map-ink (P, D), games-*/site/site-hero (P, D), all --retries=0; css lint, tsc, eslint. No full check. Shots e2e/screenshots/b560 (before), a560 (after). Lock released.
 - 2026-11-20 09:21 lane B: 558 tried and handed back (conflicts with item 122); Runnel desktop specs clean after the revert (31 pass).
-- **2026-11-20 07:51 lane A:** 550 done, planning -> 554-560, 560 slice 1 (4 code commits). region-status (new 375x667 and setup-preview cases), board-tokens/-control/-pieces/-landmarks, map-key, threat-badge, turn-show, setup-steps/-placecards, campaign/-map/-cath (P, D, --retries=0; board-tokens, board-landmarks and campaign Kingsmarket load flakes passing alone); map/region/board units, css lint, keyart-fresh; tsc, eslint. No full check. Shots e2e/screenshots/plan1120j, scratchpad a550/a550s/b550. Lock released.
-- 2026-11-20 08:21 lane B: 559 done; classpick/classstage/armoury pass P and D (four D timeouts were a stalled preview, all pass on rerun).
