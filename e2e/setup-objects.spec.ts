@@ -72,3 +72,41 @@ test('desktop Setup: the objects pick by keyboard', async ({ page }, info) => {
   await expect(page.getByRole('radio', { name: /hard/i })).toBeChecked()
   await expect(page.locator('.difficulty-sheet .memo-stamp')).toHaveText(/hard/i)
 })
+
+// Plan item 572: on an upright phone too every choice is an object: the mode a place setting (cups on the picked
+// one), the producers their portraits, the maps folded paper maps printed with their hexes, the difficulty memo slips
+// (the picked one pinned). No radio dot shows, and nothing runs past the screen's 16 px gutters.
+test('phone Setup at 390x844: each choice an illustrated object, inside the gutters, the picked slip pinned', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the upright phone layout')
+  await open(page)
+  const choices = page.locator('[data-setup-choice]')
+  expect(await choices.count()).toBe(2 + 4 + 3 + 3)
+  for (const [i, step] of [['mode', 'producer'], ['map'], ['difficulty']].entries()) {
+    await page.locator('.setup-dot').nth(i).click()
+    await expect.poll(() => page.locator('.setup-panel').nth(i).evaluate((p) => Math.abs(Math.round(p.getBoundingClientRect().left)))).toBeLessThanOrEqual(1)
+    for (const kind of step) {
+      for (const c of await page.locator(`[data-setup-choice="${kind}"]`).all()) {
+        const art = c.locator('svg:visible, .memo-slip:visible')
+        expect(await art.count(), kind).toBeGreaterThan(0)
+        const box = (await art.first().boundingBox())!
+        expect(box.width, `${kind} art width`).toBeGreaterThanOrEqual(20)
+        const input = c.locator('input')
+        expect(await input.evaluate((el) => Number(getComputedStyle(el).opacity))).toBe(0)
+        const b = (await c.boundingBox())!
+        expect(b.x, `${kind} left`).toBeGreaterThanOrEqual(15.5)
+        expect(b.x + b.width, `${kind} right`).toBeLessThanOrEqual(374.5)
+      }
+    }
+  }
+  // The picked slip is pinned; picking Hard moves the pin.
+  const pin = (d: string) => page.locator(`.price-tag[data-tag="${d}"]`).evaluate((el) => Number(getComputedStyle(el, '::after').opacity))
+  expect(await pin('normal')).toBeGreaterThan(0.9)
+  await page.locator('.price-tag[data-tag="hard"]').click()
+  await expect.poll(() => pin('hard')).toBeGreaterThan(0.9)
+  await expect.poll(() => pin('normal')).toBeLessThan(0.1)
+  // The memo's head and its stamp don't sit over each other (the tag word used to print over 'Memo').
+  const head = (await page.locator('.price-tag[data-tag="easy"] .memo-slip-head').boundingBox())!
+  const stamp = (await page.locator('.price-tag[data-tag="easy"] .memo-slip-stamp').boundingBox())!
+  expect(stamp.y).toBeGreaterThanOrEqual(head.y + head.height - 4)
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+})
