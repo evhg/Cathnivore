@@ -38,6 +38,8 @@ export default function Setup({ onStart }: Props) {
   // Plan item 461: on a phone and a tablet the setup is three swiped steps (who, where, how hard) under a dot rail; the
   // track's scroll position is the step, so a swipe, a rail tap or a keyboard focus landing in a panel all agree.
   const [step, setStep] = useState(0)
+  // Plan item 572: on a phone a picked producer's rule is read on a tap of their power's stamp, in Cath's bubble.
+  const [rule, setRule] = useState<ProducerId | null>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   function onTrackScroll(): void {
     const t = trackRef.current
@@ -72,6 +74,7 @@ export default function Setup({ onStart }: Props) {
 
   function toggleProducer(id: ProducerId): void {
     if (!producers.includes(id)) playPower([id])
+    setRule(null)
     setProducers((prev) => {
       if (prev.includes(id)) return prev.filter((p) => p !== id)
       if (prev.length >= 2) return [prev[1]!, id]
@@ -215,7 +218,7 @@ export default function Setup({ onStart }: Props) {
             </label>
           ))}
         </div>
-        <PairPanel producers={producers} preview={rail ? null : preview} />
+        <PairPanel producers={producers} preview={rail ? null : preview} rule={rule} onRule={(id) => setRule((r) => (r === id ? null : id))} />
       </section>
   )
   const mapSection = (
@@ -337,6 +340,10 @@ export default function Setup({ onStart }: Props) {
           <p className="setup-cath-line" aria-live="polite">
             {stepLine ? (
               <span className="cath-line-step">“{stepLine}”</span>
+            ) : rule && producers.includes(rule) ? (
+              <span className="cath-line-step cath-line-rule" data-rule={rule}>
+                “{shortName(PRODUCERS[rule].name)}'s {powerName(PRODUCERS[rule].roleName)}: {PRODUCERS[rule].roleAbility}”
+              </span>
             ) : (
               <>
                 <span className="cath-line-ask">“Pick two producers who'll cover each other, love.”</span>
@@ -586,7 +593,7 @@ function shortName(name: string): string {
 }
 
 /** Plan item 54: the picked pair's abilities in full, with Cath's line on how they cover each other. */
-function PairPanel({ producers, preview }: { producers: ProducerId[]; preview: { ids: ProducerId[]; n: number } | null }) {
+function PairPanel({ producers, preview, rule, onRule }: { producers: ProducerId[]; preview: { ids: ProducerId[]; n: number } | null; rule?: ProducerId | null; onRule?(id: ProducerId): void }) {
   const [a, b] = producers
   return (
     <div className="pair-panel" aria-live="polite">
@@ -599,7 +606,15 @@ function PairPanel({ producers, preview }: { producers: ProducerId[]; preview: {
                 {preview?.ids.includes(id) && <AbilityPreview key={preview.n} producer={id} n={preview.n} />}
                 <span className="pair-plate">{PRODUCERS[id].name}</span>
               </span>
-              <b>{PRODUCERS[id].roleName.split(', ')[1] ?? PRODUCERS[id].roleName}</b> {PRODUCERS[id].roleAbility}
+              <b>{PRODUCERS[id].roleName.split(', ')[1] ?? PRODUCERS[id].roleName}</b> <span className="pair-rule">{PRODUCERS[id].roleAbility}</span>
+              {/* Plan item 572: on an upright phone the power is a stamp; a tap has Cath read its rule in her bubble. */}
+              <button type="button" className="pair-power" aria-expanded={rule === id} aria-label={`${powerName(PRODUCERS[id].roleName)}: read the rule`} onClick={() => onRule?.(id)}>
+                <RoleProducerContext.Provider value={id}>
+                  <RoleArt size={20} />
+                </RoleProducerContext.Provider>
+                <span className="pair-power-name">{shortName(PRODUCERS[id].name)}'s {powerName(PRODUCERS[id].roleName)}</span>
+                <span className="pair-power-ask" aria-hidden="true">?</span>
+              </button>
             </p>
           ) : (
             <p key={`empty-${i}`} className="pair-ability is-empty">

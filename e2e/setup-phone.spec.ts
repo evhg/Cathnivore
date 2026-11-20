@@ -72,12 +72,23 @@ test('the phone Setup is three steps on one screen: every control whole and clea
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
   }
 
-  // The picked pair's abilities, in full: not clipped by their box.
+  // The picked pair's powers (plan item 572: a stamp each, one line of words); a tap has Cath read the rule in full in
+  // her bubble, and a second tap puts it away. No rules paragraph shows in the body.
   await showStep(page, 0)
-  const abilities = page.locator('.pair-ability')
-  await expect(abilities.nth(0)).toContainText('Remove 1 Doubt from a region with your Stall, at no cost.')
-  await expect(abilities.nth(1)).toContainText('Public Trust +1, or gain 2 Goodwill.')
-  for (const i of [0, 1]) expect(await abilities.nth(i).evaluate((el) => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1)).toBe(true)
+  const powers = page.locator('.pair-power')
+  await expect(powers).toHaveCount(2)
+  await expect(powers.nth(0)).toContainText("Ines's Second Opinion")
+  for (const r of await page.locator('.pair-rule').all()) expect((await r.boundingBox())!.width, 'the rule is read on a tap').toBeLessThanOrEqual(1)
+  await powers.nth(0).click()
+  await expect(powers.nth(0)).toHaveAttribute('aria-expanded', 'true')
+  await expect(page.locator('.setup-cath-line')).toContainText('Remove 1 Doubt from a region with your Stall, at no cost.')
+  await powers.nth(1).click()
+  await expect(page.locator('.setup-cath-line')).toContainText('Public Trust +1, or gain 2 Goodwill.')
+  const bubble = page.locator('.setup-cath-line')
+  expect(await bubble.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true)
+  await clearOfStart(page, bubble, 'the rule in Cath\'s bubble')
+  await powers.nth(1).click()
+  await expect(page.locator('.setup-cath-line')).not.toContainText('Public Trust +1')
   await expect(page.locator('.pair-line')).toContainText('Doubt cleared')
 
   // Step 2: one large board between the arrows (plan item 502: the opening table you'll play); the arrows and the
