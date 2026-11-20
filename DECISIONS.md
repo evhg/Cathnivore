@@ -257,3 +257,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-20 05:30 lane A: planning (plan1120f) dropped three critique features already built (board ambient motion: item 76's `amb-*`; twists on the field: item 152; the 2D field veil: item 497's deliberate step back) and kept five (549-553).
 - 2026-11-20 05:30 lane A: Hedgerow key art is shot on a laid-out convoy held by a sandbox-only `freeze` (no pause note), since a live wave has about 80 vehicles stacked as item 45's overflow column by SwiftShader's first frames.
 - 2026-11-20 05:30 lane A: campaign two-line names keep their baseline (lowering them met the landmark and Cath in the layout test); the tape or bunting over them hangs 3 units higher instead.
+- 2026-11-20 05:21 lane B (552): the phone's index cutting drops the page refs and 'tonight's edition' to stay left of Cath at 375 wide, rather than shrinking her again (item 526's waist-up frame kept).

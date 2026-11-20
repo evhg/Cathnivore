@@ -1731,7 +1731,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
    ink with section refs flush right and hairlines between, and a red grease-pencil stroke under the entry in focus
    (it draws in 170 ms; a fade under reduced motion). An open case is a manila tag clipped over its head. Graded like
    the Ledger (item 505) so it doesn't outshine her face, the ink kept dark enough for AA on the graded paper. */
-@media (min-width: 900px) and (min-height: 521px) {
+/* Plan item 552: the upright phone's title takes the same cutting (it had bare words on black beside a floating Ledger). */
+@media (min-width: 900px) and (min-height: 521px), (max-width: 600px) and (orientation: portrait) {
   .menu {
     --news: color-mix(in srgb, var(--card-paper) 84%, rgb(var(--white-rgb)));
     --news-ink: var(--card-ink);
@@ -1850,7 +1851,25 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   }
   .menu-hint { color: var(--ink-2); }
 }
-@media (min-width: 900px) and (min-height: 521px) and (prefers-reduced-motion: reduce) {
+/* Plan item 552: the phone's cutting, sized for the column beside her (item 526): smaller type, rows still 44 px tall
+   for the thumb, a gentler tilt, no feathered shade (the paper is the backing now). */
+@media (max-width: 600px) and (orientation: portrait) {
+  .menu {
+    min-width: 0;
+    margin-left: calc(var(--u) * 14 - var(--safe-x));
+    padding: calc(var(--u) * 10) calc(var(--u) * 14) calc(var(--u) * 6);
+    rotate: -1deg;
+  }
+  .menu::before { display: none; }
+  .menu-item { min-height: 44px; align-items: center; gap: calc(var(--u) * 14); padding: 0; font-size: var(--fs-3); } /* px-ok: tap target */
+  .menu-mast { gap: calc(var(--u) * 8); }
+  /* the page refs and the masthead's 'tonight's edition' are print details the narrow column can't spare: without them
+     the cutting ends left of her at 375 */
+  .menu-item::after { content: none; }
+  .menu-mast i { display: none; }
+  .menu { padding-right: calc(var(--u) * 12); }
+}
+@media (min-width: 900px) and (min-height: 521px) and (prefers-reduced-motion: reduce), (max-width: 600px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
   .menu-label::after { transform: none; opacity: 0; transition: opacity 160ms linear; }
   .menu-item[data-lit] .menu-label::after { transform: none; opacity: 1; }
 }

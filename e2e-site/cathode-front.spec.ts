@@ -346,11 +346,11 @@ test('the front menu: lit by the keys, no dead Continue, paper at D, clear of he
     expect(m.menu.left).toBeGreaterThanOrEqual(0)
     // Plan item 177: the plate hangs in from the screen's edge, and the lit row's neon mark sits on the plate.
     expect(m.menu.left).toBeGreaterThanOrEqual(4)
-    const mark = await page.locator('#menu .menu-item.is-focus').evaluate((e) => {
-      const r = e.getBoundingClientRect()
-      return r.left + parseFloat(getComputedStyle(e, '::before').left)
-    })
+    // Plan item 552: upright too the menu is the Ledger's index cutting, its lit row marked by the grease stroke under
+    // its label (item 536), not the old plate's neon mark: the lit label sits inside the cutting.
+    const mark = await page.locator('#menu .menu-item.is-focus .menu-label').evaluate((e) => e.getBoundingClientRect().left)
     expect(mark).toBeGreaterThanOrEqual(m.menu.left + 2)
+    await expect(page.locator('#menu[data-index-cutting]')).toHaveCount(1)
   }
 })
 
