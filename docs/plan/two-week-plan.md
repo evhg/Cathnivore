@@ -5541,7 +5541,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - campaign, campaign-map, campaign-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 563. [ ] /games/: each card its own Cath, and a bigger host at the stall
+## 563. [ ] /games/: each card its own Cath, and a bigger host at the stall *(lane A, in progress)*
 *(planned 2026-11-20 12:45, lane B, plan1120m critique)*
 - **Why:** `games-D` (340-400, 650-710, 960-1020 x 635-735): near-identical Cath busts on the Cathnivore, Runnel and Hedgerow cards, so the cards blur. Hedgerow's 3D poster wears the 2D Cath. The stall's host is small (420-515 x 120-310) in its biggest space; the stall front (300-600 x 330-490) is bare.
 - **Build:** each card's Cath in that game's look (pose, expression, outfit from `shared/cath/`; Hedgerow's from its 3D render), the stall Cath about 1.6x, the stall front dressed (crates, a chalk price board).
@@ -5551,7 +5551,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - games-cards, games-stall, games-hero-cath specs pass; shots P and D.
 - **Size:** 2
 
-## 564. [ ] Hedgerow act map: stops as signs, a lane through the middle, Cath to scale *(lane A, in progress)*
+## 564. [x] Hedgerow act map: stops as signs, a lane through the middle, Cath to scale *(done 2026-11-20 14:05 lane A, 7909036e: Cath 132 px at D beside a 112 px coin (1.18x; was 244), clear of every name, stars and start tag (new spec at 0, 13 and 24 won); a field path in an S from row 1 (between stops 3 and 4) to row 2 (between 9 and 10), 20+ of 60 samples between the rows, props keep off it; none on a phone or a landscape phone (rows under 140 px apart). The stops stay coins: the build asked only for the lane and Cath. hedgerow-map/-you/-diorama/-ink, critique/-166/-177, level-card pass. Shots scratchpad s564 (P, D, L, 1280x800, act 2))*
 *(planned 2026-11-20 12:45, lane B, plan1120m critique)*
 - **Why:** `hedge-menu-D`: an empty band between the two rows of stops (y 470-700). Cath (160-215 x 200-425) is about twice a stop's height and covers stop 21's label stack.
 - **Build:** a winding lane drawn through the middle band joining the rows; Cath beside the next stop at about a stop's height (item 547's 244 px figure is too tall for the trail), clear of its label.
