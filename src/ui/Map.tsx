@@ -344,14 +344,15 @@ export function Doubt() {
     <g className="enemy-piece enemy-doubt">
       <path d="M 6.4,7.8 V 12.6" stroke="var(--candor-ink)" strokeWidth={1.3} strokeLinecap="round" />
       <path d="M 6,7.8 V 12.4" stroke="var(--corp-chrome)" strokeWidth={0.5} strokeLinecap="round" opacity={0.7} />
+      {/* Plan item 554: a bubble 10.6 across (was 8.8), as wide as the Outlet's storefront */}
       <g className="corp-shadow" fill="var(--candor-ink)" transform="translate(0.7 0.8)">
-        <circle cx={6} cy={4.4} r={4.4} />
-        <path d="M 2.9,7.2 L 5.4,8.3 L 1.9,9.6 Z" />
+        <circle cx={6} cy={5.2} r={5.3} />
+        <path d="M 1.8,8.4 L 4.6,9.9 L 0.7,11.2 Z" />
       </g>
-      <path d="M 2.9,7.2 L 5.4,8.3 L 1.9,9.6 Z" fill="var(--candor)" />
-      <circle cx={6} cy={4.4} r={4.4} className="corp-face" fill="url(#candor-gloss)" />
-      <path className="corp-specular" d="M 2.5,4.7 A 3.5,3.5 0 0 1 4.4,1.5" fill="none" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
-      <text x={6.2} y={7} textAnchor="middle" className="doubt-mark">
+      <path d="M 1.8,8.4 L 4.6,9.9 L 0.7,11.2 Z" fill="var(--candor)" />
+      <circle cx={6} cy={5.2} r={5.3} className="corp-face" fill="url(#candor-gloss)" />
+      <path className="corp-specular" d="M 2,5.4 A 4.2,4.2 0 0 1 4.3,1.6" fill="none" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
+      <text x={6.2} y={7.8} textAnchor="middle" className="doubt-mark">
         ?
       </text>
     </g>
@@ -361,7 +362,8 @@ export function Doubt() {
 // Plan item 413: Hollowell's pieces stand on a moulded acrylic plinth, cold and clinical, not the producers' turned
 // wood: a hard drop shadow, a chrome side and a lit top with a specular line, no ink outline.
 function CorpBase({ cx, y, w }: { cx: number; y: number; w: number }) {
-  const hw = w / 2 + 2.6
+  // Plan item 554: the plinth's lip 1.4 past the piece (was 2.6), so the moulding fills its slot and stands larger.
+  const hw = w / 2 + 1.4
   return (
     <g className="corp-base" pointerEvents="none">
       {/* plan item 425: a soft contact shadow on the land, fainter at its edge (kept inside the plinth's old shadow
@@ -398,15 +400,16 @@ function CountBadge({ cx, cy, r, n }: { cx: number; cy: number; r: number; n: nu
 const SILHOUETTE = { outlets: 'sawtooth', buyouts: 'peak', doubt: 'bubble' } as const
 
 function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; cy?: number }) {
-  // The art spans 18 icon units across (the base's lip, copies offset right) and 22.6 down (copies up, the
-  // base's shadow below).
-  const k = Math.min((STACK_W * scale) / 18, (STACK_H * scale) / 22.6)
+  // Plan item 554: the art spans 15.6 icon units across (-1.4 to 14.2: the plinth's lip and its contact shadow) and
+  // 17.8 down (the piece on its plinth and shadow); item 413 dropped the copies the old 18 x 22.6 box kept room for,
+  // so the piece fills the slot now, less 0.4 a side so neighbours keep their gap.
+  const k = Math.min((STACK_W * scale) / 16.4, (STACK_H * scale) / 18.6)
   const bottom = cy + (STACK_H * scale) / 2
   const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
   // Plan item 413: one piece a kind (item 172's pile of copies cluttered every hex); the count says how many.
   return (
     <g className={`enemy-stack enemy-stack-${kind}`}>
-      <g transform={`translate(${1.4 * k}, ${bottom - 17.4 * k}) scale(${k})`}>
+      <g transform={`translate(${(STACK_W * scale - 15.6 * k) / 2 + 1.4 * k}, ${bottom - 17.4 * k}) scale(${k})`}>
         <CorpBase cx={6} y={13.4} w={12} />
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
@@ -427,10 +430,13 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = 
   const colour = `var(--p-${pid})`
   const w = PRODUCER_W * s
   const cx = w / 2
-  const top = py - PRODUCER_H * s * 0.6 + s
+  // Plan item 554: 1.8 units under the slot's top (was 1), so the standee's wooden frame stays inside its slot.
+  const top = py - PRODUCER_H * s * 0.6 + 1.8 * s
   const foot = py + PRODUCER_H * s * 0.4 - 4.2 * s
-  const hw = 10 * s
-  const arch = `M ${cx - hw} ${foot} L ${cx - hw} ${top + hw} A ${hw} ${hw} 0 0 1 ${cx + hw} ${top + hw} L ${cx + hw} ${foot} Z`
+  // Plan item 554: a wider standee (22 of the slot's 26 units, was 20), so the portrait reads as a piece, not a pin.
+  const hw = 11 * s
+  const archAt = (h: number) => `M ${cx - h} ${foot} L ${cx - h} ${top + hw} A ${h} ${h} 0 0 1 ${cx + h} ${top + hw} L ${cx + h} ${foot} Z`
+  const arch = archAt(hw)
   const bustH = hw * 2.5
   // Plan item 172: two or three stalls stand as a pile of standees, the front one stepped left to make room (the
   // copies rise only into the slot's spare top unit, so they never meet Hollowell's row above).
@@ -458,8 +464,13 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = 
           <rect x={cx - hw} y={top + bustH - 0.5} width={hw * 2} height={foot - top - bustH + 1} fill={colour} />
           <path d={`M ${cx - hw} ${top + bustH} h ${hw * 2}`} stroke="var(--ink)" strokeWidth={0.6} opacity={0.5} />
         </g>
-        <path d={arch} fill="none" stroke={colour} strokeWidth={1.8 * s} />
-        <path d={arch} fill="none" stroke="var(--ink)" strokeWidth={1} />
+        {/* Plan item 554: a turned-wood frame (kraft with a lit inner edge and a grain line), the producer's colour
+            inlaid just inside it, matte against Hollowell's glossy plastic */}
+        <path d={arch} fill="none" stroke="var(--ink)" strokeWidth={2.4 * s + 1} />
+        <path className="standee-wood" d={arch} fill="none" stroke="var(--kraft)" strokeWidth={2.4 * s} />
+        <path className="standee-grain" d={archAt(hw + 0.4 * s)} fill="none" stroke="var(--kraft-lo)" strokeWidth={0.35 * s} strokeDasharray={`${3 * s} ${1.4 * s} ${6 * s} ${2 * s}`} />
+        <path className="standee-shine" d={archAt(hw - 0.8 * s)} fill="none" stroke="var(--paper-hi, #fffaf0)" strokeWidth={0.4 * s} opacity={0.7} />
+        <path d={archAt(hw - 1.6 * s)} fill="none" stroke={colour} strokeWidth={1.1 * s} />
         {showInitial && (
           <text x={cx} y={foot - 1.6 * s} textAnchor="middle" className="stall-initial" fontSize={7 * s}>
             {PRODUCER_INITIAL[pid]}

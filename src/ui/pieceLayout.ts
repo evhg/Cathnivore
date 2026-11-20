@@ -65,7 +65,9 @@ export interface PieceTray {
 /** A stack's body at scale 1, and the gap between slots. */
 const STACK_W = 28
 const STACK_H = 35
-const ORNAMENT_H = 8
+/** Plan item 554: 0 (was 8): the price tag and the SOLD strip hang inside the piece's art, so the slot keeps no band
+ *  above it for them. */
+const ORNAMENT_H = 0
 const PRODUCER_W = 26
 const PRODUCER_H = 40
 const GAP = 3
@@ -199,7 +201,8 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
   // dressing no room (landmark-spot.test).
   // Plan item 443: a full phone board's hex (60 px and up, 390 wide) starts at 2, like a desktop's, so an Outlet
   // stands about 0.22 of the hex's width there (at 1.85 they settled near 0.19, about 14 px of icon in the critique).
-  const start = Math.round(Math.min(2, Math.max(hexPx >= 60 ? 2 : hexPx >= 50 ? 1.85 : 1.35, hexPx / 52)) * 20) / 20
+  // Plan item 554: a roomy desktop hex (90 px and up) starts at up to 2.4, so its miniatures stand 48 px+ wide.
+  const start = Math.round(Math.min(hexPx >= 90 ? 2.4 : 2, Math.max(hexPx >= 60 ? 2 : hexPx >= 50 ? 1.85 : 1.35, hexPx / 42)) * 20) / 20
   // First the badge at a legible size, letting the pieces shrink only while a stall stays MIN_STALL_PX tall on
   // screen (board-scales.spec); then the old order with the badge at its drawn size.
   const stallFloor = Math.max(0.6, (MIN_STALL_PX * unitsPerPx) / PRODUCER_H)
