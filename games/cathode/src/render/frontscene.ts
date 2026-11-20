@@ -185,6 +185,8 @@ const MENU_MOOD: Record<string, { pose: string; face: FaceExpression }> = {
   credits: { pose: "fond", face: "smirk" },
 };
 const MENU_MOOD_S = 4;
+/** Plan item 574: how much of the street's fog the class pick clears (0.5: half). */
+const PICK_FOG_CUT = 0.5;
 const WARDROBE = { pos: [1.5, 1.4, 4.3] as [number, number, number], look: [0.05, 1.05, 0] as [number, number, number] };
 /** Each class's key light (linear RGB): Ghost cyan, Butcher blood, Gunslinger gold, Wirewitch violet, Fixer green.
  *  Plan item 278: the Gunslinger's tungsten and the Fixer's amber sat at the same hue and both sank into brown
@@ -523,6 +525,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // skin keeps its colour and the shadow side its modelling.
   const faceKey = { pos: toWorld(-0.38, 1.95, 0.5), color: new THREE.Color(1.0, 0.72, 0.52), intensity: 0, range: 1.25 };
   let faceKeyRemove: (() => void) | null = null;
+  const fogBase = world.scene.fog instanceof THREE.FogExp2 ? world.scene.fog.density : 0;
   function wardrobeStep(dt: number): void {
     const k = 1 - Math.exp(-dt * 4.2);
     wd.w += (wd.target - wd.w) * k;
@@ -544,7 +547,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     if (wd.flash > 0) wd.flash = Math.max(0, wd.flash - dt);
     const flash = wd.flash > 0 ? 1.6 * Math.pow(wd.flash / FLASH_S, 2) : 0;
     // Close to the gun the light would blow it out at full strength: it steps down as it swings in.
-    key.intensity = (phone ? 7 : 9) * wd.w * (1 + flash) * (1 - 0.15 * gunSwing);
+    // Plan item 574: a fifth brighter (7/9 before), so she, not the set, is the lit thing on the pick.
+    key.intensity = (phone ? 8.4 : 10.8) * wd.w * (1 + flash) * (1 - 0.15 * gunSwing);
     let yaw = Math.PI;
     if (wd.turn > 0) {
       wd.turn = Math.max(0, wd.turn - dt);
@@ -574,6 +578,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // Plan item 456: the noir toe is the title's; on the pick it eases out with the wardrobe, so the class coats keep
     // their colours apart (under it butcher-fixer read dE 6.7, was 16.7).
     world.setToe?.(TITLE_TOE * (1 - wd.w));
+    // Plan item 574: the pick's air thins to half, so the set's lights and her key read through it, not a blue veil.
+    if (world.scene.fog instanceof THREE.FogExp2) world.scene.fog.density = fogBase * (1 - PICK_FOG_CUT * wd.w);
     faceKey.intensity = (phone ? 2.0 : 2.2) * wd.w * (FACE_GAIN[world.renderer.domElement.dataset.class ?? ""] ?? 1);
     if (wd.w > 0.002 && !keyRemove && world.liveLight) {
       keyRemove = world.liveLight(key);
@@ -1537,6 +1543,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       keyRemove = null;
       faceKeyRemove?.();
       faceKeyRemove = null;
+      // (and the street's fog comes back whole: the pick halved it)
+      if (world.scene.fog instanceof THREE.FogExp2) world.scene.fog.density = fogBase;
       for (const c of chalk) c.removeFromParent();
       neon.dispose();
       previewFx.dispose();

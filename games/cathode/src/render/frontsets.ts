@@ -29,15 +29,18 @@ const FH = 5.5;
 const HALO_M = 2.2;
 const HALO_Y = 1.5;
 const HALO_BACK = 1.0;
-const HALO_A = 0.55;
+// Plan item 574: 0.55 lit the wall beside her face brighter than her face; a rim of colour, not a glow.
+const HALO_A = 0.3;
 /** The flats' HDR gain over their painted colour. */
 const FLAT_GAIN = 3.2;
 // Plan item 514: the halo behind her washes the whole set round her in the key's colour; the Ghost's cyan and the
 // Butcher's red were brighter there than her face, so theirs is softer (her face 1.3x+ the set).
-const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.3, butcher: 0.12 };
+// Plan item 574: softer again (the disc was most of the 'blue fog' round her head on the Ghost).
+const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.14, butcher: 0.08 };
 // With the flat in front of the street's facade (plan item 514) it is most of what's behind her: each a little down,
 // so her face stays 1.3x the set.
-const FLAT_CLASS_GAIN: Partial<Record<string, number>> = { ghost: 0.8, butcher: 0.5, gunslinger: 0.7, wirewitch: 0.8, fixer: 0.8 };
+// Plan item 574: down again so her face is 1.6x the wall beside it (the practicals, bright in the paint, keep their glow).
+const FLAT_CLASS_GAIN: Partial<Record<string, number>> = { ghost: 0.62, butcher: 0.42, gunslinger: 0.42, wirewitch: 0.6, fixer: 0.5 };
 
 type Paint = (g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number) => void;
 
@@ -546,6 +549,28 @@ const PAINT: Record<string, Paint> = { ghost, butcher, gunslinger, wirewitch, fi
 // in hue (they read 21 apart when both were plain warm red and amber).
 export const SET_KEY: Record<string, number> = { ghost: 0x2ab8d8, butcher: 0xd0103c, gunslinger: 0xf0c030, wirewitch: 0x8a40ff, fixer: 0x58d028 };
 
+/**
+ * Plan item 574: a lit set, not blue fog. The flats' broad haze washes (the skyline's mist, the locker's cold fog, the
+ * alley's glow) sat at mid grey across the whole frame and read as one even fog round her. Baked once: the mids and
+ * darks sink toward black while the painted practicals (bulbs, windows, CRTs: the brightest strokes) keep their
+ * level, so each set reads as a dark room lit by its own lights.
+ */
+export const SET_SINK = { floor: 0.22, lo: 0.12, hi: 0.8 };
+function sinkMids(g: CanvasRenderingContext2D, W: number, H: number): void {
+  const img = g.getImageData(0, 0, W, H);
+  const d = img.data;
+  const { floor, lo, hi } = SET_SINK;
+  for (let i = 0; i < d.length; i += 4) {
+    const l = (0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!) / 255;
+    const u = Math.min(1, Math.max(0, (l - lo) / (hi - lo)));
+    const f = floor + (1 - floor) * u * u * (3 - 2 * u);
+    d[i] = d[i]! * f;
+    d[i + 1] = d[i + 1]! * f;
+    d[i + 2] = d[i + 2]! * f;
+  }
+  g.putImageData(img, 0, 0);
+}
+
 function paintFlat(cls: string, phone: boolean): THREE.CanvasTexture {
   const W = phone ? 512 : 1024;
   const H = Math.round((W * FH) / FW);
@@ -558,6 +583,7 @@ function paintFlat(cls: string, phone: boolean): THREE.CanvasTexture {
     const X = (m: number) => ((m + FW / 2) / FW) * W;
     const Y = (m: number) => H - (m / FH) * H;
     PAINT[cls]?.(g, X, Y, s);
+    sinkMids(g, W, H);
     // The edges fall away into the night, so the flat never shows a border.
     const v = g.createRadialGradient(W / 2, H * 0.62, H * 0.3, W / 2, H * 0.62, W * 0.62);
     v.addColorStop(0, "rgba(0,0,0,0)");

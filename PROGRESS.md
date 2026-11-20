@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (20:51 11-20): 572 and 573 done (phone Setup objects/standees/rules on tap/pennant rail; phone campaign letters stack, Back to Title on the map frame); item 578's left disc past the phone board edge fixed (da26257e, layouts.spec was red). Open, first unclaimed: 574 (NIGHT SHIFT class pick lit set).
+- Lane A (21:51 11-20): 574 slice 1 (NIGHT SHIFT class pick: the sets' mids sunk, halo and stoop wash halved, fog halved on the pick, key +20%; face/wall 1.6x+ on 9 of 10 class/size frames, was 2); handed back with the Gunslinger at D, the floor and shots left. Open: 574 (rest), 575, 576 (depot), 570, 543, 319.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -40,6 +40,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - 2026-11-20 22:21 lane B: 576 done (1 code commit); Hedgerow phone suite 172 pass, depot specs P and D.
+- **2026-11-20 21:51 lane A:** 574 slice 1 (1 code commit), NIGHT SHIFT posters and key art re-shot. cathode-classpick (13 passed P and D, --retries=0; the run's tail out of time), keyart-fresh, cathode-setprops; tsc, eslint. No full check. Shots scratchpad b574w/a574w (5 classes, P and D, with and without her). Lock released.
 - **2026-11-20 20:51 lane A:** 572 and 573 done, 578 fix (7 code commits). setup-* (P, D, --retries=0), layouts, region-status, board-control, plan-plaque, critique* (P), campaign* (P, D); css lint; tsc, eslint. No full check (the release follows tomorrow). Shots scratchpad s572 (before/a1-a6/final, 375x667, 844x390, D), s573. Lock released.
 - 2026-11-20 21:21 lane B: 576 slice 1 (1 code commit); Hedgerow phone specs pass after two fixes found by the full phone run.
 - 2026-11-20 20:21 lane B: Runnel render-path fix (156 Runnel specs pass P and D, 2 workers); 577 done (2 code commits).

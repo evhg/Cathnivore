@@ -266,7 +266,9 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
   const keyC = new THREE.Color();
   const halo = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(0.9, 0.9)), additive(glowTex, BULB.clone().multiplyScalar(1.6), 0.85)));
   halo.position.set(BX, BY, z0 + 0.36);
-  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), tint(additive(washTex, BULB, 1.0))));
+  // Plan item 574: the wall's wash at half (it was 1.0): beside her head it matched her face, so the set read as one
+  // even haze; now the bulb is the bright thing and the brick falls off from it.
+  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), tint(additive(washTex, BULB, 0.5))));
   wash.position.set(BX - 0.3, BY - 0.2, z0 + 0.25);
   const pool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.0, 2.4)), tint(additive(washTex, BULB, 0.85))));
   pool.rotation.x = -Math.PI / 2;
