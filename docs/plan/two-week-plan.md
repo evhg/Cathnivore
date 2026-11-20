@@ -5518,7 +5518,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 561. [ ] Hedgerow 3D: a field grade, so the lane reads and the haze lifts *(lane A, in progress)*
+## 561. [x] Hedgerow 3D: a field grade, so the lane reads and the haze lifts *(done 2026-11-20 13:35, lane A, c38d22f7: bloom 0.35 over 0.88 (was 0.7 over 0.8; the field's fog already starts past its far edge), a display-space grade pass (warm, a mild S-curve, a soft vignette) and every act's lane multiplied by a warm shade (`LANE_SHADE`) with pale kerbs. Level 21 at 1440x900: lane vs plots 10% -> 27%, top 120 px 0.39 -> 0.36 linear (`e2e-site/hedgerow-grade.spec.ts`). On a phone the lane reads darker still (0.11 vs plots 0.39). hedgerow-3dframe, -cath3d, -water, -dayphase, -depot, -fieldkit, -rack, -shadow3d pass P and D; key art re-shot. Other acts' lanes not shot one by one.)*
 *(planned 2026-11-20 12:45, lane B, plan1120m critique)*
 - **Why:** `hedge-l21-3d-D`/`-P`: a milky haze and bloom over the whole field (D 15-1080 x 75-890). Plots, hedges and lanes share one mid-green/grey brightness, so the road loop (what the player defends) doesn't stand out. The top band (D y 75-200, P y 60-130) is near white. VISION: warm paper, ink outlines, flat colour.
 - **Build:** `games/hedgerow/src/render3d/` (atmosphere, palette, terrain):
