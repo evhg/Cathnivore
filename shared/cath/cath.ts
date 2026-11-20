@@ -124,7 +124,8 @@ const VIEWBOX: Record<CathFraming, string> = {
 const LOWER: Record<CathOutfit, { trousers: string; line: string; boots: string; skirt?: { fill: string; line: string; to: number } }> = {
   // Plan item 305: tailored cream trousers under the olive jacket (near-black legs read as a thin dark stalk at a
   // distance and pulled the eye away from her face).
-  field: { trousers: '#D3BE98', line: '#6E5A3C', boots: '#5A3A28' },
+  // Plan item 551: camel, a step darker than item 305's cream, so the trouser parts from her skin and the paper.
+  field: { trousers: '#AE8A5C', line: '#5E4428', boots: '#5A3A28' },
   market: { trousers: '#E9CDBE', line: '#8A6A5A', boots: '#7A3A4A' },
   wax: { trousers: '#5B5446', line: '#2C2820', boots: '#2F6B3A' },
   pinny: { trousers: '#6E7C4B', line: '#2E3520', boots: '#6B4A2B' },
@@ -190,28 +191,31 @@ function lowerBody(id: string, outfit: CathOutfit, pose: CathPoseId = 'clasped')
   // Plan item 292: walking, mid-stride: the front leg reaches out to the viewer's left, the back one bends with its
   // heel lifted off the ground.
   if (pose === 'walk') {
-    const front = 'M202 490 L250 490 C252 570 250 640 248 700 C254 750 260 790 262 830 L244 834 C236 790 228 750 222 700 C214 640 206 570 202 490 Z'
-    const back = 'M150 490 L198 490 C194 570 182 640 178 700 C174 750 166 800 160 846 L141 846 C143 800 146 750 150 700 C150 630 150 560 150 490 Z'
+    // Plan item 551: straight-leg trousers, wider than the leg under them, breaking over the boot.
+    const front = 'M200 490 L252 490 C254 580 256 660 262 740 C266 780 268 800 270 826 Q254 832 236 828 C230 800 226 780 220 740 C212 660 204 580 200 490 Z'
+    const back = 'M147 490 L200 490 C196 580 188 660 184 740 C180 780 175 810 172 834 Q153 838 134 834 C137 810 140 780 144 740 C146 660 147 580 147 490 Z'
     return `<g transform="${LEG_SHIFT}">${groundShadow(200, 96)}</g>
-<g transform="${LEG_STRETCH}">${leg(front)}${legShade(id, [front], o.line)}</g><g transform="${LEG_SHIFT}">${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}</g>
-<g transform="${LEG_STRETCH}">${leg(back)}${legShade(id + 'b', [back], o.line)}</g><g transform="${LEG_SHIFT}">${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
-${walkBootFinish()}</g>
+<g transform="${LEG_SHIFT}">${boot('M240 806 L266 802 L270 840 L284 858 Q288 871 276 870 L244 866 Q235 864 238 851 Z')}</g><g transform="${LEG_STRETCH}">${leg(front)}${legShade(id, [front], o.line)}</g>
+<g transform="${LEG_SHIFT}">${boot('M137 812 L164 812 L165 862 Q165 878 151 878 L116 878 Q104 878 111 867 L137 850 Z')}
+${walkBootFinish()}</g><g transform="${LEG_STRETCH}">${leg(back)}${legShade(id + 'b', [back], o.line)}</g>
 <g transform="${LEG_STRETCH}">${skirt}</g>`
   }
   // Plan item 292: she stands with her weight on her right leg (the viewer's left), straight; the other knee bends
   // in and its foot steps a little forward, both in heeled ankle boots turned out. Legs taper, thigh to knee to ankle.
   // Plan item 442 (critique: 'stick legs'): each leg's calf swells below the knee and slims to the ankle, the outer
   // thigh rounds out from the hip.
-  const right = 'M150 490 L198 490 C198 560 194 630 191 700 C194 726 197 756 193 782 C190 802 188 818 187 846 L168 846 C167 818 164 802 158 782 C152 756 154 726 162 700 C155 640 147 565 150 490 Z'
-  const left = 'M202 490 L250 490 C250 565 241 640 231 708 C240 734 247 766 243 792 C240 812 239 830 239 852 L221 852 C220 832 217 812 210 790 C204 764 203 734 206 708 C203 640 201 565 202 490 Z'
+  // Plan item 551 (critique: 'thin pale legs read as tights'): a straight-leg trouser, wider than the leg under it,
+  // falling from the hip to a hem that breaks over the boot, a pressed crease down each leg's front.
+  const right = 'M145 490 L200 490 C200 600 199 720 198 826 Q186 833 173 829 Q160 833 149 827 C147 720 145 600 145 490 Z'
+  const left = 'M200 490 L255 490 C254 600 252 720 251 832 Q239 839 228 835 Q216 839 205 833 C204 760 202 640 200 490 Z'
   return `<g transform="${LEG_SHIFT}">${groundShadow(203, 80)}</g>
-<g transform="${LEG_STRETCH}">${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
-<path fill="none" stroke="${o.line}" stroke-width="1" opacity="0.45" d="M176 520 C176 600 176 700 177 836 M224 520 C222 600 220 700 229 842"/>
-<path fill="none" stroke="${o.line}" stroke-width="1.4" stroke-linecap="round" opacity="0.5" d="M166 700 Q177 708 189 700 M210 708 Q220 716 230 708"/>
-<ellipse cx="178" cy="690" rx="8" ry="11" fill="#ffffff" opacity="0.12"/><ellipse cx="220" cy="697" rx="7" ry="10" fill="#ffffff" opacity="0.1"/></g>
 <g transform="${LEG_SHIFT}">${boot('M162 812 L194 812 C193 828 192 846 195 862 Q196 878 182 878 L144 878 Q132 878 139 867 L159 852 C161 840 163 826 162 812 Z')}${boot('M215 818 L246 818 C245 834 244 848 247 856 L266 868 Q273 880 261 880 L224 880 Q212 880 212 868 C213 850 216 834 215 818 Z')}
 <path fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round" d="M168 820 L168 846 M222 826 L222 850"/>
 ${bootFinish(o.boots)}</g>
+<g transform="${LEG_STRETCH}">${leg(right)}${leg(left)}${legShade(id, [right, left], o.line)}
+<path class="cath-crease" fill="none" stroke="${o.line}" stroke-width="1.1" opacity="0.55" d="M173 506 L172 826 M228 508 L229 833"/>
+<path fill="none" stroke="#ffffff" stroke-width="1" opacity="0.22" d="M175 510 L174 822 M230 512 L231 829"/>
+<path fill="none" stroke="${o.line}" stroke-width="1.3" stroke-linecap="round" opacity="0.45" d="M151 812 Q161 819 172 815 M207 818 Q217 825 228 821 M184 817 Q190 822 197 819 M238 823 Q244 828 250 825"/></g>
 <g transform="${LEG_STRETCH}">${skirt}</g>`
 }
 
@@ -245,7 +249,7 @@ export function cathSvg(options: CathOptions = {}): string {
   const slimOpen = framing === 'full' ? `<g transform="matrix(${FULL_SLIM} 0 0 1 ${+(200 * (1 - FULL_SLIM)).toFixed(2)} 0)">` : ''
   const slimClose = framing === 'full' ? '</g>' : ''
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" data-pose="${pose}" data-framing="${framing}" ${a11y}>
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[framing]}"${size} class="${cls}" data-pose="${pose}" data-framing="${framing}"${framing === 'full' ? ` data-cath-legwear="${LOWER[outfit].skirt ? 'skirt' : 'trousers'}"` : ''} ${a11y}>
 ${defs(id)}
 ${framing === 'full' ? `<g class="cath-figure"><g class="cath-lower">${lowerBody(id, outfit, pose)}</g>` : ''}
 ${headOpen}<g class="cath-hair-back">${hairBack(id)}</g>${headClose}
