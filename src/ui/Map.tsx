@@ -1370,7 +1370,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const sr = Math.max(13, (11.5 * HEX_R) / Math.max(24, hexPx ?? 72))
               const k = sr / 11
               return (
-                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr + 1)} ${cy})`}>
+                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr + 4)} ${cy})`}>
                   <title>{label}</title>
                   <circle r={sr} className="region-status-disc" />
                   <g transform={`scale(${k.toFixed(3)})`}>
@@ -1636,6 +1636,8 @@ function fitPlaques(svg: SVGSVGElement) {
     signs.push({ sign, text, plate, status: sign.querySelector<SVGGElement>('.region-status'), cx, w })
   }
   const GAP = 3
+  // Plan item 578: the disc's rim stands 4 units clear of the name's last letter (it met the 'r' of Highmoor at D).
+  const DISC_CLEAR = 4
   const rowOf = (sign: Element, y0: number, y1: number) => plates.filter((p) => p.sign !== sign && p.y0 < y1 && y0 < p.y1)
   // Plan item 550: the status disc rides the plaque's right end, or its left end where the right would meet the next
   // region's plate (a phone's middle row: Brindle Hills beside Kingsmarket). Where both ends would (Kingsmarket between
@@ -1649,7 +1651,7 @@ function fitPlaques(svg: SVGSVGElement) {
     const row = rowOf(g.sign, Math.min(own.y0, cy - r), Math.max(own.y1, cy + r))
     const lo = Math.max(-Infinity, ...row.filter((p) => p.x1 <= g.cx).map((p) => p.x1)) + GAP
     const hi = Math.min(Infinity, ...row.filter((p) => p.x0 >= g.cx).map((p) => p.x0)) - GAP
-    const reach = (rr: number) => g.w / 2 + Math.max(14, rr + 1) + rr
+    const reach = (rr: number) => g.w / 2 + Math.max(14, rr + DISC_CLEAR) + rr
     if (g.cx + reach(r) <= hi || g.cx - reach(r) >= lo) continue
     // the sign's span with the disc on its right: [cx - w/2 - 8, cx + reach]
     const span = (rr: number) => reach(rr) + g.w / 2 + 8
@@ -1671,7 +1673,7 @@ function fitPlaques(svg: SVGSVGElement) {
     const r0 = Number(status.getAttribute('data-r'))
     const r = Number(status.getAttribute('data-fit-r') ?? r0)
     status.removeAttribute('data-fit-r')
-    const off = w / 2 + Math.max(14, r + 1)
+    const off = w / 2 + Math.max(14, r + DISC_CLEAR)
     const cy = Number(status.getAttribute('data-cy'))
     const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r - GAP < p.x1 && p.x0 < x + r + GAP && cy - r < p.y1 && p.y0 < cy + r)
     const left = meets(cx + off) && !meets(cx - off)
