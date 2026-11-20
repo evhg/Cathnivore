@@ -2275,8 +2275,10 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
   // and the lit water read (97-128, 142-165, 175-201), ΔE 16-17 off the 2D pond on CI.
   // 2026-11-17 (item 469): a step lighter again (were #3a8a92 and #4ea4aa): the pond's middle read L 49-56 against the
   // 2D pond's 65 (ΔE 15-17, at the spec's bound by ripple alone), and a critique saw the ponds as flat navy.
-  const waterBase = new THREE.Color("#4a989f");
-  const waterLight = new THREE.Color("#5fb1b5");
+  // 2026-11-20 (lane A): a step bluer (were #4a989f and #5fb1b5): item 568 saturated the 2D field (1.55), which moved
+  // the 2D pond to a bluer teal (49,124,141 median); the 3D median read 47,108,103, b under g, ΔE 15-19 on CI.
+  const waterBase = new THREE.Color("#4796ae");
+  const waterLight = new THREE.Color("#5cafc4");
   const update = (t: number, dt: number) => {
     timeU.value = t * windy;
     cloudOff.value.x -= dt * 0.006 * windy;

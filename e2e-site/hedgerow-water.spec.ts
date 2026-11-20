@@ -47,9 +47,12 @@ async function pondColour(page: Page, mode: '2d' | '3d'): Promise<[number, numbe
   // 2026-11-18 (lane B): in 3D the pond stands a little above its cell's centre and its near bank carries reeds, so a
   // spot can land on the bank (3D 61,114,80 on CI: green, not water). Only water-like spots count (blue at least 0.9 of
   // green; reeds and grass are greener), then the most sunlit of them, as before.
+  // 2026-11-20 (lane A): the median of them, not the most sunlit: the brightest water-like spot was a specular glint
+  // (3D 121,171,158) or a ripple's crest, whichever phase the frame caught, so the check swung ΔE 12-19 run to run on
+  // one build. The median is the water's own colour; a cast shadow over a few spots can't decide it either.
   const water = samples.filter(([, g, b]) => b >= g * 0.9)
   expect(water.length, `no water among ${JSON.stringify(samples)}`).toBeGreaterThan(0)
-  return water.sort((a, b) => lab(b)[0] - lab(a)[0])[0]!
+  return water.sort((a, b) => lab(b)[0] - lab(a)[0])[Math.floor(water.length / 2)]!
 }
 
 async function median(page: Page, shot: Buffer, at: { x: number; y: number }): Promise<[number, number, number]> {
