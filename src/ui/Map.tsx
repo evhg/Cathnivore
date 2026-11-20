@@ -1346,8 +1346,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const control = regionControl(r)
               const label = `${def.name}: ${control === 'free' ? 'free' : control === 'held' ? 'held by Hollowell' : 'contested'}${control === 'free' ? '' : `, ${n} Hollowell ${n === 1 ? 'piece' : 'pieces'}`}`
               const cy = y - HEX_R * 0.62 - 4.5
-              // Plan item 550: at least 28 px across on a desktop and 23 px on a phone, whatever the board's scale.
-              const sr = Math.max(13, (11.5 * HEX_R) / Math.max(24, hexPx ?? 72))
+              // Plan item 550: at least 28 px across on a desktop and about 18 on a phone, whatever the board's scale (23 on a
+              // phone hung further over the next region's plate, which Brindle Hills' disc already meets there: open, item 550).
+              const sr = Math.max(13, (9 * HEX_R) / Math.max(24, hexPx ?? 72))
               const k = sr / 11
               return (
                 <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr * 0.8)} ${cy})`}>

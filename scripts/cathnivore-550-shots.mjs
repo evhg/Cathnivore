@@ -8,7 +8,7 @@ const census = () => [...document.querySelectorAll('.map-wrap svg.map .region-he
   return `${hex.getAttribute('aria-label')?.slice(0, 40)} | ${glyphs.join(' ')}`
 })
 for (const [s, opt] of Object.entries({ D: { viewport: { width: 1440, height: 900 } }, P: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 } })) {
-  for (const round of [1, 7]) {
+  for (const round of [1, 6]) {
     const ctx = await browser.newContext(opt); const p = await ctx.newPage()
     await p.goto(round === 1 ? `${base}/` : `${base}/?e2eAutoplay=1&e2eAutoplayUntil=${round}`); await p.waitForTimeout(1200)
     await p.getByText('Quick Game').click(); await p.waitForTimeout(600)
