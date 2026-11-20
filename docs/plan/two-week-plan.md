@@ -5316,7 +5316,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `hedgerow-map` specs pass; shots P and D.
 - **Size:** 2
 
-## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(lane A, in progress)* *(handed back 2026-11-20 01:55 by lane B: 3 fixed, 6 checked and kept (marked); left: the Setup points, the game rail's dead space, Hedgerow's clipped 'Coming up' and two labels, NIGHT SHIFT's phone tab labels)*
+## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(handed back 2026-11-20 02:40 by lane A: Hedgerow's three points fixed (marked); left: the Setup points, the game rail's dead space, NIGHT SHIFT's phone tab labels)*
 - `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot. **Checked 01:45 lane B, kept:** the page scrolls; the button sits whole just under the fold.
 - `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't. **Checked, kept:** the card grows to two lines cleanly; the name is the longest.
 - `cath-setup-D`:
@@ -5326,9 +5326,9 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `cath-game-D` (18-335 x 600-735): about 145 px of dead rail between '5 more not yet' and the ledger.
 - `cath-title-D`/`-P` footer small print about 11 px, low contrast on brown (D 310-1130 x 872-886; P y 820-835). **Checked, kept:** 13 px (`.title-footer`), light on brown, reads.
 - `hedge-l21-3d-P` (280-345 x 740-760): the tray label cut to 'Radio Mas'. **Checked, kept:** the tray scrolls; the last card peeks under its arrow by design.
-- Hedgerow D (l21, l34; about y 680-692): the 'Coming up' bars and tags clipped by the panel's foot.
-- `hedge-l21-2d-D` (155-305 x 340-357): 'Lifestyle influencer' hangs off the board over its frame.
-- `hedge-menu-P` (265-385 x 512-545): 'Brand Ambassador' label over the terrain.
+- Hedgerow D (l21, l34; about y 680-692): the 'Coming up' bars and tags clipped by the panel's foot. **Fixed 02:30 lane A:** at l34 the trait tags ran 5 px under the gauge (item 542 raised it, the card's foot padding stayed 6 px); the card keeps 15 px (14 on a phone). l21 was whole.
+- `hedge-l21-2d-D` (155-305 x 340-357): 'Lifestyle influencer' hangs off the board over its frame. **Fixed 02:30 lane A:** a lane's tag keeps 10 px inside the canvas (was 2), so it took the side above its van.
+- `hedge-menu-P` (265-385 x 512-545): 'Brand Ambassador' label over the terrain. **Fixed 02:20 lane A (item 471 slice 4):** every phone name is now lettered on the land in a paper halo, by design.
 - `ns-title-D` (565-740 x 330-390): the Ledger's italic body about 11 px. **Checked 01:50 lane B, kept:** about 13 px in the 1440 frame, legible on the graded newsprint (plan1120b).
 - `ns-play-P`:
   - (at 2x 325-595 x 872-898) 'GUNSLINGER' butts 'WIREWITCH'.
