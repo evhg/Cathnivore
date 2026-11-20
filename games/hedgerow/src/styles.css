@@ -5792,6 +5792,19 @@ img.act-scene {
   /* Plan item 406: a long name (to 152 px at 14 px) can't fit the 117 px beside its coin, so its two lines split
      evenly ('The Board / of Directors'), never one word left alone on the second. */
   #screen-select .trail .node .level-name { text-wrap: balance; }
+  /* Plan item 471: a stop's name is lettered on the land, map style (ink in a soft paper halo), not on a cream pill:
+     the trail read as a list of pills (critique plan1117c hedge-menu-P). */
+  #screen-select .trail .node .level-name {
+    padding: 0;
+    background: none;
+    color: var(--ink);
+    opacity: 1;
+    font-weight: 700;
+    text-shadow:
+      0 0 1px var(--surface), 0 0 2px var(--surface), 0 0 4px var(--surface), 0 0 7px var(--surface),
+      0 0 12px color-mix(in srgb, var(--surface) 70%, transparent);
+  }
+  #screen-select .trail .node:disabled .level-name { color: var(--ink-2); }
   #screen-select .trail .node:disabled .level-stars.level-lock { display: none; }
   #screen-select .trail .node:disabled .level-lock + .level-medals + .level-name,
   #screen-select .trail .node:disabled .level-lock + .level-name { margin-top: 0; }
