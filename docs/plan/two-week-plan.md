@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-20 15:13 UTC
+
 
 
 
@@ -5576,5 +5576,68 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `ns-play-D` (998 x 593): 'and the Pin, her steel baton.' starts lowercase as a sentence. **Fixed 12:45 lane B:** 'And the Pin, her steel baton.'
 - `ns-title-P` (15-195 x 422-588): the Ledger over Cath's coat and glove (item 552 noted it at 375). **Tried 12:50 lane B, reverted:** a narrower Ledger (38vw/148 px) clears her body but grows taller and meets The List at 375x667 (553 vs 544); it needs a shorter phone Ledger (fewer lines or a smaller photo), not a narrower one. **Fixed for tall phones, lane A:** at 720+ px tall the Ledger is min(42vw, 164 px) and grows into the ~100 px above The List (390x844: 13-182 x 422-589, her coat from about 195; 360x780 ends at 607 against the List's 631). Left at 375x667: no room to grow (11 px) and item 379 keeps the 64 px photo, so the Ledger still meets her sleeve there.
 - `portfolio-P` (y 518-545): the live status line wraps. **Checked, kept:** two clean lines of one sentence.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 566. [ ] Cathnivore desktop: the board at hero size, the hand without cover
+*(planned 2026-11-20 15:20, lane A, plan1120p critique)*
+- **Why:** `cath-game-D`: the board spans about 580-1130 x 105-720, 38% of the width; the two rails (10-340 and 1180-1430) are nearly as wide together. In the hand (355-1330 x 725-900) 'Buy Roadside Stand' (485-650) lies over Sell's coin chips and its 'Sell' label (372-400 x 850-870); card text runs to y 885. VISION 2: the table is the hero.
+- **Build:** tighten the desktop grid so the board's SVG takes what the rails free: left rail 300 px or less at 1440 (item 549's goal card scales down with it), the producers' column as narrow as their figures allow, the board scaled to fill. Keep item 541's fan and item 405's lift, but no card covers another card's controls (price chips, Sell's 1/2/3, the (i)): a card's neighbour may cover only its picture's edge. Fold Hollowell's medallion inside the plaque's end (1165-1310 x 15-150 overhangs it).
+- **Accept:**
+  - The board's hexes 720 px wide or more at 1440x900 (and no smaller than today at 1280x800).
+  - No hand card's button, price or name is under another card (elementFromPoint at their centres hits their own card).
+  - The hand's foot 12 px or more above the viewport's.
+  - desktop-no-scroll, desktop-top-rail, table-hand*, saving-goal, board-* pass; shots P and D.
+- **Size:** 3
+
+## 567. [ ] Runnel: the valley answers the water
+*(planned 2026-11-20 15:20, lane A, plan1120p critique)*
+- **Why:** `runnel-D` (375-1425 x 10-890): the valley around the board is a flat grey-mauve and brown patchwork, its right third (1130-1410 x 150-700) empty stripes, and nothing in it changes as you play; `runnel-P` (0-390 x 200-680) the same. VISION 3 and 4: the world reacts.
+- **Build:** tie the valley's plots beside the board to the field tile nearest each. When a field tile is watered its plots ease from dry ochre to green over 600 ms and sprouts come up one after another; on the solve a water line runs down the valley's ditches to Bea's garden, she waves and the sunflowers open. In the existing valley SVG layers; reduced motion gets a crossfade.
+- **Accept:**
+  - Each watered tile turns 2 or more valley plots (hue measured in the shots).
+  - The solve sequence is 1.2 s or less and never blocks the next tap.
+  - Under reduced motion no transform animates (spec).
+  - Runnel specs pass; shots P and D, before and after a solve.
+- **Size:** 2
+
+## 568. [ ] Hedgerow 2D: the 3D field's colour, and a desktop field without dead margins
+*(planned 2026-11-20 15:20, lane A, plan1120p critique)*
+- **Why:** the 2D renderer is the no-WebGL fallback and the test path. `hedge-l21-2d-D`: the beds (380-830 x 180-800) read teal-grey under a haze and the lane is a pale cream maze; the depot hangs off the field's left edge over the shore (150-320 x 410-550); at D the green margins either side of the field are flat. `hedge-l34-2d-P` has the same grey veil.
+- **Build:** item 561's grade in 2D: warmer, more saturated beds, a darker lane shade with pale kerbs, the haze lifted (`sunGrade`/`ambient` in render.ts); the field's surround at D drawn as hedge and shore (not flat colour); the depot inside the field frame.
+- **Accept:**
+  - Lane against beds 25% or more luminance difference at P and D (item 561's measure).
+  - Mean bed saturation within 15% of the 3D shot of level 21.
+  - No flat band wider than 60 px at D.
+  - hedgerow-cath2d, hedgerow-water, the 2D level specs pass; key art re-shot if the 2D frame feeds it; shots P and D.
+- **Size:** 2
+
+## 569. [ ] Hedgerow act map: each stop its level's own landmark
+*(planned 2026-11-20 15:20, lane A, plan1120p critique)*
+- **Why:** `hedge-menu-D`: the stops (290-400 x 320-430, 60-190 x 710-830) are the same white glass coins, each a one-line icon; they read as disabled buttons, not places. On P (130-265 x 215-560) smaller copies of the same. Item 564 kept the coins and only drew the lane.
+- **Build:** each stop a small diorama on a turf plinth: that level's landmark (the radio mast, the lighthouse, the blimp...) in the act's colours, from the level's own landmark art where one exists. Locked stops in sepia with a padlock tag; won stops show their stars on a ribbon; the next stop a soft spotlight and a gold rim. Cath and the 'Next' label beside it stay clear (`cath-game`'s item 564 check).
+- **Accept:**
+  - No two stops in an act share a silhouette (hash over 10 bits apart).
+  - Each diorama 64 px or more at P.
+  - Label plates 4.5:1 or better.
+  - hedgerow-map* and critique specs pass; shots P and D.
+- **Size:** 2
+
+## 570. [ ] NIGHT SHIFT phone title: a portrait camera that frames the street and her umbrella
+*(planned 2026-11-20 15:20, lane A, plan1120p critique)*
+- **Why:** `ns-title-P` (2x px): 0-780 x 330-1380 is near black, no lamp, neon or lit street; the umbrella's canopy is out of frame so its pole floats (455,285 to 500,1130) and crosses the subline at y 320. The desktop's lamp-lit street and LUNA neon (`ns-title-D` 1150-1440) never reach the phone frame. Camera and light only: her sculpt is items 319 and 543.
+- **Build:** an upright camera rig: wider FOV, raised so the canopy sits in frame over her head, the LUNA sign and a lamp's cone composed behind her, a rim light; then re-render the phone front posters (`scripts/cathode-poster.mjs`). Item 544/552's reading order stays (menu, Ledger, The List clear of her face).
+- **Accept:**
+  - The canopy's box wholly in frame; the pole crosses no text.
+  - Mean luminance of that region 1.8x today's or more on the settled `?shot&t=8` frame.
+  - cathode-front upright specs, title-focal and keyart-fresh pass; shots P and D.
+- **Size:** 2
+
+## 571. [ ] The bugs from the 2026-11-20 15:20 critique, fixed as one batch
+*(planned 2026-11-20 15:20, lane A, plan1120p)*
+- `cath-game-P` (0-160 x 615-770): the fan's left cards stack so tight no title shows; the right card cut at x 390.
+- `hedge-menu-P` (80-205 x 175-262): Cath stands over stop 21's icon; 'Next / On Air' meets the stop's disc and its '21' badge.
+- `games-D` (415-520 x 300-485): Cath's legs drawn over the counter planks, so she stands inside the stall; the 'FRESH · FREE' sign (627-760 x 383-418) floats on the planks.
+- `cath-campaign-P` (15-375 x 522-580): the chapter prints' red pins overlap their neighbours; print 6 cut at x 375.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
