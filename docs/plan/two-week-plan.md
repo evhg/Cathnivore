@@ -5471,7 +5471,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-3dframe, hedgerow-cath3d specs pass; shots P and D at level 21; key art re-shot.
 - **Size:** 2
 
-## 558. [ ] Runnel desktop: Cath as a host who reacts *(lane B, in progress)*
+## 558. [ ] Runnel desktop: Cath as a host who reacts *(handed back 2026-11-20 09:45 by lane B: it collides with item 122's 'one Cath' at D, which a planner should settle first. Tried a rail portrait beside her line (84x100, face about 70 px) and in the lesson a 124x140 bust: 14 desktop Runnel specs failed, the core of them `runnel-one-cath.spec.ts` (item 122: at D the valley figure speaks and the side portrait goes) and the rail's no-scroll checks (runnel-win, garden-farm); reverted. A 60 px face on the full-length valley figure would make her about 3x the frame, so the accept's face size only fits a portrait. She already reacts (host.ts `mood`: a smirk on a tap, determined/worried as the water runs or spills, delighted on a new field and the solve, plus poses): new `tests/runnel-host-mood.test.ts` pins three or more expressions across a game. Choose: reverse item 122 at D (and rewrite its spec and the rail's height budget), or drop the rail bust and enlarge the valley figure's head for the close lesson framing only.)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `runnel-D` (435-525 x 510-860): Cath is a 90 px-wide figure with a 22 px face, her bubble (385-685 x 410-480) outweighs her and she never reacts. The left rail (15-345 x 175-785) is 13 px lined type with a dead band at 790-900.
 - **Build:**
