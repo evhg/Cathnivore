@@ -5645,7 +5645,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 
 *(Items 572-578 planned 2026-11-20 20:05 by lane A from the `plan1120u` shots (scratchpad; `scripts/plan-shots.mjs`), critiqued by a subagent against VISION.md and checked against withdrawn/kept decisions: the locked plastic coins, the Doubt bubble, the phone hand fan, the phone title's Cath-first layout, the darker Runnel valley and the `?keyart` table-only frame are not reopened.)*
 
-## 572. [ ] Cathnivore phone Setup: every choice an object on the stall, as on desktop
+## 572. [ ] Cathnivore phone Setup: every choice an object on the stall, as on desktop *(lane A, in progress)*
 - **Why:** `cath-setup-P`: item 533 made the desktop choices objects; the phone is still a form. The step rail reads like a wizard (20-360 x 180-225), Solo and Hot-seat are flat pills (15-375 x 572-610), the producers are chips over a paragraph of rules (28-375 x 620-800).
 - **Build:** reuse 533's art below D in `src/ui/Setup.tsx`: two place settings for the mode, standee cards for the producers (rules on tap, not in the body), memo slips for difficulty; the step rail as three pennants on the bunting, not numbered dots.
 - **Accept:** every `[data-setup-choice]` at 390x844 holds art (the setup-objects spec extended to P); no page scroll at 390x844 and no choice past x 16-374; at most 2 lines of rules text visible without a tap.
