@@ -298,6 +298,17 @@ button {
   display: block;
   aspect-ratio: 32 / 24;
 }
+/* Plan item 547: the patch of ground a vignette of props stands on: the act's grazing green, darker at its heart,
+   with the sun's light on its top-right rim, feathered into the fields. */
+.scenery .prop-pad {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-side at 60% 30%, color-mix(in srgb, var(--paper-hi) 30%, transparent), transparent 60%),
+    radial-gradient(closest-side, var(--pad, var(--ink)) 70%, color-mix(in srgb, var(--pad, var(--ink)) 45%, transparent) 88%, transparent);
+  box-shadow: 0 6px 10px -6px color-mix(in srgb, var(--ink) 30%, transparent);
+}
 .scenery .prop[hidden] {
   display: none;
 }
@@ -4413,6 +4424,8 @@ img.act-scene {
 }
 @media (prefers-color-scheme: dark) {
   #screen-select .act { background-image: linear-gradient(var(--shade-a62), var(--shade-a62)), var(--ground); background-size: cover; }
+  /* plan item 547: a vignette's patch under the same night shade as the land it lies on */
+  #screen-select .scenery .prop-pad { filter: brightness(0.42); }
 }
 
 /* Plan item 40: the end card on a phone held sideways is a spread, not a tall column. Cath, the level and the stars
@@ -5219,9 +5232,29 @@ img.act-scene {
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 22px); }
 }
 @media (min-width: 1100px) and (min-height: 860px) {
-  /* plan item 250: 120 px at D; plan item 441: 172 px, so she reads as the map's guide beside her stop, not a pin */
-  #screen-select .node.next .you { right: calc(100% - 32px); width: 78px; height: 172px; }
-  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 32px); }
+  /* plan item 250: 120 px at D; plan item 441: 172 px; plan item 547: 244 px, the map's guide at the scale of its
+     landmarks, standing on her own shadow */
+  #screen-select .node.next .you { right: calc(100% - 50px * var(--you-k, 1)); width: calc(110px * var(--you-k, 1)); height: calc(244px * var(--you-k, 1)); }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 50px * var(--you-k, 1)); }
+}
+/* Plan item 547: her shadow on the ground, cast away from the sun (top right), held still while she bobs */
+#screen-select .node.next .you::after {
+  content: '';
+  position: absolute;
+  z-index: calc(var(--z-raise) * -1);
+  left: 4%;
+  bottom: -3%;
+  width: 78%;
+  height: 7%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 42%, transparent), transparent);
+  translate: -12% 0;
+  animation: you-shadow 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes you-shadow { 50% { transform: translateY(4px) scaleX(0.92); } }
+@media (prefers-reduced-motion: reduce) {
+  #screen-select .node.next .you::after { animation: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
   #screen-select .you.walking svg { animation: stride 250ms ease-in-out 0.3s 4 alternate both; }

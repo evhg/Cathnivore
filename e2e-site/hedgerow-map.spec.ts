@@ -762,3 +762,53 @@ test('plan item 471: on a phone the next stop opens clear of the level card', as
     expect(m.coin, `${n} won`).toBeLessThanOrEqual(m.card)
   }
 })
+
+// Plan item 547: the act's ground in full colour (every act's land, played or not, at a mean HSV saturation of 0.35
+// or more; about 0.15 before), Cath 240 px or more at 1440x900 standing on her shadow, and the props stood as
+// vignettes on patches of ground, every prop clear of every stop's name.
+test('plan item 547: full-colour ground, a 240 px Cath and props as vignettes', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-desktop', 'desktop sizes')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await seed(page, 13)
+  await page.locator('.level-card').waitFor()
+  await page.waitForTimeout(800)
+  const m = await page.evaluate(async () => {
+    const sats: Record<string, number> = {}
+    for (const act of document.querySelectorAll<HTMLElement>('#screen-select .act')) {
+      const src = act.style.getPropertyValue('--ground').match(/url\("(.*)"\)/s)?.[1]
+      if (!src) continue
+      const img = new Image()
+      img.src = src
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = 240
+      c.height = 120
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0, 240, 120)
+      const d = x.getImageData(0, 0, 240, 120).data
+      let s = 0
+      for (let i = 0; i < d.length; i += 4) {
+        const mx = Math.max(d[i]!, d[i + 1]!, d[i + 2]!)
+        s += mx ? (mx - Math.min(d[i]!, d[i + 1]!, d[i + 2]!)) / mx : 0
+      }
+      sats[act.dataset.act ?? '?'] = s / (d.length / 4)
+    }
+    const you = document.querySelector<HTMLElement>('.node.next .you')!
+    const li = document.querySelector('li.act[data-act="2"]')!
+    const names = [...li.querySelectorAll('.stop .level-name')].map((e) => e.getBoundingClientRect())
+    const ov = (a: DOMRect, b: DOMRect) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1
+    const props = [...li.querySelectorAll<HTMLElement>('.scenery .prop:not([hidden])')]
+    return {
+      sats,
+      cath: you.getBoundingClientRect().height,
+      shadow: getComputedStyle(you, '::after').content !== 'none',
+      pads: li.querySelectorAll('.scenery .prop-pad').length,
+      hits: props.filter((p) => names.some((n) => ov(p.getBoundingClientRect(), n))).map((p) => p.dataset.prop),
+    }
+  })
+  for (const [act, s] of Object.entries(m.sats)) expect(s, `act ${act} ground`).toBeGreaterThanOrEqual(0.35)
+  expect(m.cath).toBeGreaterThanOrEqual(240)
+  expect(m.shadow).toBe(true)
+  expect(m.pads).toBeGreaterThanOrEqual(2)
+  expect(m.hits).toEqual([])
+})

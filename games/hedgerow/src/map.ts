@@ -1390,17 +1390,19 @@ export function trailPath(pts: [number, number][]): string {
 // the box stretches from a phone column to a desktop strip). Painted once per act as an image.
 
 type Ground = { base: string; patches: [string, string, string]; hedge: string; leaf: string };
+// Plan item 547: the near-grey acts (Saltmarsh, Shingle Bay, the Rift, the Merger, Kingsmarket) given hues of their
+// own (samphire and creek, sand and dune grass, red earth, steel and lawn, gold and heather) so richer() has colour to push.
 const GROUND: Ground[] = [
   { base: "#e9e5c6", patches: ["#d4dea4", "#eadb9e", "#c6d896"], hedge: "#55743a", leaf: "#7d9c4f" },
   { base: "#e4ddcb", patches: ["#d2c7a4", "#dccab3", "#c4c79e"], hedge: "#6e6650", leaf: "#8f8a66" },
-  { base: "#e5e7d6", patches: ["#d3dcbd", "#e4dcbd", "#c3d6cc"], hedge: "#66784c", leaf: "#8a9c66" },
+  { base: "#dfe4c6", patches: ["#c6d8a4", "#e2d6a8", "#a9cfc0"], hedge: "#66784c", leaf: "#8a9c66" },
   { base: "#e4ebcd", patches: ["#cde0ab", "#e6e0ad", "#c0dbc2"], hedge: "#4f7a3c", leaf: "#78a355" },
   { base: "#dfe5c5", patches: ["#c4d69c", "#d8d399", "#b6cb91"], hedge: "#41612f", leaf: "#678a43" },
-  { base: "#ede7d7", patches: ["#ddd2b6", "#e8ddc9", "#cdd5cd"], hedge: "#7a7058", leaf: "#a09878" },
-  { base: "#e2d9cf", patches: ["#d0c2b3", "#dccdb8", "#c8c1ab"], hedge: "#5e4e40", leaf: "#85725e" },
+  { base: "#efe3c6", patches: ["#e3cf9c", "#ecd9b4", "#b9d0b0"], hedge: "#7a7058", leaf: "#a09878" },
+  { base: "#e4d6c4", patches: ["#d6b99a", "#dcc6a0", "#c3c193"], hedge: "#5e4e40", leaf: "#85725e" },
   { base: "#ece3cc", patches: ["#e1cf9f", "#d6d6a2", "#e7c8a2"], hedge: "#66733f", leaf: "#8e9b5a" },
-  { base: "#e1e1dd", patches: ["#cfd0cb", "#d9d4c4", "#c5ccc7"], hedge: "#5d625e", leaf: "#80877f" },
-  { base: "#e4dcd0", patches: ["#d5c8b3", "#d1c4c8", "#ddcfae"], hedge: "#5d4e46", leaf: "#85746a" },
+  { base: "#d4e2d6", patches: ["#a6c4e2", "#e0cc8a", "#98c9a2"], hedge: "#44694c", leaf: "#6a9c72" },
+  { base: "#e8dcc6", patches: ["#e0c290", "#d6b6cc", "#e6cc8a"], hedge: "#5d4e46", leaf: "#85746a" },
 ];
 
 /** Plan item 274: a colour mixed toward a warm white by k (0 to 1), for a hedge's lit leaves. */
@@ -1503,10 +1505,12 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
       const scol = Math.max(0, Math.min(4, Math.floor(cx / 20)));
       const stop = srow * 5 + (srow === 0 ? scol : 4 - scol);
       const lush = won[stop] === true;
-      if (k < 3) cells += `<path d="${d}" fill="${lush ? richer(g.patches[k]!, 2.4) : g.patches[k]}" opacity="${f(lush ? Math.max(op, 0.85) : op)}"/>`;
-      else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 2)}" opacity=".7"/>`;
+      // Plan item 547: every field in full colour (the act's pale palette pushed off its grey), a won one a step
+      // richer still and wholly opaque, so the land is painted country before a stop is played.
+      if (k < 3) cells += `<path d="${d}" fill="${richer(g.patches[k]!, lush ? 3.6 : 2.8)}" opacity="${f(lush ? 1 : Math.max(op, 0.88))}"/>`;
+      else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 3)}" opacity=".85"/>`;
       // Plan item 428: the fourth kind is rough grazing, a deeper tone of the act's hedge green, not the bare card.
-      else cells += `<path d="${d}" fill="${g.leaf}" opacity="${f(0.22 + rand() * 0.12)}"/>`;
+      else cells += `<path d="${d}" fill="${g.leaf}" opacity="${f(0.5 + rand() * 0.15)}"/>`;
       // Plan item 428: each field shaded by a soft light across it, at its own angle, so a big field isn't one tone.
       cells += `<path d="${d}" fill="url(#sh${i}-${Math.floor(rand() * 4)})"/>`;
 
@@ -1532,8 +1536,8 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">` +
     // Plan item 428: a paper-and-grass grain over the land (it read as flat pale squares), multiplied in faintly.
-    `<defs>${[0, 1, 2, 3].map((a) => `<linearGradient id="sh${i}-${a}" gradientTransform="rotate(${a * 45 + 20} .5 .5)"><stop offset="0" stop-color="#fffbe8" stop-opacity=".3"/><stop offset=".5" stop-color="#fffbe8" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></linearGradient>`).join("")}${clips}<filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
-    `<rect width="100" height="100" fill="${g.base}"/>${cells}${ploughed}` +
+    `<defs>${[0, 1, 2, 3].map((a) => `<linearGradient id="sh${i}-${a}" gradientTransform="rotate(${a * 45 + 20} .5 .5)"><stop offset="0" stop-color="#fffbe8" stop-opacity=".3"/><stop offset=".5" stop-color="#fffbe8" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></linearGradient>`).join("")}${clips}<radialGradient id="sun${i}" cx="100" cy="0" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff3c8" stop-opacity=".42"/><stop offset=".45" stop-color="#fff3c8" stop-opacity="0"/><stop offset=".75" stop-color="${g.hedge}" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></radialGradient><filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
+    `<rect width="100" height="100" fill="${richer(g.base, 2.6)}"/>${cells}${ploughed}` +
 
     LAND_FEATURES(i) +
     // ...and each hedge throws a soft shadow just below it, so the rows stand up from the fields.
@@ -1544,6 +1548,10 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
     `<path d="${hedges}" stroke="${g.hedge}" stroke-width="${f(11 * wt)}" stroke-dasharray="0 ${f(9 * wt)}" opacity=".7" ${ve}/>` +
     `<path d="${hedges}" stroke="${g.leaf}" stroke-width="${f(8.5 * wt)}" stroke-dasharray="0 ${f(9 * wt)}" ${ve}/>` +
     `<path d="${hedges}" stroke="${lift(g.leaf, 0.35)}" stroke-width="${f(4 * wt)}" stroke-dasharray="0 ${f(18 * wt)}" opacity=".8" ${ve}/>` +
+    // Plan item 547: the paper's grain over the paint, and the sun from the top right: warm light falling across
+    // the land from that corner, the far corner in the hedges' shade.
+    `<rect width="100" height="100" filter="url(#gr${i})" opacity=".55"/>` +
+    `<rect width="100" height="100" fill="url(#sun${i})"/>` +
     `</svg>`
   );
 }
@@ -1720,12 +1728,12 @@ export function placeBanners(list: HTMLElement): void {
 function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElement; node: Element | null }[]): void {
   you.style.removeProperty("--you-dx");
   you.style.removeProperty("--you-dy");
+  you.style.removeProperty("--you-k");
   const own = you.closest(".node");
   // Plan item 406: on a phone's vertical road her own stop's name and 'Next' tag sit on the coin's outer side, where
   // she stood over them; there she stands on the road side of her coin and keeps clear of her own labels too.
   const vertical = matchMedia("(max-width: 599px)").matches;
   if (vertical) you.dataset.side = own?.closest(".stop")?.classList.contains("vc1") ? "right" : "left";
-  const r = boxIn(you, trail);
   // Each name with 6 px to spare: it can still widen a little as the web font settles after this runs.
   // (Coins keep 3 px on a phone, so she fits on the road between two coins, 38 px apart, beside her own.)
   const others = placed
@@ -1734,20 +1742,29 @@ function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElemen
     .filter(({ b }) => b.width > 0)
     .map(({ b, m }) => ({ left: b.left - m, right: b.right + m, top: b.top - m, bottom: b.bottom + m, width: b.width + 2 * m }));
   const out = you.dataset.side === "right" ? 1 : -1;
-  const step = Math.max(4, Math.round(r.width / 4));
-  const tries: { dx: number; dy: number }[] = [];
-  // (up to 14 steps out: item 377's larger desktop coins and one-line names leave her less room close in)
-  // (on a phone at most two steps along, or she reads as the next coin's; then lower, or up past her coin's top)
-  for (let i = 0; i <= (vertical ? 2 : 14); i++) for (let j = vertical ? -6 : 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
-  tries.sort((a, b) => a.dx + 1.5 * Math.abs(a.dy) - (b.dx + 1.5 * Math.abs(b.dy)));
-  for (const { dx, dy } of tries) {
-    const left = r.left + out * dx;
-    const box: Box = { left, right: left + r.width, top: r.top + dy, bottom: r.bottom + dy, width: r.width };
-    if (box.left < 0 || box.right > trail.offsetWidth) continue;
-    if (others.some((b) => overlaps(box, b))) continue;
-    if (dx) you.style.setProperty("--you-dx", `${dx}px`);
-    if (dy) you.style.setProperty("--you-dy", `${dy}px`);
-    return;
+  // Plan item 547: at her full 244 px (a tall desktop) she may reach up into the row above; with no clear spot she
+  // stands at 70% (the old 172 px) rather than over a name.
+  for (const k of [1, 0.7]) {
+    if (k < 1) {
+      if (getComputedStyle(you).height !== "244px") return;
+      you.style.setProperty("--you-k", String(k));
+    }
+    const r = boxIn(you, trail);
+    const step = Math.max(4, Math.round(r.width / 4));
+    const tries: { dx: number; dy: number }[] = [];
+    // (up to 14 steps out: item 377's larger desktop coins and one-line names leave her less room close in)
+    // (on a phone at most two steps along, or she reads as the next coin's; then lower, or up past her coin's top)
+    for (let i = 0; i <= (vertical ? 2 : 14); i++) for (let j = vertical ? -6 : 0; j <= 6; j++) tries.push({ dx: i * step, dy: j * 5 });
+    tries.sort((a, b) => a.dx + 1.5 * Math.abs(a.dy) - (b.dx + 1.5 * Math.abs(b.dy)));
+    for (const { dx, dy } of tries) {
+      const left = r.left + out * dx;
+      const box: Box = { left, right: left + r.width, top: r.top + dy, bottom: r.bottom + dy, width: r.width };
+      if (box.left < 0 || box.right > trail.offsetWidth) continue;
+      if (others.some((b) => overlaps(box, b))) continue;
+      if (dx) you.style.setProperty("--you-dx", `${dx}px`);
+      if (dy) you.style.setProperty("--you-dy", `${dy}px`);
+      return;
+    }
   }
 }
 
@@ -1911,19 +1928,23 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
   // settle() no longer shrinks props one by one, which set one act's huts at half its boat's size.
   const spots = scenerySpots(Number(layer.dataset.act) || 1);
   const want = Math.min(12, props.length);
-  let at = settle(sizes, spots, w, h, obstacles, lane, 10, 3);
+  // Plan item 547: on a wide band the twelve props stand as three vignettes of four (a farmyard, a pond and its
+  // geese), each on its own patch of ground; a phone's narrow bends keep threes.
+  const cluster = !phone && w >= 880 ? 4 : 3;
+  let at = settle(sizes, spots, w, h, obstacles, lane, 10, cluster);
   for (const f of [0.85, 0.72, 0.6]) {
     if (at.filter(Boolean).length >= want) break;
-    at = settle(sizes.map((z) => ({ w: Math.round(z.w * f), h: Math.round(z.h * f) })), spots, w, h, obstacles, lane, 10, 3);
+    at = settle(sizes.map((z) => ({ w: Math.round(z.w * f), h: Math.round(z.h * f) })), spots, w, h, obstacles, lane, 10, cluster);
   }
   // A band too crowded for a full set at any one scale (open ground, not size, runs out) falls back to shrinking
   // the props that don't fit one by one, as before.
   if (at.filter(Boolean).length < want) {
-    const loose = settle(sizes, spots, w, h, obstacles, lane, 10, 3, [1, 0.78, 0.6, 0.45]);
+    const loose = settle(sizes, spots, w, h, obstacles, lane, 10, cluster, [1, 0.78, 0.6, 0.45]);
     if (loose.filter(Boolean).length > at.filter(Boolean).length) at = loose;
   }
+  const pads = vignettePads(at, sizes, cluster);
   // Measured; the caller writes every act's props after all are measured.
-  return () =>
+  return () => {
     props.forEach((el, i) => {
       const p = at[i];
       el.hidden = !p;
@@ -1932,6 +1953,52 @@ function placeScenery(trail: HTMLElement, svg: SVGSVGElement, phone: boolean): (
       el.style.setProperty("top", `${p[1]}px`);
       el.style.setProperty("width", `${p[2]}px`);
     });
+    layer.querySelectorAll(".prop-pad").forEach((el) => el.remove());
+    for (const b of pads) {
+      const pad = document.createElement("i");
+      pad.className = "prop-pad";
+      pad.style.setProperty("left", `${b.left}px`);
+      pad.style.setProperty("top", `${b.top}px`);
+      pad.style.setProperty("width", `${b.right - b.left}px`);
+      pad.style.setProperty("height", `${b.bottom - b.top}px`);
+      layer.prepend(pad);
+    }
+  };
+}
+
+/**
+ * Plan item 547: the ground each vignette stands on: one patch under every run of two or more of a group's props
+ * standing side by side on one line, so a set piece reads as a place rather than tokens on the fields.
+ */
+function vignettePads(at: ([number, number, number] | null)[], sizes: { w: number; h: number }[], cluster: number): Box[] {
+  const groups = new Map<number, Box[]>();
+  at.forEach((p, i) => {
+    if (!p) return;
+    const h = (p[2] * sizes[i]!.h) / sizes[i]!.w;
+    const g = Math.floor(i / cluster);
+    groups.set(g, [...(groups.get(g) ?? []), { left: p[0], top: p[1], right: p[0] + p[2], bottom: p[1] + h, width: p[2] }]);
+  });
+  // Props that stand on one line (feet within 24 px) and close beside each other (28 px) share a patch.
+  const near = (a: Box, b: Box): boolean => Math.abs(a.bottom - b.bottom) <= 24 && a.left < b.right + 28 && b.left < a.right + 28;
+  const out: Box[] = [];
+  for (const boxes of groups.values()) {
+    const runs: Box[][] = [];
+    for (const b of boxes) {
+      const into = runs.filter((r) => r.some((o) => near(o, b)));
+      const merged = [b, ...into.flat()];
+      for (const r of into) runs.splice(runs.indexOf(r), 1);
+      runs.push(merged);
+    }
+    for (const r of runs) {
+      if (r.length < 2) continue;
+      const left = Math.min(...r.map((b) => b.left));
+      const right = Math.max(...r.map((b) => b.right));
+      const foot = Math.max(...r.map((b) => b.bottom));
+      const tall = r.reduce((t, b) => t + (b.bottom - b.top), 0) / r.length;
+      out.push({ left: left - 18, top: foot - tall * 0.42, right: right + 18, bottom: foot + 12, width: right - left + 36 });
+    }
+  }
+  return out;
 }
 
 let laneObserver: ResizeObserver | null = null;
@@ -2500,6 +2567,7 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     scenery.className = "scenery";
     scenery.setAttribute("aria-hidden", "true");
     scenery.dataset.act = String(n);
+    scenery.style.setProperty("--pad", richer(GROUND[(((n - 1) % GROUND.length) + GROUND.length) % GROUND.length]!.leaf, 1.5));
     for (const pr of actProps(n)) {
       const el = document.createElement("i");
       el.className = "prop";
