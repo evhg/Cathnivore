@@ -3945,6 +3945,19 @@ html.no-animations .table-cath-line { animation: none; }
     font: 700 var(--fs-label)/1.2 var(--font-ui);
   }
 }
+/* Plan item 548: before the ledger's first line the rail has bare paper under the shelf's one row (~130 px at
+   1440x900, ~300 at 1920x1080; the blank ledger keeps to its heading). On a desktop 1000 px+ tall, while the ledger
+   is blank, the shelf shows a second row; the ledger takes the room back with its first line. (At 900 px a second
+   row of cards runs 60 px into the ledger.) */
+.shelf-fold .fold-two-rows { display: none; }
+@media (min-width: 1240px) and (min-height: 1000px) {
+  .actions-sheet:has(.round-ledger[data-empty]) .actions[data-shelf]:not([data-shelf-open]) .action-item:is([data-later-idx='3'], [data-later-idx='4'], [data-later-idx='5']) {
+    display: flex;
+  }
+  .actions-sheet:has(.round-ledger[data-empty]) .shelf-fold .fold-one-row { display: none; }
+  .actions-sheet:has(.round-ledger[data-empty]) .shelf-fold .fold-two-rows { display: inline; }
+  .actions-sheet:has(.round-ledger[data-empty]) .shelf-fold[data-few][aria-expanded='false'] { display: none; }
+}
 /* the jar's parts, on the shelf (D) and in the phone's mat chip */
 .saving-jar .jar-lid { fill: var(--wood); stroke: var(--wood-ink); stroke-width: 1; }
 .saving-jar .jar-glass { fill: color-mix(in srgb, var(--paper) 70%, transparent); stroke: var(--ink-a35); stroke-width: 1.2; }

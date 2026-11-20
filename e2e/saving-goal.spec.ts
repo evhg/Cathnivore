@@ -16,7 +16,7 @@ test('the Not-yet shelf folds to one row, and a pinned goal fills its jar and su
   const total = await shelfCards.count()
   const shown = () => page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').count()
   expect(await shown()).toBeLessThanOrEqual(3)
-  if (total > 3) await expect(page.locator('.shelf-fold')).toHaveText(`${total - 3} more not yet`)
+  if (total > 3) await expect(page.locator('.shelf-fold')).toHaveText(`${total - 3} more not yet`, { useInnerText: true })
 
   // Pin the second priced card: it moves to the front, lit, with its jar.
   const pin = page.locator('.shelf-pin').nth(1)
@@ -58,6 +58,35 @@ test('the Not-yet shelf folds to one row, and a pinned goal fills its jar and su
   }
   await page.locator('.shelf-pin[aria-pressed="true"]').click()
   await expect(page.locator('.actions[data-shelf]')).not.toHaveAttribute('data-saving-for', /./)
+})
+
+// Plan item 548: before the ledger's first line a desktop 1000 px+ tall shows a second row of the shelf (the rail
+// had ~300 px of bare paper under one row at 1920x1080); the first line takes the room back for the ledger.
+test('a tall desktop shows two rows of the shelf until the ledger has a line', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'the shelf is the big desktop column')
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  const cards = page.locator('.actions[data-shelf] .action-item[data-later-idx]')
+  await expect(cards.first()).toBeVisible()
+  const total = await cards.count()
+  test.skip(total < 4, 'a shelf of three or fewer has one row anyway')
+  const shown = () => page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').count()
+  expect(await shown()).toBe(Math.min(6, total))
+  if (total > 6) await expect(page.locator('.shelf-fold')).toHaveText(`${total - 6} more not yet`, { useInnerText: true })
+  else await expect(page.locator('.shelf-fold')).toBeHidden()
+  // The shelf stays above the ledger.
+  const shelfFoot = await page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').evaluateAll((els) => Math.max(...els.map((e) => e.getBoundingClientRect().bottom)))
+  const ledgerTop = (await page.locator('.actions-sheet .round-ledger').boundingBox())!.y
+  expect(shelfFoot).toBeLessThanOrEqual(ledgerTop)
+  // A sale writes the ledger's first line; the shelf folds back to one row.
+  const sell = page.locator('.table-hand [data-group="sell"]')
+  await sell.getByRole('button', { name: '1 to sell' }).click()
+  await sell.getByRole('button', { name: /^Sell 1 Produce/ }).click()
+  await expect(page.locator('.actions-sheet .round-ledger')).not.toHaveAttribute('data-empty', /.*/)
+  await expect.poll(shown).toBeLessThanOrEqual(3)
 })
 
 test('a goal that becomes affordable lifts into the hand within 800 ms and the pin comes off', async ({ page, isMobile }) => {

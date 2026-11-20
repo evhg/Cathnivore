@@ -3302,8 +3302,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           ))}
           {/* Plan item 183: one row of the shelf shows; the rest wait behind this key. */}
           {shelf && shelfCount > 3 && (
-            <button type="button" className="shelf-fold" aria-expanded={shelfOpen} onClick={() => setShelfOpen((o) => !o)}>
-              {shelfOpen ? 'Fold the shelf' : `${shelfCount - 3} more not yet`}
+            <button type="button" className="shelf-fold" data-few={shelfCount <= 6 || undefined} aria-expanded={shelfOpen} onClick={() => setShelfOpen((o) => !o)}>
+              {/* Plan item 548: while the ledger is still blank a tall desktop shows a second row (CSS); the count follows. */}
+              {shelfOpen ? (
+                'Fold the shelf'
+              ) : (
+                <>
+                  <span className="fold-one-row">{shelfCount - 3} more not yet</span>
+                  {shelfCount > 6 && <span className="fold-two-rows">{shelfCount - 6} more not yet</span>}
+                </>
+              )}
             </button>
           )}
         </>

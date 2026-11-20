@@ -4199,6 +4199,12 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   /* Plan item 436: she holds the poster out at her side, over the table's edge, so 80%+ of her stands clear (it hid
      half her figure, 32% of her box, at 1440x900). */
   .setup[data-steps] .market-event[data-flyer] { width: 138px; margin-left: -56px; }
+  /* Plan item 548: the poster still crossed her near arm and coat (cath-setup-D 995-1140 x 565-775): it hangs further
+     over the table's rim and she stands a step right, so it covers only the hand that holds it. */
+  .setup[data-steps] .market-event[data-flyer] { margin-left: -74px; }
+  .setup[data-steps] .setup-cath-stand .cath-art { transform: translateX(16px); }
+  /* (pinned by its brass pin now: her hand on its edge floated loose, a cuff with no arm) */
+  .setup[data-steps] .market-event[data-flyer] .poster-grip { display: none; }
   .setup[data-steps] .market-event[data-flyer] .market-event-eyebrow { margin: 0 0 8px; padding: 8px 8px 6px; font-size: var(--fs-caption); letter-spacing: 0.08em; line-height: 1.2; }
   .setup[data-steps] .market-event[data-flyer] .market-event-kicker { display: none; }
   .setup[data-steps] .market-event[data-flyer] .market-event-name { font-size: var(--fs-h3); }
