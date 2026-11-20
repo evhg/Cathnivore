@@ -4593,6 +4593,9 @@ body:has(#dlg-pause[open]) .paused-note {
 .round-chip-btn .mix-bar i + i {
   box-shadow: inset 1.5px 0 0 var(--paper);
 }
+/* Plan item 548: the card keeps the gauge's own room at its foot (5 px up, 6 tall, its rim), so the trait's tag above
+   it is never cut by it (at level 34's D the 'Airborne' and 'Stealth' tags ran 5 px under the bar). */
+.round-chip-btn:not(.round-chip.boss .round-chip-btn) { padding-bottom: 15px; }
 .round-chip-btn .round-count {
   grid-area: count;
   display: grid;
@@ -4738,6 +4741,7 @@ body:has(#dlg-pause[open]) .paused-note {
   .round-chip-btn .mix-bar {
     height: 5px;
   }
+  .round-chip-btn:not(.round-chip.boss .round-chip-btn) { padding-bottom: 14px; }
   .round-banner {
     padding: 1px 0 2px;
   }

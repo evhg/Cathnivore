@@ -1974,7 +1974,10 @@ export class Renderer {
     // D l34's plot row), ties kept in the order above.
     const cover = (c: Rect) =>
       plots.reduce((a, b) => a + Math.max(0, Math.min(c.x + c.w, b.x + b.w) - Math.max(c.x, b.x)) * Math.max(0, Math.min(c.y + c.h, b.y + b.h) - Math.max(c.y, b.y)), 0);
-    const ok = tries.filter((c) => c.x >= 2 && c.y >= 2 && c.x + c.w <= this.cssW - 2 && c.y + c.h <= this.cssH - 2 && !avoid.some((b) => hit(c, b)));
+    // Plan item 548: 10 px inside the canvas, not 2, so a tag never rides the board's rounded frame (D l21's
+    // 'Lifestyle influencer' hung over it at x 2-150).
+    const m = 10;
+    const ok = tries.filter((c) => c.x >= m && c.y >= m && c.x + c.w <= this.cssW - m && c.y + c.h <= this.cssH - m && !avoid.some((b) => hit(c, b)));
     const r = ok.reduce<Rect | undefined>((best, c) => (!best || cover(c) < cover(best) - 1 ? c : best), undefined);
     if (!r) {
       ctx.restore();
