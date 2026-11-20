@@ -5342,7 +5342,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 549. [ ] Cathnivore desktop: the left rail filled, with the goal you're saving for shown large
+## 549. [ ] Cathnivore desktop: the left rail filled, with the goal you're saving for shown large *(lane A, in progress)*
 - **Why:** `cath-game-D` (plan1120f, 05:00 critique): the rail (15-335 x 85-880) is a stack of small forms, and 560-730 is empty above a one-line ledger. Meanwhile Cath's italic aside card (358-548 x 208-376) is a third voice beside the event card and the producers' bubble.
 - **Build:**
   - The first improvement you're saving for shown large in the empty band (about 280x170): its art, the cost and a progress fill. The other goals stay as thumbnails above, with "7 more" as a small fanned deck behind it.
