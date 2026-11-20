@@ -1357,6 +1357,25 @@ export class Renderer {
           ctx.restore();
         },
       });
+    // Cath's post between rounds: green when a tower reaches it, amber when nothing does. Plan item 565: a mat on the
+    // ground under her feet, drawn before her figure (a full ring drawn over her read as a target on the road).
+    const post = postMarker(game, this.heroSelected ? this.postPreview : null);
+    if (post) items.push({
+      y: post.y + 0.21,
+      draw: () => {
+        ctx.save();
+        ctx.strokeStyle = post.covered ? "rgba(141,255,138,0.95)" : "rgba(255,179,71,0.95)";
+        ctx.fillStyle = post.covered ? "rgba(141,255,138,0.22)" : "rgba(255,179,71,0.22)";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash(this.heroSelected ? [6, 5] : []);
+        ctx.lineDashOffset = -t * 20;
+        ctx.beginPath();
+        ctx.ellipse(X(post.x), Y(post.y + 0.22), s * 0.4, s * 0.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      },
+    });
     // Plan item 132: the site poster (`?keyart`) stands its own Cath in front, so the field leaves hers out.
     const keyart = typeof document !== "undefined" && document.documentElement.dataset.keyart !== undefined;
     if (!hasTwist(level, "nocath") && !this.harvesting && !keyart) items.push({
@@ -1663,21 +1682,6 @@ export class Renderer {
     this.drawShots(dt, X, Y, s);
     this.drawPies(dt, X, Y, s);
     this.drawParticles(dt, X, Y, s);
-
-    // Cath's post between rounds: green when a tower reaches it, amber when nothing does.
-    const post = postMarker(game, this.heroSelected ? this.postPreview : null);
-    if (post) {
-      ctx.strokeStyle = post.covered ? "rgba(141,255,138,0.95)" : "rgba(255,179,71,0.95)";
-      ctx.fillStyle = post.covered ? "rgba(141,255,138,0.16)" : "rgba(255,179,71,0.16)";
-      ctx.lineWidth = 3;
-      ctx.setLineDash(this.heroSelected ? [6, 5] : []);
-      ctx.lineDashOffset = -t * 20;
-      ctx.beginPath();
-      ctx.arc(X(post.x), Y(post.y), s * 0.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
 
     // Pie aim preview.
     if (this.aim) {
