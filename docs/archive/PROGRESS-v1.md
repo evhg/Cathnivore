@@ -4263,3 +4263,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 09:21 lane B: 558 tried and handed back (conflicts with item 122); Runnel desktop specs clean after the revert (31 pass).
 - 2026-11-20 10:21 lane B: 555 done; table Cath specs pass except cath-pop-reaction :52 and producer-line :29, which fail on HEAD without the change too.
 - 2026-11-20 11:21 lane B: 557 done; 42 Hedgerow 3D Cath specs pass P and D.
+- **2026-11-20 11:51 lane A:** 554 slice 2 (1 code commit). board-* (all), piece-art, region-status, threat-badge, turn-show, map-key, campaign-map (P, D, --retries=0; board-landmarks round-7 load timeouts passing on rerun, board-landmark-ink x22 with one mill-ink miss), piece-layout/landmark-spot/map/region/campaign units, keyart-fresh, css lint; tsc, eslint. No full check. Key art re-shot (cathnivore). Shots scratchpad s554 (before/after, P and D, rounds 1 and 6). Lock released.
