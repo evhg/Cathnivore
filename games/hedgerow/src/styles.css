@@ -5237,7 +5237,7 @@ img.act-scene {
 #screen-select .node.next .you svg { transform-origin: 50% 100%; }
 @media (max-width: 420px) {
   /* plan item 441: 72 px on a phone (66) */
-  #screen-select .node.next .you { right: calc(100% + 2px); width: 33px; height: 72px; }
+  #screen-select .node.next .you { right: calc(100% + 2px); width: calc(33px * var(--you-k, 1)); height: calc(72px * var(--you-k, 1)); }
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 2px); }
 }
 /* Plan item 496: a shorter desktop (1280x800) gave her the 80 px middle size, a pin beside the coin; she stands 120 px

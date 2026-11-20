@@ -1777,9 +1777,11 @@ function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElemen
   const out = you.dataset.side === "right" ? 1 : -1;
   // Plan item 547: at her full height on a tall desktop (132 px since item 564) she may reach up into the row above;
   // with no clear spot she stands at 90% (119 px) rather than over a name.
-  for (const k of [1, 0.9]) {
+  // Plan item 571: on a phone's vertical road, between two coins 40 px apart, she may find no clear spot at full
+  // size (she stood over stop 21's coin at 390x844); there she steps down to 90% (65 px), then 80%.
+  for (const k of vertical ? [1, 0.9, 0.8] : [1, 0.9]) {
     if (k < 1) {
-      if (getComputedStyle(you).height !== "132px") return;
+      if (!vertical && getComputedStyle(you).height !== "132px") return;
       you.style.setProperty("--you-k", String(k));
     }
     const r = boxIn(you, trail);
