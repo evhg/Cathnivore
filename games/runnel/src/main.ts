@@ -2126,7 +2126,8 @@ function startLesson(): void {
         host.say('delighted', LESSON_DONE)
         ui.announce.textContent = 'Watered. Here comes today\'s puzzle.'
         // Plan item 134: on to today's daily in about a second (it waited 2.6 s); item 170: 1 s, so the board is up by 1.5.
-        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 1000)
+        // (750 ms, was 1000: the daily's board build after it took a slow CI past runnel-lesson-close's 1.5 s handover)
+        window.setTimeout(endLesson, matchMedia('(prefers-reduced-motion: reduce)').matches ? 500 : 750)
       } else showLessonStep()
     },
     onToggleLock: () => flashHint('No need to pin anything yet. Tap the glowing tile.'),
