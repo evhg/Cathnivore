@@ -473,6 +473,8 @@ let runSavedWave = -1;
 /** Which abilities were ready last frame (a tick under the thumb when one comes back). */
 const wasReady: Record<Ability, boolean> = { pie: false, neighbours: false, rally: false };
 let paused = false;
+/** Sandbox only (item 553): the sim held for a key-art frame, without the pause note or the paused dim. */
+let frozen = false;
 let aiming = false;
 let last = 0;
 let acc = 0;
@@ -792,6 +794,10 @@ if (SANDBOX)
     story: (id: number) => {
       const lv = LEVELS.find((l) => l.id === id);
       if (lv) showStory(lv.before, lv.place, () => {}, actOf(lv));
+    },
+    // Item 553: stop the sim for a key-art frame the script laid out (no pause note: the controls aren't synced).
+    freeze: () => {
+      frozen = true;
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
@@ -5460,7 +5466,7 @@ function frame(now: number): void {
   const g = game;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
-  if (!paused && !introHold && !ui.dlgStory.open && !ui.dlgResult.open && !ui.dlgUnlock.open) {
+  if (!paused && !frozen && !introHold && !ui.dlgStory.open && !ui.dlgResult.open && !ui.dlgUnlock.open) {
     if (!player && g.phase === "build" && g.wave > 0 && g.wave < g.level.waves.length && autoNext) {
       // Hold the countdown while the player is choosing something.
       if (!selected && !posting && !aiming) autoLeft -= dt * speed;

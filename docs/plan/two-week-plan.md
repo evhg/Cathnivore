@@ -5396,7 +5396,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-front and cathode-title specs pass (P and D); posters re-rendered if the title's sources change; shots P, D and 844x390.
 - **Size:** 2
 
-## 553. [ ] The bugs from the 2026-11-20 05:00 critique, fixed as one batch *(lane A, in progress)*
+## 553. [x] The bugs from the 2026-11-20 05:00 critique, fixed as one batch *(done 2026-11-20 05:35, lane A, 93ca256f and the key-art slice: every point fixed, checked or moved below; campaign-map/-atlas, campaign, producer-line, table-producers, phone-hand-fan/-dock, hand-art, setup-steps (P, D; 4 load flakes passing alone), campaign-map-layout, producer-lines, css lint, keyart-fresh; shots e2e/screenshots/a553)*
 - `cath-game-D` (1218-1398 x 350-435): the producers' bubble 'Favourite pair, she says. Mara, she means me.' has its tail on Mara, but Tomas is speaking. Name or point at the speaker. **Fixed 05:10 lane A:** the bubble names its speaker in their colour, and a slid bubble's tail points at its own seat (`--pl-tail`).
 - `cath-game-D` (1000-1150 x 820-860): 'Supply 1 Outlet · Brindle Hills' wraps with a stray leading '·'. **Fixed 05:10 lane A:** on every hand card the region takes its own line, without the dot.
 - `cath-game-P` (300-370 x 595-612): the '9 more' pill overlaps the top-right of the last fanned card. **Fixed 05:10 lane A:** the tab's foot now meets the counter's lip (top -17 px, was -13).
@@ -5408,7 +5408,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-l34-2d-D`: the 'Same-Day van' label (330-455 x 708-728) over its vans; 'Box Lorry' (250-345 x 240-258) over the lorry. **Checked, kept:** at 2x each tag sits clear beside its lead vehicle (item 72's staged threat).
 - `ns-title-D` (905-960 x 470-540): Cath's glove passes through the umbrella shaft. **Moved to item 543** (her 3D hands).
 - `ns-play-P` (2x, y 1030-1130): an empty band between 'HER LINE' and the stat sheet. **Left to item 538** (lane B's class pick, in progress): the sheet docks to the foot, the band is the slack.
-- `portfolio-D` (1100-1220 x 445-520), `games-D` (890-960 x 630-700): purple glow blobs in Hedgerow's key art read as a glitch at thumbnail size.
+- `portfolio-D` (1100-1220 x 445-520), `games-D` (890-960 x 630-700): purple glow blobs in Hedgerow's key art read as a glitch at thumbnail size. **Fixed 05:35 lane A:** the blob was the queue's overflow, item 45's stacked column by the gate (a left-running wave has about 80 out by SwiftShader's first frames). `scripts/keyart.mjs` now starts the round, lays nine vehicles out in one file along the lane (`spawn`) and holds the sim (`window.hedgerow.freeze`, sandbox only, no pause note); Hedgerow's key art re-shot.
 - `games-P` (30-380 x 512-558): 'Play today's Runnel' thin italic, low contrast; 'Browse the games' reads disabled. **Checked, kept:** chalk 700 on the brass-lit slate and cream on the plank (5.9:1, item 222), item 409's deliberate lead.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1

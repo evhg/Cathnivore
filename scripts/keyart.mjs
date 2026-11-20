@@ -121,16 +121,16 @@ const shoot = {
         }
       }
       hg.sendWave(g, true)
+      // Item 553: a wave left to run had about 80 out by SwiftShader's first frames, its overflow item 45's stacked
+      // column by the gate (a purple blob at card size). Lay the convoy out instead, one file along the lane, and
+      // freeze the sim on it.
+      hg.freeze()
+      g.enemies.length = 0
+      const kinds = ['van', 'pickup', 'hatchback', 'van', 'courier', 'pickup', 'van', 'hatchback', 'van']
+      kinds.forEach((k, j) => hg.spawn(k, 2 + j * 1.6))
       hg.refresh()
     })
-    await p.waitForFunction(() => window.hedgerow.game().enemies.length > 8, null, { timeout: 60000 }).catch(() => {})
-    // Item 553: shot while the wave still stood bunched at the gate, its glowing vans read as a purple blob at card
-    // size; wait until the convoy strings out along the lane (lead to tail 8 cells or more).
-    await p.waitForFunction(() => {
-      const d = window.hedgerow.game().enemies.map((e) => e.dist)
-      return d.length > 4 && Math.max(...d) - Math.min(...d) >= 8
-    }, null, { timeout: 90000 }).catch(() => {})
-    await p.waitForTimeout(1500)
+    await p.waitForTimeout(4000)
     return (await p.screenshot()).toString('base64')
   },
   // The Drowned Market street, from NIGHT SHIFT's own key art (scripts/cathode-keyart.mjs renders it from the
