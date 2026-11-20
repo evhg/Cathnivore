@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 // Plan item 63: an autoplayed game stopped at rounds 2, 5 and 8 (`e2eAutoplayUntil`), so each board is judged once it
 // holds still: no two `[data-piece]` boxes on a tile overlap, none crosses the region's name plate, and every count
-// reads at 11 px or more.
+// reads at 11 px or more. Item 554 slice 3: a two-deep cluster's back piece (`data-back`) may stand behind the front row.
 test('board pieces never overlap each other or the name plate', async ({ page }) => {
   test.setTimeout(150_000)
   for (const until of [2, 5, 8]) {
@@ -30,7 +30,17 @@ test('board pieces never overlap each other or the name plate', async ({ page })
         pieces += els.length
         for (let a = 0; a < boxes.length; a++) {
           if (plate && overlap(boxes[a]!, plate)) bad.push(`${id} ${els[a]!.dataset.piece} x plate`)
-          for (let b = a + 1; b < boxes.length; b++) if (overlap(boxes[a]!, boxes[b]!)) bad.push(`${id} ${els[a]!.dataset.piece} x ${els[b]!.dataset.piece}`)
+          for (let b = a + 1; b < boxes.length; b++) {
+            // Plan item 554 slice 3: a two-deep cluster's back piece stands behind Hollowell's front row on purpose,
+            // rising above it (its top over theirs); that overlap is the cluster, not a clash.
+            const [ea, eb] = [els[a]!, els[b]!]
+            const stack = (e: SVGGElement) => ['o', 'b', 'd'].includes(e.dataset.piece ?? '')
+            if (stack(ea) && stack(eb) && (ea.dataset.back !== undefined || eb.dataset.back !== undefined)) {
+              const [bk, fr] = ea.dataset.back !== undefined ? [boxes[a]!, boxes[b]!] : [boxes[b]!, boxes[a]!]
+              if (bk.top < fr.top) continue
+            }
+            if (overlap(boxes[a]!, boxes[b]!)) bad.push(`${id} ${els[a]!.dataset.piece} x ${els[b]!.dataset.piece}`)
+          }
         }
         for (const t of Array.from(hex.querySelectorAll<SVGTextElement>('.piece-count text'))) minCount = Math.min(minCount, t.getBoundingClientRect().height)
       }

@@ -344,13 +344,13 @@ export function Doubt() {
     <g className="enemy-piece enemy-doubt">
       <path d="M 6.4,7.8 V 12.6" stroke="var(--candor-ink)" strokeWidth={1.3} strokeLinecap="round" />
       <path d="M 6,7.8 V 12.4" stroke="var(--corp-chrome)" strokeWidth={0.5} strokeLinecap="round" opacity={0.7} />
-      {/* Plan item 554: a bubble 10.6 across (was 8.8), as wide as the Outlet's storefront */}
+      {/* Plan item 554: a bubble 11.8 across (10.6 in slice 1, was 8.8), filling its slot like the Outlet's storefront */}
       <g className="corp-shadow" fill="var(--candor-ink)" transform="translate(0.7 0.8)">
-        <circle cx={6} cy={5.2} r={5.3} />
-        <path d="M 1.8,8.4 L 4.6,9.9 L 0.7,11.2 Z" />
+        <circle cx={6} cy={5.2} r={5.9} />
+        <path d="M 1.4,8.6 L 4.4,10.2 L 0.2,11.5 Z" />
       </g>
-      <path d="M 1.8,8.4 L 4.6,9.9 L 0.7,11.2 Z" fill="var(--candor)" />
-      <circle cx={6} cy={5.2} r={5.3} className="corp-face" fill="url(#candor-gloss)" />
+      <path d="M 1.4,8.6 L 4.4,10.2 L 0.2,11.5 Z" fill="var(--candor)" />
+      <circle cx={6} cy={5.2} r={5.9} className="corp-face" fill="url(#candor-gloss)" />
       <path className="corp-specular" d="M 2,5.4 A 4.2,4.2 0 0 1 4.3,1.6" fill="none" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
       <text x={6.2} y={7.8} textAnchor="middle" className="doubt-mark">
         ?
@@ -402,8 +402,8 @@ const SILHOUETTE = { outlets: 'sawtooth', buyouts: 'peak', doubt: 'bubble' } as 
 function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; cy?: number }) {
   // Plan item 554: the art spans 15.6 icon units across (-1.4 to 14.2: the plinth's lip and its contact shadow) and
   // 17.8 down (the piece on its plinth and shadow); item 413 dropped the copies the old 18 x 22.6 box kept room for,
-  // so the piece fills the slot now, less 0.4 a side so neighbours keep their gap.
-  const k = Math.min((STACK_W * scale) / 16.4, (STACK_H * scale) / 18.6)
+  // so the piece fills the slot now, less 0.2 a side (slice 3; was 0.4) so neighbours keep their 3-unit gap.
+  const k = Math.min((STACK_W * scale) / 16, (STACK_H * scale) / 18.6)
   const bottom = cy + (STACK_H * scale) / 2
   const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
   // Plan item 413: one piece a kind (item 172's pile of copies cluttered every hex); the count says how many.
@@ -433,8 +433,9 @@ function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = 
   // Plan item 554: 1.8 units under the slot's top (was 1), so the standee's wooden frame stays inside its slot.
   const top = py - PRODUCER_H * s * 0.6 + 1.8 * s
   const foot = py + PRODUCER_H * s * 0.4 - 4.2 * s
-  // Plan item 554: a wider standee (22 of the slot's 26 units, was 20), so the portrait reads as a piece, not a pin.
-  const hw = 11 * s
+  // Plan item 554: a wider standee (22.8 of the slot's 26 units; 22 in slice 1, was 20), so the portrait reads as a
+  // piece, not a pin; its frame's outer edge (1.2 a scale plus half a unit past it) stays inside the slot.
+  const hw = 11.4 * s
   const archAt = (h: number) => `M ${cx - h} ${foot} L ${cx - h} ${top + hw} A ${h} ${h} 0 0 1 ${cx + h} ${top + hw} L ${cx + h} ${foot} Z`
   const arch = archAt(hw)
   const bustH = hw * 2.5
@@ -1203,10 +1204,12 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                           data-piece={k}
                           data-count={n}
                           data-silhouette={SILHOUETTE[rect.kind]}
+                          // Plan item 554 slice 3: a cluster's back piece, standing behind the front row on purpose.
+                          data-back={rect.back ? '' : undefined}
                           // Plan item 451: the stack a dragged card will take pieces from lifts and fades in time.
                           data-going={aim?.region === id && aim.going?.includes(k) ? '' : undefined}
                         >
-                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} cy={tray.enemyY} />
+                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} cy={rect.cy ?? tray.enemyY} />
                         </g>
                       )
                     }
