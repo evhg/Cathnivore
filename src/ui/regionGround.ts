@@ -131,9 +131,10 @@ export function regionGround(id: string, type: RegionType, tray: readonly PieceR
   const rand = rng(id)
   const marks: GroundMark[] = []
   const boxes: PieceRect[] = []
-  // Plan item 417: freed land holds a market of its own (FREE_STALLS awnings); held land a Hollowell signboard. Placed
-  // first, where the pieces leave room (shrinking as they miss), so who holds the ground reads at a glance.
-  const props: GroundKind[] = control === 'free' ? Array<GroundKind>(FREE_STALLS).fill('stall') : control === 'held' ? ['hsign'] : []
+  // Plan item 417: freed land holds a market of its own (FREE_STALLS awnings), placed first where the pieces leave room
+  // (shrinking as they miss). Plan item 550: held land no longer carries a small H signboard: the region's status disc
+  // (Hollowell's orange) and the SOLD boards on its landmark say who holds it.
+  const props: GroundKind[] = control === 'free' ? Array<GroundKind>(FREE_STALLS).fill('stall') : []
   for (const kind of props) {
     for (let attempt = 0; attempt < 160; attempt++) {
       const s = Math.max(0.7, 1.45 - attempt * 0.005)

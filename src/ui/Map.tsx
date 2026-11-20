@@ -3,7 +3,7 @@ import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilit
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, regionControl, squeezedLastTurn, type GripStage } from './grip'
-import { COUNT_FROM, CORP_COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
+import { COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -376,13 +376,13 @@ function CorpBase({ cx, y, w }: { cx: number; y: number; w: number }) {
 }
 
 // Plan item 63: a stack's count, a dark disc sized by the tray so its number never renders under 11 px.
-function CountBadge({ cx, cy, r, n, corp = false }: { cx: number; cy: number; r: number; n: number; corp?: boolean }) {
+function CountBadge({ cx, cy, r, n }: { cx: number; cy: number; r: number; n: number }) {
   const fs = r * 1.25
-  // Plan item 413: Hollowell's count is its own slate-and-acrylic chip, not the players' ink disc.
+  // Plan item 550: only the producers' stalls carry a count disc now (Hollowell's is the region's status disc).
   return (
-    <g className={`piece-count${corp ? ' corp-count' : ''}`} pointerEvents="none">
-      <circle cx={cx} cy={cy} r={r} fill={corp ? 'var(--corp-slate)' : 'var(--ink, #1b1712)'} stroke={corp ? 'var(--corp-acrylic)' : 'var(--paper, #f4ead8)'} strokeWidth={Math.max(0.8, r * 0.16)} />
-      <text x={cx} y={cy + fs * 0.36} textAnchor="middle" fontSize={fs} fontWeight={700} fill={corp ? 'var(--corp-acrylic)' : 'var(--paper, #f4ead8)'}>
+    <g className="piece-count" pointerEvents="none">
+      <circle cx={cx} cy={cy} r={r} fill="var(--ink, #1b1712)" stroke="var(--paper, #f4ead8)" strokeWidth={Math.max(0.8, r * 0.16)} />
+      <text x={cx} y={cy + fs * 0.36} textAnchor="middle" fontSize={fs} fontWeight={700} fill="var(--paper, #f4ead8)">
         {n}
       </text>
     </g>
@@ -397,7 +397,7 @@ function CountBadge({ cx, cy, r, n, corp = false }: { cx: number; cy: number; r:
 /** Plan item 172: each piece kind's outline, so the board reads without colour. */
 const SILHOUETTE = { outlets: 'sawtooth', buyouts: 'peak', doubt: 'bubble' } as const
 
-function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; countR: number; cy?: number }) {
+function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; cy?: number }) {
   // The art spans 18 icon units across (the base's lip, copies offset right) and 22.6 down (copies up, the
   // base's shadow below).
   const k = Math.min((STACK_W * scale) / 18, (STACK_H * scale) / 22.6)
@@ -411,8 +411,9 @@ function EnemyStack({ kind, n, scale, ornaments, countR, cy = ENEMY_Y }: { kind:
         {/* keyed by the count, so a piece landing on a stack drops in again */}
         <g key={n}>{icon}</g>
       </g>
-      {/* plan item 425: the count sits on the piece's own plinth (its right end), not floating above it */}
-      {n >= CORP_COUNT_FROM && <CountBadge corp cx={Math.min(14.6 * k, STACK_W * scale - countR)} cy={Math.min(bottom - 3.6 * k, bottom - countR)} r={countR} n={n} />}
+      {/* Plan item 550: no count disc on the piece; the region's status disc on its banner counts Hollowell's pieces,
+          and the stack names its own count for a hover or a screen reader. */}
+      <title>{`${n} ${kind === 'outlets' ? (n === 1 ? 'Outlet' : 'Outlets') : kind === 'buyouts' ? (n === 1 ? 'Buyout' : 'Buyouts') : 'Doubt'}`}</title>
     </g>
   )
 }
@@ -1189,7 +1190,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                           // Plan item 451: the stack a dragged card will take pieces from lifts and fades in time.
                           data-going={aim?.region === id && aim.going?.includes(k) ? '' : undefined}
                         >
-                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} countR={tray.countR} cy={tray.enemyY} />
+                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} cy={tray.enemyY} />
                         </g>
                       )
                     }
@@ -1345,17 +1346,22 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const control = regionControl(r)
               const label = `${def.name}: ${control === 'free' ? 'free' : control === 'held' ? 'held by Hollowell' : 'contested'}${control === 'free' ? '' : `, ${n} Hollowell ${n === 1 ? 'piece' : 'pieces'}`}`
               const cy = y - HEX_R * 0.62 - 4.5
+              // Plan item 550: at least 28 px across on a desktop and 23 px on a phone, whatever the board's scale.
+              const sr = Math.max(13, (11.5 * HEX_R) / Math.max(24, hexPx ?? 72))
+              const k = sr / 11
               return (
-                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + 14} ${cy})`}>
+                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr * 0.8)} ${cy})`}>
                   <title>{label}</title>
-                  <circle r={11} className="region-status-disc" />
-                  {control === 'free' ? (
-                    <path className="region-status-leaf" d="M-5 4C-5-3 0-7 6-7C6 0 2 5-5 4ZM-5 4L2-2" />
-                  ) : (
-                    <text y={4.6} textAnchor="middle" className="region-status-count">
-                      {n}
-                    </text>
-                  )}
+                  <circle r={sr} className="region-status-disc" />
+                  <g transform={`scale(${k.toFixed(3)})`}>
+                    {control === 'free' ? (
+                      <path className="region-status-leaf" d="M-5 4C-5-3 0-7 6-7C6 0 2 5-5 4ZM-5 4L2-2" />
+                    ) : (
+                      <text y={4.6} textAnchor="middle" className="region-status-count">
+                        {n}
+                      </text>
+                    )}
+                  </g>
                 </g>
               )
             })()}
@@ -1606,7 +1612,7 @@ function fitPlaques(svg: SVGSVGElement) {
     plate.setAttribute('width', String(w + 16))
     // Plan item 550: the status disc rides the plaque's right end.
     const status = sign.querySelector<SVGGElement>('.region-status')
-    if (status) status.setAttribute('transform', `translate(${cx + w / 2 + 14} ${status.getAttribute('data-cy')})`)
+    if (status) status.setAttribute('transform', `translate(${cx + w / 2 + Math.max(14, Number(status.getAttribute('data-r')) * 0.8)} ${status.getAttribute('data-cy')})`)
   }
 }
 
@@ -1615,33 +1621,16 @@ function matchesSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expa
 }
 
 /**
- * Plan item 55: Hollowell's props on a landmark, in its own 24-unit box so they stand where it does: a glossy
- * billboard (stage 1+), a delivery van (stage 2+), boards across the landmark under a SOLD sign (stage 3), and a
- * small warning pennant when the next Squeeze would take ground. Each reads by shape, so greyscale tells them apart.
+ * Plan item 55: Hollowell's props on a landmark, in its own 24-unit box so they stand where it does: boards across
+ * the landmark under a SOLD sign (stage 3), and a small warning pennant when the next Squeeze would take ground
+ * (item 550 folded the billboard and van away). Each reads by shape, so greyscale tells them apart.
  */
 function GripProps({ stage, edge }: { stage: GripStage; edge: boolean }) {
   const ink = { stroke: 'var(--ink)', strokeWidth: 0.9, strokeLinejoin: 'round' as const }
   return (
     <g className="grip-props">
-      {stage >= 1 && (
-        <g className="grip-billboard" data-grip-prop="billboard" {...ink}>
-          <path d="M7 -3 V-6 M12 -3 V-6" />
-          <rect x={4.5} y={-12.5} width={9} height={6.5} rx={0.8} fill="var(--hollowell)" />
-          <path d="M5.5 -10.5 H12.5" stroke="var(--paper)" strokeWidth={1.2} />
-          <path d="M5.5 -8 H10" stroke="var(--paper)" strokeWidth={0.8} />
-          {/* Plan item 267: glossy plastic (VISION: the corporations are glossy, the players' land hand-made). */}
-          <path className="grip-gloss" d="M5.4 -12 L8.4 -12 L5.4 -9 Z" fill="var(--paper-hi, var(--paper))" stroke="none" opacity={0.55} />
-        </g>
-      )}
-      {stage >= 2 && (
-        <g className="grip-van" data-grip-prop="van" {...ink}>
-          <path d="M-12.5 11 V5 H-5 L-3 8 V11 Z" fill="var(--paper-hi, var(--paper))" />
-          <path d="M-12.5 7.5 H-5" stroke="var(--hollowell)" strokeWidth={1.4} />
-          <path className="grip-gloss" d="M-11.8 5.7 H-6.2" stroke="var(--paper-hi, var(--paper))" strokeWidth={0.7} strokeLinecap="round" opacity={0.8} />
-          <circle cx={-10} cy={11.4} r={1.6} fill="var(--ink)" />
-          <circle cx={-5.4} cy={11.4} r={1.6} fill="var(--ink)" />
-        </g>
-      )}
+      {/* Plan item 550: the billboard (stage 1) and the delivery van (stage 2) fold into the region's status disc and
+          Hollowell's own pieces; only the boards of a region it holds, and the warning pennant, stand on the landmark. */}
       {stage >= 3 && (
         <g className="grip-sold" data-grip-prop="sold" {...ink}>
           <path d="M-9 -6 L9 6 M-9 6 L9 -6" stroke="var(--soil)" strokeWidth={3} strokeLinecap="round" />

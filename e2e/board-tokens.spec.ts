@@ -48,9 +48,8 @@ test('board pieces are chunky tokens with their own outlines', async ({ page }, 
       expect(p.copies, `${p.kind} x${p.n}`).toBe(Math.min(p.n, 3) - 1)
     } else {
       expect(p.shadow, `${p.kind} contact shadow`).toBeGreaterThan(0)
-      expect(p.gap, `${p.kind} x${p.n} count off its piece`).toBeLessThanOrEqual(4)
-      // Plan item 413: one Hollowell piece a kind, a count badge from two.
-      expect(p.badges, `${p.kind} x${p.n}`).toBe(p.n >= 2 ? 1 : 0)
+      // Plan item 413: one Hollowell piece a kind; item 550: no count disc on it (the region's status disc counts).
+      expect(p.badges, `${p.kind} x${p.n}`).toBe(0)
       expect(p.copies, `${p.kind} x${p.n}`).toBe(0)
     }
   }

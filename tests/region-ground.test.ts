@@ -68,15 +68,13 @@ describe('regionGround on freed land', () => {
   }
 })
 
-// Plan item 417: held land carries Hollowell's signboard wherever two stacks leave room, clear of them.
+// Plan item 550 (replacing item 417's signboard): held land carries no H signboard; the status disc says who holds it.
 describe('regionGround on held land', () => {
   for (const def of Object.values(REGIONS)) {
-    it(`${def.name}: a signboard when held`, () => {
+    it(`${def.name}: no signboard when held`, () => {
       const tray = pieceLayout({ outlets: 2, buyouts: 1, doubt: 0, producers: 1, scheme: false, labelWidth: label(def.name) }, 90).rects
       const marks = regionGround(def.id, def.type, tray, 'held')
-      const signs = marks.filter((m) => m.kind === 'hsign')
-      expect(signs.length).toBe(1)
-      for (const p of tray) expect(rectsOverlap(markRect(signs[0]!), p)).toBe(false)
+      expect(marks.filter((m) => m.kind === 'hsign')).toHaveLength(0)
     })
   }
 })

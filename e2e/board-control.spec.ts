@@ -31,8 +31,9 @@ test('held land is wrapped in plastic, freed land warms and holds stalls', async
   for (const g of await page.locator('.map-wrap .region-hex[data-control="free"]').all()) {
     expect(await g.locator('.free-stall').count()).toBeGreaterThanOrEqual(2)
   }
-  // Held ground carries Hollowell's signboard where the pieces leave room (a crowded tile may have none).
-  expect(await page.locator('.map-wrap .region-hex[data-control="held"] .held-sign').count()).toBeGreaterThanOrEqual(1)
+  // Plan item 550: held ground carries no H signboard (the region's status disc, in Hollowell's orange, says it).
+  expect(await page.locator('.map-wrap .region-hex[data-control="held"] .held-sign').count()).toBe(0)
+  for (const s of await page.locator('.map-wrap .region-status[data-region-status="held"]').all()) await expect(s).toHaveAttribute('aria-label', /held by Hollowell/)
   // Plan item 525 (replacing item 417's grey): held land keeps its warm palette at full strength (no filter greys it)
   // and Hollowell's hold is shrink-wrap laid over it, which reads by its highlights in greyscale; freed land wears none.
   const sats = await page.locator('.map-wrap .region-hex .land-layer').evaluateAll((es) =>

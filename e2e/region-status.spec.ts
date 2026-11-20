@@ -3,7 +3,7 @@ import { fillSeed } from './setupSeed'
 
 // Plan item 550 slice 1: every region carries exactly one status on its name banner's end (free, contested or held,
 // with Hollowell's piece count), labelled for screen readers, sitting on the banner and inside its hex's row.
-test('each region has one labelled status on its name banner', async ({ page }) => {
+test('each region has one labelled status on its name banner', async ({ page, hasTouch }) => {
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
@@ -25,6 +25,10 @@ test('each region has one labelled status on its name banner', async ({ page }) 
         // the disc overlaps the plaque's right end, centred on its height
         onEnd: b.left < plate.right && b.right > plate.right && Math.abs((b.top + b.bottom) / 2 - (plate.top + plate.bottom) / 2) < plate.height * 0.4,
         size: b.height,
+        // plan item 550: no piece or landmark prop meets the banner (plaque or disc)
+        meets: [...document.querySelectorAll(`.map-wrap svg.map .region-hex[data-region="${sign.getAttribute('data-sign')}"] :is([data-piece], [data-grip-prop])`)]
+          .map((g) => g.getBoundingClientRect())
+          .filter((g) => g.width > 0 && [plate, b].some((o) => g.left < o.right && o.left < g.right && g.top < o.bottom && o.top < g.bottom)).length,
       }
     }),
   )
@@ -34,6 +38,8 @@ test('each region has one labelled status on its name banner', async ({ page }) 
     expect(s.status).toMatch(/^(free|contested|held)$/)
     expect(s.label).toMatch(s.status === 'free' ? /: free$/ : new RegExp(`: (contested|held by Hollowell), ${s.n} Hollowell pieces?$`))
     expect(s.onEnd, JSON.stringify(s)).toBe(true)
-    expect(s.size).toBeGreaterThanOrEqual(10)
+    // Plan item 550: 28 px across or more on a desktop, 22 on a phone.
+    expect(s.size, s.region!).toBeGreaterThanOrEqual(hasTouch ? 22 : 28)
+    expect(s.meets, `${s.region} pieces on its banner`).toBe(0)
   }
 })
