@@ -5235,7 +5235,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 543. [ ] NIGHT SHIFT Cath in 3D: glossy waved hair, a coat with cloth, gloved hands with fingers
+## 543. [ ] NIGHT SHIFT Cath in 3D: glossy waved hair, a coat with cloth, gloved hands with fingers *(lane B, in progress)*
 - **Why:** plan1120a critique (2026-11-20 01:35): apart from her face (item 319), her 3D figure reads as a placeholder in the 18+ game's key art.
   - Hair: matte black strands like cables, no shine band, no waves (ns-title-D 930-1110 x 265-640; ns-play-D 600-860 x 160-830). The bible asks for 'glossy… soft waves… a light shine band'.
   - Coat: one flat grey, no weave, seams or roughness change.
