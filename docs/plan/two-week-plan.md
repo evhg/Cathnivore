@@ -5471,7 +5471,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-3dframe, hedgerow-cath3d specs pass; shots P and D at level 21; key art re-shot.
 - **Size:** 2
 
-## 558. [ ] Runnel desktop: Cath as a host who reacts
+## 558. [ ] Runnel desktop: Cath as a host who reacts *(lane B, in progress)*
 *(planned 2026-11-20 08:20, lane A, plan1120j critique)*
 - **Why:** `runnel-D` (435-525 x 510-860): Cath is a 90 px-wide figure with a 22 px face, her bubble (385-685 x 410-480) outweighs her and she never reacts. The left rail (15-345 x 175-785) is 13 px lined type with a dead band at 790-900.
 - **Build:**
