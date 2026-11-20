@@ -5316,14 +5316,14 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `hedgerow-map` specs pass; shots P and D.
 - **Size:** 2
 
-## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(lane A, in progress)* *(handed back 2026-11-20 02:40 by lane A: Hedgerow's three points fixed (marked); left: the Setup points, the game rail's dead space, NIGHT SHIFT's phone tab labels)*
+## 548. [x] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(done 2026-11-20 03:35, lane A, 304ac94a..fe11f546: every point fixed or checked below; saving-goal (new two-row case), setup-steps/-placecards, player-mat, desktop-top-rail, disabled-actions (D), cathode-classpick (P), runnel-lesson*/critique91 (D); shots e2e/screenshots/b548 before, scratchpad sc/a* after)* *(handed back 2026-11-20 02:40 by lane A: Hedgerow's three points fixed (marked); left: the Setup points, the game rail's dead space, NIGHT SHIFT's phone tab labels)*
 - `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot. **Checked 01:45 lane B, kept:** the page scrolls; the button sits whole just under the fold.
 - `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't. **Checked, kept:** the card grows to two lines cleanly; the name is the longest.
 - `cath-setup-D`:
-  - (105-255 x 170-215) 'Two at the table' clipped against 'You and an AI'.
-  - (530-625 x 168-200) Tomas Reed's 'Market Day' tag wraps.
-  - (995-1140 x 565-775) the week's sign covers Cath's torso and arm (also in 537's list: check).
-- `cath-game-D` (18-335 x 600-735): about 145 px of dead rail between '5 more not yet' and the ledger.
+  - (105-255 x 170-215) 'Two at the table' clipped against 'You and an AI'. **Checked 03:00 lane A, kept:** item 204's unpicked card laid flat (rotateX); both words whole at 2x.
+  - (530-625 x 168-200) Tomas Reed's 'Market Day' tag wraps. **Checked, kept:** a two-word power takes two lines, as 'Second Opinion' does; one line needs the stamp's picture dropped.
+  - (995-1140 x 565-775) the week's sign covers Cath's torso and arm (also in 537's list: check). **Fixed 03:00 lane A:** the poster hangs 18 px further over the table's rim, pinned (the grip hand on its edge floated loose once it cleared her), and she stands 16 px right; her coat and both arms clear at 1440x900 and 1280x800.
+- `cath-game-D` (18-335 x 600-735): about 145 px of dead rail between '5 more not yet' and the ledger. **Fixed in part 03:20 lane A:** at 1400x1000+, while the ledger is blank, the shelf shows a second row (the fold key counts what's left; the first ledger line takes the room back). At 1440x900 kept: two rows fit only with 32 px pictures, against item 263's 60 px+ (player-mat spec).
 - `cath-title-D`/`-P` footer small print about 11 px, low contrast on brown (D 310-1130 x 872-886; P y 820-835). **Checked, kept:** 13 px (`.title-footer`), light on brown, reads.
 - `hedge-l21-3d-P` (280-345 x 740-760): the tray label cut to 'Radio Mas'. **Checked, kept:** the tray scrolls; the last card peeks under its arrow by design.
 - Hedgerow D (l21, l34; about y 680-692): the 'Coming up' bars and tags clipped by the panel's foot. **Fixed 02:30 lane A:** at l34 the trait tags ran 5 px under the gauge (item 542 raised it, the card's foot padding stayed 6 px); the card keeps 15 px (14 on a phone). l21 was whole.
@@ -5331,10 +5331,10 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-menu-P` (265-385 x 512-545): 'Brand Ambassador' label over the terrain. **Fixed 02:20 lane A (item 471 slice 4):** every phone name is now lettered on the land in a paper halo, by design.
 - `ns-title-D` (565-740 x 330-390): the Ledger's italic body about 11 px. **Checked 01:50 lane B, kept:** about 13 px in the 1440 frame, legible on the graded newsprint (plan1120b).
 - `ns-play-P`:
-  - (at 2x 325-595 x 872-898) 'GUNSLINGER' butts 'WIREWITCH'.
+  - (at 2x 325-595 x 872-898) 'GUNSLINGER' butts 'WIREWITCH'. **Fixed 03:25 lane A:** tabs sized to their names plus an equal share; gaps between names 22-27 px at 390 (were 9-30).
   - The CTA reads only 'HOLD'. **Fixed 01:45 lane B:** 'Hold to start' on touch ('Hold Enter' with a keyboard).
 - `ns-play-D` (998-1100 x 438-455): '+7 25 · 18 avg' is cryptic; label it. **Fixed 01:45 lane B:** '+7 25 vs 18 avg' (plan1120b).
-- `runnel-D` (165-265 x 635-745): the 'Up next' card's text off its heading's left edge.
+- `runnel-D` (165-265 x 635-745): the 'Up next' card's text off its heading's left edge. **Fixed 03:30 lane A (also item 545's 'Up next' left edge):** 'Up next today' runs across the card's top from the picture's left edge; name and sky beside the picture.
 - `runnel-P` (265-385 x 158-185): step 3's label wraps where the others don't. **Checked, kept:** steps 2 and 3 both wrap to two lines; step 1 is short.
 - `portfolio-D`: Cath's bubble says 'Hover one' (wrong on touch: say 'Pick one' or detect hover). **Fixed 01:45 lane B:** 'Pick one and I'll show you round'; portfolio-present passes.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
