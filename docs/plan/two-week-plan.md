@@ -5663,7 +5663,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath's face luminance at least 1.6x the wall beside her (measured on the shot); draw calls within budget; shots P and D for all 5 classes.
 - **Size:** 2
 
-## 575. [ ] NIGHT SHIFT class pick: the unpicked classes as a dossier lineup *(lane B, in progress)*
+## 575. [ ] NIGHT SHIFT class pick: the unpicked classes as a dossier lineup *(handed back 2026-11-20 23:55 by lane B after slices 1-2: each class has Cath's booking photo (the shared 2D bust in her trench against a height chart, a per-class look, the file number 01-05 on its placard; grey until picked, then lit with a red rim): on the D rows (48x59 at 1440, 48 px floor; the bare digit steps aside so the names clear the guns, 12-18 px at 1280-1920) and on the P name tabs in place of the small gun. New spec in cathode-classpick (5 photos of 48 px or more, P and D); classpick and classstage pass P and D. Shots scratchpad cp-D-after2, cp-P-after4. **Left:** the accept's 4.5:1 for the unpicked names at D (they are --ink-3 over the street; unmeasured), and 'in that class's kit' (the 2D Cath has one trench; a 3D-rendered photo per class would carry the kit))*
 - **Why:** `ns-play-D` 45-470 x 260-650: the four unpicked classes are grey words with a small gun; nothing shows who each is. `ns-play-P` (2x) 40-730 x 935-1000: tiny grey glyph tabs.
 - **Build:** each row a dossier tab in its class colour with a booking-photo thumbnail of Cath in that class's kit (rendered once, cached; `classpick.ts`/`classart.ts`); the same thumbnails on the P tabs.
 - **Accept:** each row/tab holds a portrait of 48 px or more; unpicked text 4.5:1 or better; keys 1-5 still work; the classpick specs pass at P and D.
