@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (02:51 11-20): 548 done (Setup poster off Cath; two-row shelf at 1400x1000+ before the ledger's first line; NIGHT SHIFT phone tabs evenly spaced; Runnel 'Up next' one left edge; the rest checked and kept). player-mat:103 ('stall goods animate') flakes 1-2 in 3 at D with or without this session's change: look at it. Open: 319, 538, 543, 544, 545 (lane B), 547. Release due at the 11-20 19:51 session.
+- Lane A (03:51 11-20): 547 done (Hedgerow act map in full colour, 244 px Cath, props as vignettes, the pale panel gone). Open: 319, 538 (handed back), 543 (lane B). Fewer than 3 unclaimed items: the next free lane plans. Release due at the 11-20 19:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-20 03:51 lane A:** 547 done (2 code commits). hedgerow-map/-map-you/-map-diorama/-map-ink/critique/critique177/critique166/level-card/masthead/plate-preview/story (P, D, --retries=0; one load flake passing alone), new 'plan item 547' spec; tsc, eslint, css lint, stopland, keyart-fresh. No full check (lane A's 02:51 ran one). Shots scratchpad 547/ (before, a1-a5, act 0/23/45/83). Lock released.
 - 2026-11-20 03:21 lane B: 545 done (board 0.68/0.89 of the stage, saturation 0.56, tile vs land 0.215); 544 closed on settled-frame measurements; 133 Runnel specs pass.
 - **2026-11-20 02:51 lane A:** 548 done (4 code commits). saving-goal (new 1440x1000/1920x1080 case), setup-steps, setup-placecards, player-mat, desktop-top-rail, disabled-actions (D, --retries=0), cathode-classpick (P, 8 passed), runnel-lesson*/critique91 (D); tsc, eslint, css lint, cathode-type, keyart-fresh; full `npm run check` passed (2836 tests). Shots e2e/screenshots/b548 (before), scratchpad sc/a* (after). Lock released.
 - 2026-11-20 02:21 lane B: 546 done; 545 slice 1 (valley saturation ratio 0.76 -> 0.50); games, portfolio and 133 Runnel specs pass.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-19 20:51 lane A session (release retry):** gate 7 root fixes (39695f58, 9c3f11fe, 766673ed). board-*, title-opening/-bubble/-table, setup-desktop/-steps, market-event-dressing (P, D, --retries=0), map/map-layout/cath-lines/css lint units; tsc, eslint. Lighthouse alone 83/88/86. No release (E2E on head not through in time). Shots scratchpad g7-title-P/D. Lock released.
 - 2026-11-19 21:21 lane B: 526 done (waist-up phone title, narrower menu plate at --fs-3, cathode-front :212 rewritten for the portrait); 27 phone title specs pass; a chin-shade tweak for 319 tried and dropped (no visible change).
 - 2026-11-19 20:21 lane B: 319 slice 97 (skin wraps the direct lights: the lower face's midline split gone, seven other suspects ruled out by test); posters and key art re-rendered; classpick specs run.
-- **2026-11-19 19:51 lane A session (release):** `npm run release` on 2485b96e (newest E2E-passed): gates 1-6 passed, gate 7 failed (Lighthouse 80 < 85); main untouched. Diagnosis above; a deferred-board fix measured worse and was reverted. No code pushed. Lock released.

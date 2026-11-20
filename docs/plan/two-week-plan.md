@@ -5303,7 +5303,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `games-*` and `portfolio-*` specs pass; shots P and D.
 - **Size:** 2
 
-## 547. [ ] Hedgerow act map: the terrain at full colour, composed round the trail *(lane A, in progress)*
+## 547. [x] Hedgerow act map: the terrain at full colour, composed round the trail *(done 2026-11-20 04:30, lane A, 4d3ed2a4..c8522bdc: every act's unplayed land 0.35-0.48 mean saturation (0.05-0.26 before; Brindle won 0.64), five near-grey act palettes given hues, the paper grain and a sun gradient from the top right; the trail's depth gradient feathered (its hard edges drew the pale 50% panel); Cath 244 px with a ground shadow at 1100x860+, stepping down to 70% where a name above would meet her (fresh act 1, under the cottage); the props as three vignettes of four on grass patches at D (threes on a phone). New spec 'plan item 547' in hedgerow-map; hedgerow-map*/critique*/level-card/story pass (P, D). Shots scratchpad 547/.)*
 - **Why:** `hedge-menu-D`/`-P` (plan1120a): the field reads as a 50% overlay, its props scattered clip-art with no composition (200-1100 x 430-740), Cath about 160 px tucked on a stop. The terrain, not the stops (item 471).
 - **Build:** after item 471 (lane A) lands. `games/hedgerow/src/map.ts` and styles:
   - The act's ground in full-strength tokens with paper texture and the sun's light from the top right.
