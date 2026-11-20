@@ -39,7 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
-- 2026-11-20 14:51 lane A: 565 and 571 done, 566-570 planned; targeted specs green (plan-strip, table-hand*, hedgerow-map, cathode-front upright); full check run at the end.
+- 2026-11-20 14:51 lane A: 565 and 571 done, 566-570 planned; targeted specs green (plan-strip, table-hand*, hedgerow-map, cathode-front upright); full check: one red (Hedgerow key art stale after render.ts), re-shot and green.
 - 2026-11-20 15:21 lane B: 567 slice 1; 133 Runnel specs + a new greening spec pass.
 - 2026-11-20 14:21 lane B: 565 checks; a disc clamp reverted (region-status caught it); board-pieces red was load (passes alone).
 - **2026-11-20 13:51 lane A:** 564 done, 563 done (3 code commits). hedgerow-map/-you/-diorama/-ink, critique/-166/-177, level-card (P, D; one item-153 load flake passing 6/6 alone); games-stall/-cards/-cath/-hero-cath/-shelf/-backdrop/-todayboard, site (P, D; Runnel daily and two games timeouts were load flakes passing alone); css lint, css-vars, keyart-fresh; tsc, eslint. Full `npm run check` green (2854/2854). Shots scratchpad s564, s563. Lock released.
