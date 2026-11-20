@@ -5314,20 +5314,20 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `hedgerow-map` specs pass; shots P and D.
 - **Size:** 2
 
-## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(lane B, in progress)*
+## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(handed back 2026-11-20 01:55 by lane B: 3 fixed, 6 checked and kept (marked); left: the Setup points, the game rail's dead space, Hedgerow's clipped 'Coming up' and two labels, NIGHT SHIFT's phone tab labels)*
 - `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot. **Checked 01:45 lane B, kept:** the page scrolls; the button sits whole just under the fold.
-- `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't.
+- `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't. **Checked, kept:** the card grows to two lines cleanly; the name is the longest.
 - `cath-setup-D`:
   - (105-255 x 170-215) 'Two at the table' clipped against 'You and an AI'.
   - (530-625 x 168-200) Tomas Reed's 'Market Day' tag wraps.
   - (995-1140 x 565-775) the week's sign covers Cath's torso and arm (also in 537's list: check).
 - `cath-game-D` (18-335 x 600-735): about 145 px of dead rail between '5 more not yet' and the ledger.
-- `cath-title-D`/`-P` footer small print about 11 px, low contrast on brown (D 310-1130 x 872-886; P y 820-835).
-- `hedge-l21-3d-P` (280-345 x 740-760): the tray label cut to 'Radio Mas'.
+- `cath-title-D`/`-P` footer small print about 11 px, low contrast on brown (D 310-1130 x 872-886; P y 820-835). **Checked, kept:** 13 px (`.title-footer`), light on brown, reads.
+- `hedge-l21-3d-P` (280-345 x 740-760): the tray label cut to 'Radio Mas'. **Checked, kept:** the tray scrolls; the last card peeks under its arrow by design.
 - Hedgerow D (l21, l34; about y 680-692): the 'Coming up' bars and tags clipped by the panel's foot.
 - `hedge-l21-2d-D` (155-305 x 340-357): 'Lifestyle influencer' hangs off the board over its frame.
 - `hedge-menu-P` (265-385 x 512-545): 'Brand Ambassador' label over the terrain.
-- `ns-title-D` (565-740 x 330-390): the Ledger's italic body about 11 px.
+- `ns-title-D` (565-740 x 330-390): the Ledger's italic body about 11 px. **Checked 01:50 lane B, kept:** about 13 px in the 1440 frame, legible on the graded newsprint (plan1120b).
 - `ns-play-P`:
   - (at 2x 325-595 x 872-898) 'GUNSLINGER' butts 'WIREWITCH'.
   - The CTA reads only 'HOLD'. **Fixed 01:45 lane B:** 'Hold to start' on touch ('Hold Enter' with a keyboard).
