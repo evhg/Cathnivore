@@ -5561,7 +5561,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - hedgerow-map specs pass; shots P and D.
 - **Size:** 1
 
-## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(handed back 2026-11-20 12:55 by lane B: 1 fixed, 1 checked, 1 tried (marked))*
+## 565. [ ] The bugs from the 2026-11-20 12:45 critique, fixed as one batch *(lane B, in progress)* *(handed back 2026-11-20 12:55 by lane B: 1 fixed, 1 checked, 1 tried (marked))*
 *(planned 2026-11-20 12:45, lane B, plan1120m)*
 - `cath-setup-P` (0-45 x 240-262): Brindle Hills' '2' badge clipped at the left edge; 'Kingsmarket' runs into the '5' badge (150-265 x 240-262).
 - `cath-setup-D`: the Dry Spell sign (985-1120 x 570-775) over the board's rim and Cath's arm; Dr Ines Farrow's 'Second Opinion' tag wraps (717-810 x 175-210).
