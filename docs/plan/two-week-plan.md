@@ -5287,7 +5287,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Re-shoot Runnel key art if its sources change.
 - **Size:** 2
 
-## 546. [ ] /games/ and portfolio: Hedgerow's key art from its 3D field, one Play button style
+## 546. [ ] /games/ and portfolio: Hedgerow's key art from its 3D field, one Play button style *(lane B, in progress)*
 - **Why:** `games-D`, `portfolio-D` (plan1120a): first impressions are stale and mixed.
   - The Hedgerow card and the portfolio tile show the old 2D field while the game opens in 3D.
   - The four Play buttons use four unrelated styles (cream, blue pill, yellow, red; games-D y 825-870).
