@@ -18,6 +18,10 @@ import { button, el, reducedMotion, trapTab } from "./dom";
 import { WEAPON_CLASS_LABEL } from "./itemtext";
 import { weaponArtSvg } from "./weaponart";
 
+/** Plan item 575: Cath's booking photo for a class: the bust against a height chart, the case file number below. */
+function mugHtml(cls: ClassId): string {
+  return `<span class="cp-mug-chart"></span>${cathSvg({ framing: "bust", outfit: "trench", expression: MUG_FACE[cls] })}<span class="cp-mug-plate">${CLASS_COPY[cls].file}</span>`;
+}
 /** Plan item 575: her look in each class's booking photo. */
 const MUG_FACE: Record<ClassId, CathExpression> = { ghost: "determined", butcher: "smirk", gunslinger: "wink", wirewitch: "worried", fixer: "delighted" };
 
@@ -104,7 +108,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     // number on the placard, her look the class's (shared/cath, drawn once with the row).
     const mug = el("span", "cp-opt-mug", opt);
     mug.setAttribute("aria-hidden", "true");
-    mug.innerHTML = `<span class="cp-mug-chart"></span>${cathSvg({ framing: "bust", outfit: "trench", expression: MUG_FACE[cls] })}<span class="cp-mug-plate">${CLASS_COPY[cls].file}</span>`;
+    mug.innerHTML = mugHtml(cls);
     // Plan item 233: on a desktop each row is a slot in a lit rack: the name over a four-pip stat strip (Grit,
     // Aim, Nerve, Wire), the class's weapon in neon outline at the row's end. Decorative: the sheet carries the
     // numbers and the weapon's name.
@@ -197,6 +201,8 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     // not shown still say who they are.
     const base = WEAPON_BASES[CLASS_SIGNATURE[cls]];
     if (base) el("span", "cp-dot-gun", d).innerHTML = weaponArtSvg(base.cls);
+    // Plan item 575: and her booking photo, which the upright tabs show in place of the gun (styles.css).
+    el("span", "cp-opt-mug cp-dot-mug", d).innerHTML = mugHtml(cls);
     el("span", "cp-dot-name", d, CLASSES[cls].name);
     d.addEventListener("click", () => select(cls, false));
     dotFor.set(cls, d);

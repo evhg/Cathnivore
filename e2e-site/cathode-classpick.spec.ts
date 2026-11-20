@@ -708,3 +708,17 @@ test('at D the stat sheet is a paper case file that turns its page on a class ch
     expect(m.stamp && m.inView, s).toBe(true)
   }
 })
+
+// Plan item 575: the classes as a dossier lineup: each row (D) or name tab (P) shows her booking photo, 48 px or more.
+test('each class shows her booking photo, 48 px or more', async ({ page, hasTouch }) => {
+  test.setTimeout(150_000)
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
+  const mugs = page.locator(hasTouch ? '.cp-dot .cp-dot-mug' : '.cp-opt > .cp-opt-mug')
+  await expect(mugs).toHaveCount(5, { timeout: 60_000 })
+  const sizes = await mugs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), !!e.querySelector('svg')] }))
+  for (const [w, h, art] of sizes) {
+    expect(Math.min(w as number, h as number), JSON.stringify(sizes)).toBeGreaterThanOrEqual(48)
+    expect(art).toBe(true)
+  }
+})

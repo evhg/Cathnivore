@@ -3467,4 +3467,12 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .cp-opt[aria-checked="true"] .cp-opt-mug { filter: none; box-shadow: 0 0 0 calc(var(--u) * 2) var(--accent, var(--blood-hot)), 0 0 calc(var(--u) * 14) color-mix(in srgb, var(--blood-hot) 45%, transparent); }
 /* (the photo's placard carries the row's number, 01-05 for keys 1-5, so the bare digit steps aside for the name) */
 .cp-opt:has(.cp-opt-mug) .cp-opt-n { display: none; }
-@media (max-width: 760px) and (orientation: portrait) { .cp-opt-mug { display: none; } .cp-opt:has(.cp-opt-mug) .cp-opt-n { display: revert; } }
+/* Upright, the list rows are off screen (the named tabs stand in for them): each tab wears her photo in place of its
+   small gun (the sheet below shows the chosen gun at size). Elsewhere the tabs' photos are hidden. */
+.cp-dot-mug { display: none; }
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-opt:has(.cp-opt-mug) .cp-opt-n { display: revert; }
+  .cp-dot:has(.cp-dot-mug) .cp-dot-gun { display: none; }
+  .cp-dot-mug { display: block; width: 48px; height: 54px; } /* px-ok: plan item 575, a photo of 48 px or more */
+  .cp-dot.is-on .cp-dot-mug { filter: none; box-shadow: 0 0 0 calc(var(--u) * 3) var(--accent, var(--blood-hot)); }
+}
