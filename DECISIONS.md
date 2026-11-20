@@ -280,3 +280,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-20 11:27 lane A (560): ns-title-P kept: the Ledger cutting clears her umbrella arm; narrowing it at 375x667 wrapped the headline over The List.
 - 2026-11-20 11:21 lane B (557): scaled and recoloured the existing 3D Cath rather than rebuild her: item 310's hair, jacket and painted face were already the bible's; she only read small and pale-legged.
 - 2026-11-20 12:21 lane B (558): closed by decision: keep item 122's one Cath at D over a rail bust (no owner to ask; 14 specs and the rail budget rest on it).
+- 2026-11-20 11:51 lane A: took 554 (Cathnivore) over 319 (first open, NIGHT SHIFT's long-running face polish): Cathnivore is the main game and 554's handback said start it early in a session.
+- 2026-11-20 lane A: the board no longer reserves a threat-badge box (`badge: false` in Map.tsx); item 550 made the target a lit rim, so the box only shrank a targeted hex's pieces. pieceLayout's badge path stays (unit-tested) in case a badge returns.
