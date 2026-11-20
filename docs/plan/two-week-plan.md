@@ -5669,7 +5669,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each row/tab holds a portrait of 48 px or more; unpicked text 4.5:1 or better; keys 1-5 still work; the classpick specs pass at P and D.
 - **Size:** 2
 
-## 576. [ ] Hedgerow 2D phone: the act's place at the field's edge
+## 576. [ ] Hedgerow 2D phone: the act's place at the field's edge *(lane B, in progress)*
 - **Why:** `hedge-l21-2d-D` shows Saltmarsh's sea and jetty depot (155-300 x 75-890); `hedge-l21-2d-P` drops them, so Saltmarsh and Rivermead (`hedge-l34-2d-P`) look alike, and the depot is squeezed onto the lane over a queued van (10-60 x 300-395).
 - **Build:** a 24-36 px act strip (shore, river, hill) at the phone field's edge (`games/hedgerow/src/render.ts`, `layouts.ts`, `scenery.ts`), the depot set on it, clear of the lane.
 - **Accept:** at 390x844 levels 21 and 34 differ in that strip (2,000+ px pixel-diff region); the depot box meets neither the lane nor queued vans; key art re-shot (keyart-fresh).
