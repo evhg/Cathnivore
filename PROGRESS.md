@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (03:51 11-20): 547 done (Hedgerow act map in full colour, 244 px Cath, props as vignettes, the pale panel gone). Open: 319, 538 (handed back), 543 (lane B). Fewer than 3 unclaimed items: the next free lane plans. Release due at the 11-20 19:51 session.
+- Lane A (03:51 11-20): 547 done (Hedgerow act map in full colour, 244 px Cath, props as vignettes, the pale panel gone); the player-mat:103 flake fixed (the hop read from its computed animation; 12 of 12 passed). Open: 319, 538 (handed back), 543 (lane B). Fewer than 3 unclaimed items: the next free lane plans. Release due at the 11-20 19:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,7 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
-- **2026-11-20 03:51 lane A:** 547 done (2 code commits). hedgerow-map/-map-you/-map-diorama/-map-ink/critique/critique177/critique166/level-card/masthead/plate-preview/story (P, D, --retries=0; one load flake passing alone), new 'plan item 547' spec; tsc, eslint, css lint, stopland, keyart-fresh. No full check (lane A's 02:51 ran one). Shots scratchpad 547/ (before, a1-a5, act 0/23/45/83). Lock released.
+- **2026-11-20 03:51 lane A:** 547 done (2 code commits). hedgerow-map/-map-you/-map-diorama/-map-ink/critique/critique177/critique166/level-card/masthead/plate-preview/story (P, D, --retries=0; one load flake passing alone), new 'plan item 547' spec; player-mat (D, x3); tsc, eslint, css lint, stopland, keyart-fresh. No full check (lane A's 02:51 ran one). Shots scratchpad 547/ (before, a1-a5, act 0/23/45/83). Lock released.
 - 2026-11-20 03:21 lane B: 545 done (board 0.68/0.89 of the stage, saturation 0.56, tile vs land 0.215); 544 closed on settled-frame measurements; 133 Runnel specs pass.
 - **2026-11-20 02:51 lane A:** 548 done (4 code commits). saving-goal (new 1440x1000/1920x1080 case), setup-steps, setup-placecards, player-mat, desktop-top-rail, disabled-actions (D, --retries=0), cathode-classpick (P, 8 passed), runnel-lesson*/critique91 (D); tsc, eslint, css lint, cathode-type, keyart-fresh; full `npm run check` passed (2836 tests). Shots e2e/screenshots/b548 (before), scratchpad sc/a* (after). Lock released.
 - 2026-11-20 02:21 lane B: 546 done; 545 slice 1 (valley saturation ratio 0.76 -> 0.50); games, portfolio and 133 Runnel specs pass.
