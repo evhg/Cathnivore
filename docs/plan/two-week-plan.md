@@ -5314,7 +5314,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - `hedgerow-map` specs pass; shots P and D.
 - **Size:** 2
 
-## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch
+## 548. [ ] The bugs from the 2026-11-20 01:35 critique, fixed as one batch *(lane B, in progress)*
 - `cath-campaign-P` (95-295 x 812-844): 'Back to Title' cut by the screen's foot.
 - `cath-campaign-D` (1050-1220 x 685-735): chapter 5's 'Friends in Low Places' wraps where the others don't.
 - `cath-setup-D`:
