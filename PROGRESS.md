@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (19:51 11-20): released 67ef937d (the newest commit through E2E; the head's pond fix, item 569 and lane B's Runnel fix go in the next release). Red E2E on f6bb14f3 fixed (fbc8284e: the map contrast spec measured mid node-pop). Planned 572-578 from fresh shots (`plan1120u`); 578 done. Open, first unclaimed: 572 (Cathnivore phone Setup objects).
+- Lane A (20:51 11-20): 572 done (phone Setup objects, standees, rules on tap in Cath's bubble, pennant rail); item 578's disc fix (Brindle Hills' left disc past the phone board edge; layouts.spec red) fixed in da26257e; 573 slice 1 (phone campaign locked chapters as letters, a stack's edges). **573 left:** Back to Title on the map frame's foot (the 70 px empty band below the stack), the stack's swipe feel; then the next unclaimed item (574).
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-20 20:51 lane A:** 572 done, 578 fix, 573 slice 1 (6 code commits). setup-* (P, D, --retries=0), layouts, region-status, board-control, plan-plaque, critique* (P), campaign* (P, D); css lint; tsc, eslint. No full check (the release follows tomorrow). Shots scratchpad s572 (before/a1-a6/final, 375x667, 844x390, D), s573. Lock released.
 - 2026-11-20 20:21 lane B: Runnel render-path fix (156 Runnel specs pass P and D, 2 workers); 577 done (2 code commits).
 - **2026-11-20 19:51 lane A:** release 67ef937d; red E2E fixed (spec); planning 572-578; 578 done (2 code commits). hedgerow-map-diorama (P, D, x2), region-status, board-control, papers-placard, rival-face (alone), plan-cards, phone-counter (P, D); css lint; tsc, eslint. Shots scratchpad plan1120u, after578(b). Lock released.
 - 2026-11-20 19:21 lane B: red E2E fixed (Runnel render path); 570 tried and handed back (1 code commit).
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-20 15:21 lane B: 567 slice 1; 133 Runnel specs + a new greening spec pass.
 - 2026-11-20 14:21 lane B: 565 checks; a disc clamp reverted (region-status caught it); board-pieces red was load (passes alone).
 - **2026-11-20 13:51 lane A:** 564 done, 563 done (3 code commits). hedgerow-map/-you/-diorama/-ink, critique/-166/-177, level-card (P, D; one item-153 load flake passing 6/6 alone); games-stall/-cards/-cath/-hero-cath/-shelf/-backdrop/-todayboard, site (P, D; Runnel daily and two games timeouts were load flakes passing alone); css lint, css-vars, keyart-fresh; tsc, eslint. Full `npm run check` green (2854/2854). Shots scratchpad s564, s563. Lock released.
-- 2026-11-20 13:21 lane B: red E2E fixed (/games/ hooks at 1440x900); other reds load-only (runnel-win 3/3 alone); 562 closed on measurement.
