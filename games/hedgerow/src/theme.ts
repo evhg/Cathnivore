@@ -1180,11 +1180,15 @@ export function gateSignRect(
  * water side (on Saltmarsh it stood half in the sea, a sailboat under its posts). Where one exists the depot's own
  * sign names the gate, so the painted town sign is left off (the gate read HOLLOWELL twice).
  */
+/** Plan item 576: the depot in an upright phone's gate strip (render.ts PHONE_STRIP), px. */
+export const PHONE_DEPOT = 30;
+
 export function depotSides(level: Level, path: Level["path"], L: Layout): Side[] {
   const s = L.cell;
   const start = path[0] as unknown as [number, number];
   const water = themeFor(level).water?.side;
-  const dsz = Math.max(48, Math.round(s * 1.3));
+  // (Plan item 576: an upright phone's depot is sized to the act's strip at its gate.)
+  const dsz = L.width < 600 && L.height > L.width ? PHONE_DEPOT : Math.max(48, Math.round(s * 1.3));
   const fieldR = L.offX + level.cols * s;
   const fieldB = L.offY + level.rows * s;
   const room: Record<Side, number> = { left: L.offX, right: L.width - fieldR, top: L.offY, bottom: L.height - fieldB };

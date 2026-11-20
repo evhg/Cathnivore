@@ -210,7 +210,7 @@ import { depotSvg, jettySvg, repMood, repSvg, type RepMood } from "./depot";
 import { holdsKnockout, KNOCKOUT_MS, renderStep } from "./knockout";
 import { doorstepCleared, doorstepLeak, doorstepRound, doorstepShown, doorstepSwept, newDoorstep, saleBoard, type Doorstep } from "./doorstep";
 import { dayLamps, dayPhase } from "./sunlight";
-import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, setWonLevels } from "./theme";
+import { depotSides, gateSignRect, isJettySide, lastCrayon, mouthDepot, PHONE_DEPOT, setWonLevels } from "./theme";
 import { KITS, xpFor } from "./hero";
 import { OUTFITS, isUnlocked as outfitUnlocked, outfitFor, shareOutfit, wear, wornOutfit } from "./wardrobe";
 import { actScene, renderMap } from "./map";
@@ -5211,6 +5211,7 @@ function runSpeed(g: Game): number {
 // the last round (smug, then gleeful after a leak or rattled after a clean one).
 let signCtx: CanvasRenderingContext2D | null = null;
 const signMeasure = (): CanvasRenderingContext2D => (signCtx ??= document.createElement("canvas").getContext("2d")!);
+
 let depotLeaksAtStart = 0;
 let depotMood: RepMood = "smug";
 let depotJudged = 0;
@@ -5321,6 +5322,9 @@ function syncDepots(g: Game): void {
   const spots: Array<{ x: number; y: number; count: number; lane: number; size: number; jetty: boolean }> = [];
   // Plan item 246: where no margin holds the full two-cell depot, a smaller one (1.3 cells, 48 px at least) is tried.
   const sizes = [size, Math.max(48, Math.round(cell * 1.3))].filter((v, k, a) => k === 0 || v < a[0]!);
+  // Plan item 576: an upright phone keeps a strip of the act's land at the gate (render.ts PHONE_STRIP); a depot
+  // sized to that strip stands in it, off the lane, rather than on the lane's mouth.
+  if (canvas.width < 600 && canvas.height > canvas.width) sizes.push(PHONE_DEPOT);
   for (const { path, i } of lanes) for (const dsz of sizes) {
     if (spots.some((sp) => sp.lane === i)) break;
     const start = path![0] as unknown as [number, number];
