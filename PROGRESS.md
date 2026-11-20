@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (03:51 11-20): 547 done (Hedgerow act map in full colour, 244 px Cath, props as vignettes, the pale panel gone); the player-mat:103 flake fixed (the hop read from its computed animation; 12 of 12 passed). Open: 319, 538 (handed back), 543 (lane B). Fewer than 3 unclaimed items: the next free lane plans. Release due at the 11-20 19:51 session.
+- Lane A (04:51 11-20): planning (plan1120f shots, a subagent critique) -> items 549-553; 553 done (Cathnivore producer bubble, hand-card region line, more-cards tab, setup descriptors, campaign tape; Hedgerow key art on a laid-out convoy). Open: 319, 538 (lane B), 543, 549, 550, 551, 552 (lane B). Release due at the 11-20 19:51 session.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -39,6 +39,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-01 20:28 `929e99c`: plan items 7, 8, 9 (NIGHT SHIFT entrances and busts, Cath's face, the Cathnivore end screen). Gates 1-8 passed, live smoke test passed outright, tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-20 04:51 lane A:** planning (plan1120f, P and D of every game; subagent critique) -> 549-553; 553 done (2 code commits). campaign-map/-atlas, campaign, producer-line, table-producers, phone-hand-fan/-dock, hand-art, setup-steps (P, D, --retries=0; 4 load flakes passing alone), campaign-map-layout, producer-lines, css lint, keyart-fresh; tsc, eslint. Hedgerow key art re-shot. No full check. Shots e2e/screenshots/a553. Lock released.
 - 2026-11-20 04:21 lane B: 543 tried (hair gloss band, reverted) and handed back with baselines; 538 slice 3 (crate, bottle, bevelled props).
 - **2026-11-20 03:51 lane A:** 547 done (2 code commits). hedgerow-map/-map-you/-map-diorama/-map-ink/critique/critique177/critique166/level-card/masthead/plate-preview/story (P, D, --retries=0; one load flake passing alone), new 'plan item 547' spec; player-mat (D, x3); tsc, eslint, css lint, stopland, keyart-fresh. No full check (lane A's 02:51 ran one). Shots scratchpad 547/ (before, a1-a5, act 0/23/45/83). Lock released.
 - 2026-11-20 03:21 lane B: 545 done (board 0.68/0.89 of the stage, saturation 0.56, tile vs land 0.215); 544 closed on settled-frame measurements; 133 Runnel specs pass.
@@ -53,4 +54,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-19 23:21 lane B: 538 slice 1 (the gun mat, CSS); classpick specs P and D run.
 - 2026-11-19 22:21 lane B: planning (plan1119e shots, a subagent critique) -> items 538-542; red E2E on 0a6c520 fixed (cathode-classpick :376, a 3:1 edge case; 7 other reds passed alone); 542: two fixes, three points checked and kept.
 - **2026-11-19 20:51 lane A session (release retry):** gate 7 root fixes (39695f58, 9c3f11fe, 766673ed). board-*, title-opening/-bubble/-table, setup-desktop/-steps, market-event-dressing (P, D, --retries=0), map/map-layout/cath-lines/css lint units; tsc, eslint. Lighthouse alone 83/88/86. No release (E2E on head not through in time). Shots scratchpad g7-title-P/D. Lock released.
-- 2026-11-19 21:21 lane B: 526 done (waist-up phone title, narrower menu plate at --fs-3, cathode-front :212 rewritten for the portrait); 27 phone title specs pass; a chin-shade tweak for 319 tried and dropped (no visible change).

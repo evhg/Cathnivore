@@ -5342,7 +5342,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 549. [ ] Cathnivore desktop: the left rail filled, with the goal you're saving for shown large *(lane A, in progress)*
+## 549. [ ] Cathnivore desktop: the left rail filled, with the goal you're saving for shown large *(handed back 2026-11-20 05:30 by lane A, not started; where it lives: the shelf is `.actions-sheet .actions[data-shelf]` in table.css (~3840-3960), its fold key `shelf-fold` in Game.tsx (~3303); item 548 shows a second row only at 1400x1000+ (at 900 tall two rows need 32 px pictures, under item 263's 60 px), so the band at 1440x900 wants the first card spanning the row as a wide featured goal, not a second row)*
 - **Why:** `cath-game-D` (plan1120f, 05:00 critique): the rail (15-335 x 85-880) is a stack of small forms, and 560-730 is empty above a one-line ledger. Meanwhile Cath's italic aside card (358-548 x 208-376) is a third voice beside the event card and the producers' bubble.
 - **Build:**
   - The first improvement you're saving for shown large in the empty band (about 280x170): its art, the cost and a progress fill. The other goals stay as thumbnails above, with "7 more" as a small fanned deck behind it.
