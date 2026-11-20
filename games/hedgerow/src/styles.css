@@ -650,6 +650,12 @@ button {
   html:has(.play:not([hidden])) body {
     background:
       radial-gradient(ellipse 70% 90% at 50% 45%, color-mix(in srgb, var(--pasture-ink) 72%, var(--paper)), transparent 75%),
+      /* Plan item 568: the bars read as hedge, not flat paint: soft leaf clumps on tiles of coprime sizes, so no
+         grid shows, lit a little from above and shaded in the gaps. */
+      radial-gradient(ellipse 34% 30% at 40% 34%, color-mix(in srgb, var(--pasture-ink) 82%, var(--paper)), transparent) 0 0 / 61px 53px,
+      radial-gradient(ellipse 30% 34% at 64% 70%, color-mix(in srgb, var(--pasture-ink) 85%, var(--paper)), transparent) 17px 9px / 47px 59px,
+      radial-gradient(ellipse 40% 36% at 50% 50%, color-mix(in srgb, var(--pasture-ink) 80%, var(--oak-ink)), transparent) 29px 31px / 73px 67px,
+      radial-gradient(ellipse 28% 26% at 30% 60%, color-mix(in srgb, var(--pasture-ink) 86%, var(--paper)), transparent) 5px 40px / 37px 43px,
       var(--woodgrain),
       color-mix(in srgb, var(--pasture-ink) 88%, var(--oak-ink));
   }
