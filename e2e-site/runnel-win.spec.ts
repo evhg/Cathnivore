@@ -113,3 +113,28 @@ test('?shotwin shows a solve on par, not zero taps', async ({ page }) => {
   const text = await page.evaluate(() => `${document.querySelector('#win-strip')!.textContent} ${document.querySelector('#dlg-win')!.textContent}`)
   expect(text).not.toMatch(/\b0 taps\b|under par/)
 })
+
+// Bug 2026-11-20: at D a solve's result strip covered Cath's solve line in the valley; the line steps clear of the
+// strip (to the rail when no spot beside her is free) and the page still doesn't scroll.
+test('at D a solve\'s line is never under the result strip, and the page does not scroll', async ({ page }) => {
+  const vp = page.viewportSize()!
+  test.skip(vp.width < 1100 || vp.height < 640, 'the desktop valley')
+  await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, seenHelp: true, results: {} })))
+  await page.goto('/runnel/?shotsolve')
+  await page.locator('[data-last]').waitFor()
+  await page.locator('[data-last]').click({ force: true })
+  await expect(page.locator('#win-strip')).toBeVisible()
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const s = document.getElementById('win-strip')!.getBoundingClientRect()
+          const say = document.getElementById('valley-say')!
+          const b = say.getBoundingClientRect()
+          const under = !say.hidden && b.width > 0 && b.left < s.right && s.left < b.right && b.top < s.bottom && s.top < b.bottom
+          return { under, scroll: Math.max(0, document.scrollingElement!.scrollHeight - innerHeight) }
+        }),
+      { timeout: 6000 },
+    )
+    .toEqual({ under: false, scroll: 0 })
+})

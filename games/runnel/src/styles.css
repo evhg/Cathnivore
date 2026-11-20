@@ -4659,8 +4659,9 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   display: none;
 }
 /* Plan item 268: likewise on a short desktop when a daily's line comes back to the rail (1280x800 scrolled 47 px),
-   or when the board leaves her no spot at all and the line keeps its portrait there (20 Nov's daily, 116 px). */
-@media (max-height: 860px) {
+   or when the board leaves her no spot at all and the line keeps its portrait there (20 Nov's daily, 116 px); 960 px
+   since a solve's line steps off the result strip to the rail (1440x900 scrolled 55 px, 2026-11-20). */
+@media (max-height: 960px) {
   .app[data-valley-say='side'] .rail-cal,
   .app[data-valley-say='side'] .rail > .cal-title:first-of-type,
   .app[data-valley-cath='none'] .rail-cal,

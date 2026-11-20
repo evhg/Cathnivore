@@ -927,7 +927,10 @@ function placeValleySay(): void {
   const st = stage.getBoundingClientRect()
   // The search is costly, so it runs only when her line or the layout changes, not on every tap.
   const board = document.getElementById('board')?.getBoundingClientRect()
-  const key = [text, fig.left, fig.top, fig.height, st.width, st.height, board?.left, board?.top, board?.width, puzzle.seed].join('|')
+  // A solve's result strip is in the way too (her solve line sat under it, 2026-11-20).
+  const stripEl = document.querySelector<HTMLElement>('.win-strip')
+  const strip = stripEl && !stripEl.closest('[hidden]') ? stripEl.getBoundingClientRect() : null
+  const key = [text, fig.left, fig.top, fig.height, st.width, st.height, board?.left, board?.top, board?.width, puzzle.seed, strip?.top, strip?.left].join('|')
   if (key === sayKey && app.dataset.valleySay !== undefined) return
   sayKey = key
   // (Plan item 430: in the full-length framing her face is the top quarter of the box.)
@@ -953,6 +956,7 @@ function placeValleySay(): void {
   }
   const pad = 6
   const meets = (l: number, t: number, w: number, h: number) =>
+    (!!strip && strip.width > 0 && strip.left < l + w + pad && l - pad < strip.right && strip.top < t + h + pad && t - pad < strip.bottom) ||
     tiles.some(({ pts, ...b }) => {
       if (b.l > l + w + pad || b.r < l - pad || b.t > t + h + pad || b.b < t - pad) return false
       if (pts.some((q) => q.x > l - pad && q.x < l + w + pad && q.y > t - pad && q.y < t + h + pad)) return true
@@ -1363,6 +1367,9 @@ function showStrip(isDaily: boolean, streak: number): void {
   strip.root.hidden = false
   document.body.classList.add('has-win-strip')
   placeStrip()
+  // her solve line steps clear of the strip (it sat under it, 2026-11-20), measured again once the strip has slid in
+  placeValleySay()
+  strip.root.addEventListener('animationend', () => placeValleySay(), { once: true })
 }
 
 /** At D the strip centres under the board, not the window (the rail sits to its left). */
@@ -1377,6 +1384,7 @@ window.addEventListener('resize', placeStrip)
 function hideStrip(): void {
   strip.root.hidden = true
   document.body.classList.remove('has-win-strip')
+  placeValleySay()
 }
 
 $<HTMLButtonElement>('strip-share').addEventListener('click', () => {
