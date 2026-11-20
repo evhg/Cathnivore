@@ -102,7 +102,8 @@ test.describe("Bea's workshop (plan item 39)", () => {
     const vp = page.viewportSize()!
     // (after its 280 ms opening scale)
     await expect.poll(async () => (await ws.boundingBox())!.width).toBeGreaterThanOrEqual(vp.width - 1)
-    expect((await ws.boundingBox())!.height).toBeGreaterThanOrEqual(vp.height - 1)
+    // the height grows on the same opening scale: polled too (a busy CI read 842.56 of 843 mid-scale)
+    await expect.poll(async () => (await ws.boundingBox())!.height).toBeGreaterThanOrEqual(vp.height - 1)
     await expect(page.locator('#ws-share')).toBeDisabled()
 
     // Draw spring -> R1 -> R2 -> the tile below-left of R2 on the small board.
