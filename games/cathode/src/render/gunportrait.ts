@@ -4,6 +4,7 @@
 // fill under it. The frames come back as image URLs, so the pick shows a lit 3D weapon without a second WebGL view
 // (DECISIONS 2026-11-11 04:55 cut that: a second context on the pick costs more than it adds).
 import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { buildGunDisplay, type GunModel } from "../game/viewmodel";
 
 export interface GunTurntableOptions {
@@ -14,6 +15,24 @@ export interface GunTurntableOptions {
   height: number;
   /** The rim light's colour (linear RGB, the class's key). */
   rim: [number, number, number];
+}
+
+/**
+ * Plan item 538: the studio's reflections, a soft room prefiltered once per renderer. Without it the guns' metal had
+ * nothing to mirror and rendered as one dark mass under the three lights (the critique's 'grey low-poly sticks'): now
+ * the steel's bevels and the barrel's roundness catch a soft room, and the wood and polymer keep their own colour.
+ */
+const STUDIO_ENV_INTENSITY = 0.55;
+const studioEnvs = new WeakMap<THREE.WebGLRenderer, THREE.Texture>();
+function studioEnv(renderer: THREE.WebGLRenderer): THREE.Texture {
+  let t = studioEnvs.get(renderer);
+  if (!t) {
+    const pm = new THREE.PMREMGenerator(renderer);
+    t = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    pm.dispose();
+    studioEnvs.set(renderer, t);
+  }
+  return t;
 }
 
 /** The still frame's angle: the kit's guns point down -z, so this turns one broadside with the muzzle to the left of
@@ -84,6 +103,8 @@ export class GunStudio {
     kick.position.set(1.2, 0.1, -0.6);
     const fill = new THREE.HemisphereLight(0x9aa8c0, 0x0a0a0c, 0.4);
     this.scene.add(key, rim, kick, fill);
+    this.scene.environment = studioEnv(renderer);
+    this.scene.environmentIntensity = STUDIO_ENV_INTENSITY;
 
     this.target = new THREE.WebGLRenderTarget(o.width, o.height, { samples: 4 });
     this.target.texture.colorSpace = THREE.SRGBColorSpace;
