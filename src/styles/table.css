@@ -3274,7 +3274,9 @@ html.no-animations .table-cath-line { animation: none; }
   /* Plan item 565: on a wide table the hand's captions read about 12 px in the fanned, tilted cards (the critique);
      the name a step up (15 px) and its region line 14 px, once the cards are wide enough to hold them */
   @media (min-width: 1400px) and (min-height: 860px) {
-    .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-label { font-size: var(--fs-small); }
+    /* (line-height 1.2 there: at 15 px a two-line name, 'Price War in Brindle Hills', clipped its descenders by 2 px at
+       1.1: critique103's cut-label check, red on d9303f7) */
+    .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-label { font-size: var(--fs-small); line-height: 1.2; }
     .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-pick { font-size: var(--fs-caption); }
     .game-layout .table-hand:not([data-rows]) .action-item[data-dense] .action-label { font-size: var(--fs-caption); }
   }
