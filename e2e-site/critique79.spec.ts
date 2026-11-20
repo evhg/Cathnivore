@@ -130,8 +130,10 @@ test("Cathnivore game D: a group heading with none of its rows above the fold hi
   for (const h of heads) expect(h.hidden, h.name).toBe(h.orphan)
   // The tab names the next group only while the well scrolls; since item 225 a desktop with the hand on the table
   // keeps just the Saving-for shelf in the rail, which may fit whole (then there is no tab to name it).
+  // (The scroller is the .actions list inside the well; the well is the frame that carries the cue. It overflows
+  // only on some deals, so measuring the well itself failed whenever the random hand ran long.)
   const well = page.locator('.actions-well')
-  const scrolls = await well.evaluate((el) => el.scrollHeight > el.clientHeight + 1)
+  const scrolls = await page.locator('.actions').evaluate((el) => el.scrollHeight - el.clientHeight > 2 && el.scrollTop + el.clientHeight < el.scrollHeight - 2)
   if (scrolls) await expect(well).toHaveAttribute('data-next', /.+/)
   else await expect(well).not.toHaveAttribute('data-more', /.*/)
 })
