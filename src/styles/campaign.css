@@ -1883,3 +1883,28 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
     rotate: 1.5deg;
   }
 }
+/* Plan item 573, slice 2: Back to Title hangs on the map frame's foot (it stood alone in a band under the stack), and
+   the stack of letters takes the rest of the screen, the open letter filling it, so no empty band is left below. */
+@media (max-width: 600px) {
+  .campaign.campaign-screen { display: flex; flex-direction: column; gap: 0; }
+  .campaign-screen > :is(.cmp-header, .cmp-map, .cmp-tabs, .cmp-path) { width: 100%; }
+  .campaign-screen > .cmp-back {
+    order: 1; position: relative; z-index: var(--z-raised); flex: none;
+    min-height: 36px; margin: -26px auto 4px; padding: 0 22px; font-size: var(--fs-small);
+  }
+  .campaign-screen > .cmp-tabs { order: 2; margin-top: 0; }
+  .campaign-screen > .cmp-map { margin-top: 0; }
+  .campaign-screen > .cmp-path { margin-top: 0; margin-bottom: 0; }
+  .campaign-screen > .cmp-path { order: 3; flex: 1 1 auto; min-height: 0; }
+  .campaign-screen > .cmp-path > .cmp-stop { display: flex; flex-direction: column; }
+  .campaign-screen > .cmp-path > .cmp-stop > .cmp-card { flex: 1 1 auto; align-content: start; }
+}
+@media (max-width: 600px) and (max-height: 740px) {
+  /* a short phone (an SE): the plank and the gaps round the tabs slim down, so
+     the open chapter's Play key stays on the first screen */
+  .campaign-screen > .cmp-back { margin-bottom: 0; min-height: 34px; }
+  .campaign-screen > .cmp-tabs { margin-bottom: 6px; }
+  .campaign-screen > .cmp-tabs .cmp-tab { min-height: 46px; }
+  .campaign-screen > .cmp-path > .cmp-stop { padding-bottom: 6px; }
+  .campaign-screen > .cmp-path .cmp-card { padding-block: 8px; }
+}
