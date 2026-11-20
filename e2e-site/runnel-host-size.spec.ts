@@ -23,12 +23,16 @@ for (const [q, min] of [['?lesson', 330], ['?nohelp', 250]] as const) {
   })
 }
 
-// ...and on a short desktop (1280x800) a daily whose line comes back to the rail doesn't scroll the page.
+// ...and on a short desktop (1280x800) a daily whose line comes back to the rail doesn't scroll the page. Each daily's
+// board differs, so a week of them is checked (20 Nov's tall board left her no spot and scrolled the page 116 px).
 test('1280x800 daily: no page scroll', async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 0) < 1100, 'the desktop valley figure')
   await page.setViewportSize({ width: 1280, height: 800 })
-  await page.goto('/runnel/?nohelp')
-  await expect(page.locator('#valley-cath')).toBeVisible()
-  await page.waitForTimeout(1200)
-  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
+  for (let i = 0; i < 7; i++) {
+    await page.clock.setFixedTime(new Date(Date.UTC(2026, 10, 18 + i, 10)))
+    await page.goto('/runnel/?nohelp')
+    await expect(page.locator('#board polygon.tile').first()).toBeVisible()
+    await page.waitForTimeout(1200)
+    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight), `day ${i}`).toBeLessThanOrEqual(0)
+  }
 })

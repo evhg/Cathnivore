@@ -4620,10 +4620,16 @@ body[data-mode='sunday'] .rail-cal,
 body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   display: none;
 }
-/* Plan item 268: likewise on a short desktop when a daily's line comes back to the rail (1280x800 scrolled 47 px). */
+/* Plan item 268: likewise on a short desktop when a daily's line comes back to the rail (1280x800 scrolled 47 px),
+   or when the board leaves her no spot at all and the line keeps its portrait there (20 Nov's daily, 116 px). */
 @media (max-height: 860px) {
   .app[data-valley-say='side'] .rail-cal,
-  .app[data-valley-say='side'] .rail > .cal-title:first-of-type {
+  .app[data-valley-say='side'] .rail > .cal-title:first-of-type,
+  .app[data-valley-cath='none'] .rail-cal,
+  .app[data-valley-cath='none'] .rail > .cal-title:first-of-type,
+  /* (and the rail's "All stats", which the header's Stats key repeats: a three-row line still scrolled 16 px) */
+  .app[data-valley-say='side'] #btn-rail-stats,
+  .app[data-valley-cath='none'] #btn-rail-stats {
     display: none;
   }
 }

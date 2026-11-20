@@ -191,13 +191,15 @@ if (lede) {
   const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86_400_000)
   const lines = [
     "Today's Runnel is up. Water every field and keep your streak alive.",
-    'The daily Runnel is fresh this morning. Come and turn some pipes with me.',
+    "Today's Runnel is fresh. Come and turn some pipes with me.",
     "I've set today's Runnel out for you. How few taps can you manage?",
-    "New day, new Runnel. The fields are thirsty and I'm putting the kettle on.",
-    'Fancy a quick Runnel before the corporations wake up? Today\'s is ready.',
+    "New day, new Runnel. The fields are thirsty, the kettle's on.",
+    'Fancy a Runnel before the corporations wake up?',
     "Today's Runnel is a tricky one. I believe in you.",
     'Water the fields, share the result, and come back tomorrow.',
   ]
+  // Every line holds to two rows at 390 px (games-shelf.spec checks each day): a third row pushes the shelf's Play off
+  // the first phone screen.
   // Plan item 126: signed as Cath's, so under the "Cathnivore" title a Runnel line doesn't read as the board game's pitch.
   const line = lines[day % lines.length]
   const said = boardMood?.line ?? line

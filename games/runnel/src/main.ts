@@ -817,6 +817,7 @@ function placeValleyCath(): void {
     // crossed into or out of the upright phone redraws her framing.
     host.aim(null, document.body.classList.contains('in-lesson'))
     host.frame()
+    delete document.querySelector<HTMLElement>('.app')?.dataset.valleyCath
     placePhoneCath(cath)
     placeValleySay()
     return
@@ -865,6 +866,12 @@ function placeValleyCath(): void {
   const r0 = cath.getBoundingClientRect()
   cath.dataset.cathW = String(Math.round(r0.width))
   cath.hidden = fits === null && meets(r0)
+  // E2E red 2026-11-20: a board that leaves her no spot at all hides her, and her line keeps its portrait in the rail,
+  // which on a short desktop scrolled the page 116 px; the rail's calendar steps aside then too (styles.css).
+  if (app) {
+    if (cath.hidden) app.dataset.valleyCath = 'none'
+    else delete app.dataset.valleyCath
+  }
   aimValleyCath(cath)
   placeValleySay()
 }
