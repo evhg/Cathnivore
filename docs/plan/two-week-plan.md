@@ -5413,7 +5413,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 554. [ ] Cathnivore board: the pieces as miniatures on the table
+## 554. [ ] Cathnivore board: the pieces as miniatures on the table *(lane A, in progress)*
 *(planned 2026-11-20 08:20, lane A, from the plan1120j critique, `e2e/screenshots/plan1120j/`)*
 - **Why:** `cath-game-D` (580-1110 x 130-720): each hex is about 180 px wide, but its stall, outlet and scout pieces are flat 30-45 px icons (the stall 940-990 x 195-240, the '?' pin 1010-1050 x 195-235) that read as map symbols, not pieces on a table (VISION item 2). On the phone (`cath-game-P` 70-380 x 135-470) they are 18-22 px and blur together.
 - **Build:**
