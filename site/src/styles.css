@@ -1986,11 +1986,9 @@ body {
 }
 .hero-game-cathnivore .hero-game-text { padding-top: 14px; }
 .hero-game-cathnivore .hero-game-play {
-  border-radius: 6px;
   background: linear-gradient(180deg, var(--awning-cream), var(--chalk));
   box-shadow: inset 0 0 0 2px var(--awning-red), 0 3px 0 var(--wood-lo);
   color: var(--awning-red-lo);
-  font-family: var(--font-display);
 }
 .hero-game-runnel {
   --board:
@@ -2000,7 +1998,6 @@ body {
 .hero-game-runnel .hero-game-hook { color: var(--rn-foam); }
 .hero-game-runnel .hero-game-status { color: var(--rn-spring); }
 .hero-game-runnel .hero-game-play {
-  border-radius: 999px;
   background: linear-gradient(180deg, var(--rn-spring), var(--rn-spring-edge));
   box-shadow: inset 0 0 0 1px var(--rn-water), 0 3px 0 color-mix(in srgb, var(--rn-water) 60%, var(--night));
   color: var(--night);
@@ -2013,12 +2010,9 @@ body {
 .hero-game-hedgerow .hero-game-text { padding-top: 14px; }
 .hero-game-hedgerow .hero-game-status { color: var(--ka-10); }
 .hero-game-hedgerow .hero-game-play {
-  border-radius: 3px 12px 12px 3px;
   background: var(--ka-10);
   box-shadow: inset 0 0 0 2px var(--ka-11), 0 3px 0 color-mix(in srgb, var(--ka-11) 50%, var(--night));
   color: var(--gold-ink);
-  text-transform: uppercase;
-  letter-spacing: .06em;
 }
 .hero-game-nightshift {
   --board:
@@ -2028,12 +2022,18 @@ body {
 .hero-game-nightshift .hero-game-text { padding-top: 14px; }
 .hero-game-nightshift .hero-game-status { color: var(--on-blood); }
 .hero-game-nightshift .hero-game-play {
-  border-radius: 2px;
   background: var(--cd-blood);
   box-shadow: 0 0 0 1px var(--cd-blood), 0 0 14px color-mix(in srgb, var(--cd-blood) 60%, transparent);
   color: var(--on-blood);
+}
+/* Plan item 546: one Play on every card (the four signs read as four unrelated buttons): the same shape, type and
+   size, only each game's colours change. */
+.hero-game-play {
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: .1em;
+  letter-spacing: .08em;
 }
 @media (prefers-reduced-motion: reduce) { .hero-game-play { transition: none; } }
 

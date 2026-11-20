@@ -5287,7 +5287,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - Re-shoot Runnel key art if its sources change.
 - **Size:** 2
 
-## 546. [ ] /games/ and portfolio: Hedgerow's key art from its 3D field, one Play button style *(lane B, in progress)*
+## 546. [x] /games/ and portfolio: Hedgerow's key art from its 3D field, one Play button style *(done 2026-11-20 02:40, lane B: `scripts/keyart.mjs` shoots Hedgerow's level 30 in 3D by default (`KEYART_HEDGEROW_2D=1` for the old frame), so the /games/ card and the portfolio print show the field the game opens in; the four Play buttons share one shape (8 px radius, uppercase, the same type and spacing), only each game's colours differ (item 401's per-game signs kept their colours). keyart-fresh, games-cards/shelf/stall and portfolio-present pass (P and D). Kept: the Runnel card's pink 'pinny' is Runnel's outfit from `shared/cath`, on-model. Shots e2e/screenshots/plan1120c.)*
 - **Why:** `games-D`, `portfolio-D` (plan1120a): first impressions are stale and mixed.
   - The Hedgerow card and the portfolio tile show the old 2D field while the game opens in 3D.
   - The four Play buttons use four unrelated styles (cream, blue pill, yellow, red; games-D y 825-870).
