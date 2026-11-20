@@ -254,6 +254,7 @@ export const CHAPTER_2: Chapter = {
   scriptedPressure: chapter2Pressure(),
   winCondition: { regionsRequired: 2, requireKingsmarket: false },
   goalDescription: 'Liberate 2 of the 3 regions while keeping Public Trust above 0.',
+  goalShort: 'Liberate 2 of 3 regions; keep Trust above 0.',
   guided: true,
   // The coach for chapter 2's new ideas (plan item 32): Doubt and Rebut, Goodwill, Public Trust and the
   // free role ability, shown by doing them in round 1, then a liberation in round 2. The board and
@@ -541,7 +542,7 @@ export const CHAPTER_5: Chapter = {
   scriptedPressure: chapter5Pressure(),
   winCondition: { regionsRequired: 3, requireKingsmarket: false },
   goalDescription: 'Liberate 3 regions within 7 rounds. Kingsmarket is not required.',
-  goalShort: 'Liberate 3 regions in 7 rounds. Kingsmarket optional.',
+  goalShort: 'Liberate 3 regions in 7 rounds, any 3.',
   scriptedStart: {
     rift: 1,
     publicTrust: 8,

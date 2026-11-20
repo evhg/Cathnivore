@@ -15,6 +15,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DEPART_MS, DEPART_STILL_MS, departFrame, departureOn } from './departure'
 import { playCues } from '../platform/sound'
 import { campaignLine } from '../content/campaignLines'
+import { buntingFlags, chaptersWon } from './campaignBunting'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
 // path, with a mini map of the regions it plays on and the producers who play it. Locked chapters stay
@@ -339,12 +340,13 @@ const CHAPTER_SCENES: Record<string, ChapterScene> = {
 }
 
 // Plan item 444: on a desktop the campaign's progress is a string of six pennants hung across the top band from the
-// signboard, one per chapter: a won chapter's flag is dyed and lifted, an unwon one is plain calico.
-const PENNANT_DYES = ['clay', 'wheat', 'pasture', 'sea', 'clay', 'wheat'] as const
+// signboard, one per chapter: a won chapter's flag is dyed, lifted and ticked (item 556), an unwon one is plain calico
+// with its number; the slate beside it labels the string ("Chapters won").
 function ProgressBunting({ chapters, completed }: { chapters: Chapter[]; completed: string[] }) {
-  const n = chapters.length
+  const flags = buntingFlags(chapters, completed)
+  const n = flags.length
   const W = 600
-  const won = chapters.filter((c) => completed.includes(c.id)).length
+  const won = chaptersWon(chapters, completed)
   // Plan item 542: the string is tied off behind the Campaign sign and the tally slate, at their middle height (its
   // ends ran up off the top of the screen, so the flags hung from nothing); it runs past the box (overflow visible)
   // and the flags hang on the same curve.
@@ -359,15 +361,16 @@ function ProgressBunting({ chapters, completed }: { chapters: Chapter[]; complet
   return (
     <svg className="cmp-pennants" viewBox={`0 0 ${W} 96`} role="img" aria-label={`${won} of ${n} chapters won`} data-won={won}>
       <path className="cmp-pennants-line" d={`M${X0} ${END} Q${(X0 + X1) / 2} ${END + 2 * DIP} ${X1} ${END}`} />
-      {chapters.map((c, i) => {
+      {flags.map((f, i) => {
         const t = (i + 0.5) / n
         const x = t * W
         const y = sag(x)
-        const isWon = completed.includes(c.id)
         return (
-          <g key={c.id} className={isWon ? `cmp-pennant is-won is-${PENNANT_DYES[i % PENNANT_DYES.length]}` : 'cmp-pennant'} transform={`translate(${x} ${y})`} data-chapter={c.id}>
-            <path className="cmp-pennant-cloth" d="M-22 0 L22 0 L0 50 Z" />
-            <text className="cmp-pennant-num" x={0} y={20}>{i + 1}</text>
+          <g key={f.id} className={f.won ? `cmp-pennant is-won is-${f.dye}` : 'cmp-pennant'} transform={`translate(${x} ${y})`} data-chapter={f.id} data-won={f.won ? 'true' : 'false'}>
+            <title>{f.label}</title>
+            {/* item 556: a size up (the slate's third cell took some of the band's width) */}
+            <path className="cmp-pennant-cloth" d="M-30 0 L30 0 L0 66 Z" />
+            {f.won ? <path className="cmp-pennant-tick" d="M-9 20 L-2 27 L10 13" /> : <text className="cmp-pennant-num" x={0} y={29}>{f.n}</text>}
           </g>
         )
       })}
@@ -628,7 +631,9 @@ export default function CampaignScreen({
             per chapter; the full figure stays for Hedgerow's map and the site. */}
         <CathArt
           className="cmp-header-cath"
-          framing="half"
+          // Plan item 556: at D she stands full figure on the table beside the atlas, the crates at her side (they hid
+          // her from the chest down); the phone's header keeps her half-length bust.
+          framing={wide ? 'full' : 'half'}
           pose={CHAPTER_POSE[pointed ?? (phone ? open : next?.id) ?? ''] ?? SCREEN_POSE['cathnivore:campaign']}
           expression={say.expression}
           animate
@@ -687,6 +692,13 @@ export default function CampaignScreen({
         {wide && (
           <div className="cmp-ledger" data-ledger>
             <dl className="cmp-ledger-cells">
+              {/* Plan item 556: the slate labels the bunting beside it */}
+              <div className="cmp-ledger-cell" data-ledger-chapters>
+                <dt>Chapters won</dt>
+                <dd>
+                  <b>{done}</b> of {chapters.length}
+                </dd>
+              </div>
               <div className="cmp-ledger-cell">
                 <dt>Regions free</dt>
                 <dd>
@@ -804,6 +816,11 @@ export default function CampaignScreen({
                   <span className="cmp-ribbon" data-ribbon={chapter.id} aria-hidden="true">
                     <i className="cmp-ribbon-end is-l" />
                     <i className="cmp-ribbon-end is-r" />
+                    {/* Plan item 556: the co-op's wax seal on the knot cracks in two (600 ms) just before the cut */}
+                    <i className="cmp-ribbon-seal" data-seal-crack={chapter.id}>
+                      <i className="cmp-seal-half is-l" />
+                      <i className="cmp-seal-half is-r" />
+                    </i>
                   </span>
                 )}
                 <span className="cmp-card-text">

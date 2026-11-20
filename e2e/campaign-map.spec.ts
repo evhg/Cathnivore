@@ -157,6 +157,10 @@ test('a first win plays the chapter-complete moment: the region floods, Cath wal
   const cut = await end.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration) * 1000)
   expect(cut).toBeGreaterThanOrEqual(600)
   expect(cut).toBeLessThanOrEqual(900)
+  // Plan item 556: the seal on its knot cracks in 600 ms.
+  const half = page.locator('[data-seal-crack="word-of-mouth"] .cmp-seal-half.is-l')
+  expect(await half.evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-seal-crack-l')
+  expect(await half.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration) * 1000)).toBe(600)
   await page.waitForTimeout(500)
   await page.screenshot({ path: `e2e/screenshots/cmpmap/moment-${test.info().project.name}-2.png` })
   // ...and ends with them freed and Cath at chapter 2.
@@ -183,6 +187,8 @@ test('under reduced motion the moment fades instead of walking', async ({ page }
   expect(await page.locator('.cmp-map [data-region="brindleHills"] .cmp-map-paint').evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-colour-in')
   // Plan item 415: the ribbon only fades.
   expect(await page.locator('.cmp-ribbon-end.is-r').evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-ribbon-fade')
+  // Plan item 556: no seal crack, only the fade.
+  expect(await page.locator('.cmp-seal-half.is-r').evaluate((el) => getComputedStyle(el).animationName)).toBe('cmp-ribbon-fade')
   await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done', { timeout: 6000 })
 })
 

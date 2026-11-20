@@ -16,7 +16,8 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   // Plan item 325: she narrates at half length (was full height, item 248), whole on the first screen: 240 px or more at
   // D, beside the island in the map's own panel; 120 px or more on a phone, beside her line in the header.
   expect(art.height).toBeGreaterThanOrEqual(phone ? 120 : 240)
-  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '40 20 320 480')
+  // Plan item 556: at D she stands full figure beside the atlas; the phone keeps the half-length bust.
+  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', phone ? '40 20 320 480' : '20 50 360 898')
   // Each chapter has its own pose (CHAPTER_POSE): the figure names one of them.
   await expect(fig).toHaveAttribute('data-pose', /^(point|wave|can|thinking|crossed|flag)$/)
   const vp = page.viewportSize()!
@@ -108,3 +109,56 @@ for (const [w, h] of [[1280, 800], [375, 667]] as const) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
   })
 }
+
+// Plan item 556: at D Cath stands full figure clear of the crates (at most 10% of her box covered), locked chapters
+// are sealed letters with a 14 px teaser at 4.5:1, and the bunting dyes one flag per chapter won.
+test('desktop campaign: Cath in front, chapters as sealed letters, bunting follows progress', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) < 1100, 'desktop layout')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.addInitScript(() =>
+    localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat', 'word-of-mouth'], tutorialDone: true })),
+  )
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await page.mouse.move(2, 2)
+  await expect(page.locator('.cmp-map-host .cmp-header-cath svg')).toHaveAttribute('data-framing', 'full')
+  const cath = (await page.locator('.cmp-map-host .cmp-header-cath').boundingBox())!
+  const crates = (await page.locator('.cmp-map-host .produce-crates').boundingBox())!
+  const ox = Math.max(0, Math.min(cath.x + cath.width, crates.x + crates.width) - Math.max(cath.x, crates.x))
+  const oy = Math.max(0, Math.min(cath.y + cath.height, crates.y + crates.height) - Math.max(cath.y, crates.y))
+  // The crates stand behind her (lower z), so only what they would hide in front counts; behind or beside, they hide nothing.
+  const inFront = await page.evaluate(() => {
+    const z = (sel: string) => Number(getComputedStyle(document.querySelector(sel)!).zIndex) || 0
+    return z('.cmp-map-host .produce-crates') > z('.cmp-map-host .cmp-header-cath')
+  })
+  expect(inFront ? (ox * oy) / (cath.width * cath.height) : 0).toBeLessThanOrEqual(0.1)
+  expect(cath.y + cath.height).toBeLessThanOrEqual(900)
+  // The locked letters' teasers.
+  const goals = page.locator('.cmp-stop-locked:not(.cmp-stop-next) .chapter-goal')
+  expect(await goals.count()).toBeGreaterThan(0)
+  for (const g of await goals.all()) {
+    const { size, ratio } = await g.evaluate((el) => {
+      // color-mix() computes to color(srgb r g b) in 0-1, a plain colour to rgb() in 0-255
+      const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map((v) => (c.startsWith('color(') ? Number(v) * 255 : Number(v)))
+      const lum = (c: number[]) => {
+        const [r, gg, b] = c.map((v) => {
+          const s = v / 255
+          return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+        })
+        return 0.2126 * r! + 0.7152 * gg! + 0.0722 * b!
+      }
+      // the letter's paper under the teaser: sample the card's own base colour (its last background layer)
+      const card = el.closest('.cmp-card')!
+      const bg = getComputedStyle(card).backgroundColor
+      const a = lum(rgb(getComputedStyle(el).color))
+      const b = lum(rgb(bg))
+      return { size: parseFloat(getComputedStyle(el).fontSize), ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) }
+    })
+    expect(size).toBeGreaterThanOrEqual(14)
+    expect(ratio).toBeGreaterThanOrEqual(4.5)
+  }
+  // Two chapters won: two dyed flags, the slate says so.
+  await expect(page.locator('.cmp-pennant[data-won="true"]')).toHaveCount(2)
+  await expect(page.locator('.cmp-pennant[data-won="false"]')).toHaveCount(4)
+  await expect(page.locator('[data-ledger-chapters] dd')).toHaveText(/2\s*of 6/)
+})
