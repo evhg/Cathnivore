@@ -5633,11 +5633,11 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
   - cathode-front upright specs, title-focal and keyart-fresh pass; shots P and D.
 - **Size:** 2
 
-## 571. [ ] The bugs from the 2026-11-20 15:20 critique, fixed as one batch *(lane A, in progress)*
+## 571. [x] The bugs from the 2026-11-20 15:20 critique, fixed as one batch *(done 2026-11-20 15:35, lane A, 25a653ad: one fixed, three checked below; hedgerow-map/-critique/level-card pass P and D; shots scratchpad a565/hmap-*, camp-*)*
 *(planned 2026-11-20 15:20, lane A, plan1120p)*
-- `cath-game-P` (0-160 x 615-770): the fan's left cards stack so tight no title shows; the right card cut at x 390.
-- `hedge-menu-P` (80-205 x 175-262): Cath stands over stop 21's icon; 'Next / On Air' meets the stop's disc and its '21' badge.
-- `games-D` (415-520 x 300-485): Cath's legs drawn over the counter planks, so she stands inside the stall; the 'FRESH · FREE' sign (627-760 x 383-418) floats on the planks.
-- `cath-campaign-P` (15-375 x 522-580): the chapter prints' red pins overlap their neighbours; print 6 cut at x 375.
+- `cath-game-P` (0-160 x 615-770): the fan's left cards stack so tight no title shows; the right card cut at x 390. **Checked lane A:** item 541's fan by design (each card lifts whole on touch; the right card is the scroll's peek).
+- `hedge-menu-P` (80-205 x 175-262): Cath stands over stop 21's icon; 'Next / On Air' meets the stop's disc and its '21' badge. **Fixed lane A:** where no full-size spot between two coins is clear on a phone she steps down to 90% (65 px; item 441's 64 px floor holds) and stands clear of every coin and name (390x844, 375x667, 360x780; stops 1, 14, 21, 25).
+- `games-D` (415-520 x 300-485): Cath's legs drawn over the counter planks, so she stands inside the stall; the 'FRESH · FREE' sign (627-760 x 383-418) floats on the planks. **Checked, kept:** item 563 stands her in front of the counter on purpose (the counter layer behind her); her feet sit on the rail line.
+- `cath-campaign-P` (15-375 x 522-580): the chapter prints' red pins overlap their neighbours; print 6 cut at x 375. **Checked lane A:** the six tabs end at 374 of 390 (16 px gutter; 359 of 375, 344 of 360) and each pin sits inside its own tab.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
