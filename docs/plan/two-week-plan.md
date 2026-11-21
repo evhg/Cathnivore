@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-21 13:36 UTC
-
 
 
 
@@ -5941,5 +5939,43 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - NIGHT SHIFT D class list (`ns-play-D` 360-475 x 190-620): the guns render as blown-out white silhouettes (Wirewitch, Fixer), not gunmetal (item 588 fixed the photos only).
 - Runnel P (`runnel-P` 0-390 x 780-844): a 60 px empty cream band under Cath's dock, her figure cut at the waist over it.
 - Cathnivore P (`cath-game-P` 5-70 x 60-125): Hollowell's portrait ring over the Squeeze plaque's left edge; the MUM drawing (15-65 x 128-180) over Highmoor's hex corner.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 613. [ ] Hedgerow: the level win as a scene on the field, not a form in a modal
+*(planned 2026-11-21 13:50, lane B, plan1121i critique; the newest win shots are `payout46/` (11-20): shoot today's build first)*
+- **Why:** `payout46/win-D` 500-940 x 10-890: the field blurred grey behind a tall cream modal of form boxes (stat tiles 530-910 x 262-320, rosette strip 425-470, 'Spend her points' 480-690); at P (`win-P`) the card fills the screen, 'Next' cut at y 790, Continue under a scroll. VISION 4: winning is a small staged moment.
+- **Build:** `games/hedgerow/src/debrief.ts`, `main.ts` (`renderPayout`), `rosettes.ts`, `render3d/` camera, `styles.css`: the field stays sharp, the camera (3D) or a zoom (2D) settles on the farmhouse; Cath full length on the field, delighted, the result her bubble's line; stars stamp in one by one, rosettes pinned to a fence-post board, Marks, knockouts and goodwill as three painted tally boards; level-up and Next a slim bench at the foot, Continue always above the fold.
+- **Accept:** field unblurred, 60%+ of the screen still field at D; Cath 200 px+ at D, 150+ at P; Continue visible without scrolling at 390x844; reduced motion fades only; shot P and D in 2D and 3D.
+- **Size:** 2
+
+## 614. [ ] Cathnivore end screen: the final table as the hero
+*(planned 2026-11-21 13:50, lane B, plan1121i critique; newest end shot `desktop-chromium-6-end-screen` (11-12): shoot today's build first)*
+- **Why:** the final board a 300 px thumbnail in a box (860-1160 x 460-745) while the line chart takes the biggest space (745-1278 x 40-325), the stats four plain boxes, the buttons default pills (400-1040 x 805-865). VISION 2: the table is the hero.
+- **Build:** `src/ui/EndChart.tsx`, `endSummary.ts`, `Game.tsx` end view, `src/styles`: the real board at hero size (liberated regions under bunting, lost ones under Hollowell's plastic), the play of the game as a pinned card pointing at its region, the stats chalked on the stall's price board, the chart folded into a small ledger page, Cath and the producers reacting beside the board, Play again / New game as the title's stall signs.
+- **Accept:** the board 45%+ of the width at D and 340 px+ at P; the play-of-the-game region highlighted; no default-looking buttons; end-screen specs pass; shot P and D, a win and a loss.
+- **Size:** 2
+
+## 615. [ ] Runnel: the daily result as Bea's harvest card
+*(planned 2026-11-21 13:50, lane B, plan1121i critique; newest solve shot `b416/solveD` (11-15): shoot today's build first)*
+- **Why:** `b416/solveD` 135-640 x 630-680: a whole daily's result is a 45 px pill bar of ~12 px stats ('0:00 · 1 tap · par 77 · streak 1') over the board's foot. VISION 4, 6 (wit in the small print).
+- **Build:** `games/runnel/src/main.ts`, `garden.ts`/`gardenart.ts`, `sharecard.ts`, `weekstrip.ts`, `styles.css`: once the water reaches the garden a card rises with what today's water grew in Bea's beds (the season's crop), taps against par as a seed-packet stamp ('2 under par'), the streak as a shelf of seven jars for the week, Cath half length with a line about the result; Share, Your card and Practice as card buttons. Add a solved-daily shot to `scripts/plan-shots.mjs`.
+- **Accept:** stat figures 20 px+; the streak shows 7 day slots; Cath 160 px+ at P; the solved garden still visible at P and D; runnel win specs pass; shot P and D (streak 0 and 5).
+- **Size:** 2
+
+## 616. [ ] Cathnivore: the week's market event on the table and as price tags on the hand
+*(planned 2026-11-21 13:50, lane B, plan1121i critique)*
+- **Why:** `plan1121i/cath-game-D` 345-485 x 100-178: Dry Spell is a small sticky note (at P one 12 px line, 100-345 x 112-128); nothing on the board or in the hand shows it, and the Coast & Science cards it discounts carry no mark. VISION 1, 4, 6 (a 0.99 price tag).
+- **Build:** the market event (`src/engine` event data), `Map.tsx`/region ground art, the hand and market cards, `Game.tsx`: each event a board grade and props (Dry Spell sun-bleached cracked ground, Great Glut crates at the stalls, Harvest Festival bunting and lanterns); at round 1 the event card flips onto the table (400-800 ms) then settles as the pinned note; every discounted card wears a hand-tied tag with the struck price and the new one.
+- **Accept:** each of the 3 events changes the board visibly (mean colour difference over the board area); every discounted card in hand and market tagged (unit test against the event's discount); reduced motion skips the flip; shot P and D for all 3 events.
+- **Size:** 1
+
+## 617. [ ] The bugs from the 2026-11-21 13:45 critique, fixed as one batch *(lane B, in progress)*
+*(planned 2026-11-21 13:50, lane B, plan1121i critique; check each on today's build first)*
+- Hedgerow act map P (`hedge-menu-P` 115-200 x 750-765): the 'Sea Fret' stop label shows faintly through the briefing dock; The Unboxing's H|25 badge (60-110 x 660-690) cut by the dock's top edge.
+- NIGHT SHIFT class pick D (`ns-play-D` 500-605 x 285-330): the LUNA neon floats beside Cath's shoulder and reads as her name label (P 2x 30-245 x 460-550 against her arm).
+- NIGHT SHIFT class pick: the stat deltas disagree: P shows −6/+4/+7/−5 on all four, D only +7 Nerve and +4 Aim with 'vs avg'; one rule for both.
+- Hedgerow 2D D (`hedge-l21-2d-D` 915-1150 x 585-605): the Coming up summary row ('12 → Scarecrow +4 more') at ~11 px, under the bench's type scale.
+- Hedgerow 2D P (`hedge-l34-2d-P` 350-390 x 260-312): Cath on the field's right edge, cut by the screen; her '1' coin over the lane.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
