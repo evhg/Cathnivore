@@ -12,7 +12,7 @@ import { CLASS_START_ATTRIBUTES } from "../sim/stats";
 import { ATTRIBUTES, CLASS_IDS, type AttributeId, type ClassId, type TreeId } from "../sim/types";
 import { SKILL_PREVIEWS } from "../game/skillpreview";
 import { WEAPON_BASES } from "../sim/weapons";
-import { cathSvg, type CathExpression } from "../../../../shared/cath/cath";
+import { cathSvg, type CathExpression, type CathOutfit } from "../../../../shared/cath/cath";
 import { CLASS_COPY } from "./classart";
 import { button, el, reducedMotion, trapTab } from "./dom";
 import { WEAPON_CLASS_LABEL } from "./itemtext";
@@ -20,8 +20,12 @@ import { weaponArtSvg } from "./weaponart";
 
 /** Plan item 575: Cath's booking photo for a class: the bust against a height chart, the case file number below. */
 function mugHtml(cls: ClassId): string {
-  return `<span class="cp-mug-chart"></span>${cathSvg({ framing: "bust", outfit: "trench", expression: MUG_FACE[cls] })}<span class="cp-mug-plate">${CLASS_COPY[cls].file}</span>`;
+  return `<span class="cp-mug-chart"></span>${cathSvg({ framing: "bust", outfit: MUG_KIT[cls], expression: MUG_FACE[cls] })}<span class="cp-mug-plate">${CLASS_COPY[cls].file}</span>`;
 }
+/** Plan item 575: her kit in each class's photo, the shared wardrobe's nearest to the class's coat on the street
+ *  (frontscene's CLASS_COAT: the black trench, the Butcher's apron, the Gunslinger's tan, the Wirewitch's dark teal, the
+ *  Fixer's plum). */
+const MUG_KIT: Record<ClassId, CathOutfit> = { ghost: "trench", butcher: "pinny", gunslinger: "market", wirewitch: "wax", fixer: "gown" };
 /** Plan item 575: her look in each class's booking photo. */
 const MUG_FACE: Record<ClassId, CathExpression> = { ghost: "determined", butcher: "smirk", gunslinger: "wink", wirewitch: "worried", fixer: "delighted" };
 
