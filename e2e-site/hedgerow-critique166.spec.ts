@@ -54,7 +54,8 @@ test("on an upright phone the round grip straddles the tray's edge (or stands on
     return {
       above: panel.top - h.top,
       onDock: dock ? Math.max(0, h.top - dock.top, dock.top - h.bottom) : null,
-      intoLine: line ? h.bottom - line.top : null,
+      // (plan item 611: on a phone her line rises above the grip; either way the two don't meet)
+      intoLine: line && line.height ? Math.min(h.bottom - line.top, line.bottom - h.top) : null,
       more: wrap.classList.contains('more-shown'),
       mask: getComputedStyle(wrap.querySelector('.tray')!).maskImage,
     }

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Plan item 171: on an upright phone Cath's advice docks over the tray beside her 64 px bust instead of a bubble on
+// Plan item 171: on an upright phone Cath's advice docks at the tray beside her bust instead of a bubble on the field
+// (plan item 611: her line now rises over the field's foot, the tray free under it, taps passing through it), was a bubble on
 // the field: it meets no plot, says who's speaking (role=status), her face follows the line, a tap (or 6 s) folds it
 // to her portrait on the panel's corner, freeing the tray under it (item 392), and a tap on the portrait reopens it. A desktop keeps the bubble beside her on the field.
 type Box = { x: number; y: number; w: number; h: number }
@@ -34,22 +35,24 @@ for (const level of [21, 34]) {
       await expect(page.locator('#cath-say')).toBeHidden()
       await expect(dock).toHaveAttribute('data-expression', /^(determined|worried|smirk)$/)
       const bust = (await page.locator('#cath-dock-bust').boundingBox())!
-      expect(bust.width).toBeGreaterThanOrEqual(64)
-      expect(bust.height).toBeGreaterThanOrEqual(64)
+      // Plan item 611: open, her portrait keeps the folded tab's place (48 px) beside the tray's packets
+      expect(bust.width).toBeGreaterThanOrEqual(44)
+      expect(bust.height).toBeGreaterThanOrEqual(44)
       const l = (await line.boundingBox())!
       const plots = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.plotBoxes())
       expect(plots.length).toBeGreaterThan(0)
       const meets = (a: Box, b: { x: number; y: number; width: number; height: number }) => a.x < b.x + b.width - 1 && b.x < a.x + a.w - 1 && a.y < b.y + b.height - 1 && b.y < a.y + a.h - 1
-      for (const p of plots) {
-        expect(meets(p, l), `${scheme} line on plot ${JSON.stringify(p)}`).toBe(false)
-        expect(meets(p, bust), `${scheme} bust on plot`).toBe(false)
-      }
+      // Plan item 611 (was item 171's 'off every plot'): her line rises over the field's foot so the tray shows with it;
+      // it lets every tap through to the plots under it
+      expect(l.y + l.height).toBeLessThanOrEqual(bust.y)
+      expect(await line.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe('none')
+      for (const p of plots) expect(meets(p, bust), `${scheme} bust on plot`).toBe(false)
       // Under the field, over the tray.
       const stage = (await page.locator('#stage').boundingBox())!
       expect((await dock.boundingBox())!.y).toBeGreaterThanOrEqual(stage.y + stage.height - 1)
       // Plan item 188: it reaches the panel's top (no strip of tray cards above it), the drawer handle uncovered.
       const panelTop = (await page.locator('#panel').boundingBox())!.y
-      expect(Math.abs((await dock.boundingBox())!.y - panelTop)).toBeLessThanOrEqual(1)
+      expect(Math.abs((await dock.boundingBox())!.y - panelTop)).toBeLessThanOrEqual(3)
       const handle = page.locator('#panel .drawer-handle')
       if (await handle.isVisible()) {
         const h = (await handle.boundingBox())!
@@ -65,7 +68,7 @@ for (const level of [21, 34]) {
       // packet, the tray under it taking taps again; a tap on the portrait opens her line again.
       await open(page, level)
       await expect(line).toBeVisible()
-      await line.click()
+      await page.locator('#cath-dock-bust').click()
       await expect(dock).toHaveAttribute('data-folded', '')
       await expect(line).toBeHidden()
       await page.waitForTimeout(600)

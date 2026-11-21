@@ -6241,3 +6241,46 @@ img.act-scene {
 @media (prefers-color-scheme: dark) {
   #screen-select .node:disabled .level-num.vignette .level-landmark { filter: sepia(.5) saturate(.75) brightness(.78); }
 }
+
+/* Plan item 611: on an upright phone her line no longer covers the tray. Open, the dock keeps her portrait where the
+   folded tab sits (the panel's top-left, the packets stepping clear of it) and her line rises over the field's foot
+   as a bubble, its tail down to her, so the tray and her advice show at the same moment; a tap or 6 s folds the line. */
+@media (max-width: 599.98px) and (orientation: portrait) {
+  .cath-dock:not([data-desk]):not([data-folded]) {
+    top: calc(var(--dock-top, 0px) - 2px);
+    right: auto;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    gap: 0;
+    clip-path: none;
+    background: none;
+    box-shadow: none;
+    border-radius: 50%;
+    overflow: visible;
+  }
+  .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-bust { width: 48px; height: 48px; }
+  .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-line {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 24px);
+    width: calc(100vw - 16px);
+    max-width: none;
+    box-sizing: border-box;
+    font-size: var(--fs-body);
+    /* over the field's foot, it never takes a tap from a plot under it (picking a plot quiets her, main.ts); her
+       portrait folds it */
+    pointer-events: none;
+  }
+  /* the tail points down at her portrait */
+  .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-line::after {
+    left: 16px;
+    top: auto;
+    bottom: -9px;
+    border-width: 0 2px 2px 0;
+  }
+  .play:has(.cath-dock:not([hidden]):not([data-desk]):not([data-folded])) .panel:not(.open) .tray-wrap .tray {
+    padding-inline-start: 52px;
+    scroll-padding-inline-start: 52px;
+  }
+}
