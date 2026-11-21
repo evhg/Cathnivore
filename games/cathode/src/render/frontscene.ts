@@ -34,6 +34,9 @@ import { buildFrontStreet } from "./frontstreet";
  * 1440x900 the Ghost's lit skyline read her face 1.00x, the Butcher's locker 0.93x, the Fixer's bench 1.12x. */
 const FACE_GAIN: Partial<Record<string, number>> = { ghost: 4.6, butcher: 3.3, fixer: 2.6 };
 
+/** Plan item 570: how much the upright title's brick glows in its own texture (0 is unlit). */
+const UPRIGHT_BRICK_GLOW = 0.25;
+
 export interface FrontSceneOptions {
   quality: Quality;
   intensity: "full" | "reduced";
@@ -348,6 +351,18 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   const street = buildFrontStreet({ at: new THREE.Vector3(-0.9, groundAt(-0.9, 63.6), 63.97), yaw: Math.PI }, groundAt, phone);
   world.scene.add(street.group);
   world.renderer.domElement.dataset.ambient = street.movers(o.still).join(" ");
+  // Plan item 570: the street's brick beside her on an upright title read black on black (the canopy's pole seemed to
+  // float): it glows a little in its own texture there (emissiveMap = its map, so the brick keeps its pattern; set
+  // here, before the warm-up compiles the variants, and on in either orientation, so turning the phone compiles nothing).
+  const bricks = ["static:brickDark", "static:brickRed"].flatMap((n) => {
+    const m = (world.scene.getObjectByName(n) as THREE.Mesh | undefined)?.material as THREE.MeshStandardMaterial | undefined;
+    if (!m?.emissive || !m.map) return [];
+    m.emissiveMap = m.map;
+    m.emissive.setRGB(0, 0, 0);
+    m.needsUpdate = true;
+    return [m];
+  });
+  let brickLift = -1;
   const neonRimI = phone ? 7 : 9;
   const titleFaceKey = { pos: toWorld(0.5, 1.95, 0.85), color: new THREE.Color(1.0, 0.8, 0.72), intensity: 2.4, range: 1.9 };
   const neonRim = { pos: toWorld(-1.2, 1.8, -2.4), color: new THREE.Color(1.0, 0.09, 0.42), intensity: neonRimI, range: 5 };
@@ -567,6 +582,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     pink.intensity = pinkI * (1 - 0.78 * wd.w) * (0.35 + 0.65 * lit);
     neonRim.intensity = neonRimI * (1 - 0.6 * wd.w) * lit;
     titleFaceKey.intensity = 2.4 + (cam.aspect >= 1 ? 1.2 * (1 - wd.w) : 0);
+    const lift = cam.aspect < 1 ? UPRIGHT_BRICK_GLOW * (1 - wd.w) : 0;
+    if (Math.abs(lift - brickLift) > 0.002) {
+      brickLift = lift;
+      for (const m of bricks) m.emissive.setScalar(lift);
+    }
     // Plan item 505: on a landscape title her face key is a third brighter, so her face outshines the case wall's
     // paper (the pick eases it back with the wardrobe; upright it stays at 1).
     cath.tint(key.color, Math.min(1, 0.6 * wd.w * (1 + 0.5 * flash)), cam.aspect >= 1 ? 1 + 0.35 * (1 - wd.w) : 1);
