@@ -5757,7 +5757,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each gun thumbnail's luminance standard deviation 1.5x today's (measure first); the five photos differ pairwise by 15%+ of pixels and are 3D renders once the street is up (a spec reads the source); classpick and classstage pass P and D.
 - **Size:** 2
 
-## 589. [ ] Cathnivore desktop table: the rail supports the board, it doesn't compete
+## 589. [ ] Cathnivore desktop table: the rail supports the board, it doesn't compete *(lane B, in progress)*
 *(planned 2026-11-21 04:45, lane B, plan1121b critique)*
 - **Why:** `plan1121b/cath-game-D` 15-335 x 10-885: seven stacked sections (actions, resources, partner, saving-for cards, goal, ledger, undo) in 10-12 px type; the saving-for cards' dot meters (35-320 x 380-550) are hard to read. VISION: menus support the table and never compete with it.
 - **Build:** `src/ui/` rail: resources and the turn's actions always shown large; partner, ledger and goal as tabbed drawers (one open at a time, the last choice remembered); the saving-for cards as two large progress cards; a type scale with nothing under 13 px.
