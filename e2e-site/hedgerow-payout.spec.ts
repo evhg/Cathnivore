@@ -43,6 +43,12 @@ for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]] 
       expect(fig!.height).toBeGreaterThanOrEqual(200)
       expect(fig!.x + fig!.width, 'beside the card').toBeLessThanOrEqual(box!.x + 60)
       expect(await dlg.locator('.payout-cath').isVisible()).toBe(false)
+      // Her line is said on the field, clear of the card.
+      const say = page.locator('#win-cath .win-say')
+      await expect(say).toHaveText('Not a scratch on the farmhouse.')
+      const sb = await say.boundingBox()
+      expect(sb!.x, 'bubble on screen').toBeGreaterThanOrEqual(0)
+      expect(sb!.x + sb!.width, 'bubble off the card').toBeLessThanOrEqual(box!.x)
     }
     await page.screenshot({ path: `e2e/screenshots/payout46/win-${name}.png` })
     await ctx.close()
@@ -93,7 +99,8 @@ test('a tap skips the payout', async ({ page, hasTouch }) => {
   })
   const dlg = page.locator('#dlg-result[open]')
   await expect(dlg).toBeVisible({ timeout: 15_000 })
-  await dlg.locator('#result-title').click()
+  // Any tap on the card that isn't a button (at D the heading is Cath's bubble on the field, item 613).
+  await dlg.locator('#result-eyebrow').click()
   await expect(dlg).toHaveClass(/payout-skip/)
   await expect(dlg.locator('[data-payout="next"]')).toBeVisible({ timeout: 1_000 })
   await expect(dlg.locator('[data-bank]')).toHaveText(/^\+3 ★/, { timeout: 2_000 })

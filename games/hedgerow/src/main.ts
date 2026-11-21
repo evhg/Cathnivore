@@ -6023,6 +6023,11 @@ function fieldWin(moment: Parameters<typeof cathSceneSvg>[0] | null): void {
   fig.className = "win-cath";
   fig.setAttribute("aria-hidden", "true");
   fig.innerHTML = cathSceneSvg(moment, { framing: "full", outfit: art() });
+  // The result is her line, said over the field (the card's heading stays for screen readers).
+  const say = document.createElement("p");
+  say.className = "win-say";
+  say.textContent = ui.resultTitle.textContent;
+  fig.append(say);
   document.body.append(fig);
   ui.dlgResult.addEventListener("close", () => fig.remove(), { once: true });
 }
