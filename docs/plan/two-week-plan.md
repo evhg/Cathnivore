@@ -5722,7 +5722,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** a still for every level (unit test); D image 230x160+; map and level-card specs pass P and D.
 - **Size:** 1
 
-## 584. [ ] Hedgerow 3D: Hollowell's depot and convoys as glossy corporate models
+## 584. [ ] Hedgerow 3D: Hollowell's depot and convoys as glossy corporate models *(lane B, in progress)*
 - **Why:** `plan1121a/hedge-l21-3d-D` 115-240 x 150-240: the depot is a small box; the pink vans (245-300 x 225-400) read as toy blocks. VISION: the corporations glossy, plastic, over-lit, clinical.
 - **Build:** a chrome-and-glass depot with a lit H sign and a roller door that opens as a wave leaves; each vehicle type its own livery and silhouette with specular highlights (`games/hedgerow/src/render3d/`).
 - **Accept:** depot footprint 2x+ at D; the vehicle types distinguishable in a greyscale shot; level 21 3D draw calls within budget; 3D specs pass.
