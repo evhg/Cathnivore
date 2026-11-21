@@ -3825,8 +3825,11 @@ body[data-mode='practice'] #week-slot {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 2px;
-  padding: 2px 6px 1px;
+  /* (E2E red 2026-11-21: 6 px taller than the strip it replaced grew the stage and the board, and Cath's line lost
+     its spot beside her on 17 Nov's daily; the bed keeps the old 41 px.) */
+  padding: 0 6px;
   border: 4px solid var(--ws-wood-2);
+  border-bottom-width: 3px;
   border-top: 3px solid var(--ws-wood-1);
   border-radius: 7px;
   background:
@@ -3844,7 +3847,7 @@ body[data-mode='practice'] #week-slot {
 .rail-plots .plot svg {
   display: block;
   width: 100%;
-  max-width: 27px;
+  max-width: 25px;
   aspect-ratio: 1;
   height: auto;
 }
