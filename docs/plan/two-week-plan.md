@@ -6002,7 +6002,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** after a solve every channel samples water-blue (spec, `?shotwin` and a real solve); card 1 s+ after the last tap; shot P and D.
 - **Size:** 1
 
-## 621. [ ] Hedgerow 2D: the field as a diorama, towers and vans at hero size
+## 621. [ ] Hedgerow 2D: the field as a diorama, towers and vans at hero size *(lane A, in progress)*
 *(planned 2026-11-21 18:20, lane A, plan1121j critique)*
 - **Why:** `plan1121j/hedge-l21-2d-D` 150-875 x 75-890 and `hedge-l34-2d-D`: plots are near-identical green rectangles and towers and vans ~40 px, so there's no focal action; the Ford's river is a thin stripe. VISION 2.
 - **Build:** `games/hedgerow/src/render.ts`, `sprites.ts`, `terrain.ts`: varied plot looks (5+ per level), towers 1.5x with drop shadows, glossy vans with legible livery, the river as a landmark with banks.
