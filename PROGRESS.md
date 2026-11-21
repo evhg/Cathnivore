@@ -9,7 +9,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Critique bugs from the 2026-11-03, 11-05 and 11-08 shots: all closed 2026-11-21 01:35 (lane B, checked on today's build): Cathnivore P title keys 16 px; Hedgerow l34 2D D no count over a farmer; NIGHT SHIFT D poster's LUNA sign whole, P FIXER tab whole (item 575's photo tabs), P class pick renders; /games/ hero not ghosted; Hedgerow map P no Hollowell boards by the stop names (item 569), D map clean. Shots scratchpad hm/, games-D, h34-D.
-- Lane B (05:21 11-21): red E2E on cbbb027 checked (only plate-preview failed solo, fixed by lane A's 535317d; the rest load); 587 closed (checked: Hedgerow's 3D Cath and folk already meet it); 589 handed back again (its section count conflicts with items 549/586: needs a design decision). Lock released.
+- Lane B (06:21 11-21): red E2E on 79ff9b9 checked (the rack-gun contrast, fixed by lane A's 31bbd1e; passes on head); 589 slice 1 (Cathnivore's desktop shelf as one Saving-for card, the goal on top filling the rail, item 548's second row retired, six specs updated). Lock released.
 - Critique bug seen 2026-11-04 13:30 (lane A, 1280x800): a Not-yet name cut on a 1280 desktop. Fixed 2026-11-04 14:15 (item 104 slice 1).
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-11-21 06:21 lane B: 589 slice 1 (1 code commit); the rail's game specs pass at D (and P where they run).
 - **2026-11-21 05:51 lane A:** 588 done (1 code commit), posters and key art re-rendered; 589 design decided, width tried and reverted. classpick booking-photo specs (P, D; new 3D-stills spec D), five-guns (P, D), classstage (D), all --retries=0 (the D 48 px test timed out under load waiting for the pick, passed alone in 36 s; its wait raised to 120 s); keyart-fresh, css lint, cathode-type; tsc, eslint. No full check. Shots scratchpad s588b (v1-v3, pick3-D/P), s589. Lock released.
 - 2026-11-21 05:21 lane B: E2E red checked; 587 closed (checked); 589 findings; no code commits.
 - **2026-11-21 04:51 lane A:** E2E fix, 588 slices 1-2 (3 code commits). hedgerow-plate-preview, -level-card, -map (P, D, --retries=0); cathode-gunstudio (new), armoury, classpick 382/607 (P, D, --retries=0); gunportrait unit tests, keyart-fresh; tsc, eslint. No full check. Shots scratchpad s588 (before, a1-a9, cp-after-D, cp-after-P). Lock released.
@@ -51,4 +52,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-20 23:51 lane A:** 574 slice 2 (1 code commit), NIGHT SHIFT posters re-rendered. keyart-fresh; tsc, eslint; a scripted face/wall measure of all 5 classes at P and D before and after (scratchpad cpexp.mjs; `e2e/screenshots/s574/`). classpick specs left to CI. No full check. Lock released.
 - 2026-11-21 00:21 lane B: 575 done, 570 closed by decision (2 code commits); cathode-front and title-focal pass at P, classpick specs P and D.
 - 2026-11-20 23:21 lane B: 575 slices 1-2 (2 code commits); classpick and classstage pass P and D.
-- 2026-11-20 22:21 lane B: 576 done (1 code commit); Hedgerow phone suite 172 pass, depot specs P and D.

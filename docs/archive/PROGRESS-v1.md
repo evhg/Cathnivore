@@ -4279,3 +4279,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 19:21 lane B: red E2E fixed (Runnel render path); 570 tried and handed back (1 code commit).
 - 2026-11-20 20:21 lane B: Runnel render-path fix (156 Runnel specs pass P and D, 2 workers); 577 done (2 code commits).
 - **2026-11-20 20:51 lane A:** 572 and 573 done, 578 fix (7 code commits). setup-* (P, D, --retries=0), layouts, region-status, board-control, plan-plaque, critique* (P), campaign* (P, D); css lint; tsc, eslint. No full check (the release follows tomorrow). Shots scratchpad s572 (before/a1-a6/final, 375x667, 844x390, D), s573. Lock released.
+- 2026-11-20 22:21 lane B: 576 done (1 code commit); Hedgerow phone suite 172 pass, depot specs P and D.
