@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-21 07:33 UTC
-
 
 
 
@@ -5802,4 +5800,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Portfolio P (`portfolio-P` 16-275 x 255-415): Cath squeezes the lede into a 260 px column; give the lede the full width.
 - Hedgerow act map D (`hedge-menu-D` 460-745 x 95-200): the cloud is a flat grey blob with a scribble; paint it with the map's tonal steps or drop it.
 - **Accept:** a spec per bug (tag one line, no overlap or a deliberate pin, contrast 4.5+, lede width 330 px+ at 390); shots P and D.
+- **Size:** 1
+
+## 594. [ ] Cathnivore table: the producers act on stage, not stand as props
+*(planned 2026-11-21 07:45, lane B, plan1121d critique)*
+- **Why:** `plan1121d/cath-game-D` 1180-1410 x 455-720: Tomas and Mara are still figures cut by the table's foot (Mara's crates over her); only Cath poses and speaks in a bubble (item 592). `cath-game-P` 262-380 x 478-555: 50 px cameos. VISION: Cath and the producers are people you remember (portraits, poses, reactions, voice).
+- **Build:** `src/ui/producerMood.ts`, `Game.tsx`, `Scene.tsx`, `sceneStaging.ts`, the producer portrait art: when a producer's power, buy or liberation resolves, their figure steps forward 12-20 px into a pose (cheer, point, slump on a Squeeze) and speaks one line in their own bubble through item 495's one-voice queue; new lines in `content/`. Phone: the cameo pops and speaks through the docked line.
+- **Accept:** each producer 3+ poses; a spec plays a producer power and sees that producer's bubble and a `data-pose` change within 250 ms; both figures wholly inside the table frame at 1440x900 and 1280x800 (box check); reduced motion fades only; shot P and D.
+- **Size:** 2
+
+## 595. [ ] Cathnivore desktop: Cath suggests the goal when none is set
+*(planned 2026-11-21 07:45, lane B, plan1121d critique)*
+- **Why:** `plan1121d/cath-game-D` 35-305 x 380-660: at the start of every game the Saving-for card (item 589) is ~270x280 px of 'Nothing yet' (`Game.tsx` goal-feature-name). VISION: nothing looks like a default form; Cath reacts and helps.
+- **Build:** `src/ui/shelfGoal.ts`, `Game.tsx`'s Saving-for card: with no goal pinned, Cath's pick (the shelf card closest to affordable) shows as a ghosted ticket with her small portrait, a line ('I'd save for Supply, love: 2 coins short') and a Keep button; Keep pins it (the existing goal store), pinning another replaces it; the phone's Saving-for view uses the same pick.
+- **Accept:** a fresh game at 1440x900 shows a card's art and an 'N more' figure, no 'Nothing yet' (spec); Keep pins in one tap and the goal survives a reload; text 13 px+ (desktop-rail's scan passes); saving-goal and desktop-rail specs pass; shot P and D.
+- **Size:** 1
+
+## 596. [ ] Hedgerow act map: locked stops show their landmark in colour under the glass
+*(planned 2026-11-21 07:45, lane B, plan1121d critique)*
+- **Why:** `plan1121d/hedge-menu-D` 285-1060 x 320-850 (and `hedge-menu-P` 105-270 x 215-560): the act's locked stops read as identical white coins with grey line icons, like disabled buttons; item 569 drew each landmark's own outline, but under item 471's Hollowell glass they stay grey. VISION: the poster look, rich and legible.
+- **Build:** `games/hedgerow/src/stopart.ts`, `stopland.ts`, `map.ts`: keep item 471's glass over locked stops (decided), but draw the landmark under it in its act's palette on a small turf plinth, sepia-toned while locked; a freed stop drops the glass and shows full colour with its rosette.
+- **Accept:** mean chroma inside each locked stop 2x today's or more (measured on the shot); each stop's landmark 64 px or larger at P; hedgerow-map-diorama still finds no two stops alike; label plates 4.5:1+; hedgerow-map specs pass P and D; key art re-shot if a keyart source changes; shot P and D.
+- **Size:** 1
+
+## 597. [ ] Runnel lesson: a spotlight on the tiles, the valley in its colours
+*(planned 2026-11-21 07:45, lane B, plan1121d critique)*
+- **Why:** `plan1121d/runnel-D` 390-1420 x 280-880 and `runnel-P` 0-390 x 200-680: the first screen a new player sees is the dullest; item 90's lesson dim lays a flat grey-mauve wash over ~70% of the frame and the folk and sheep vanish. VISION: every screen an illustration, the poster look.
+- **Build:** `games/runnel/src/` lesson and valley drawing, `styles.css`: replace the whole-valley dim with a soft radial spotlight round the lesson tiles (falling off over ~250 px); outside it the season's colours stay; Bea's garden and the spring house stay lit as the water's start and end.
+- **Accept:** mean luma of the valley more than 250 px from the board up 30%+ on today's shot; item 90's tile-edge contrast still holds (runnel-tiles spec: 3:1 at D, 2.5 at P); lesson specs pass P and D; key art re-shot if a keyart source changes; shot P and D, light and dark.
+- **Size:** 1
+
+## 598. [ ] The bugs from the 2026-11-21 07:40 critique, fixed as one batch
+*(planned 2026-11-21 07:45, lane B, plan1121d critique; check each on today's build first)*
+- Cathnivore D (`cath-game-D` 345-465 x 820-880): the first hand card's title cut to 'Sel', its option dots over it.
+- Cathnivore D (85-175 x 255-275): the partner's name cut to 'Tomas R…' (item 589's narrower rail): give the name the row's room, the empty slot boxes shrink first.
+- Cathnivore Setup D (`cath-setup-D` 1040-1440 x 0-320): empty cream above Cath's quote while the setup panel is cramped.
+- Hedgerow 3D P (`hedge-l21-3d-P` 10-60 x 490-565): Cath at the frame's very left edge, her ring clipped.
+- NIGHT SHIFT P title (`ns-title-P`): The List's cards over her body; item 570 kept this by decision: check, don't rebuild.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
