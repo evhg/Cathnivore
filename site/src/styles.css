@@ -1770,7 +1770,9 @@ body {
   background:
     repeating-linear-gradient(180deg, transparent 0 9px, color-mix(in srgb, var(--wood-lo) 45%, transparent) 9px 10px),
     linear-gradient(180deg, color-mix(in srgb, var(--wood-mid) 50%, var(--wood-lo)), var(--wood-lo));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--wood-hi) 60%, transparent), 0 8px 20px var(--shadow-deep);
+  /* (Plan item 633: framed like the slate beside it, so it reads as a sign you can press, not a disabled one.) */
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--wood-hi) 60%, transparent), 0 0 0 2px var(--wood-hi), 0 0 0 3px var(--wood-lo), 0 8px 20px var(--shadow-deep);
+  text-shadow: 0 1px 0 var(--wood-lo);
   font-family: var(--font-voice, inherit);
   font-style: italic;
   font-weight: 600;
