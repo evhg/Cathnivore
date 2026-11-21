@@ -198,7 +198,7 @@ export const GUN_ICON = { width: 300, height: 120 };
 const icons = new Map<string, string>();
 /** Plan item 588: the rack's thumbnails take a brighter key than the case table: under the pool's falloff their
  * median fell under 3:1 on the rack's dark rows (plan item 434's floor). */
-const GUN_ICON_EXPOSURE = 1.8;
+const GUN_ICON_EXPOSURE = 0.7;
 
 /** One still thumbnail of a weapon class's gun (cached), or null for a class with no gun model. Plan item 423: rimmed
  * in its class's key colour when one is given (white otherwise), so the rack's guns carry their class's light. */
