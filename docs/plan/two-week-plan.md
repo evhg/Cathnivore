@@ -5963,7 +5963,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** stat figures 20 px+; the streak shows 7 day slots; Cath 160 px+ at P; the solved garden still visible at P and D; runnel win specs pass; shot P and D (streak 0 and 5).
 - **Size:** 2
 
-## 616. [ ] Cathnivore: the week's market event on the table and as price tags on the hand
+## 616. [ ] Cathnivore: the week's market event on the table and as price tags on the hand *(lane B, in progress)*
 *(planned 2026-11-21 13:50, lane B, plan1121i critique)*
 - **Why:** `plan1121i/cath-game-D` 345-485 x 100-178: Dry Spell is a small sticky note (at P one 12 px line, 100-345 x 112-128); nothing on the board or in the hand shows it, and the Coast & Science cards it discounts carry no mark. VISION 1, 4, 6 (a 0.99 price tag).
 - **Build:** the market event (`src/engine` event data), `Map.tsx`/region ground art, the hand and market cards, `Game.tsx`: each event a board grade and props (Dry Spell sun-bleached cracked ground, Great Glut crates at the stalls, Harvest Festival bunting and lanterns); at round 1 the event card flips onto the table (400-800 ms) then settles as the pinned note; every discounted card wears a hand-tied tag with the struck price and the new one.
