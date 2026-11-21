@@ -5847,7 +5847,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each Coming-up round shows 3+ vehicle silhouettes each 20 px+ tall and no bare number under 14 px; Cath's bench figure 140 px+ tall at 1440x900; the bench's text area down 30%+ (measured on the shot); Hedgerow bench specs pass P and D; shot P and D.
 - **Size:** 2
 
-## 600. [ ] /games/ desktop: the four games as tall posters, all above the fold
+## 600. [ ] /games/ desktop: the four games as tall posters, all above the fold *(lane B, in progress)*
 *(planned 2026-11-21 08:50, lane B, plan1121e critique)*
 - **Why:** `plan1121e/games-D` 110-1330 x 538-900: the poster windows are ~200 px tall (540-740), the cards run past the 900 px fold, plain web cards with small body copy. VISION: nothing looks like a default list; the site is the showcase.
 - **Build:** `site/src` card grid and styles (`booth.ts`): the row becomes poster boards hung from the stall's lower awning, today's daily on a hanging price tag; the hero a little shorter if needed (items 563, 517 kept: the hero and Cath on each card).
