@@ -5704,7 +5704,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each region uses the board's landmark art (spec); freed regions' mean saturation 1.5x+ locked ones'; the moment shot P and D; campaign specs pass.
 - **Size:** 2
 
-## 581. [ ] Cathnivore phone title: the board as the hero
+## 581. [ ] Cathnivore phone title: the board as the hero *(lane A, in progress)*
 - **Why:** `plan1121a/cath-title-P` 175-375 x 425-600: the board is a ~200 px tilted inset behind Cath's hand; the town and bubble take more room than the game (VISION: the table is the hero).
 - **Build:** the phone title's board on the counter at full width (330 px+), Cath half-length beside or behind it, the bubble above her (`src/ui/` title).
 - **Accept:** board 300 px+ wide at 390x844 and nothing over it; title specs pass at P; D unchanged (shots).
@@ -5734,7 +5734,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** poster mean luminance 0.2+ (measure the current first); her head 18%+ of the poster height; keyart-fresh and site specs pass.
 - **Size:** 1
 
-## 586. [ ] The bugs from the 2026-11-21 01:35 critique, fixed as one batch *(lane A, in progress)*
+## 586. [x] The bugs from the 2026-11-21 01:35 critique, fixed as one batch *(done 2026-11-21 02:15, lane A, 201c0454 and 0109a34f: (1) NIGHT SHIFT P title: no second face or sign across her at 30 s or 45 s on today's build (canopy reads since item 570); the double exposure is the poster-to-live cross-fade (the two framings differ while the title camera settles), now 650 ms and steep instead of 1.4 s even; (2) the phone producer reply names its speaker in their colour, the far speaker's bubble drops the tail that pointed at the near bust, and the speaker's bust leaves the shade while they talk; (3) the phone Setup board's svg no longer clips the end discs (Rivermead's cut at 390); the names don't collide on today's deals at 390 (at 375x667 the discs keep item 550's 23 px floor on a small preview board, so they read large: kept); (4) with nothing pinned the desktop goal band is an empty frame inviting a pin, no second copy of the nearest card (saving-goal spec updated); (5) Runnel D lesson: the notebook fills the rail to the window's foot with Up next pinned at its foot. producer-line (the two D liberation cases also fail on the base commit locally: hushed line not seen; CI passed it), saving-goal, setup-phone, setup-objects (P, D), 35 Runnel lesson/win specs pass. Shots scratchpad b586 (before), bench-after, setupa-390, gD-full/-pinned, rn-after, nst-30/45)*
 - `ns-title-P` (2x) 480-720 x 1080-1300: a translucent second Cath face over her chest and a faded 'HOLLOW…' sign across her (likely the poster-to-live crossfade mid-shot: check timing first); 420-780 x 330-700 the umbrella reads as shaft and spokes with no canopy.
 - `cath-game-P` 90-255 x 480-540: Tomas's line in a bubble beside Cath's portrait (wrong speaker; right at D).
 - `cath-setup-P` 40-355 x 240-260: region name plates collide ('Brindle Hills' into its badge and 'Kingsmarket'; 'Rivermead' clipped right).
