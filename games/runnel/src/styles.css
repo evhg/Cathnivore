@@ -4241,8 +4241,18 @@ body[data-mode='practice'] #week-slot {
 /* Plan item 90: a lesson dims the valley, not the tiles, so every piece keeps its colour and rim while the target
    glows. */
 .in-lesson .cell:not(.lesson-target) .tile { opacity: 1; }
-/* Plan item 229: a lesson quiets the valley without greying it (.8 brightness and .75 saturation on a rain day left slate). */
-.in-lesson .valley { filter: brightness(.82) saturate(.65); transition: filter 400ms ease; }
+/* Plan item 597 (replacing item 229's lesson dim, which laid a grey-mauve wash over the first screen a player sees): a
+   lesson leaves the valley in its season's colours, a touch brighter than a daily's (item 545's quieting is for a full
+   board; the lesson's four tiles don't need it), with item 545's shaded edges eased, and a pool of light round the
+   tiles (desktop: the board's own drop shadow gains a soft light halo) so the eye still lands on them. */
+.in-lesson .valley { filter: saturate(.95) brightness(1.04); transition: filter 400ms ease; }
+.in-lesson .vl-focus-out { stop-opacity: .1; }
+@media (min-width: 1100px) {
+  .in-lesson .stage .board {
+    filter: drop-shadow(0 0 22px color-mix(in srgb, var(--paper-hi, var(--paper)) 70%, transparent))
+      drop-shadow(0 8px 12px color-mix(in srgb, var(--bank-shade) 34%, transparent));
+  }
+}
 
 /* ---- key art (plan item 116) ---- */
 /* `?keyart`, set on <html> by main.ts: the site poster's frame. The valley, the board and the farm fill the
