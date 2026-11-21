@@ -5734,7 +5734,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** poster mean luminance 0.2+ (measure the current first); her head 18%+ of the poster height; keyart-fresh and site specs pass.
 - **Size:** 1
 
-## 586. [ ] The bugs from the 2026-11-21 01:35 critique, fixed as one batch
+## 586. [ ] The bugs from the 2026-11-21 01:35 critique, fixed as one batch *(lane A, in progress)*
 - `ns-title-P` (2x) 480-720 x 1080-1300: a translucent second Cath face over her chest and a faded 'HOLLOW…' sign across her (likely the poster-to-live crossfade mid-shot: check timing first); 420-780 x 330-700 the umbrella reads as shaft and spokes with no canopy.
 - `cath-game-P` 90-255 x 480-540: Tomas's line in a bubble beside Cath's portrait (wrong speaker; right at D).
 - `cath-setup-P` 40-355 x 240-260: region name plates collide ('Brindle Hills' into its badge and 'Kingsmarket'; 'Rivermead' clipped right).
