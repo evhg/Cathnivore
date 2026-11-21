@@ -298,3 +298,7 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-21 10:30 lane B (600): /games/ posters are 268 px at 900 high, not 280: CI's fonts put a card's foot past the fold at 280 (games-cards red on 8cf5016, 888 locally); hooks clamp to three lines.
 - 2026-11-21 10:40 lane B (605): item 502's 120 px-wide map rows are retired for three little boards in a row (72 px art in a 260 px column); the week poster hangs at margin-left -56 px so it clears the hex shapes (region groups are widened by props, so measure the hex polygon).
 - 2026-11-21 11:05 lane B (606): no code kept; the upright title's fit counted the umbrella; dropping it plus 45 cm head room frames her face right, but `fitStage` must also fit width upright or her body meets the menu.
+- 2026-11-21 11:00 lane A (E2E): the bench pennant keeps line-height 1 so a round card is no taller than item 599's 'Round 18' line was; level 30's Coming up had 2 px to spare.
+- 2026-11-21 11:10 lane A (607): a region's count disc prefers its plaque's right end (the sign slides toward the board's edge); the left end only where the row can't hold it on the right.
+- 2026-11-21 11:20 lane A (607): the /games/ Cathnivore poster is centred (50%), not held right: the key art no longer has Tomas at its right edge, and the right hold cut Brindle Hills' plaque.
+- 2026-11-21 11:30 lane A (599): convoy cars are trimmed vehicle images (box = paint), the lead without a plate, so the 20 px accept measures the art itself.

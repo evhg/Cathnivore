@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (09:51 11-21): planning (604-607 from plan1121g, subagent critique), 604 done, 607 slice 1 and handed back. Open unclaimed: 605, 606, 607, 319, 543 (599 lane B).
+- Lane A (10:51 11-21): E2E red on a83a61b8 fixed (hedgerow-critique l30: the bench pennant 4 px too tall); 607 done; 599 slice 3 and handed back. Open unclaimed: 319, 543, 599 (606 lane B). Fewer than 3 unclaimed plain items soon: next lane plans.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-21 10:51 lane A:** E2E fix, 607 slice 2 (done), 599 slice 3 (4 code commits). hedgerow-critique/-round-chips/-convoy/-ledger/-rack-roles/-threat/-tray (P, D), region-status, board-control, campaign-map (P, D; 'letters fill to the foot' P fails on base too), games-cards/-shelf, site-hero, site; all --retries=0, load flakes passed alone; css lint, tsc, eslint. Full `npm run check` started at the end (see next session). Shots scratchpad s30, s607*, s599. Lock released.
 - 2026-11-21 10:21 lane B: E2E fix (600) and 605 done (2 code commits), 606 handed back; games-cards/stall, runnel-greened/win (P, D), setup-* (43, P and D), cathode-front (P: 2 fail with the 606 trial, reverted); keyart-fresh; --retries=0.
 - **2026-11-21 09:51 lane A:** planning 604-607 (e2e/screenshots/plan1121g, subagent critique), 604 done, 607 slice 1 (2 code commits). hedgerow-grade/-water/-biome3d/-3dframe (P, D), games-cards/-shelf, site-hero, campaign-* (D), all --retries=0 (load flakes passed alone); tsc, eslint. No full check. Shots scratchpad s604 (before, a1), camp-D. Lock released.
 - 2026-11-21 09:22 lane B: 600, 601, 602 done, 599 slice 2 (5 code commits); portfolio (18), games-* and site-* (P, D), region-status/board-pieces/board-control/layouts (P, D), hedgerow bench specs (27); keyart-fresh; --retries=0.
