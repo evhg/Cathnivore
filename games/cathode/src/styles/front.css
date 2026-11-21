@@ -26,7 +26,10 @@
     radial-gradient(120% 80% at 50% 120%, rgb(var(--blood-deep-rgb) / .35), transparent 60%),
     var(--front-night);
   opacity: 1;
-  transition: opacity 1400ms ease;
+  /* Plan item 586: the poster and the street's first live frame frame her differently (the title camera is still
+     settling), so a long even fade showed two of her at half strength, a second face on her chest; a short,
+     steep fade keeps the double exposure to a beat. */
+  transition: opacity 650ms cubic-bezier(.7, 0, .3, 1);
 }
 .front-fallback.is-off { opacity: 0; }
 /* Film grain over the street and the type: one layer, no animation under reduced motion. */
