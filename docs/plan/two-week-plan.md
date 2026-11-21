@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-21 04:26 UTC
+
 
 
 
@@ -5741,4 +5741,32 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `cath-game-D` 35-320 x 610-720: 'Nearest goal' repeats the Saving For card above it.
 - `runnel-D` 15-345 x 775-900: an empty cream band under the notebook rail.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 587. [ ] Hedgerow 3D: Cath and the farm's folk as characters, not dolls
+*(planned 2026-11-21 04:45, lane B, plan1121b critique)*
+- **Why:** `plan1121b/hedge-l21-3d-D` 150-240 x 490-630 (Cath), 105-165 x 680-790 and 785-830 x 405-505 (farmers); `hedge-l21-3d-P` 20-60 x 480-550: in the 3D field (the default view) Cath is a small low-poly figure without a readable face, hair or olive jacket, and the farmers are box dolls. VISION: Cath is the face of every game; characters with presence.
+- **Build:** `games/hedgerow/src/render3d/`: her figure from `shared/cath`'s proportions and colours: a hair mass with a shine band, the olive jacket and collar, and her 2D face (shared/cath bust, `face` framing) baked once to a canvas texture on the head's front; her idle, point and cheer read at field distance. The farmers get the same kit's head and a costume each.
+- **Accept:** at 1440x900 level 21 her projected head box is 18 px+ tall and holds both skin-tone and dark eye pixels; her named parts (hair, jacket, collar, face) exist (unit test); hedgerow-cath3d and 3dframe pass P and D; draw calls within budget; key art re-shot.
+- **Size:** 2
+
+## 588. [ ] NIGHT SHIFT class pick: the guns as gunmetal, the photos as noir stills
+*(planned 2026-11-21 04:45, lane B, plan1121b critique)*
+- **Why:** `plan1121b/ns-play-D` 1020-1390 x 225-400 (the Widowmaker on the sheet) and 360-470 x 190-630 (the rack): the guns read as flat grey blockouts; 60-110 x 175-640: item 575's booking photos are the 2D Cathnivore cartoon, out of key with the noir 3D street; `ns-play-P` (2x) 40-740 x 865-980 the same.
+- **Build:** the gun portraits (`render/gunportrait.ts`) get blued metal, worn edges and grip materials (wood or polymer per gun) under the studio light; each class's booking photo rendered once from the 3D figure in that class's kit under a noir key (the pick's own camera, cached to a data URL like `gunIcon`), the 2D bust kept as the fallback before the street is up.
+- **Accept:** each gun thumbnail's luminance standard deviation 1.5x today's (measure first); the five photos differ pairwise by 15%+ of pixels and are 3D renders once the street is up (a spec reads the source); classpick and classstage pass P and D.
+- **Size:** 2
+
+## 589. [ ] Cathnivore desktop table: the rail supports the board, it doesn't compete
+*(planned 2026-11-21 04:45, lane B, plan1121b critique)*
+- **Why:** `plan1121b/cath-game-D` 15-335 x 10-885: seven stacked sections (actions, resources, partner, saving-for cards, goal, ledger, undo) in 10-12 px type; the saving-for cards' dot meters (35-320 x 380-550) are hard to read. VISION: menus support the table and never compete with it.
+- **Build:** `src/ui/` rail: resources and the turn's actions always shown large; partner, ledger and goal as tabbed drawers (one open at a time, the last choice remembered); the saving-for cards as two large progress cards; a type scale with nothing under 13 px.
+- **Accept:** at 1440x900 at most 4 rail sections visible; no rendered text in the rail under 13 px (computed style scan); the rail at most 22% of the viewport width; desktop-no-scroll, table-hand and saving-goal specs pass; shots D before and after.
+- **Size:** 2
+
+## 590. [ ] Runnel desktop: the notebook rail live through the daily
+*(planned 2026-11-21 04:45, lane B, plan1121b critique)*
+- **Why:** `plan1121b/runnel-D` 45-345 x 540-690: a blank 150 px of notebook between the legend and Up next during a daily (item 586 filled the lesson's rail, not the daily's).
+- **Build:** the daily's notebook fills with live content: taps against par as a pencil tally, a small sketch of the fields still dry (from the board), and a margin note from Cath that changes with the water's progress (`games/runnel/src/main.ts`, styles.css).
+- **Accept:** at 1440x900 no vertical gap over 48 px between the rail's visible children; the notebook's text changes after a tap that waters a field (spec); no page scroll at 1280x800 and 1440x900; Runnel specs pass P and D.
 - **Size:** 1
