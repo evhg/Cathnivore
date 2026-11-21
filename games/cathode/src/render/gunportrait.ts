@@ -14,6 +14,10 @@ export interface GunTurntableOptions {
   height: number;
   /** The rim light's colour (linear RGB, the class's key). */
   rim: [number, number, number];
+  /** Plan item 588: the key's strength over the case table's (the rack's small guns need 3:1 on their dark rows). */
+  exposure?: number;
+  /** Plan item 588: the key's cone half-angle (radians): a pool on the case table, the whole gun on the rack. */
+  pool?: number;
 }
 
 /**
@@ -116,10 +120,10 @@ export class GunStudio {
     // directional lit every flat face one even grey: the stocks read as slabs), with a low fill so the falloff shows.
     // It hangs close over the gun with a physical (inverse-square) falloff, so even a small flat face (a grip, a
     // magazine) shades from its top down, as under a lamp a hand's width above the bench.
-    const key = new THREE.SpotLight(0xfff1e0, 1, 0, 0.52, 1, 2);
+    const key = new THREE.SpotLight(0xfff1e0, 1, 0, o.pool ?? 0.52, 1, 2);
     key.position.set(long * 0.16, dist * 0.42, dist * 0.34);
     key.target.position.set(-long * 0.06, 0, 0);
-    key.intensity = 26 * key.position.distanceToSquared(key.target.position);
+    key.intensity = 26 * (o.exposure ?? 1) * key.position.distanceToSquared(key.target.position);
     this.scene.add(key.target);
     const rim = new THREE.DirectionalLight(rimColour, 7);
     rim.position.set(-0.8, 0.5, -1.2);
@@ -192,6 +196,9 @@ const reels = new Map<string, GunReel>();
  * makes them monochrome and lights the picked one in the class's colour). */
 export const GUN_ICON = { width: 300, height: 120 };
 const icons = new Map<string, string>();
+/** Plan item 588: the rack's thumbnails take a brighter key than the case table: under the pool's falloff their
+ * median fell under 3:1 on the rack's dark rows (plan item 434's floor). */
+const GUN_ICON_EXPOSURE = 1.8;
 
 /** One still thumbnail of a weapon class's gun (cached), or null for a class with no gun model. Plan item 423: rimmed
  * in its class's key colour when one is given (white otherwise), so the rack's guns carry their class's light. */
@@ -201,7 +208,7 @@ export function gunIcon(renderer: THREE.WebGLRenderer, weaponCls: string, rim: [
   const id = `${weaponCls}:${rim.join(",")}`;
   const had = icons.get(id);
   if (had) return had;
-  const studio = new GunStudio(renderer, model, { ...GUN_ICON, frames: 1, rim });
+  const studio = new GunStudio(renderer, model, { ...GUN_ICON, frames: 1, rim, exposure: GUN_ICON_EXPOSURE, pool: 1.1 });
   const url = studio.shoot(0);
   studio.dispose();
   icons.set(id, url);
