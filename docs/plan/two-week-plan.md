@@ -5893,7 +5893,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each board card's art 90 px+ at D, 64 px+ at P, drawn from the map's regions (not an icon); every choice target 44 px+ tall; smallest setup text 13 px+; the week card intersects no hex's box at 1280x800 and 1440x900; setup-* specs pass P and D; shot P and D.
 - **Size:** 1
 
-## 606. [ ] NIGHT SHIFT phone title: a portrait poster framed on Cath
+## 606. [ ] NIGHT SHIFT phone title: a portrait poster framed on Cath *(lane B, in progress)*
 - **Why:** `plan1121g/ns-title-P` (2x): her face sits at 540-700 x 1100-1260 behind The List; most of the frame is umbrella and a cropped 'HOLLOW…' sign (290-780 x 560-780) that reads as a clipping error. VISION 5 and the Cath bible: she is the face of the game.
 - **Build:** `scripts/cathode-poster.mjs` and the title's phone framing (`frontstoop`/title camera): a portrait camera that frames her from the waist up with her face at 35-55% of the height and clear of the menu and List, the sign whole or out of frame; re-render the phone poster.
 - **Accept:** at 390x844 her face box 60 px+ wide, its centre between y 300 and 470, intersecting no UI card; no partly cropped sign lettering; keyart-fresh and cathode-front pass at P; D unchanged; shot P and D.
