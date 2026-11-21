@@ -6019,7 +6019,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; touched specs pass; shot P and D.
 - **Size:** 1
 
-## 623. [ ] Runnel: Bea's garden as a bed that fills across the week
+## 623. [ ] Runnel: Bea's garden as a bed that fills across the week *(lane B, in progress)*
 *(planned 2026-11-21 19:45, lane B, plan1121k critique)*
 - **Why:** `plan1121k/runnel-solved-D` 32-330 x 712-752: the rail's 'Bea's garden' is one sprout and seven grey dots, a page counter not a garden; in the valley the garden is a 135 px corner (1255-1390 x 735-830) with its label over the sunflowers; the harvest card says 'Planted in Bea's garden: a tomato' (items 615, 620) but nothing visible is planted. VISION 1, 4, Bea's role in the Cath bible.
 - **Build:** `games/runnel/src/` rail almanac and the valley's garden layer (`garden.ts` `gardenPlots`/`cropFor`, `gardenart.ts`): the rail panel a drawn raised bed with one plant per solved daily this week (its crop at its stage), a bare patch for an unsolved day; the valley garden draws the same plants, ~220 px at D; a solve sets the new plant in with a 600 ms grow-in and Bea waters it.
