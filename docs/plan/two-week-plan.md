@@ -5830,7 +5830,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** mean luma of the valley more than 250 px from the board up 30%+ on today's shot; item 90's tile-edge contrast still holds (runnel-tiles spec: 3:1 at D, 2.5 at P); lesson specs pass P and D; key art re-shot if a keyart source changes; shot P and D, light and dark.
 - **Size:** 1
 
-## 598. [ ] The bugs from the 2026-11-21 07:40 critique, fixed as one batch
+## 598. [ ] The bugs from the 2026-11-21 07:40 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-21 07:45, lane B, plan1121d critique; check each on today's build first)*
 - Cathnivore D (`cath-game-D` 345-465 x 820-880): the first hand card's title cut to 'Sel', its option dots over it.
 - Cathnivore D (85-175 x 255-275): the partner's name cut to 'Tomas R…' (item 589's narrower rail): give the name the row's room, the empty slot boxes shrink first.
