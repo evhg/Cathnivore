@@ -5750,7 +5750,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 level 21 her projected head box is 18 px+ tall and holds both skin-tone and dark eye pixels; her named parts (hair, jacket, collar, face) exist (unit test); hedgerow-cath3d and 3dframe pass P and D; draw calls within budget; key art re-shot.
 - **Size:** 2
 
-## 588. [ ] NIGHT SHIFT class pick: the guns as gunmetal, the photos as noir stills
+## 588. [ ] NIGHT SHIFT class pick: the guns as gunmetal, the photos as noir stills *(lane A, in progress)*
 *(planned 2026-11-21 04:45, lane B, plan1121b critique)*
 - **Why:** `plan1121b/ns-play-D` 1020-1390 x 225-400 (the Widowmaker on the sheet) and 360-470 x 190-630 (the rack): the guns read as flat grey blockouts; 60-110 x 175-640: item 575's booking photos are the 2D Cathnivore cartoon, out of key with the noir 3D street; `ns-play-P` (2x) 40-740 x 865-980 the same.
 - **Build:** the gun portraits (`render/gunportrait.ts`) get blued metal, worn edges and grip materials (wood or polymer per gun) under the studio light; each class's booking photo rendered once from the 3D figure in that class's kit under a noir key (the pick's own camera, cached to a data URL like `gunIcon`), the 2D bust kept as the fallback before the street is up.
