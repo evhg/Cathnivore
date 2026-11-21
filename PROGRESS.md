@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (02:51 11-21): 581 done (5c36f516: phone title board 323 px across the counter, Cath behind its far corner; item 453's 'Cath largest' superseded), 580 done (927a51d9: campaign map regions as board tiles, Hollowell wrap peels on a win), 585 done (a2649447: NIGHT SHIFT key art closer, luma 0.218; posters re-rendered). Open: 579, 584, 583 (lane B), 543, 319.
+- Lane A (03:51 11-21): 579 done (b2751c2a: the Fixer's launcher at her side, figureMask and a stance-outline spec). Open: 584 (lane B), 543, 319: fewer than 3 unclaimed, so the next lane plans.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-21 03:51 lane A:** 579 done (1 code commit). New classpose stance-outline spec (P passes, --retries=0; D timed out at 300 s beside P, budget raised, left to CI); stance IoU script at D and P; tsc, eslint. No full check. Shots scratchpad s579, s579/a1, s579/a2. Lock released.
 - 2026-11-21 03:21 lane B: 583 done, 584 slice 1 (2 code commits); map, level-card and 3D depot specs pass P and D.
 - **2026-11-21 02:51 lane A:** 581, 580, 585 done (3 code commits), posters and key art re-rendered. title-*, critique166, daily-ritual (P, --retries=0); campaign-map, campaign (P, D; 'letters fill to the foot' P fails on base too locally); site keyart (new NIGHT SHIFT luma spec); keyart-fresh, css lint, campaign unit tests; tsc, eslint. Full `npm run check` green (2855/2855). Shots scratchpad s581, s580, s585; 579 findings noted. Lock released.
 - 2026-11-21 02:21 lane B: 582 done, 583 slice 1 (2 code commits); 142 Runnel specs pass P and D.
@@ -51,4 +52,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - **2026-11-20 20:51 lane A:** 572 and 573 done, 578 fix (7 code commits). setup-* (P, D, --retries=0), layouts, region-status, board-control, plan-plaque, critique* (P), campaign* (P, D); css lint; tsc, eslint. No full check (the release follows tomorrow). Shots scratchpad s572 (before/a1-a6/final, 375x667, 844x390, D), s573. Lock released.
 - 2026-11-20 21:21 lane B: 576 slice 1 (1 code commit); Hedgerow phone specs pass after two fixes found by the full phone run.
 - 2026-11-20 20:21 lane B: Runnel render-path fix (156 Runnel specs pass P and D, 2 workers); 577 done (2 code commits).
-- **2026-11-20 19:51 lane A:** release 67ef937d; red E2E fixed (spec); planning 572-578; 578 done (2 code commits). hedgerow-map-diorama (P, D, x2), region-status, board-control, papers-placard, rival-face (alone), plan-cards, phone-counter (P, D); css lint; tsc, eslint. Shots scratchpad plan1120u, after578(b). Lock released.
