@@ -41,7 +41,9 @@ function build(level: Level): { looks: Map<string, PlotLook>; field: Map<string,
   const scenery = sceneryCells(level);
   const r01 = rng(level.id * 7919 + 52);
   const kit = kitFor(level);
-  const BASE: readonly PlotLook[] = kit.beds;
+  const BASE: readonly PlotLook[] = [...kit.beds, ...kit.margins];
+  // Plan item 621: at equal use an act's own bed is sown before a borrowed margin bed.
+  const weight = (l: PlotLook) => (used.get(l) ?? 0) + (kit.beds.includes(l as never) ? 0 : 0.5);
   const out = new Map<string, PlotLook>();
   const base = new Map<string, PlotLook>();
   const field = new Map<string, Field>();
@@ -73,9 +75,9 @@ function build(level: Level): { looks: Map<string, PlotLook>; field: Map<string,
         const roll = r01();
         const free = BASE.filter((l) => !above.has(l) && l !== prev);
         // Of the looks free here, the ones the level has used least, so a farm of few big fields still grows all three.
-        const least = Math.min(...free.map((l) => used.get(l) ?? 0));
+        const least = Math.min(...free.map(weight));
         const pool = free.length
-          ? free.filter((l) => (used.get(l) ?? 0) === least)
+          ? free.filter((l) => weight(l) === least)
           : [...BASE].sort((a, b) => (above.get(a) ?? 0) - (above.get(b) ?? 0)).slice(0, 1);
         look = pool[Math.floor(roll * pool.length)]!;
         used.set(look, (used.get(look) ?? 0) + 1);

@@ -43,7 +43,7 @@ describe("plot looks", () => {
       }
     }
     // Plan item 399: every act's kit, and the farm's puddle.
-    const kits = [BRINDLE_KIT, ...Object.values(FIELD_KITS)].flatMap((k) => [...k!.beds]);
+    const kits = [BRINDLE_KIT, ...Object.values(FIELD_KITS)].flatMap((k) => [...k!.beds, ...k!.margins]);
     expect([...all].sort()).toEqual([...new Set([...kits, "puddle"])].sort());
   });
 

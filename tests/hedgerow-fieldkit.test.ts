@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { BRINDLE_KIT, FIELD_KITS, bedBase, kitFor } from "../games/hedgerow/src/fieldkit";
-import { plotLooks } from "../games/hedgerow/src/plotlook";
+import { fieldAt, plotLooks } from "../games/hedgerow/src/plotlook";
 
 const kits = [BRINDLE_KIT, ...Object.values(FIELD_KITS).map((k) => k!)];
 
@@ -36,12 +36,22 @@ describe("field kits", () => {
 
   it("sow every plot of a level from its act's kit", () => {
     for (const level of LEVELS) {
-      const beds = new Set<string>([...kitFor(level).beds, "puddle"]);
+      const beds = new Set<string>([...kitFor(level).beds, ...kitFor(level).margins, "puddle"]);
       for (const look of plotLooks(level).values()) expect(beds.has(look), `level ${level.id} ${look}`).toBe(true);
     }
   });
 
   it("keep three different beds in the 3D view for each kit (neighbours still differ there)", () => {
     for (const kit of kits) expect(new Set(kit.beds.map(bedBase)).size, kit.name).toBe(3);
+  });
+
+  // Plan item 621: a level's farm reads as five crops or more, the act's own three plus two borrowed margins.
+  it("sow 5+ different beds on every level with five fields or more", () => {
+    for (const kit of kits) for (const m of kit.margins) expect(kit.beds, kit.name).not.toContain(m);
+    for (const level of LEVELS) {
+      const looks = plotLooks(level);
+      const fields = new Set([...looks.keys()].map((k) => { const [c, r] = k.split(",").map(Number) as [number, number]; return fieldAt(level, c, r)?.id; }));
+      if (fields.size >= 5) expect(new Set(looks.values()).size, `level ${level.id}`).toBeGreaterThanOrEqual(5);
+    }
   });
 });
