@@ -32,6 +32,14 @@ test('the end screen shows Cath, the headline, the chart and Play again without 
   // Cath stands in the pose for the result.
   const won = await page.locator('.end-screen.is-win').count()
   await expect(page.locator('.end-screen-cath svg')).toHaveAttribute('class', new RegExp(won ? 'cheer' : 'crossed'))
+  // Plan item 614: the producers take the result beside the board (a cheer or a slump), standing in the rail at D.
+  await expect(page.locator('.end-cast')).toHaveAttribute('data-end-cast', won ? 'cheer' : 'slump')
+  expect(await page.locator('.end-cast [data-end-producer]').count()).toBeGreaterThan(0)
+  if (vw >= 1200) {
+    const cast = (await page.locator('.end-cast').boundingBox())!
+    expect(cast.x, 'the cast in the rail, right of the board').toBeGreaterThanOrEqual(board.x + board.width - 1)
+    expect(cast.y + cast.height, 'the cast clear of the action bar').toBeLessThanOrEqual(bar.y + 1)
+  }
 })
 
 test('a tap skips the end screen sequence', async ({ page }) => {

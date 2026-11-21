@@ -5156,8 +5156,8 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
 @media (min-width: 1200px) and (min-height: 700px) {
   .end-screen {
     grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.55fr) minmax(220px, 0.62fr);
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas: "story board chart" "story board stats" "actions actions actions";
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas: "story board chart" "story board stats" "story board cast" "actions actions actions";
     column-gap: 32px; max-width: 1440px; padding: 24px 32px 0;
   }
   .end-col-story { grid-area: story; }
@@ -5176,9 +5176,16 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
    at its foot (the rest of the board stays lit, it is the hero). The card in the story wears the same pin. */
 .featured-rim { fill: none; stroke: var(--wheat-ink); stroke-width: 10; stroke-linejoin: round; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--wheat-hi) 90%, transparent)); }
 .featured-rim-hi { fill: none; stroke: var(--wheat-hi); stroke-width: 4; stroke-linejoin: round; }
-.featured-tag-card { fill: var(--paper); stroke: var(--wheat-ink); stroke-width: 1.5; filter: drop-shadow(0 3px 2px color-mix(in srgb, var(--ink) 30%, transparent)); }
-.featured-tag-text { fill: var(--ink); font-family: var(--font-display, inherit); font-weight: 800; }
-.featured-tag-pin { fill: var(--clay-deep); stroke: var(--paper); stroke-width: 1.5; }
+/* slice 4: a fair's prize rosette on the region's foot point: wheat petals, a paper medal with the round, clay tails */
+.featured-rosette { filter: drop-shadow(0 3px 2px color-mix(in srgb, var(--ink-on-fixed-fill) 40%, transparent)); }
+.featured-ribbon { fill: var(--clay-deep); stroke: color-mix(in srgb, var(--clay-deep) 60%, var(--ink-on-fixed-fill)); stroke-width: 1; stroke-linejoin: round; }
+.featured-ribbon-b { fill: color-mix(in srgb, var(--clay-deep) 82%, var(--ink-on-fixed-fill)); }
+.featured-petals { fill: var(--wheat); stroke: color-mix(in srgb, var(--wheat) 45%, var(--ink-on-fixed-fill)); stroke-width: 1.2; stroke-linejoin: round; }
+.featured-medal { fill: var(--paper-on-fixed-fill); stroke: color-mix(in srgb, var(--wheat) 45%, var(--ink-on-fixed-fill)); stroke-width: 1.5; }
+.featured-medal-round { fill: var(--clay-deep); font-family: var(--font-ui, inherit); font-weight: 800; letter-spacing: 0.06em; }
+.featured-medal-n { fill: var(--ink-on-fixed-fill); font-family: var(--font-display, inherit); font-weight: 800; }
+/* the board's 3D rims and foot spill past the map's viewBox; on the end screen's open table they are drawn whole */
+.end-screen-map .map { overflow: visible; }
 .featured-region { animation: featured-in 0.45s ease 1.6s both; }
 @keyframes featured-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .featured-region { animation: none; } }
@@ -5191,12 +5198,42 @@ html.no-animations .featured-region { animation: none; }
 /* Plan item 614 at P: the board comes straight after the verdict at full width (about 358 px), on the table and
    unframed, above the sticky bar; the story, the play of the game, the chart and the stats follow. */
 @media (max-width: 600px) {
-  .end-screen-map { order: 6; width: calc(100% + 16px); max-width: 420px; margin: 0 -8px; padding: 0; background: none; border: 0; transform: none; }
+  .end-cast { order: 7; margin-top: 4px; }
+  /* the margin below: the board's foot and a bottom-row rosette's tails hang below the svg's box */
+  .end-screen-map { order: 6; width: calc(100% + 16px); max-width: 420px; margin: 0 -8px 26px; padding: 0; background: none; border: 0; transform: none; }
   .end-screen-story { order: 7; }
   .end-play { order: 8; }
   .end-chart { order: 9; }
   .end-screen-stats { order: 10; }
 }
+/* Plan item 614: the producers take the result beside the board: a row of busts on a phone, half length in the rail at
+   D standing at the table's edge. A cheer steps them up with a fist raised; a slump sinks them, the light gone out. */
+.end-cast { display: flex; justify-content: center; align-items: flex-end; gap: 14px; margin: 0; animation: end-rise 0.45s ease 1.2s both; }
+.end-cast-producer { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0; }
+.end-cast-producer > svg { display: block; transform-origin: 50% 100%; }
+.end-cast-producer figcaption {
+  margin-top: -6px; padding: 2px 10px 3px; border-radius: var(--r-sm); position: relative;
+  background: color-mix(in srgb, var(--cameo-ring, var(--wheat)) 50%, var(--ink-on-fixed-fill));
+  color: var(--paper-on-fixed-fill); font: 700 var(--fs-small)/1.1 var(--font-text); letter-spacing: .03em;
+}
+.end-cast-producer.pc-mara { --cameo-ring: var(--p-mara); }
+.end-cast-producer.pc-tomas { --cameo-ring: var(--p-tomas); }
+.end-cast-producer.pc-ines { --cameo-ring: var(--p-ines); }
+.end-cast-producer.pc-sol { --cameo-ring: var(--p-sol); }
+.end-cast[data-end-cast="cheer"] .end-cast-producer > svg { animation: producer-cheer var(--dur-slow) var(--ease-pop) 1.4s both; }
+.end-cast[data-end-cast="slump"] .end-cast-producer > svg { filter: saturate(.7) brightness(.92); translate: 0 4px; }
+.end-cast .fig-head, .end-cast .fig-body { transform-box: fill-box; }
+.end-cast .fig-head { transform-origin: 50% 90%; }
+.end-cast .fig-body { transform-origin: 50% 100%; }
+.end-cast[data-end-cast="cheer"] .fig-head { transform: rotate(5deg) translateY(-4px); }
+.end-cast[data-end-cast="slump"] .fig-head { transform: rotate(-7deg) translateY(10px); }
+.end-cast[data-end-cast="slump"] .fig-body { transform: scaleY(.96); }
+@media (min-width: 1200px) and (min-height: 700px) {
+  .end-cast { grid-area: cast; align-self: end; gap: 4px; margin-bottom: 4px; }
+  .end-cast-producer > svg { width: min(120px, 9vw); height: auto; max-height: calc(100vh - 640px); min-height: 120px; }
+}
+@media (prefers-reduced-motion: reduce) { .end-cast, .end-cast-producer > svg { animation: none !important; } }
+html.no-animations .end-cast, html.no-animations .end-cast-producer > svg { animation: none !important; }
 /* Plan item 614: the stats are chalked on the stall's price board (a slate in a wooden frame, as the campaign's tally,
    item 309), and the keys speak the title's stall language (item 327): Play again or Continue the painted plank sign,
    the others paper price tags on a punched hole, hung a little askew. */

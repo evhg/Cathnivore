@@ -120,7 +120,7 @@ interface Props {
   /** Plan item 451: a card just played into this region lands with a stamp and a puff of paper dust (`key` replays it). */
   stamp?: { region: RegionId; key: number }
   /** Plan item 614: the end screen's play of the game: the region gets a gold rim and a pinned tag, the rest stays lit. */
-  featured?: { region: RegionId; label: string }
+  featured?: { region: RegionId; round: number }
   /** Plan item 507: the Setup's opening board plays a producer's power over their home region before they're picked. */
   showcase?: AbilityMomentView[]
   /** Plan item 451: a card is being aimed (pressed, dragged or armed): the hexes it can't go to darken, not fade. */
@@ -1338,22 +1338,30 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           })}
         </g>
       )}
-      {/* Plan item 614: under the region signs, so the rim and its tag never cover a name. */}
+      {/* Plan item 614: under the region signs, so the rim and its rosette never cover a name. The play of the game
+          wins a fair's prize rosette, hung on the region's foot point (slice 4: the paper tag in the face covered
+          its producers): the narrow tip of the face holds no pieces, and it fits between the signs of the row below. */}
       {featured && active.includes(featured.region) && (() => {
         const { x, y } = hexCenter(featured.region, layout)
-        const tx = 0
-        const ty = HEX_R * 0.52
-        const w = Math.max(84, featured.label.length * 10 + 26)
+        const ty = HEX_R * 0.98
+        const petals = Array.from({ length: 24 }, (_, i) => {
+          const a = (i * Math.PI) / 12
+          const r = i % 2 ? 19 : 23
+          return `${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`
+        }).join(' ')
         return (
           <g className="featured-region" data-featured={featured.region} pointerEvents="none" aria-hidden="true" transform={`translate(${x} ${y})`}>
             <polygon className="featured-rim" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} />
             <polygon className="featured-rim-hi" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} />
-            <g className="featured-tag" transform={`translate(${tx} ${ty}) rotate(-4)`}>
-              <rect className="featured-tag-card" x={-w / 2} y={-17} width={w} height={34} rx={3} />
-              <text className="featured-tag-text" x={0} y={1} fontSize={17} dominantBaseline="central" textAnchor="middle">
-                {featured.label}
+            <g className="featured-rosette" transform={`translate(0 ${ty}) rotate(-6)`}>
+              <path className="featured-ribbon" d="M -9 8 L -17 44 L -10 39 L -5 46 L 1 10 Z" />
+              <path className="featured-ribbon featured-ribbon-b" d="M 9 8 L 17 44 L 10 39 L 5 46 L -1 10 Z" />
+              <polygon className="featured-petals" points={petals} />
+              <circle className="featured-medal" r={15} />
+              <text className="featured-medal-round" y={-6.5} fontSize={6.5} textAnchor="middle" dominantBaseline="central">ROUND</text>
+              <text className="featured-medal-n" y={4.5} fontSize={featured.round > 9 ? 12 : 14} textAnchor="middle" dominantBaseline="central">
+                {featured.round}
               </text>
-              <circle className="featured-tag-pin" cx={-w / 2 + 10} cy={-11} r={6} />
             </g>
           </g>
         )

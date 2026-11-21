@@ -442,6 +442,7 @@ function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box
   unseat()
 }
 
+const END_DESK_QUERY = '(min-width: 1200px) and (min-height: 700px)'
 const faceExpression = (f?: ProducerFace) => (f === 'delighted' ? 'delighted' : f === 'worried' ? 'worried' : undefined)
 
 // The Cath companion's reaction to one log event (ROADMAP "Cath in Cathnivore, as guide and narrator"),
@@ -918,6 +919,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const isDesktop = useIsDesktopLayout()
   const deskTableCath = useMedia(TABLE_CATH_QUERY)
   const phoneTableCath = useMedia(PHONE_TABLE_CATH_QUERY)
+  // Plan item 614: the end screen's producers stand half length at a desktop table, as busts elsewhere.
+  const deskEnd = useMedia(END_DESK_QUERY)
   const tableCath = deskTableCath || phoneTableCath
   const bubbleSuggest = useMedia(TABLE_CATH_TALL_QUERY)
   // Plan item 535: a shorter desktop table queues her tip after her line in the one bubble (see the bubble below).
@@ -2082,7 +2085,21 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           </dl>
           {/* Plan item 614: the final table is the hero; the play of the game is pinned on its region. */}
           <div className="end-screen-map" data-featured={summary.play?.region}>
-            <RegionMap state={state} featured={summary.play?.region ? { region: summary.play.region, label: `★ Round ${summary.play.round}` } : undefined} />
+            <RegionMap state={state} featured={summary.play?.region ? { region: summary.play.region, round: summary.play.round } : undefined} />
+          </div>
+          {/* Plan item 614: the producers take the result beside the board, with Cath: a cheer for a win, a slump
+              for a loss. Half length in the rail at D, a row of busts under the board on a phone. */}
+          <div className="end-cast" data-end-cast={won ? 'cheer' : 'slump'}>
+            {state.config.producers.map((id) => (
+              <figure key={id} className={`end-cast-producer pc-${id}`} data-end-producer={id}>
+                {deskEnd ? (
+                  <Figure character={id} expression={won ? 'delighted' : 'worried'} pose={won ? 'cheer' : 'slump'} title={`${PRODUCERS[id].name}, ${won ? 'cheering' : 'downcast'}`} />
+                ) : (
+                  <Portrait character={id} size={56} expression={won ? 'delighted' : 'worried'} />
+                )}
+                <figcaption>{PRODUCERS[id].name.split(' ')[0]}</figcaption>
+              </figure>
+            ))}
           </div>
         </section>
         {/* Plan item 484: a Daily ends with a postcard to share; the text share stays as its fallback */}
