@@ -4745,6 +4745,9 @@ function syncCathSay(g: Game, now: number): void {
   sayShown = { text, box: spot, cath };
 }
 
+/** The painted rosette (plan item 64): two tails, sixteen petals, a paper face with a stitched ring. */
+const ROSETTE_SVG = `<svg class="rosette-art" viewBox="0 0 100 120"><path class="tail" d="M34 58 L22 116 L34 106 L44 118 L50 62 Z"/><path class="tail" d="M66 58 L78 116 L66 106 L56 118 L50 62 Z"/><g class="petals">${Array.from({ length: 16 }, (_, i) => `<ellipse cx="50" cy="20" rx="9" ry="16" transform="rotate(${i * 22.5} 50 50)"/>`).join("")}</g><circle class="face" cx="50" cy="50" r="26"/><circle class="ring" cx="50" cy="50" r="21"/></svg>`;
+
 /**
  * Plan item 64: a cleared round is a painted rosette pinned on the field, on the spot nearest the lane's end that
  * covers no plot, with the round's Marks flying from it to the Marks chip. A round with no leaks gets the gold
@@ -4757,7 +4760,7 @@ function roundRosette(g: Game, round: number, reward: number, clean: boolean): v
   const el = document.createElement("div");
   el.className = `round-rosette${clean ? " clean" : ""}`;
   el.setAttribute("aria-hidden", "true");
-  el.innerHTML = `<svg class="rosette-art" viewBox="0 0 100 120"><path class="tail" d="M34 58 L22 116 L34 106 L44 118 L50 62 Z"/><path class="tail" d="M66 58 L78 116 L66 106 L56 118 L50 62 Z"/><g class="petals">${Array.from({ length: 16 }, (_, i) => `<ellipse cx="50" cy="20" rx="9" ry="16" transform="rotate(${i * 22.5} 50 50)"/>`).join("")}</g><circle class="face" cx="50" cy="50" r="26"/><circle class="ring" cx="50" cy="50" r="21"/></svg><span class="rosette-text"><em>${reward > 0 ? `+${reward}` : "✓"}</em><small>${clean ? "Clean sweep" : `Round ${round}`}</small></span>`;
+  el.innerHTML = `${ROSETTE_SVG}<span class="rosette-text"><em>${reward > 0 ? `+${reward}` : "✓"}</em><small>${clean ? "Clean sweep" : `Round ${round}`}</small></span>`;
   ui.stage.append(el);
   const field = ui.stage.getBoundingClientRect();
   const size = { w: el.offsetWidth || 120, h: el.offsetHeight || 144 };
@@ -6090,6 +6093,8 @@ function renderPayout(pay: Payout, next: Level | undefined, reward = ""): void {
       const badge = document.createElement("span");
       badge.className = "payout-rosette";
       badge.setAttribute("aria-hidden", "true");
+      // Plan item 613: the same painted rosette the rounds pin on the field.
+      badge.innerHTML = ROSETTE_SVG;
       const label = document.createElement("span");
       label.textContent = name;
       li.append(badge, label);
