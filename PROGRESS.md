@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (11:51 11-21): E2E red on 3f67eb55 checked (the level-30 bench spec, fixed by dd432fd); 608, 609, 610 done. Open unclaimed: 611 (612 lane B), 319, 543, 599. chapter-seals' first test fails locally on base (a producer figure in Cath's dock intercepts the seal card click): check CI's verdict next session.
+- Lane A (12:51 11-21): 319 slice 98 (the grey patch beside the chin) and an acceptance critique (FAIL: chin wedge, hairline), handed back. Open unclaimed: 319, 543, 599 (611 lane B). CI green on 0ab9aace, E2E green on 1b5f5662.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-21 12:51 lane A:** 319 slice 98 (1 code commit), posters and key art re-rendered. tsc, eslint, keyart-fresh; cathode-classpick + classpose at D (15, --retries=0). Subagent critique FAIL (chin, hairline). No full check. Shots scratchpad f319. Lock released.
 - 2026-11-21 12:21 lane B: 612 done, 611 slice 1 (4 code commits); cathode-classpick/-gunstudio (P, D, 21), saving-goal/desktop-rail/desktop-no-scroll (D), board-scale/phone-counter, hedgerow dock specs (30); keyart-fresh; --retries=0.
 - **2026-11-21 11:51 lane A:** 608, 609, 610 done (3 code commits). hedgerow-map* (P, D, new 608 spec), critique79/103, hedgerow-level-card/-masthead/-story/-critique, site (P); title* (P, D; title-counter updated), critique166, daily-ritual; campaign*, chapter-*, crash-recovery, daily, quick-game (P; campaign-map/-spread updated); all --retries=0; tsc, eslint, css lint. No full check. Shots scratchpad s608, s609, s610. Lock released.
 - 2026-11-21 11:21 lane B: 606 done (1 code commit), planning from plan1121h; cathode-front/-title-focal/-frontpage (P, 24), keyart-fresh; --retries=0.
