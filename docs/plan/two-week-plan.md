@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-21 19:36 UTC
-
 
 
 
@@ -6019,4 +6017,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Cathnivore table P (`cath-game-P` 10-250 x 482-552): Tomas's line sits beside Cath's portrait, so it reads as hers.
 - Hedgerow 3D D (`hedge-l21-3d-D` 30-235 x 140-300): the depot cut by the field frame.
 - **Accept:** each fixed or closed with a measurement; touched specs pass; shot P and D.
+- **Size:** 1
+
+## 623. [ ] Runnel: Bea's garden as a bed that fills across the week
+*(planned 2026-11-21 19:45, lane B, plan1121k critique)*
+- **Why:** `plan1121k/runnel-solved-D` 32-330 x 712-752: the rail's 'Bea's garden' is one sprout and seven grey dots, a page counter not a garden; in the valley the garden is a 135 px corner (1255-1390 x 735-830) with its label over the sunflowers; the harvest card says 'Planted in Bea's garden: a tomato' (items 615, 620) but nothing visible is planted. VISION 1, 4, Bea's role in the Cath bible.
+- **Build:** `games/runnel/src/` rail almanac and the valley's garden layer (`garden.ts` `gardenPlots`/`cropFor`, `gardenart.ts`): the rail panel a drawn raised bed with one plant per solved daily this week (its crop at its stage), a bare patch for an unsolved day; the valley garden draws the same plants, ~220 px at D; a solve sets the new plant in with a 600 ms grow-in and Bea waters it.
+- **Accept:** each solved daily of the week adds exactly one plant to both beds (unit test on results -> plants); no dot placeholders; the valley garden 200 px+ wide at D, its label on no plant; reduced motion fades only; shot P and D.
+- **Size:** 2
+
+## 624. [ ] Hedgerow desktop level card: Cath briefs at half length, the fleet as pictures
+*(planned 2026-11-21 19:45, lane B, plan1121k critique)*
+- **Why:** `plan1121k/hedge-menu-D` 1138-1188 x 415-470: Cath is a 48 px head beside her briefing line where the phone map, the table and the bench show her at half length (items 599, 610); the fleet is four list rows with 40 px icons (1140-1410 x 498-675). VISION 5, 1.
+- **Build:** the act map's level card at D (`map.ts`, styles, `shared/cath/`): Cath half length (~170 px) cropped at the card's left edge, her line a tailed bubble; each vehicle a 64 px picture chip (its face, name, one trait) in a 2x2 grid.
+- **Accept:** her figure 160 px+ at 1440x900; vehicle art 56 px+; the card inside 900 px with Play visible; her expression follows the level's difficulty (test); hedgerow-level-card and map specs pass; shot P and D.
+- **Size:** 1
+
+## 625. [ ] Cathnivore desktop title: the menu belongs to the stall
+*(planned 2026-11-21 19:45, lane B, plan1121k critique)*
+- **Why:** `plan1121k/cath-title-D` 45-350 x 430-770: the menu is a dark slate panel floating over the street, apart from the stall; the counter front (0-1440 x 760-870) is a blank brown band. VISION 1. Items 581 and 609 changed only the phone title.
+- **Build:** the title (`TitleArt.tsx`, `title.css`) at 1024 px+: Campaign the hanging painted sign, Quick Game and Daily chalk A-boards or crate labels on the counter, How to Play / Settings / Credits tags tied to crates, the counter front planked with the Daily plaque on it.
+- **Accept:** the menu inside the stall scene's box; every item 44 px+ and keyboard-focusable in the existing order (e2e); no blank band over 300 px along the counter; title specs pass; shot P and D (P unchanged).
+- **Size:** 1
+
+## 626. [ ] Portfolio: 'Today in the studio' as a timeline you can read
+*(planned 2026-11-21 19:45, lane B, plan1121k critique)*
+- **Why:** `plan1121k/portfolio-D` 100-1340 x 775-820: ~90 pills coloured only by lane, nothing says what a session changed or which game; the stats row (860-900) cut by the fold. VISION 1, 6.
+- **Build:** `portfolio/src/studio.ts`, `studioLog.ts`, styles: each notch takes the colour or icon of the game its session touched (from the commit subjects, never names or emails: the repo is public), the lane as its row; focus or hover opens a card with time, game, its one-line subject and the game's key-art thumbnail; the band a little shorter so the stats clear 900 px.
+- **Accept:** every notch has an accessible name ('Lane B, 14:05, Hedgerow: ...'); its card opens on keyboard focus (e2e); game colours 3:1 on the track; the stats row ends at 890 px or above at 1440x900; portfolio specs pass; shot P and D.
+- **Size:** 1
+
+## 627. [ ] The bugs from the 2026-11-21 19:40 critique, fixed as one batch *(lane B, in progress)*
+*(planned 2026-11-21 19:45, lane B, plan1121k critique; check each on today's build first)*
+- Plan shots: `ns-play-D/P` stop on NIGHT SHIFT's class pick, so its HUD and street in play are never shot: `scripts/plan-shots.mjs` walks in and shoots a live frame.
+- Runnel solved (`runnel-solved-D` 575-655 x 810-832, P 120-200 x 740-760): '0:00 time' on a solved daily (the `?shotwin` hook or the timer): show the real time, or hide it when none was kept.
+- Runnel solved D (1285-1390 x 730-750): the 'Bea's garden' label over the sunflowers.
+- Hedgerow P (`hedge-l34-2d-P` 600-665): on level 34 the second depot ('283 NEXT', seen at D) is off-frame, so the Same-Day vans enter from the edge with no source.
+- Hedgerow act map D (`hedge-menu-D` 165-195 x 300-425): Cath's figure overlaps level 21's coin rim (stands on the stop, not beside it).
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
