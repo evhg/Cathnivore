@@ -724,7 +724,8 @@ export default function CampaignScreen({
         onStart={start}
         celebrate={celebrate}
         departing={departing?.id}
-        lit={pointed ?? (phone ? open : undefined)}
+        // Plan item 607: at rest a desktop lights the next chapter's regions too, as the phone lights its open one.
+        lit={pointed ?? (phone ? open : next?.id)}
         host={wide ? host : undefined}
         onPick={phone ? (c) => pick(c.id) : undefined}
         picked={phone ? open : undefined}

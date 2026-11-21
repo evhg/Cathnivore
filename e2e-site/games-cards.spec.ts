@@ -163,7 +163,10 @@ test('the four games are posters on the first screen', async ({ page }) => {
       copy: [...document.querySelectorAll('.hero-game-hook, .hero-game-play')].map((e) => parseFloat(getComputedStyle(e).fontSize)),
       caths: [...document.querySelectorAll('.hero-game-cath svg')].length,
       scroll: document.documentElement.scrollWidth - innerWidth,
+      // Plan item 607: every hook keeps to two lines (Hedgerow's took three and ran to the card's foot at D).
+      lines: [...document.querySelectorAll('.hero-game-hook')].map((e) => e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)),
     }))
+    if (vp.width >= 900) for (const n of m.lines) expect(n).toBeLessThan(2.5)
     for (const w of m.art) expect(w).toBeGreaterThanOrEqual(art)
     for (const f of m.copy) expect(f).toBeGreaterThanOrEqual(14)
     expect(m.caths).toBe(4)
