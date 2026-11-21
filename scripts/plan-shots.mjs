@@ -65,6 +65,12 @@ const jobs = {
     await p.goto(`${base}/nightshift/?play`)
     await p.waitForFunction(() => document.querySelector('canvas')?.dataset.class, null, { timeout: 90000 }).catch(() => {})
     await p.waitForTimeout(15000); await p.screenshot({ path: `${out}/ns-play-${s}.png` })
+    // Plan item 627: and the street in play, the HUD up (the pick is not play; critiques never saw the game itself). A
+    // phone plays held sideways, so it turns first.
+    if (s === 'P') await p.setViewportSize({ width: 844, height: 390 })
+    await p.goto(`${base}/nightshift/?play&class=ghost&rs=0.5`)
+    await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 200000 }).catch(() => {})
+    await p.waitForTimeout(4000); await p.screenshot({ path: `${out}/ns-street-${s}.png` })
   },
 }
 for (const [name, job] of Object.entries(jobs)) {
