@@ -84,8 +84,16 @@ export interface Bed {
   plot: Plot | null
 }
 
-/** Bea's garden as the week's seven beds: a solved day's crop at its stage, a bare mound otherwise. */
+/**
+ * Bea's garden as the week's seven beds: a solved day's crop, a bare patch otherwise (plan item 623: one plant per
+ * solved daily this week). The bed's plants grow on the week's clock, so each reads as its crop at once: a day or
+ * two old it is growing (already its own plant, never the shared seedling), older it is ripe.
+ */
 export function weekBeds(today: string, results: Record<string, DailyResult>): Bed[] {
   const plots = new Map(gardenPlots(results, today).map((p) => [p.day, p]))
-  return weekDays(today, results).map((d) => ({ day: d.day, short: d.short, state: d.state, plot: plots.get(d.day) ?? null }))
+  return weekDays(today, results).map((d) => {
+    const p = plots.get(d.day)
+    const age = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${d.day}T00:00:00Z`)) / 86_400_000)
+    return { day: d.day, short: d.short, state: d.state, plot: p ? { ...p, stage: age < 2 ? 'growing' : 'ripe' } : null }
+  })
 }

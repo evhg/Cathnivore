@@ -2952,15 +2952,10 @@ body {
 .bea-garden[data-watered='true'] .ga-soil { fill: var(--groove-bed-wet); opacity: 0.85; }
 .bea-garden[data-pop] .is-today svg {
   transform-origin: 50% 85%;
-  animation: bed-pop 700ms cubic-bezier(0.3, 1.6, 0.5, 1) both 1700ms;
-}
-@keyframes bed-pop {
-  0% { transform: scale(0.3); }
-  60% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  animation: bed-grow 600ms cubic-bezier(0.3, 1.5, 0.5, 1) both 1700ms;
 }
 @media (prefers-reduced-motion: reduce) {
-  .bea-garden[data-pop] .is-today svg { animation: none; }
+  :is(.bea-garden, .rail-garden)[data-pop] .is-today svg { animation: bed-fade 600ms ease-out both 1700ms; }
   .bea-crops:not(.bare) { transition: none; }
 }
 .win-drops {
@@ -3824,25 +3819,53 @@ body[data-mode='practice'] #week-slot {
 .rail-garden .cal-title {
   margin: 0;
 }
+/* Plan item 623: this week's raised bed: a plank frame round turned soil, seven beds Monday to Sunday, each with its
+   day's initial under it; a solved day's crop, a bare patch for a missed day, today's seed packet. */
 .rail-plots {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 3px;
-  padding: 4px 6px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--ga-soil) 22%, var(--paper));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px 6px 1px;
+  border: 4px solid var(--ws-wood-2);
+  border-top: 3px solid var(--ws-wood-1);
+  border-radius: 7px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 6px, color-mix(in srgb, var(--ga-soil) 30%, transparent) 6px 8px),
+    color-mix(in srgb, var(--ga-soil) 42%, var(--paper));
+  box-shadow:
+    inset 0 3px 0 color-mix(in srgb, var(--ga-soil) 45%, transparent),
+    0 3px 0 color-mix(in srgb, var(--ws-wood-2) 55%, var(--soil));
 }
 .rail-plots .plot {
+  display: grid;
+  justify-items: center;
+  font-style: normal;
+}
+.rail-plots .plot svg {
   display: block;
+  width: 100%;
+  max-width: 27px;
   aspect-ratio: 1;
+  height: auto;
 }
-.rail-plots .plot.bare {
-  background: radial-gradient(circle, color-mix(in srgb, var(--groove) 55%, transparent) 0 20%, transparent 21%);
+.rail-plots .plot b {
+  margin-top: -4px;
+  font: 700 var(--fs-label) / 1 var(--font-ui, inherit);
+  color: color-mix(in srgb, var(--ws-on-wood) 70%, transparent);
 }
-.rail-plots .plot.sprout .ga {
-  transform: scale(0.82);
-  transform-origin: 50% 85%;
+.rail-plots .plot.is-today b { color: var(--ws-on-wood); text-decoration: underline 2px var(--gold); text-underline-offset: 2px; }
+.rail-plots .bed-mound { fill: color-mix(in srgb, var(--ga-soil) 75%, var(--soil)); }
+.rail-plots .rb-ahead .bed-mound { opacity: 0.4; }
+.rail-plots .rb-ahead .bed-furrow { display: none; }
+.bed-furrow { fill: none; stroke: color-mix(in srgb, var(--soil) 60%, transparent); stroke-width: 1.2; stroke-linecap: round; }
+/* The solve's grow-in (600 ms, as Bea runs out to water it); reduced motion fades it in instead. */
+.rail-garden[data-pop] .is-today svg { transform-origin: 50% 85%; animation: bed-grow 600ms cubic-bezier(0.3, 1.5, 0.5, 1) both 1700ms; }
+@keyframes bed-grow {
+  0% { transform: scale(0.2); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
 }
+@keyframes bed-fade { from { opacity: 0; } to { opacity: 1; } }
 .rail-garden-note {
   margin: 0;
   font-family: var(--font-voice, inherit);
@@ -4694,6 +4717,8 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   bottom: 38%;
   width: 100%;
   height: 46%;
+  /* Plan item 623: the margin's flowers grow behind the week's beds (painted first), not over their plants. */
+  translate: 0 -14%;
   overflow: visible;
   pointer-events: none;
 }
@@ -5003,6 +5028,12 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .bea-garden[data-sign-under] .farm-sign { order: 9; }
 .stage[data-tile-e] .bea-crops:not(.bare) { align-self: stretch; justify-content: space-between; }
 .stage[data-tile-e] .bea-crops:not(.bare) i { width: min(28px, calc((var(--gw) - 40px) / 8)); height: min(28px, calc((var(--gw) - 40px) / 8)); }
+/* Plan item 623: at D the garden is a real corner of the valley (208 px+, up to 252), its seven beds a plant each; it
+   keeps to the valley's corner (10 px in), clear of the board's last hex. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .stage[data-tile-e] .bea-garden { --gw: clamp(208px, calc(var(--tile-e) * 3), 244px); right: 10px; }
+  .stage[data-tile-e] .bea-crops:not(.bare) i { width: min(32px, calc((var(--gw) - 30px) / 7)); height: min(32px, calc((var(--gw) - 30px) / 7)); }
+}
 @media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
   .stage[data-tile-e] .bea-garden { --gw: clamp(148px, calc(var(--tile-e) * 2.6), 164px); }
   .stage[data-tile-e] .bea-crops:not(.bare) i { width: min(20px, calc((var(--gw) - 24px) / 8)); height: min(20px, calc((var(--gw) - 24px) / 8)); }

@@ -1039,6 +1039,12 @@ function beaRunsOut(): void {
   // Plan item 106: today's bed pops its sprout as the water arrives (once, on the solve itself).
   garden.dataset.pop = ''
   window.setTimeout(() => delete garden.dataset.pop, 2600)
+  // Plan item 623: the rail's bed grows today's plant in with it.
+  const rail = document.querySelector<HTMLElement>('.rail-garden')
+  if (rail) {
+    rail.dataset.pop = ''
+    window.setTimeout(() => delete rail.dataset.pop, 2600)
+  }
   const bea = document.createElement('span')
   bea.className = 'bea-runner'
   bea.setAttribute('aria-hidden', 'true')
@@ -1749,31 +1755,45 @@ function renderGarden(): void {
  * Plan item 30: on a wide screen the stats sit in a rail beside the board (the streak, dailies solved, the best
  * streak and the last 28 days as a strip), so the board can take the middle of the farm. Hidden by CSS elsewhere.
  */
-/** Plan item 68: the rail's foot: one bed of the garden's newest 8 crops (a fixed height), and the visitor or a nudge. */
+/**
+ * Plan item 623: the rail's foot is Bea's raised bed for this week: one plant for each daily solved since Monday (its
+ * crop, growing or ripe), a bare patch of soil for a day missed, a seed packet on today's, a faint row for days ahead;
+ * each bed with its day under it. The visitor or a nudge below.
+ */
 function renderRailGarden(): void {
   const all = gardenPlots(data.results, today)
-  const plots = all.slice(-8)
+  const beds = weekBeds(today, data.results)
+  const planted = beds.filter((b) => b.plot)
   const box = $<HTMLDivElement>('rail-plots')
-  box.setAttribute('aria-label', all.length ? `${all.length} crop${all.length === 1 ? '' : 's'} in Bea's garden` : "Bea's garden is bare")
-  const cells = plots.map((p) => {
-    const i = document.createElement('i')
-    i.className = `plot ${p.stage}${p.gold ? ' gold' : ''}`
-    i.innerHTML = cropSvg(p.crop, p.stage)
-    return i
-  })
-  for (let n = cells.length; n < 8; n++) {
-    const i = document.createElement('i')
-    i.className = 'plot bare'
-    cells.push(i)
-  }
-  box.replaceChildren(...cells)
+  box.setAttribute(
+    'aria-label',
+    planted.length
+      ? `Bea's bed this week: ${planted.map((b) => `${b.short} a ${b.plot!.crop}`).join(', ')}`
+      : "Bea's bed this week is bare: solve today's daily and she plants a seed",
+  )
+  box.replaceChildren(
+    ...beds.map((b) => {
+      const i = document.createElement('i')
+      i.className = `plot rb-${b.state}${b.plot?.gold ? ' gold' : ''}${b.day === today ? ' is-today' : ''}`
+      i.dataset.day = b.day
+      i.innerHTML = `${b.plot ? cropSvg(b.plot.crop, b.plot.stage) : bareBedSvg(b.state)}<b aria-hidden="true">${b.short.slice(0, 1)}</b>`
+      return i
+    }),
+  )
   const visitor = gardenVisitor(seasonOf(today), all)
-  const n = all.length
+  const n = planted.length
   $<HTMLParagraphElement>('rail-garden-note').textContent = visitor
     ? visitor.line
     : n
-    ? `${n} crop${n === 1 ? '' : 's'} so far. Every daily you solve plants another.`
+    ? `${n} planted this week. Every daily you solve plants another.`
     : 'Solve a daily and Bea plants a seed.'
+}
+
+/** An unplanted bed: a patch of turned soil (missed), a seed packet on its stick (today), a faint row (ahead). */
+function bareBedSvg(state: string): string {
+  return `<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="22" rx="11" ry="4.5"/><path class="bed-furrow" d="M7 21.5q3.5 -1.6 7 0t7 0"/>${
+    state === 'today' ? '<path class="bed-marker" d="M14 21V9"/><rect class="bed-packet" x="9.5" y="4" width="9" height="7.5" rx="1"/>' : ''
+  }</svg>`
 }
 
 // Plan item 158: the almanac page (desktop rail) shows the weather, so the foot hint needn't say it again.

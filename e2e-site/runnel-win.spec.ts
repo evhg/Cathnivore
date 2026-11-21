@@ -105,7 +105,7 @@ test('the desktop rail ends on Bea\'s garden with no page scroll', async ({ page
   test.skip(vp.width < 1100 || vp.height < 900, 'the desktop rail with room for the garden')
   await page.goto('/runnel/?nohelp')
   await expect(page.locator('.rail-garden')).toBeVisible()
-  expect(await page.locator('#rail-plots .plot').count()).toBe(8)
+  expect(await page.locator('#rail-plots .plot').count()).toBe(7)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
 
