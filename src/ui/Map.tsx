@@ -1670,7 +1670,11 @@ function fitPlaques(svg: SVGSVGElement) {
   // The board's left edge in its own units (the svg's box, wider than the viewBox where the board is height-bound): a
   // disc moved to a plaque's left end must not leave the board. The right end stays bounded by neighbours only.
   const ctm = svg.getScreenCTM?.()
-  const box = svg.getBoundingClientRect()
+  // Plan item 622: where the svg draws past its own box (the phone Setup's board, `overflow: visible` on a stage wider
+  // than the height-bound board), its parent's box is the edge: Brindle Hills' disc had shrunk to half size against
+  // a board edge 37 px inside the stage.
+  const host = getComputedStyle(svg).overflow === 'visible' && svg.parentElement ? svg.parentElement : svg
+  const box = host.getBoundingClientRect()
   const edge0 = ctm && ctm.a > 0 && box.width > 0 ? (box.left - ctm.e) / ctm.a : -Infinity
   const edge1 = Infinity
   // Plan item 578: the disc's rim stands 4 units clear of the name's last letter (it met the 'r' of Highmoor at D).
