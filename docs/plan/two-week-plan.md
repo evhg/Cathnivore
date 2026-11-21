@@ -5933,7 +5933,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 in `?2d` and 3D the tray shows 3+ tower prices while Cath's line shows; the line 15 px+ at 4.5:1; the field 580 px+ tall; hedgerow play specs pass; shot P and D.
 - **Size:** 1
 
-## 612. [ ] The bugs from the 2026-11-21 11:50 critique, fixed as one batch
+## 612. [ ] The bugs from the 2026-11-21 11:50 critique, fixed as one batch *(lane B, in progress)*
 *(planned 2026-11-21 11:55, lane B, plan1121h critique; check each on today's build first)*
 - Cathnivore D (`cath-game-D` 35-300 x 380-665): the Saving-for card ~60% empty cream; its content sits in 160-295 x 440-600 (item 595's pick ticket centred small).
 - NIGHT SHIFT D class list (`ns-play-D` 360-475 x 190-620): the guns render as blown-out white silhouettes (Wirewitch, Fixer), not gunmetal (item 588 fixed the photos only).
