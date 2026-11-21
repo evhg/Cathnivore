@@ -351,14 +351,21 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   function speak(text: string): void {
     clearTimeout(subTimer);
     sub.replaceChildren();
-    text.split(/\s+/).forEach((word, i) => {
-      const s = el("span", "cp-sub-w", sub, `${word} `);
+    // Plan item 622: off an upright phone her quote is already open in the column, so a subtitle between the columns
+    // said it twice and sat over her skirt and boots: there the column's own quote is spoken, word by word, instead.
+    const portrait = innerWidth <= 700 && innerHeight > innerWidth;
+    const target = portrait ? sub : line;
+    if (!portrait) line.replaceChildren();
+    const said = portrait ? text.split(/\s+/) : `\u201c${text}\u201d`.split(/\s+/);
+    said.forEach((word, i) => {
+      const s = el("span", "cp-sub-w", target, i < said.length - 1 ? `${word} ` : word);
       s.style.setProperty("--i", String(i));
     });
     placeSub();
     sub.classList.remove("is-on");
+    line.classList.remove("is-said");
     void sub.offsetWidth;
-    sub.classList.add("is-on");
+    (portrait ? sub : line).classList.add(portrait ? "is-on" : "is-said");
     root.dataset.speaking = "true";
     if (hooks.still) return;
     // The 3.2 s count from the line's first painted frame, not from the click: on a slow device the cut (the lit gun
@@ -369,6 +376,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       if (token !== subToken) return;
       subTimer = window.setTimeout(() => {
         sub.classList.remove("is-on");
+        line.classList.remove("is-said");
         delete root.dataset.speaking;
       }, 3200);
     }));

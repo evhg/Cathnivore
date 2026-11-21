@@ -912,7 +912,7 @@ export class Renderer3D {
     this.camera.updateMatrixWorld();
   }
   /** Plan item 486: the whole-field view's sideways lean (world x) that brings the depot's `box` furthest into frame
-   *  while the field's edge columns keep 6 px inside the canvas; 0 when the depot is already half in. */
+   *  while the field's edge columns keep 6 px inside the canvas; 0 when the depot is already in. */
   private leanToDepot(box: THREE.Box3): number {
     const w = this.w;
     this.camera.position.copy(this.camBase);
@@ -928,12 +928,14 @@ export class Renderer3D {
     const dx = xs([[box.min.x, box.min.y, (box.min.z + box.max.z) / 2], [box.max.x, box.min.y, (box.min.z + box.max.z) / 2]]);
     const d0 = Math.min(...dx), d1 = Math.max(...dx);
     const inside = (Math.max(0, Math.min(w, d1) - Math.max(0, d0))) / Math.max(1, d1 - d0);
-    if (inside >= 0.5) return 0;
+    // Plan item 622: lean until it stands whole (was: half in, which left level 21's depot cut by the frame at D),
+    // as far as the field's own edges allow.
+    if (inside >= 0.98) return 0;
     // Screen px to world x at the field's middle row.
     const [a, b] = xs([[0, 0, rows / 2], [cols, 0, rows / 2]]);
     const perPx = cols / Math.max(1, b! - a!);
     // Content moves right (the view leans left) for a depot off the left edge, and the other way for the right.
-    const need = d0 < 0 ? -d0 : d1 - w;
+    const need = d0 < 0 ? 6 - d0 : d1 - w + 6;
     const room = d0 < 0 ? spareR : spareL;
     const shift = Math.max(0, Math.min(need, room));
     return (d0 < 0 ? -shift : shift) * perPx;

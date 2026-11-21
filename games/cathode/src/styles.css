@@ -801,6 +801,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-sub.is-on .cp-sub-w { animation: fade-in 220ms ease-out both; animation-delay: calc(var(--i, 0) * 90ms); }
 .cp-still .cp-sub.is-on .cp-sub-w { animation: none; }
 @media (prefers-reduced-motion: reduce) { .cp-sub.is-on .cp-sub-w { animation: none; } }
+/* Plan item 622: off an upright phone the column's open quote is the one she speaks, on the subtitle's beat. */
+.cp-line .cp-sub-w { display: inline; }
+.cp-line.is-said .cp-sub-w { animation: fade-in 220ms ease-out both; animation-delay: calc(var(--i, 0) * 90ms); }
+.cp-still .cp-line.is-said .cp-sub-w { animation: none; }
+@media (prefers-reduced-motion: reduce) { .cp-line.is-said .cp-sub-w { animation: none; } }
 @media (max-width: 700px) and (orientation: portrait) {
   .cp-sub { padding: 0; font-size: var(--fs-2); }
 }

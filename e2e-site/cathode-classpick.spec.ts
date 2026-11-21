@@ -245,8 +245,11 @@ test('a class change starts its audition at once, her face framed and her line s
     expect(v?.kind, cls).toBe(cls)
     // Her line comes up with the cut. Read it here: under swiftshader the pick's lit gun reel (item 313) can hold the
     // page for seconds, past the line's 3.2 s, before the wait below returns.
-    const subOn = await page.evaluate(() => document.querySelector('.cp-sub')!.classList.contains('is-on'))
-    expect(subOn, cls).toBe(true)
+    // Plan item 622: on an upright phone as a subtitle; at D the column's open quote is the one spoken (the subtitle
+    // between the columns said it twice, over her skirt), so no subtitle shows there.
+    const said = await page.evaluate(() => ({ sub: document.querySelector('.cp-sub')!.classList.contains('is-on'), line: document.querySelector('.cp-line')!.classList.contains('is-said'), words: document.querySelectorAll('.cp-line .cp-sub-w').length }))
+    expect(said.sub, cls).toBe(!!hasTouch)
+    if (!hasTouch) expect(said.line && said.words > 3, cls).toBe(true)
     await page.waitForTimeout(1200)
     const m = await page.evaluate(() => {
       const b = (s: string) => {
@@ -270,6 +273,7 @@ test('a class change starts its audition at once, her face framed and her line s
       expect(face.left >= 470 && face.right <= 960 && face.top >= 90 && face.bottom <= 500, s).toBe(true)
       for (const o of [m.sheet, m.list]) expect(meets(face, o), s).toBe(false)
     }
+    if (!hasTouch) continue
     expect(m.text.length, s).toBeGreaterThan(10)
     expect(m.size, s).toBeGreaterThanOrEqual(13)
     expect(m.sub.left >= 0 && m.sub.top >= 0 && m.sub.right <= W && m.sub.bottom <= H, s).toBe(true)
