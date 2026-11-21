@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-21 01:27 UTC
 
 
 
@@ -5690,5 +5689,56 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - `hedge-l21-2d-P` 10-60 x 300-395: the Hollowell depot and its '216' plate crushed over the queued pink van (may go with item 576).
 - `hedge-l21-3d-D` 1125-1395 x 683-693: the Coming up cards' livery bars render as empty grey stubs.
 - `cath-game-P` 5-65 x 65-125: Pell's portrait ring overlaps the Squeeze tile's left edge.
+- **Accept:** each point fixed, or checked and noted here; shots P and D.
+- **Size:** 1
+
+## 579. [ ] NIGHT SHIFT class pick: each class with its own stance
+- **Why:** 2026-11-21 critique, scratchpad `sheet-a2-D` (all five): Ghost, Butcher, Gunslinger, Wirewitch and Fixer stand in the same frontal pose with the same coat outline; only the tint and the prop change, so the choice has no drama.
+- **Build:** a held pose per class (Ghost rifle at port arms, weight back; Butcher shotgun on the shoulder; Gunslinger hand at the hip holster; Wirewitch a raised palm under the halo; Fixer the case at her side, weight on one hip), blended in 400 ms on a switch (`render/frontcath.ts` pose data, `ui/classpick.ts`). Body pose only: face, hair and coat stay items 319/543.
+- **Accept:** her silhouette masks for any two classes differ by 12%+ (1 - IoU) at D; face box still clear of the sheet; classpick specs pass P and D; contact sheet re-shot.
+- **Size:** 2
+
+## 580. [ ] Cathnivore campaign map: the table's regions, freed one by one
+- **Why:** `plan1121a/cath-campaign-D` 60-725 x 205-815 and `-P` 15-375 x 185-505: a flat pale atlas with small bunting and generic stall boxes, a different art language from the rich board (`cath-game-D` 580-1210 x 130-715).
+- **Build:** the map drawn from the board's region art and pieces (`src/ui/` campaign map, shared with the board's map): unplayed regions in Hollowell gloss (grey wash, plastic outlets), freed ones in full market colour with a pennant; freeing one plays a 600-900 ms moment (gloss peels, bunting drops, Cath reacts); reduced motion fades.
+- **Accept:** each region uses the board's landmark art (spec); freed regions' mean saturation 1.5x+ locked ones'; the moment shot P and D; campaign specs pass.
+- **Size:** 2
+
+## 581. [ ] Cathnivore phone title: the board as the hero
+- **Why:** `plan1121a/cath-title-P` 175-375 x 425-600: the board is a ~200 px tilted inset behind Cath's hand; the town and bubble take more room than the game (VISION: the table is the hero).
+- **Build:** the phone title's board on the counter at full width (330 px+), Cath half-length beside or behind it, the bubble above her (`src/ui/` title).
+- **Accept:** board 300 px+ wide at 390x844 and nothing over it; title specs pass at P; D unchanged (shots).
+- **Size:** 1
+
+## 582. [ ] Runnel tiles as crafted objects, with water you can see
+- **Why:** `plan1121a/runnel-D` 580-1230 x 110-745: pale parchment hexes with thin beige grooves; a connected tile (795-1000) shows little water in its channel. (Check against item 6's running rivers first: it may only be the shot's moment.)
+- **Build:** bevelled tile bodies with a stone-lined groove; connected grooves carry a glossy water ribbon from the spring outward (~250 ms a tile), a field sparkles when wet; turns overshoot a little (`games/runnel/src/`).
+- **Accept:** blue water pixels (sat > 0.35) in every connected groove of a solved shot at P and D; tile edge 6 px+ at D; Runnel lesson and daily specs pass; key art re-shot.
+- **Size:** 2
+
+## 583. [ ] Hedgerow level card: a 3D still of the level
+- **Why:** `plan1121a/hedge-menu-D` 1160-1390 x 140-300: the briefing shows a flat 2D schematic while the game plays in 3D; on the phone (`hedge-menu-P` 20-55 x 640-690) a 35 px blur.
+- **Build:** bake a 3D still per level (the key-art path, `render3d/`) to webp and show it in the card (schematic as fallback); a larger image when the phone card opens.
+- **Accept:** a still for every level (unit test); D image 230x160+; map and level-card specs pass P and D.
+- **Size:** 1
+
+## 584. [ ] Hedgerow 3D: Hollowell's depot and convoys as glossy corporate models
+- **Why:** `plan1121a/hedge-l21-3d-D` 115-240 x 150-240: the depot is a small box; the pink vans (245-300 x 225-400) read as toy blocks. VISION: the corporations glossy, plastic, over-lit, clinical.
+- **Build:** a chrome-and-glass depot with a lit H sign and a roller door that opens as a wave leaves; each vehicle type its own livery and silhouette with specular highlights (`games/hedgerow/src/render3d/`).
+- **Accept:** depot footprint 2x+ at D; the vehicle types distinguishable in a greyscale shot; level 21 3D draw calls within budget; 3D specs pass.
+- **Size:** 2
+
+## 585. [ ] NIGHT SHIFT key art that reads at card size
+- **Why:** `plan1121a/games-D` 1040-1330 x 580-740, `portfolio-D` 637-927 x 352-537: the frame is mostly near-black with Cath small; the other three posters are bright, so NIGHT SHIFT looks unfinished.
+- **Build:** re-stage the `?keyart` frame: closer three-quarter camera, a neon rim, the List's red string and a Ledger page in the foreground; `npm run keyart` for it.
+- **Accept:** poster mean luminance 0.2+ (measure the current first); her head 18%+ of the poster height; keyart-fresh and site specs pass.
+- **Size:** 1
+
+## 586. [ ] The bugs from the 2026-11-21 01:35 critique, fixed as one batch
+- `ns-title-P` (2x) 480-720 x 1080-1300: a translucent second Cath face over her chest and a faded 'HOLLOW…' sign across her (likely the poster-to-live crossfade mid-shot: check timing first); 420-780 x 330-700 the umbrella reads as shaft and spokes with no canopy.
+- `cath-game-P` 90-255 x 480-540: Tomas's line in a bubble beside Cath's portrait (wrong speaker; right at D).
+- `cath-setup-P` 40-355 x 240-260: region name plates collide ('Brindle Hills' into its badge and 'Kingsmarket'; 'Rivermead' clipped right).
+- `cath-game-D` 35-320 x 610-720: 'Nearest goal' repeats the Saving For card above it.
+- `runnel-D` 15-345 x 775-900: an empty cream band under the notebook rail.
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
