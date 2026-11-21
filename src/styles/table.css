@@ -6628,3 +6628,22 @@ html.no-animations .table-cath-figure { animation: none; }
   @keyframes pose-arm-fade { from { opacity: 0; } }
   .counter-bench .table-producer[data-pose] > svg { animation: none; }
 }
+
+/* Plan item 612: on a tall desktop the Saving-for card is ~280 px of rail, and its goal sat as one short row in its
+   middle (60% bare cream round it): the picture now leads, wide across the card, the name, meter and line under it.
+   (The class is tripled to outrank item 549's `:has(.round-ledger[data-empty])` rule.) */
+@media (min-width: 1024px) and (min-height: 860px) {
+  .actions-sheet.actions-sheet.actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature {
+    grid-template-columns: 1fr;
+    align-content: center;
+    justify-items: stretch;
+    row-gap: 8px;
+  }
+  .actions-sheet.actions-sheet.actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature-pic {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 7;
+    max-height: 112px;
+  }
+  .actions-sheet.actions-sheet.actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature-pic > svg { object-fit: cover; }
+}
