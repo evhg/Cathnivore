@@ -4,7 +4,6 @@
 // fill under it. The frames come back as image URLs, so the pick shows a lit 3D weapon without a second WebGL view
 // (DECISIONS 2026-11-11 04:55 cut that: a second context on the pick costs more than it adds).
 import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { buildGunDisplay, type GunModel } from "../game/viewmodel";
 
 export interface GunTurntableOptions {
@@ -18,18 +17,37 @@ export interface GunTurntableOptions {
 }
 
 /**
- * Plan item 538: the studio's reflections, a soft room prefiltered once per renderer. Without it the guns' metal had
- * nothing to mirror and rendered as one dark mass under the three lights (the critique's 'grey low-poly sticks'): now
- * the steel's bevels and the barrel's roundness catch a soft room, and the wood and polymer keep their own colour.
+ * Plan item 538: the studio's reflections, prefiltered once per renderer, so the steel's bevels and the barrel's
+ * roundness catch light. Plan item 588: a noir product stage, not a grey room: black, with one long softbox strip
+ * overhead, a narrow warm card to the lens's right and a faint cool floor bounce. The metal now mirrors a bright
+ * strip against black (blued steel reads as polished and dark, not as one grey mass), and the polymer's coat shows
+ * a single sheen line instead of a grey wash.
  */
-const STUDIO_ENV_INTENSITY = 0.2;
+const STUDIO_ENV_INTENSITY = 0.8;
 const studioEnvs = new WeakMap<THREE.WebGLRenderer, THREE.Texture>();
 function studioEnv(renderer: THREE.WebGLRenderer): THREE.Texture {
   let t = studioEnvs.get(renderer);
   if (!t) {
+    const stage = new THREE.Scene();
+    stage.background = new THREE.Color(0x000000);
+    const card = (w: number, h: number, colour: number, k: number, p: [number, number, number]) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(colour).multiplyScalar(k), side: THREE.DoubleSide }));
+      m.position.set(...p);
+      m.lookAt(0, 0, 0);
+      stage.add(m);
+      return m;
+    };
+    card(9, 1.4, 0xfff4e6, 5, [0, 4, 1.5]); // the softbox strip overhead, a little toward the lens
+    card(1, 5, 0xffd2a0, 2.2, [4.5, 0.6, 2.5]); // the warm card, lens right
+    card(10, 10, 0x6f7f9a, 0.12, [0, -4, 0]); // the floor's faint cool bounce
     const pm = new THREE.PMREMGenerator(renderer);
-    t = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    t = pm.fromScene(stage, 0.02).texture;
     pm.dispose();
+    for (const o of stage.children) {
+      const m = o as THREE.Mesh;
+      m.geometry.dispose();
+      (m.material as THREE.Material).dispose();
+    }
     studioEnvs.set(renderer, t);
   }
   return t;
@@ -93,15 +111,21 @@ export class GunStudio {
     this.camera.lookAt(0, 0, 0);
 
     const rimColour = new THREE.Color(o.rim[0], o.rim[1], o.rim[2]);
-    // Plan item 334: a harder key over a lower fill, so the lit and shadow faces part by 35%+ in lightness (they
-    // parted by 30%: the gunmetal read as one dark slab).
-    const key = new THREE.DirectionalLight(0xfff1e0, 11);
-    key.position.set(0.6, 1.4, 1.0);
-    const rim = new THREE.DirectionalLight(rimColour, 4.5);
+    // Plan item 334: a harder key over a lower fill, so the lit and shadow faces part by 35%+ in lightness. Plan item
+    // 588: the key is a spot that pools on the gun's middle and falls off toward the muzzle and the stock (a
+    // directional lit every flat face one even grey: the stocks read as slabs), with a low fill so the falloff shows.
+    // It hangs close over the gun with a physical (inverse-square) falloff, so even a small flat face (a grip, a
+    // magazine) shades from its top down, as under a lamp a hand's width above the bench.
+    const key = new THREE.SpotLight(0xfff1e0, 1, 0, 0.52, 1, 2);
+    key.position.set(long * 0.16, dist * 0.42, dist * 0.34);
+    key.target.position.set(-long * 0.06, 0, 0);
+    key.intensity = 26 * key.position.distanceToSquared(key.target.position);
+    this.scene.add(key.target);
+    const rim = new THREE.DirectionalLight(rimColour, 7);
     rim.position.set(-0.8, 0.5, -1.2);
-    const kick = new THREE.DirectionalLight(rimColour, 1.6);
+    const kick = new THREE.DirectionalLight(rimColour, 2.6);
     kick.position.set(1.2, 0.1, -0.6);
-    const fill = new THREE.HemisphereLight(0x9aa8c0, 0x0a0a0c, 0.12);
+    const fill = new THREE.HemisphereLight(0x9aa8c0, 0x0a0a0c, 0.08);
     this.scene.add(key, rim, kick, fill);
     this.scene.environment = studioEnv(renderer);
     this.scene.environmentIntensity = STUDIO_ENV_INTENSITY;
