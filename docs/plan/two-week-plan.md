@@ -5861,7 +5861,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each print a mat and frame 6 px+ and a name plate, no black bar; Cath's bubble above the fold at 390x844, its tail tip within 24 px of her head box (P and D); no sideways scroll; portfolio specs pass; shot P and D.
 - **Size:** 1
 
-## 602. [ ] Cathnivore phone table: region names that never collide, and a bigger board
+## 602. [ ] Cathnivore phone table: region names that never collide, and a bigger board *(lane B, in progress)*
 *(planned 2026-11-21 08:50, lane B, plan1121e critique)*
 - **Why:** `plan1121e/cath-game-P` 15-350 x 240-258: 'Brindle Hills' and its '1' badge run over the Kingsmarket hex, 'Kingsmarket' into 'Rivermead'; the board fills y 120-470 of 844 (41%), between Hollowell's plan strip (70-390 x 62-100) and the Cath row (0-390 x 478-555). VISION: the table is the hero, big and legible.
 - **Build:** `src/ui` board labels and the phone table layout, `src/styles`: labels inside each hex's top edge with a collision pass; on an upright phone the plan strip folds to one pill that opens on tap, its height given to the board.
