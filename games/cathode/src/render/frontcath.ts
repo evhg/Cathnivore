@@ -321,6 +321,8 @@ void main() {
 }`;
 /** The line's width in CSS pixels at a 900 px tall view (1.5 px at D, as the plan asks), scaled with the view. */
 const INK_PX = 1.5;
+/** Plan item 543: the long hair's strand-aligned gloss (times the face key). */
+const HAIR_ANISO = 0.5;
 /** Plan item 254: the hair shine band's strength (times the face key and the strands' colour). */
 // Plan item 289: 2.4 -> 1.6, the crown's band a gloss line rather than a pale patch by the parting.
 const HAIR_SHINE = 1.6;
@@ -695,6 +697,22 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // cap shows between the front locks drew a smooth pale-grey arc by the parting), so it reads as warm brown gloss.
     if (shine > 0)
       keyTerm += `\n{ float up = dot( normal, normalize( vec3( uKeyDir.x * 0.4, 0.62, 0.78 ) ) ); float ring = smoothstep( 0.82, 0.85, up ) * ( 1.0 - smoothstep( 0.89, 0.92, up ) ); totalEmissiveRadiance += ${shine.toFixed(2)} * ring * uKey * diffuseColor.rgb * 2.2; }`;
+    // Plan item 543: the long hair's gloss runs along its strands (Kajiya-Kay, as hair shading does): the strand's
+    // direction is the surface's d(position)/dv (the locks' and the sheet's v runs root to tip), and the highlight is
+    // where that direction sits square to the half-vector between the key and the lens: a thin warm line across each lock
+    // that moves as the locks sway, broken by the strands' own map. The crown band (above) stays the cap's alone: a
+    // stronger band there drew grey patches by the parting (findings, 2026-11-20).
+    if (hair && shine === 0)
+      keyTerm += `\n{ vec3 p = -vViewPosition; vec3 dp1 = dFdx( p ); vec3 dp2 = dFdy( p ); vec2 du1 = dFdx( vMapUv ); vec2 du2 = dFdy( vMapUv );
+        vec3 strand = cross( dp2, normal ) * du1.y + cross( normal, dp1 ) * du2.y;
+        if ( dot( strand, strand ) > 1e-12 ) {
+          strand = normalize( strand );
+          vec3 hv = normalize( uKeyDir + normalize( vViewPosition ) );
+          float t1 = dot( normalize( strand + normal * 0.12 ), hv ); float t2 = dot( normalize( strand - normal * 0.1 ), hv );
+          float lit = smoothstep( -0.1, 0.35, dot( normal, uKeyDir ) );
+          float tone = saturate( dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ) * 4.0 );
+          totalEmissiveRadiance += ${HAIR_ANISO.toFixed(2)} * lit * uKey * ( pow( sqrt( max( 0.0, 1.0 - t1 * t1 ) ), 90.0 ) * vec3( 1.0, 0.86, 0.7 ) * 0.6 + pow( sqrt( max( 0.0, 1.0 - t2 * t2 ) ), 24.0 ) * diffuseColor.rgb * 1.6 ) * ( 0.45 + 0.55 * tone );
+        } }`;
     // Plan item 289: a narrower, cooler band (the wide warm one lit a pale blotch beside the parting at the title).
     // Plan item 306: the face is lit by the street's brightness, not its colour: its light is rebuilt as the skin's own
     // albedo times the light's luminance (the pick's ice key and the cyan sign tinted her a cold blue-white), its
