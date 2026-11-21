@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-21 08:40 UTC
-
 
 
 
@@ -5839,5 +5837,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Cathnivore Setup D (`cath-setup-D` 1040-1440 x 0-320): empty cream above Cath's quote while the setup panel is cramped.
 - Hedgerow 3D P (`hedge-l21-3d-P` 10-60 x 490-565): Cath at the frame's very left edge, her ring clipped.
 - NIGHT SHIFT P title (`ns-title-P`): The List's cards over her body; item 570 kept this by decision: check, don't rebuild.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 599. [ ] Hedgerow desktop play: the bench reads as pictures, Cath on it at half length
+*(planned 2026-11-21 08:50, lane B, plan1121e critique)*
+- **Why:** `plan1121e/hedge-l34-2d-D` 970-1340 x 595-700 (and `hedge-l21-3d-D` 1110-1420 x 585-700): Coming up is a three-column table of 12-13 px numbers ('365 vehicles', 'Airborne'); Cath's coach plate (970-1045 x 475-550) is a 70 px head beside a text block. VISION: panels support the table, designed not laid out; characters with presence.
+- **Build:** `games/hedgerow/src/` bench (forecast, coach plate; extend item 511's convoy strip, which draws only the current round): each upcoming round a mini convoy of vehicle silhouettes with its twist as an icon badge; the coach plate's head becomes Cath at half length (`shared/cath/`), her line in a tailed bubble, her expression keyed to the round's state.
+- **Accept:** each Coming-up round shows 3+ vehicle silhouettes each 20 px+ tall and no bare number under 14 px; Cath's bench figure 140 px+ tall at 1440x900; the bench's text area down 30%+ (measured on the shot); Hedgerow bench specs pass P and D; shot P and D.
+- **Size:** 2
+
+## 600. [ ] /games/ desktop: the four games as tall posters, all above the fold
+*(planned 2026-11-21 08:50, lane B, plan1121e critique)*
+- **Why:** `plan1121e/games-D` 110-1330 x 538-900: the poster windows are ~200 px tall (540-740), the cards run past the 900 px fold, plain web cards with small body copy. VISION: nothing looks like a default list; the site is the showcase.
+- **Build:** `site/src` card grid and styles (`booth.ts`): the row becomes poster boards hung from the stall's lower awning, today's daily on a hanging price tag; the hero a little shorter if needed (items 563, 517 kept: the hero and Cath on each card).
+- **Accept:** at 1440x900 every card and its Play button end at or above y 890; each poster 280 px+ tall; each daily status on a tag shape; site specs pass P and D; key art unchanged; shot P and D.
+- **Size:** 1
+
+## 601. [ ] Portfolio phone: the games as framed prints, and Cath's line
+*(planned 2026-11-21 08:50, lane B, plan1121e critique)*
+- **Why:** `plan1121e/portfolio-P` 16-374 x 556-844: four plain thumbnails with black caption bars, unlike the desktop's framed prints (item 534, desktop only) and Cath's bubble (`portfolio-D` 630-1230 x 150-600); Cath on the phone (290-370 x 205-410) has no line. VISION character bible: if a screen has room for a character, it's Cath.
+- **Build:** `portfolio/src` gallery and hero CSS: the desktop's mat, frame and name plate at phone size; Cath a short tailed bubble beside her. Also the desktop bubble's tail: it points at her knees (`portfolio-D` 1225-1235 x 570-585; her mouth near 1330, 215).
+- **Accept:** each print a mat and frame 6 px+ and a name plate, no black bar; Cath's bubble above the fold at 390x844, its tail tip within 24 px of her head box (P and D); no sideways scroll; portfolio specs pass; shot P and D.
+- **Size:** 1
+
+## 602. [ ] Cathnivore phone table: region names that never collide, and a bigger board
+*(planned 2026-11-21 08:50, lane B, plan1121e critique)*
+- **Why:** `plan1121e/cath-game-P` 15-350 x 240-258: 'Brindle Hills' and its '1' badge run over the Kingsmarket hex, 'Kingsmarket' into 'Rivermead'; the board fills y 120-470 of 844 (41%), between Hollowell's plan strip (70-390 x 62-100) and the Cath row (0-390 x 478-555). VISION: the table is the hero, big and legible.
+- **Build:** `src/ui` board labels and the phone table layout, `src/styles`: labels inside each hex's top edge with a collision pass; on an upright phone the plan strip folds to one pill that opens on tap, its height given to the board.
+- **Accept:** at 390x844 no two label boxes intersect and none crosses into a neighbouring hex (spec on boxes); the board 48%+ of the viewport height; all three plan moves reachable in one tap; table and phone specs pass; shot P and D.
+- **Size:** 2
+
+## 603. [ ] The bugs from the 2026-11-21 08:50 critique, fixed as one batch *(lane B, in progress)*
+*(planned 2026-11-21 08:50, lane B, plan1121e critique; check each on today's build first)*
+- Hedgerow P (`hedge-l34-2d-P` 56-178 x 478-496): the 'Same-Day van' label clipped to 'Same-Day va'.
+- Hedgerow 3D D (`hedge-l21-3d-D` 550-650 x 405-500): a see-through red scarecrow ghost and ring over the farmhouse roof (a placement hint that reads as a glitch).
+- Cathnivore P (`cath-game-P` 350-385 x 615-770): the 'Saving for' side tab clips the card behind it.
+- Hedgerow 3D P (`hedge-l21-3d-P` 5-195 x 92-112): the depot's 'HOLLOWELL 216 NEXT' tag pressed against the top bar's foot, the depot half under it (item 591's depot fit).
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
