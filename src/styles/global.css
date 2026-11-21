@@ -5150,3 +5150,25 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
 @media (min-width: 1100px) {
   .setup[data-steps] .market-event[data-flyer] { margin-left: -56px; }
 }
+/* Plan item 614 at D: the final table is the hero. Three columns: the story on the left, the real board at hero size
+   in the middle (on the table, not a framed thumbnail), and a narrow rail with the chart folded into a small ledger
+   page over the stats. */
+@media (min-width: 1200px) and (min-height: 700px) {
+  .end-screen {
+    grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.55fr) minmax(220px, 0.62fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "story board chart" "story board stats" "actions actions actions";
+    column-gap: 32px; max-width: 1440px; padding: 24px 32px 0;
+  }
+  .end-col-story { grid-area: story; }
+  .end-col-data { display: contents; }
+  .end-screen-map {
+    grid-area: board; align-self: center;
+    width: min(100%, calc(100vh - 150px)); margin: 0 auto; padding: 0;
+    background: none; border: 0; transform: none;
+  }
+  .end-chart { grid-area: chart; align-self: start; transform: rotate(1.2deg); box-shadow: 0 2px 0 var(--paper-3), 0 10px 18px color-mix(in srgb, var(--ink) 14%, transparent); }
+  .end-chart figcaption { flex-wrap: wrap; gap: 2px 10px; }
+  .end-screen-stats { grid-area: stats; align-self: start; margin-top: 12px; grid-template-columns: repeat(2, 1fr); max-width: none; }
+  .end-actions { grid-area: actions; }
+}
