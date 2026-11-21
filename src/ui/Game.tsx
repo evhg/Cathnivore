@@ -3092,7 +3092,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <span className="goal-feature-text">
                   <span className="goal-feature-eyebrow">Your goal</span>
                   <span className="goal-feature-name">Nothing yet</span>
-                  <span className="goal-feature-count">Pin a card above and it waits here, filling as the coins come in.</span>
+                  <span className="goal-feature-count">Pin a card on the shelf and it waits here, filling as the coins come in.</span>
                 </span>
               </div>
             )
@@ -3401,8 +3401,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             </span>
           ))}
           {/* Plan item 183: one row of the shelf shows; the rest wait behind this key. */}
-          {shelf && shelfCount > 3 && (
-            <button type="button" className="shelf-fold" data-few={shelfCount <= 6 || undefined} aria-expanded={shelfOpen} onClick={() => setShelfOpen((o) => !o)}>
+          {/* Plan item 589: on a desktop the shelf is one Saving-for card: the goal on top, the shelf's cards behind
+              this key (CSS); on a phone the shelf keeps item 183's one row and this key for the rest. */}
+          {shelf && (shelfCount > 3 || (isDesktop && shelfCount > 0)) && (
+            <button type="button" className="shelf-fold" data-few={shelfCount <= 6 || undefined} data-all={shelfCount} aria-expanded={shelfOpen} onClick={() => setShelfOpen((o) => !o)}>
               {/* Plan item 548: while the ledger is still blank a tall desktop shows a second row (CSS); the count follows. */}
               {shelfOpen ? (
                 'Fold the shelf'
@@ -3410,6 +3412,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 <>
                   <span className="fold-one-row">{shelfCount - 3} more not yet</span>
                   {shelfCount > 6 && <span className="fold-two-rows">{shelfCount - 6} more not yet</span>}
+                  <span className="fold-all">{shelfCount} on the shelf</span>
                 </>
               )}
             </button>

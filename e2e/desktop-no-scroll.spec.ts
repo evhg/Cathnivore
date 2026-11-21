@@ -128,7 +128,8 @@ for (const [W, H] of [
       // 'Saving for' shelf empty, so waiting on the rail alone timed out in the 2026-11-11 release gates). A deal whose
       // round 7 opens on a start-of-round choice (Kingsmarket's production bonus) while the AI teammate holds the turn
       // never showed a card here (E2E 2026-11-16: the e2e stop round halted the AI's seat too; fixed in Game.tsx). Kept as a guard.
-      const cards = page.locator(".actions-sheet .action-item, .table-hand [data-hand-card]").first();
+      // (plan item 589: the rail's shelf cards wait behind the Saving-for card's key, so a visible card counts)
+      const cards = page.locator(".actions-sheet .action-item:visible, .table-hand [data-hand-card]:visible").first();
       if (await cards.waitFor({ timeout: 45_000 }).then(() => true, () => false)) break;
       expect(deal, "three deals never reached a playable round-7 turn").toBeLessThan(2);
     }
@@ -191,7 +192,8 @@ test("no Actions row shows only in the fold's fade", async ({ page }, testInfo) 
     await page.goto("/");
     await page.getByText("Quick Game").click();
     await page.getByRole("button", { name: "Start" }).click();
-    await expect(page.locator(".actions .action-item").first()).toBeVisible();
+    // (plan item 589: the rail's shelf is a closed Saving-for card, so the first visible piece may be its goal)
+    await expect(page.locator(".actions").first()).toBeVisible();
     await page.waitForTimeout(400);
     const slivers = await page.evaluate(() => {
       const a = document.querySelector(".actions")!;

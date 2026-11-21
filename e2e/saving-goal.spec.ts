@@ -12,11 +12,15 @@ test('the Not-yet shelf folds to one row, and a pinned goal fills its jar and su
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
   const shelfCards = page.locator('.actions[data-shelf] .action-item[data-later-idx]')
-  await expect(shelfCards.first()).toBeVisible()
+  await expect(page.locator('.shelf-fold')).toBeVisible()
   const total = await shelfCards.count()
   const shown = () => page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').count()
-  expect(await shown()).toBeLessThanOrEqual(3)
-  if (total > 3) await expect(page.locator('.shelf-fold')).toHaveText(`${total - 3} more not yet`, { useInnerText: true })
+  // Plan item 589: the shelf is one Saving-for card, its goal on top and every shelf card behind the key.
+  expect(await shown()).toBe(0)
+  await expect(page.locator('.goal-feature')).toBeVisible()
+  await expect(page.locator('.shelf-fold')).toHaveText(`${total} on the shelf`, { useInnerText: true })
+  await page.locator('.shelf-fold').click()
+  expect(await shown()).toBe(total)
 
   // Pin the second priced card: it moves to the front, lit, with its jar.
   const pin = page.locator('.shelf-pin').nth(1)
@@ -49,47 +53,39 @@ test('the Not-yet shelf folds to one row, and a pinned goal fills its jar and su
   const cont = page.getByRole('button', { name: /Continue/ }).first()
   await cont.click()
   await expect(page.locator('.actions[data-shelf]')).toHaveAttribute('data-saving-for', goal!)
+  // closed again after the reload, its goal on the card; the key opens the shelf
+  await expect(page.locator('.goal-feature')).toHaveAttribute('data-pinned', '')
+  await page.locator('.shelf-fold').click()
   await expect(page.locator('.action-item[data-later-idx="0"] .saving-jar')).toBeVisible()
+  expect(await shown()).toBe(total)
 
-  // The fold key opens the rest of the shelf; unpinning clears the goal.
-  if (total > 3) {
-    await page.locator('.shelf-fold').click()
-    expect(await shown()).toBe(total)
-  }
+  // Unpinning clears the goal.
   await page.locator('.shelf-pin[aria-pressed="true"]').click()
   await expect(page.locator('.actions[data-shelf]')).not.toHaveAttribute('data-saving-for', /./)
 })
 
-// Plan item 548: before the ledger's first line a desktop 1400x1000+ shows a second row of the shelf (the rail had
-// ~300 px of bare paper under one row at 1920x1080); the first line takes the room back. The fold key stays inside
-// the rail's well.
-for (const [width, height] of [[1440, 1000], [1920, 1080]] as const) test(`a tall desktop shows two rows of the shelf until the ledger has a line (${width}x${height})`, async ({ page, isMobile }) => {
+// Plan item 589 (was item 548's second row): on a tall desktop the closed Saving-for card takes the rail's spare
+// height, so no bare stretch over 40 px opens between it and the ledger, before or after the ledger's first line.
+for (const [width, height] of [[1440, 1000], [1920, 1080]] as const) test(`the closed Saving-for card fills the rail (${width}x${height})`, async ({ page, isMobile }) => {
   test.skip(isMobile, 'the shelf is the big desktop column')
   await page.setViewportSize({ width, height })
   await page.goto('/')
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
-  const cards = page.locator('.actions[data-shelf] .action-item[data-later-idx]')
-  await expect(cards.first()).toBeVisible()
-  const total = await cards.count()
-  test.skip(total < 4, 'a shelf of three or fewer has one row anyway')
-  const shown = () => page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').count()
-  expect(await shown()).toBe(Math.min(6, total))
-  if (total > 6) await expect(page.locator('.shelf-fold')).toHaveText(`${total - 6} more not yet`, { useInnerText: true })
-  else await expect(page.locator('.shelf-fold')).toBeHidden()
-  // The shelf stays above the ledger.
-  const shelfFoot = await page.locator('.actions[data-shelf] .action-item[data-later-idx]:visible').evaluateAll((els) => Math.max(...els.map((e) => e.getBoundingClientRect().bottom)))
-  const ledgerTop = (await page.locator('.actions-sheet .round-ledger').boundingBox())!.y
-  expect(shelfFoot).toBeLessThanOrEqual(ledgerTop)
-  const wellFoot = (await page.locator('.actions-sheet .actions-well').boundingBox())!
-  if (total > 6) expect((await page.locator('.shelf-fold').boundingBox())!.y + 32).toBeLessThanOrEqual(wellFoot.y + wellFoot.height + 1)
-  // A sale writes the ledger's first line; the shelf folds back to one row.
+  await expect(page.locator('.goal-feature')).toBeVisible()
+  const gap = () =>
+    page.evaluate(() => {
+      const fold = document.querySelector('.actions-sheet .shelf-fold')!.getBoundingClientRect()
+      const ledger = document.querySelector('.actions-sheet .round-ledger')!.getBoundingClientRect()
+      return ledger.top - fold.bottom
+    })
+  expect(await gap()).toBeLessThanOrEqual(40)
   const sell = page.locator('.table-hand [data-group="sell"]')
   await sell.getByRole('button', { name: '1 to sell' }).click()
   await sell.getByRole('button', { name: /^Sell 1 Produce/ }).click()
   await expect(page.locator('.actions-sheet .round-ledger')).not.toHaveAttribute('data-empty', /.*/)
-  await expect.poll(shown).toBeLessThanOrEqual(3)
+  expect(await gap()).toBeLessThanOrEqual(40)
 })
 
 test('a goal that becomes affordable lifts into the hand within 800 ms and the pin comes off', async ({ page, isMobile }) => {
@@ -99,8 +95,9 @@ test('a goal that becomes affordable lifts into the hand within 800 ms and the p
   await page.getByText('Quick Game').click()
   await fillSeed(page, '7')
   await page.getByRole('button', { name: 'Start' }).click()
+  // (plan item 589: the shelf's cards wait behind the Saving-for card's key)
+  await page.locator('.shelf-fold').click()
   await expect(page.locator('.shelf-pin').first()).toBeVisible()
-  if (await page.locator('.shelf-fold').isVisible()) await page.locator('.shelf-fold').click()
   // An Invest card short by 3 Marks or fewer; selling that much Produce pays for it.
   const target = page.locator('.action-item.action-invest[data-later-idx]').filter({ hasText: /Need [123] more Marks?/ }).first()
   test.skip((await target.count()) === 0, 'no Invest card within three Marks on this seed')
@@ -161,10 +158,13 @@ test('the rail shows the goal large in the band under the shelf, and its fill ma
   // Item 586: with nothing pinned it invites a pin instead of repeating the nearest card shown in the row.
   await expect(feature).toHaveAttribute('data-empty', '')
   await expect(feature.locator('.goal-feature-name')).toHaveText('Nothing yet')
-  // Pin the second priced card: the card shows it, its fill is held / price.
+  // Pin the second priced card (the shelf opened from the card's key, then folded): the card shows it, its fill is
+  // held / price.
+  await page.locator('.shelf-fold').click()
   const pin = page.locator('.shelf-pin').nth(1)
   const name = (await pin.getAttribute('aria-label'))!.replace(/^Save for /, '')
   await pin.click()
+  await page.locator('.shelf-fold').click()
   await expect(feature).toHaveAttribute('data-pinned', '')
   await expect(feature.locator('.goal-feature-name')).toHaveText(name)
   const m = await page.evaluate(() => {

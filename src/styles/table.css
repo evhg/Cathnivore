@@ -3962,14 +3962,7 @@ html.no-animations .table-cath-line { animation: none; }
    ledger is blank, the shelf shows a second row; the ledger takes the room back with its first line. (At 900 px tall
    two rows fit only with 32 px pictures, against item 263's 60 px+; that rail keeps its gap.) */
 .shelf-fold .fold-two-rows { display: none; }
-@media (min-width: 1400px) and (min-height: 1000px) {
-  .actions-sheet:has(.round-ledger[data-empty]) .actions[data-shelf]:not([data-shelf-open]) .action-item:is([data-later-idx='3'], [data-later-idx='4'], [data-later-idx='5']) {
-    display: flex;
-  }
-  .actions-sheet:has(.round-ledger[data-empty]) .shelf-fold .fold-one-row { display: none; }
-  .actions-sheet:has(.round-ledger[data-empty]) .shelf-fold .fold-two-rows { display: inline; }
-  .actions-sheet:has(.round-ledger[data-empty]) .shelf-fold[data-few][aria-expanded='false'] { display: none; }
-}
+/* (plan item 589: retired; the shelf's cards wait behind the Saving-for card's key at every desktop size) */
 /* Plan item 549: the goal shown large in the band under the shelf's one row (at 1440x900 ~140 px of bare paper
    before the ledger's first line): its picture, its name and a fill of the coins held toward its price. Off the
    big-desktop shelf, beside the tall desktop's second row, and once the ledger has a line, it gives the room back. */
@@ -4050,9 +4043,8 @@ html.no-animations .table-cath-line { animation: none; }
     white-space: nowrap;
   }
 }
-@media (min-width: 1400px) and (min-height: 1000px) {
-  .actions-sheet:has(.round-ledger[data-empty]) .actions[data-shelf]:not([data-shelf-open]) .goal-feature { display: none; }
-}
+/* (plan item 589: item 548's tall-desktop second row went with the Saving-for card, and with it the rule that hid the
+   goal beside that row) */
 /* the jar's parts, on the shelf (D) and in the phone's mat chip */
 .saving-jar .jar-lid { fill: var(--wood); stroke: var(--wood-ink); stroke-width: 1; }
 .saving-jar .jar-glass { fill: color-mix(in srgb, var(--paper) 70%, transparent); stroke: var(--ink-a35); stroke-width: 1.2; }
@@ -6439,3 +6431,79 @@ html.no-animations .plan-plaque-tab[data-slot] { animation: none; }
 @keyframes table-cath-face { from { opacity: .35; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .table-cath-figure { animation: none; } }
 html.no-animations .table-cath-figure { animation: none; }
+
+/* Plan item 589: at D the shelf is one Saving-for card: the goal on top (item 549's band, at every desktop size), the
+   shelf's cards behind the key under it ("N on the shelf"), open on a tap; the heading stays above both. */
+.shelf-fold .fold-all { display: none; }
+@media (min-width: 1024px) {
+  .actions-sheet .actions[data-shelf] > .action-head-later { order: -2; }
+  .actions-sheet .actions[data-shelf] .goal-feature { order: -1; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .action-head-later ~ .action-item.action-item.action-item { display: none; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 96px 1fr;
+    align-items: center;
+    gap: var(--sp-3);
+    margin: 0;
+    padding: 8px var(--sp-2);
+    border-radius: var(--r-sm);
+    background: linear-gradient(transparent 55%, color-mix(in srgb, var(--wheat) 14%, transparent)), var(--paper-hi);
+    box-shadow: inset 0 0 0 1px var(--ink-a15), 0 3px 6px rgb(var(--shadow-ink) / .16);
+  }
+  .goal-feature-pic {
+    display: grid;
+    width: 108px;
+    height: 84px;
+    overflow: hidden;
+    border-radius: var(--r-xs);
+    box-shadow: inset 0 0 0 1px var(--ink-a15);
+    background: var(--paper);
+  }
+  .goal-feature-pic > svg { width: 100%; height: 100%; }
+  .goal-feature-text { display: grid; gap: 3px; min-width: 0; }
+  .goal-feature-eyebrow { font: 700 var(--fs-label)/1.1 var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted, var(--ink)); }
+  .goal-feature-name { font: 700 var(--fs-h3)/1.05 var(--font-display, var(--font-ui)); color: var(--ink); overflow-wrap: anywhere; }
+  .goal-feature-meter {
+    display: block;
+    height: 12px;
+    border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--paper) 80%, var(--ink));
+    box-shadow: inset 0 0 0 1px var(--ink-a35);
+    overflow: hidden;
+  }
+  .goal-feature-fill {
+    display: block;
+    height: 100%;
+    width: calc(var(--goal-fill, 0) * 100%);
+    border-radius: inherit;
+    background: var(--wheat);
+    box-shadow: inset 0 0 0 1px var(--ink-a35);
+  }
+  .goal-feature[data-coin='goodwill'] .goal-feature-fill { background: var(--pasture); }
+  /* item 586: nothing pinned, the band is an empty frame with the pin to use, not a second copy of a row card */
+  .goal-feature[data-empty] { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink-a15); rotate: none; }
+  .goal-feature[data-empty] .goal-feature-invite { place-items: center; background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink-a15); }
+  .goal-feature-invite > svg { width: 40px; height: 40px; fill: color-mix(in srgb, var(--wheat) 70%, var(--paper)); stroke: var(--ink-a35); stroke-width: .6; }
+  .goal-feature-invite > svg circle { fill: var(--paper-hi); }
+  .goal-feature[data-empty] .goal-feature-name { color: var(--ink-muted, var(--ink)); }
+  .goal-feature-count { font: 500 var(--fs-small)/1.2 var(--font-ui); color: var(--ink); }
+  .goal-feature-count b { font: 700 var(--fs-body)/1 var(--font-num, var(--font-ui)); }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature-pic { width: 96px; height: 76px; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold { display: block; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold :is(.fold-one-row, .fold-two-rows) { display: none; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold .fold-all { display: inline; }
+}
+@media (min-width: 1024px) {
+  /* (the closed Saving-for card takes the rail's spare height, so no bare stretch opens under it: item 549's rule
+     holds by construction; its goal grows, centred, the key stays at its foot) */
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature { flex: 1 1 auto; align-content: center; }
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold { align-self: center; }
+}
+@media (min-width: 1024px) {
+  .actions-sheet .actions-well:has(> .actions[data-shelf]:not([data-shelf-open])) { display: flex; flex-direction: column; }
+}
+@media (min-width: 1024px) {
+  .desktop-col-left > .actions-sheet > .actions-well:has(> .actions[data-shelf]:not([data-shelf-open])) { flex: 1 1 auto; min-height: 0; }
+}

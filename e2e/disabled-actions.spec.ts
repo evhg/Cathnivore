@@ -32,6 +32,8 @@ test('Sell shows a disabled, explained placeholder for counts the player can no 
 
   // Produce is now 0. Plan item 384: the one Sell card waits on the shelf as a single disabled strip, with its
   // reason and a chip still showing what it would give.
+  // (plan item 589: at D the shelf's cards wait behind the Saving-for card's key)
+  if (await page.locator('.shelf-fold[aria-expanded="false"]').isVisible()) await page.locator('.shelf-fold').click()
   const disabledSell1 = page.getByRole('button', { name: /^Sell 1 Produce/ })
   await expect(disabledSell1).toBeDisabled()
   await expect(page.getByRole('button', { name: /^Sell [23] Produce/ })).toHaveCount(0)

@@ -22,7 +22,9 @@ for (const scheme of ['light', 'dark'] as const) {
     // The counts are still the ledger's: Produce first.
     await expect(mat.locator('.ledger-value').first()).toHaveText(/^\d+$/)
 
-    // The shelf: every 'Not yet' card on show is a picture card 80 px or wider (plan item 183 folds the rest away).
+    // The shelf: every 'Not yet' card on show is a picture card 80 px or wider (plan item 183 folds the rest away;
+    // plan item 589: at D they wait behind the Saving-for card's key, so open it).
+    if (await page.locator('.shelf-fold[aria-expanded="false"]').isVisible()) await page.locator('.shelf-fold').click()
     const later = page.locator('.actions-sheet .actions .action-head-later ~ .action-item:visible')
     expect(await later.count()).toBeGreaterThan(0)
     const cards = await later.evaluateAll((els) =>
