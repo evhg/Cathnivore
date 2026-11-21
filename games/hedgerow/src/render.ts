@@ -1454,6 +1454,17 @@ export class Renderer {
       ctx.fillRect((-d.size * s) / 2, (-d.size * s) / 3, d.size * s, (d.size * s * 2) / 3);
       ctx.restore();
     }
+    // Fallen oaks lie across their plots until cleared. Plan item 603: drawn on the ground, under the sorted items
+    // (vehicles, Cath, the name plates): drawn after them, a log covered the 'n' of 'Same-Day van' at P l34.
+    for (const [c, r] of level.oaks ?? []) {
+      if (!oakAt(game, c, r)) continue;
+      ctx.fillStyle = "#5a4128";
+      ctx.fillRect(X(c) + (X(1) - X(0)) * 0.1, Y(r) + (Y(1) - Y(0)) * 0.38, (X(1) - X(0)) * 0.8, (Y(1) - Y(0)) * 0.24);
+      ctx.fillStyle = "#4f7d34";
+      ctx.beginPath();
+      ctx.arc(X(c) + (X(1) - X(0)) * 0.25, Y(r) + (Y(1) - Y(0)) * 0.5, (X(1) - X(0)) * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+    }
     items.sort((a, b) => a.y - b.y);
     for (const it of items) it.draw();
     // Each tower's pooled Marks: one "+N" that counts up while it keeps knocking, then floats off and fades.
@@ -1602,16 +1613,6 @@ export class Renderer {
     for (const [c, r] of level.barns ?? [])
       if (barnLook === "barn") drawFarmyard(ctx, X(c), Y(r), X(1) - X(0), c * 7 + r * 13 + level.id);
       else drawKitBarn(ctx, X(c), Y(r), X(1) - X(0), barnLook, c * 7 + r * 13 + level.id, t);
-    // Fallen oaks lie across their plots until cleared.
-    for (const [c, r] of level.oaks ?? []) {
-      if (!oakAt(game, c, r)) continue;
-      ctx.fillStyle = "#5a4128";
-      ctx.fillRect(X(c) + (X(1) - X(0)) * 0.1, Y(r) + (Y(1) - Y(0)) * 0.38, (X(1) - X(0)) * 0.8, (Y(1) - Y(0)) * 0.24);
-      ctx.fillStyle = "#4f7d34";
-      ctx.beginPath();
-      ctx.arc(X(c) + (X(1) - X(0)) * 0.25, Y(r) + (Y(1) - Y(0)) * 0.5, (X(1) - X(0)) * 0.16, 0, Math.PI * 2);
-      ctx.fill();
-    }
     // Set pieces: floodwater over the plots, and the swing bridge (up and red while it's open).
     const flood = setPiece(level, "flood");
     if (flood && game.wave >= flood.wave) {

@@ -34,7 +34,7 @@ async function valleyLuma(page: Page, near = true) {
         if (Math.hypot(dx, dy) < far) continue
         if (skip.some((q) => X >= q.left && X <= q.right && y >= q.top && y <= q.bottom)) continue
         const k = (Math.round(y * sx) * c.width + Math.round(X * sx)) * 4
-        sum += 0.2126 * lin(d[k]) + 0.7152 * lin(d[k + 1]) + 0.0722 * lin(d[k + 2])
+        sum += 0.2126 * lin(d[k]!) + 0.7152 * lin(d[k + 1]!) + 0.0722 * lin(d[k + 2]!)
         n++
       }
     return { luma: sum / n, n }
