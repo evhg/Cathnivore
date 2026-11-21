@@ -63,8 +63,11 @@ test('a solve leaves the board in view under a slim result strip', async ({ page
       scroll: document.scrollingElement!.scrollHeight - innerHeight,
       inView: st.top >= 0 && st.bottom <= innerHeight + 1 && st.left >= -1 && st.right <= innerWidth + 1,
       minFont: Math.min(...sizes),
+      cath: document.getElementById('strip-cath')!.getBoundingClientRect().height,
     }
   })
+  // Plan item 615: on a phone Cath stands at half length on the result card, 160 px tall
+  if (test.info().project.name.includes('phone')) expect(m.cath).toBeGreaterThanOrEqual(160)
   expect(m.visible).toBeGreaterThanOrEqual(0.8)
   expect(m.modal).toBe(false)
   expect(m.scroll).toBeLessThanOrEqual(1)

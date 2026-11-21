@@ -5197,7 +5197,7 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .strip-plant svg { flex: none; width: 28px; height: 28px; }
 .strip-plant[data-gold] svg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gold) 70%, transparent)); }
 .sp-cap { font-size: var(--fs-small); color: var(--ink-muted); line-height: 1.2; }
-.sp-cap b { font-family: var(--font-display); color: var(--soil); }
+.sp-cap b { font-family: var(--font-display); color: var(--soil); white-space: nowrap; }
 .strip-plant[data-gold] .sp-cap b::after { content: " \2605"; color: var(--gold); }
 
 /* Plan item 615 slice 3: Cath at half length at the strip's left, rising over its top edge (no portrait ring), and
@@ -5219,8 +5219,15 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   font: italic 500 var(--fs-small)/1.3 var(--font-voice, var(--font-display));
   color: var(--ink);
 }
+/* (slice 4: on a phone she stands 160 px tall, the card's left column, her head rising over its top edge into the
+   field's corner beside the board, faded at the hips above the buttons) */
+/* (at D the card is wider, so the crop's name and the figures keep one line each beside the four buttons) */
+@media (min-width: 1100px) {
+  .win-strip { width: min(800px, var(--strip-max, 100vw), calc(100vw - 20px)); }
+}
 @media (max-width: 600px) {
-  .win-strip .strip-cath { width: 52px; height: 78px; margin: -30px 0 0 -2px; }
+  .win-strip { grid-template-columns: 90px minmax(0, 1fr); column-gap: 8px; }
+  .win-strip .strip-cath { width: 107px; height: 160px; margin: -44px 0 -6px -14px; }
 }
 /* (at D her solve line is already her bubble in the valley: the strip keeps her figure, not a second line) */
 @media (min-width: 1100px) and (min-height: 640px) {
