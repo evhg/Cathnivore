@@ -4588,7 +4588,9 @@ html.no-animations .table-cath-line { animation: none; }
    rosette) with counts. Two rows, so it fits the 88 px the Farm block keeps at the foot of the producer's frame. */
 .partner-mat {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
+  /* Plan item 598: the name takes its room first (it was cut to 'Tomas R…' on item 589's narrower rail); the slot
+     row gets what's left, its empty sockets narrowing before a name loses a letter. */
+  grid-template-columns: 40px auto minmax(0, 1fr);
   grid-template-areas: "seat name slots" "seat stores stores";
   align-items: center;
   gap: 2px var(--sp-2);
@@ -4627,6 +4629,18 @@ html.no-animations .table-cath-line { animation: none; }
   /* Plan item 225: lettering on wood is --wood-ink, light in both themes (--paper-hi went dark on dark wood) */
   color: var(--wood-ink);
 }
+/* Plan item 598: on item 589's narrow rail (1280 px) the chips were 46 px inside, the picture, count and income
+   wrapped onto two lines and the farm card clipped the second: Tomas's figures were gone. They keep to one line, and
+   on a narrow mat the seat token and the pictures step down a size so the figures fit. */
+.partner-mat-stores li > .tooltip-trigger > .tooltip-trigger-button { display: flex; align-items: center; gap: 2px; min-width: 0; white-space: nowrap; }
+.partner-mat { container-type: inline-size; }
+@container (max-width: 280px) {
+  .partner-mat { grid-template-columns: 30px auto minmax(0, 1fr); column-gap: 6px; padding-inline: 6px; }
+  .partner-mat-seat { width: 30px; height: 30px; font-size: var(--fs-label); }
+  .partner-mat-stores { gap: 3px; }
+  .partner-mat-stores .mat-art { width: 18px; }
+  .partner-mat-stores li > .tooltip-trigger { padding: 0 4px 0 1px; }
+}
 .partner-mat-stores { grid-area: stores; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-1); margin: 0; padding: 0; list-style: none; }
 .partner-mat-stores li > .tooltip-trigger {
   display: flex;
@@ -4643,8 +4657,9 @@ html.no-animations .table-cath-line { animation: none; }
 .partner-mat-count { font-weight: 760; font-size: var(--fs-body); line-height: 1; }
 /* plan item 273: it read faint on the small chip; item 512: a step up (12 px read cramped beside a 14 px count) */
 .partner-mat-stores .farm-income { margin-left: auto; font-size: var(--fs-small); font-weight: 700; color: var(--ink); }
-.partner-mat-slots { grid-area: slots; display: flex; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.partner-mat-slots { grid-area: slots; display: flex; justify-content: flex-end; gap: 3px; min-width: 0; margin: 0; padding: 0; list-style: none; }
 .partner-slot {
+  flex: none;
   width: 20px;
   height: 16px;
   border-radius: 3px;
@@ -4657,6 +4672,8 @@ html.no-animations .table-cath-line { animation: none; }
    a recess carved into the plank (shadowed at its top, lit along its lower lip), not a dashed outline, which read as
    an unfinished form field. */
 .partner-slot[data-empty] {
+  flex: 0 1 20px;
+  min-width: 8px;
   background: rgb(var(--shadow-ink) / .32);
   box-shadow:
     inset 0 2px 3px rgb(var(--shadow-ink) / .55),

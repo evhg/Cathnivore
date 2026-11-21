@@ -34,6 +34,36 @@ test('the partner farm is a mat with three crates and slots', async ({ page }, t
 
 // Plan item 196: the ledger is a roll (an ol, [data-ledger]); plan item 244: its new lines are written in a 300 ms pen
 // stroke, or only fade under reduced motion; Undo is a 'VOID' rubber stamp whose accessible name stays "Undo".
+// Plan item 598: on item 589's narrow rail the name ran out ('Tomas R…') and each chip's picture, count and income
+// wrapped, the farm card clipping the figures. At 1280x800 and 1440x900 the name is whole and every count and
+// income sits on one line inside the farm block.
+for (const [width, height] of [[1280, 800], [1440, 900]] as const) {
+  test(`the partner's name and figures are whole at ${width}x${height}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-chromium', 'desktop rail only')
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    const mat = page.locator('.farm-inline [data-partner-mat]')
+    await expect(mat).toBeVisible()
+    const m = await mat.evaluate((el) => {
+      const name = el.querySelector('.partner-mat-name')!
+      const farm = el.closest('.farm-inline')!.getBoundingClientRect()
+      return {
+        nameCut: name.scrollWidth > name.clientWidth + 1,
+        chips: [...el.querySelectorAll('[data-crate]')].map((li) => {
+          const art = li.querySelector('.mat-art')!.getBoundingClientRect()
+          const n = li.querySelector('.partner-mat-count')!.getBoundingClientRect()
+          const inc = li.querySelector('.farm-income')!.getBoundingClientRect()
+          return { oneLine: Math.abs((art.top + art.bottom) / 2 - (n.top + n.bottom) / 2) < 6 && Math.abs(n.top - inc.top) < 6, inside: n.bottom <= farm.bottom + 0.5 && inc.right <= li.getBoundingClientRect().right + 0.5 }
+        }),
+      }
+    })
+    expect(m.nameCut, 'the name is whole').toBe(false)
+    for (const c of m.chips) expect(c).toEqual({ oneLine: true, inside: true })
+  })
+}
+
 for (const reduced of [false, true]) {
   test(`the ledger is a receipt roll and Undo a void stamp${reduced ? ' (reduced motion)' : ''}`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'phone', 'desktop rail only')
