@@ -6058,7 +6058,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 628. [ ] Hedgerow: the build shop as seed packets
+## 628. [ ] Hedgerow: the build shop as seed packets *(lane A, in progress)*
 *(planned 2026-11-21 23:25, lane A, plan1121m critique)*
 - **Why:** `plan1121m/hedge-l21-2d-D` 900-1290 x 80-370 (also l21-3d-D, l34-2d-D): the shop is a 3x3 grid of beige tiles, ~40 px icons, ~11 px grey role words and cryptic 'T✓' badges; the phone tray (`hedge-l21-2d-P` 68-340 x 700-765) three cramped tiles. The most form-like UI left in any game. VISION 1, 6.
 - **Build:** `games/hedgerow/src/` shop and tray (main.ts, roles.ts, icons.ts, ui css): each tower a seed-packet card (packet art with the tower large, a price tag, a role glyph and range pips); locked towers sealed packets; the picked packet lifts and its stats slide out; the 'T✓' badge replaced by a worded or explained mark; the phone tray a fanned row of packets.
