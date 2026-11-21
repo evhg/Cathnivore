@@ -302,3 +302,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-21 11:10 lane A (607): a region's count disc prefers its plaque's right end (the sign slides toward the board's edge); the left end only where the row can't hold it on the right.
 - 2026-11-21 11:20 lane A (607): the /games/ Cathnivore poster is centred (50%), not held right: the key art no longer has Tomas at its right edge, and the right hold cut Brindle Hills' plaque.
 - 2026-11-21 11:30 lane A (599): convoy cars are trimmed vehicle images (box = paint), the lead without a plate, so the 20 px accept measures the art itself.
+- 2026-11-21 11:45 lane B (606): the upright title fits her without the umbrella, with 45 cm head room, and into the stage's right 58% by width too (the stage spans under the menu); the static phone poster, not the live title, is what a headless shot and a slow phone show first, so it is the frame to judge.
