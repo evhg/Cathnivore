@@ -1826,7 +1826,8 @@ html.no-animations .cath-companion .cameo {
    a rail of three keys on the right, each opening its sheet as a drawer over the table's right edge. */
 @media (min-width: 1024px) {
   .game-layout {
-    grid-template-columns: clamp(272px, 22vw, 320px) minmax(0, 1fr) 72px;
+    /* (plan item 589: the rail 21vw, 268-304 px, so it stays 22% of the screen or less with its frames) */
+    grid-template-columns: clamp(268px, 21vw, 304px) minmax(0, 1fr) 72px;
     gap: var(--sp-4);
     padding-inline: var(--sp-4);
   }
@@ -6232,7 +6233,7 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
    come in: the hand's cards 12 px off the frame's foot (were 24) and Expand's region chips on one line. Board 25.6% ->
    about 28% of 1440x900, 22.5% -> about 25% of 1280x800 (scripts/cathnivore-495-measure.mjs). */
 @media (min-width: 1280px) and (min-height: 760px) {
-  .game-layout { grid-template-columns: clamp(272px, 22vw, 320px) minmax(0, 1fr) 0; }
+  .game-layout { grid-template-columns: clamp(268px, 21vw, 304px) minmax(0, 1fr) 0; }
   .desktop-rail { position: fixed; top: 14px; right: var(--sp-4); width: 84px; z-index: var(--z-hud); }
   .desktop-rail .drawer-rail { gap: 4px; padding: 4px; }
   .desktop-rail .drawer-key {
@@ -6506,4 +6507,44 @@ html.no-animations .table-cath-figure { animation: none; }
 }
 @media (min-width: 1024px) {
   .desktop-col-left > .actions-sheet > .actions-well:has(> .actions[data-shelf]:not([data-shelf-open])) { flex: 1 1 auto; min-height: 0; }
+}
+
+/* Plan item 589: the rail's Ledger | Log book: one panel, two tabs; it takes the place and the sizing the ledger had
+   (growing into the rail's room, its own size while the ledger is blank), the open page under its tabs. */
+.rail-book { display: none; }
+@media (min-width: 1024px) {
+  .actions-sheet .rail-book {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1000 auto;
+    min-height: 0;
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-2);
+    box-shadow: inset 0 1px 0 var(--ink-a15);
+  }
+  .actions-sheet .rail-book[data-tab='ledger']:has(.round-ledger[data-empty]) { flex: 0 0 auto; margin-top: auto; }
+  .rail-book-tabs { display: flex; gap: var(--sp-1); margin: 0 0 6px; }
+  .rail-book-tab {
+    min-height: 28px;
+    padding: 2px var(--sp-3);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: var(--ink-muted);
+    font: 700 var(--fs-label)/1.2 var(--font-ui);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .rail-book-tab[aria-selected='true'] { background: var(--paper-hi); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink-a15); }
+  .rail-book-tab:focus-visible { outline: 2px solid var(--focus, var(--ink)); outline-offset: 2px; }
+  .rail-book-panel { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .rail-book-panel[hidden] { display: none; }
+  .rail-book .round-ledger.round-ledger { flex: 1 1 auto; margin-top: 0; padding-top: 0; box-shadow: none; }
+  .rail-book .round-ledger-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .rail-book #rail-panel-log { overflow: auto; }
+  .rail-book #rail-panel-log .log-sheet { margin: 0; padding: 0; background: none; box-shadow: none; border: 0; }
+}
+@media (min-width: 1024px) {
+  .rail-book .log-sheet > .frame-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }

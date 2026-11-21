@@ -48,7 +48,7 @@ import EnemyTurnPlayback from './EnemyTurnPlayback'
 import { EXECS, execFor, flightsFor, stagedRegions, stripDock } from './boardroom'
 import Figure from './portraits/Figure'
 import LogSheet from './LogSheet'
-import RoundLedger from './RoundLedger'
+import RailBook from './RailBook'
 import FarmSheet, { Stall } from './FarmSheet'
 import { vignetteFor } from './vignetteKind'
 import Vignette from './Vignette'
@@ -3156,6 +3156,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         className="actions"
         data-shelf={shelf ? '' : undefined}
         data-shelf-open={shelf && shelfOpen ? '' : undefined}
+        data-rail-section={isDesktop ? 'saving' : undefined}
         data-saving-for={goal}
         tabIndex={0}
         role="region"
@@ -3567,7 +3568,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {/* AAA UI M4 fix: the Farm ledger folds into the producer frame (one line a producer) so the
             Actions frame below keeps the column's height for the verbs. */}
         {isDesktop && (
-          <div className="sheet-panel producer-sheet frame">
+          <div className="sheet-panel producer-sheet frame" data-rail-section="you">
             {producerPanel}
             {!foldFarm && <FarmSheet state={state} onClose={() => {}} inline />}
           </div>
@@ -3585,7 +3586,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
             {!handOnTable && <h2 className="frame-title">Actions</h2>}
             {actionsPanel}
             {/* Plan item 190: the rail's foot holds the game's ledger, Trust and land changes as till receipts. */}
-            <RoundLedger state={state} />
+            <RailBook state={state} aiReasons={aiReasons} />
             {controls}
           </div>
         )}

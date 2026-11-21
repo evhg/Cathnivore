@@ -77,7 +77,8 @@ for (const [width, height] of [[1440, 1000], [1920, 1080]] as const) test(`the c
   const gap = () =>
     page.evaluate(() => {
       const fold = document.querySelector('.actions-sheet .shelf-fold')!.getBoundingClientRect()
-      const ledger = document.querySelector('.actions-sheet .round-ledger')!.getBoundingClientRect()
+      // (the ledger | log book's tabs head the section under the card)
+      const ledger = (document.querySelector('.actions-sheet .rail-book') ?? document.querySelector('.actions-sheet .round-ledger'))!.getBoundingClientRect()
       return ledger.top - fold.bottom
     })
   expect(await gap()).toBeLessThanOrEqual(40)
@@ -174,7 +175,7 @@ test('the rail shows the goal large in the band under the shelf, and its fill ma
     const track = meter.getBoundingClientRect()
     // the rail's visible pieces, top to bottom
     const sheet = document.querySelector('.actions-sheet')!
-    const parts = [...sheet.querySelectorAll('.action-head-later, .action-item[data-later-idx], .shelf-fold, .goal-feature, .round-ledger, .round-ledger ~ *')]
+    const parts = [...sheet.querySelectorAll('.action-head-later, .action-item[data-later-idx], .shelf-fold, .goal-feature, .rail-book-tabs, .round-ledger, .round-ledger ~ *, .rail-book ~ *')]
       .map((e) => e.getBoundingClientRect())
       .filter((r) => r.width > 0 && r.height > 0)
       .sort((a, b) => a.top - b.top)
