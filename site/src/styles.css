@@ -1478,7 +1478,9 @@ body {
    sign was cut by the card's right edge and two thirds of the card was black rain. */
 /* Plan item 403: the 16:10 key art in a 16:11 frame is cut at its sides; held right, so the table's last producer
    (Tomas, at the art's right edge) stands whole rather than sliced by the card. */
-.hero-game-cathnivore .hero-game-art img { object-position: 100% 50%; }
+/* Plan item 607: centred, so the board stands whole (held right, Brindle Hills' plaque was cut to 'ls' at the card's
+   left edge; the art no longer has Tomas at its right edge, only his bubble, which the centre crop leaves out). */
+.hero-game-cathnivore .hero-game-art img { object-position: 50% 50%; }
 .hero-game-nightshift .hero-game-art img { filter: brightness(1.05) saturate(1.1); object-position: 100% 50%; transform: scale(1.3); transform-origin: 100% 30%; }
 .hero-game-cath {
   position: absolute;
