@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (23:51 11-20): 574 slice 2 (the stoop's wash no brighter than its own luminance in the class key, gold/green halos softened); handed back: Gunslinger and Fixer at D read 1.4-1.8 with neon flicker (median of 3+ frames next), shots left. Open: 574 (rest), 570, 543, 319; 575 lane B.
+- Lane A (00:51 11-21): 574 done (b2c097ee: the Gunslinger's wall wash 0.4, her set's chair and lamp out a step; every class 1.76x+ at P and D). Planning (mark 01:27): shots `e2e/screenshots/plan1121a`, critique, new items. Seen: at `?front=classpick&shot&t=8` the Gunslinger's umbrella swings across her face (setTime 8; 8.35 is clear) — check it isn't the live audition. Open: 543, 319.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
