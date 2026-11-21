@@ -50,6 +50,20 @@ for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]] 
       expect(sb!.x, 'bubble on screen').toBeGreaterThanOrEqual(0)
       expect(sb!.x + sb!.width, 'bubble off the card').toBeLessThanOrEqual(box!.x)
     }
+    if (name === 'P') {
+      // Plan item 613 on a phone: the card is a sheet along the foot (the field sharp above it), Cath 150 px or taller
+      // standing on its edge with her line beside her, and Continue on screen without a scroll.
+      expect(box!.y, 'field above the sheet').toBeGreaterThanOrEqual(h * 0.35)
+      expect(await dlg.evaluate((d) => getComputedStyle(d, '::backdrop').backdropFilter)).toBe('none')
+      const fig = (await page.locator('#win-cath svg').boundingBox())!
+      expect(fig.height).toBeGreaterThanOrEqual(150)
+      expect(fig.y, 'Cath on screen').toBeGreaterThanOrEqual(0)
+      const say = (await page.locator('#win-cath .win-say').boundingBox())!
+      expect(say.x + say.width, 'bubble on screen').toBeLessThanOrEqual(w)
+      expect(say.y + say.height, 'bubble off the sheet').toBeLessThanOrEqual(box!.y)
+      const go = (await dlg.locator('#result-primary').boundingBox())!
+      expect(go.y + go.height, 'Continue above the fold').toBeLessThanOrEqual(h)
+    }
     await page.screenshot({ path: `e2e/screenshots/payout46/win-${name}.png` })
     await ctx.close()
   })

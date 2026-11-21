@@ -6387,3 +6387,187 @@ img.act-scene {
 @keyframes win-cath-fade {
   from { opacity: 0; }
 }
+/* Plan item 613 on an upright phone: the card is a sheet along the foot, the field sharp above it, and Cath stands on
+   the sheet's edge, delighted, the result her line in a bubble beside her. The sheet keeps Continue above the fold. */
+@media (max-width: 599.98px) and (min-height: 640px) {
+  #dlg-result.field-win::backdrop {
+    backdrop-filter: none;
+    background: linear-gradient(180deg, transparent 25%, color-mix(in srgb, var(--ink) 40%, transparent));
+  }
+  #dlg-result.field-win[open] {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: 60dvh;
+    padding: 14px 16px 12px;
+    border-radius: 22px 22px 0 0;
+  }
+  .win-cath {
+    display: block;
+    position: fixed;
+    left: 4px;
+    bottom: calc(60dvh - 8px);
+    height: min(31dvh, 270px);
+    aspect-ratio: 0.55;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 14px color-mix(in srgb, var(--ink) 45%, transparent));
+    animation: win-cath-in 520ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+  }
+  .win-cath svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #dlg-result.field-win :is(#result-cath, .payout-cath) {
+    display: none;
+  }
+  #dlg-result.field-win #result-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  #dlg-result.field-win .payout-level {
+    grid-template-columns: 1fr;
+    padding: 8px 10px;
+  }
+  #dlg-result.field-win .payout-level > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 10px;
+  }
+  #dlg-result.field-win .payout-level p {
+    margin: 0;
+  }
+  #dlg-result.field-win .result-stats:has(~ .payout) {
+    display: none;
+  }
+  #dlg-result.field-win .payout-next p:nth-child(2) {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .win-say {
+    position: absolute;
+    left: calc(100% + 6px);
+    top: 14%;
+    width: max-content;
+    max-width: calc(100vw - 100% - 30px);
+    margin: 0;
+    padding: 10px 14px 12px;
+    border-radius: 18px;
+    background: var(--paper-hi);
+    color: var(--ink);
+    border: 2px solid var(--line);
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--line) 22%, transparent), 0 10px 22px color-mix(in srgb, var(--line) 30%, transparent);
+    font-family: var(--font-display);
+    font-size: var(--fs-d3);
+    line-height: 1.15;
+    text-wrap: balance;
+    animation: win-say-in 360ms 420ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
+  }
+  .win-say::after {
+    content: "";
+    position: absolute;
+    left: -11px;
+    top: 22px;
+    width: 18px;
+    height: 18px;
+    background: var(--paper-hi);
+    border: 2px solid var(--line);
+    border-width: 0 0 2px 2px;
+    transform: rotate(45deg);
+  }
+}
+@media (max-width: 599.98px) and (min-height: 640px) and (prefers-reduced-motion: reduce) {
+  .win-cath { animation: win-cath-fade 300ms ease both; }
+  .win-say { animation: win-cath-fade 300ms 200ms ease both; }
+}
+/* Plan item 613: on a win scene the run's tally is three painted boards nailed up, not form tiles: oak, the label
+   in kraft, the figure painted cream (Marks in brass, Goodwill in its own red), a brass nail at each top corner. */
+#dlg-result.field-win .tally-counts > div {
+  position: relative;
+  padding: 7px 4px 6px;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: var(--mat-oak);
+  box-shadow: inset 0 1px 0 var(--white-a18), inset 0 -2px 0 color-mix(in srgb, var(--oak-ink) 60%, transparent), 0 3px 0 color-mix(in srgb, var(--oak-ink) 45%, transparent);
+  transform: rotate(-1.2deg);
+}
+#dlg-result.field-win .tally-counts > div:nth-child(2) {
+  transform: rotate(0.8deg) translateY(2px);
+}
+#dlg-result.field-win .tally-counts > div:nth-child(3) {
+  transform: rotate(-0.6deg);
+}
+#dlg-result.field-win .tally-counts > div::before,
+#dlg-result.field-win .tally-counts > div::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--brass-hi), var(--brass-lo) 70%);
+}
+#dlg-result.field-win .tally-counts > div::after {
+  left: auto;
+  right: 6px;
+}
+#dlg-result.field-win .tally-counts dt {
+  color: var(--on-oak-dim);
+  letter-spacing: 0.02em;
+}
+#dlg-result.field-win .tally-counts dd {
+  color: var(--on-fill);
+  font-family: var(--font-display);
+  text-shadow: 0 1px 0 var(--oak-ink);
+}
+#dlg-result.field-win .tally-counts > div:first-child dd {
+  color: var(--brass-hi);
+}
+#dlg-result.field-win .tally-counts > div:last-child dd {
+  color: var(--goodwill-hi);
+}
+#dlg-result.field-win .tally-counts .tally-of {
+  color: var(--on-oak-dim);
+}
+@media (max-width: 599.98px) and (min-height: 640px) {
+  #dlg-result.field-win .tally {
+    margin: 0 0 6px;
+  }
+  #dlg-result.field-win .tally-counts {
+    margin: 0 0 8px;
+  }
+  #dlg-result.field-win .tally-counts dd {
+    font-size: 1.25rem;
+  }
+  #dlg-result.field-win .payout {
+    gap: 6px;
+  }
+  #dlg-result.field-win .payout-ribbon .payout-head {
+    display: none;
+  }
+  #dlg-result.field-win .payout-ribbon ul {
+    padding: 4px 8px;
+  }
+  #dlg-result.field-win .payout-level .btn {
+    padding: 6px 14px;
+    min-height: 0;
+  }
+  #dlg-result.field-win .payout-next {
+    padding: 6px 10px;
+  }
+  #dlg-result.field-win .payout-next p {
+    margin: 0 0 2px;
+  }
+  #dlg-result.field-win .payout-next .payout-reward {
+    display: none;
+  }
+}
