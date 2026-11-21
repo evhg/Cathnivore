@@ -6647,3 +6647,9 @@ html.no-animations .table-cath-figure { animation: none; }
   }
   .actions-sheet.actions-sheet.actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature-pic > svg { object-fit: cover; }
 }
+
+/* Plan item 612: on a narrow phone Bea's drawing (at its 64 px floor) lay over Highmoor's hex corner: a size down and
+   tucked to the cloth's edge, it stays on the cloth. */
+@media (max-width: 480px) {
+  .game:has(.cath-dock) .beas-drawing { left: 4px; width: 52px; }
+}
