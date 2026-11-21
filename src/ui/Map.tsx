@@ -1635,7 +1635,8 @@ function fitPlaques(svg: SVGSVGElement) {
     plates.push({ x0: cx - w / 2 - 8, x1: cx + w / 2 + 8, y0, y1: y0 + Number(plate.getAttribute('height')), sign })
     signs.push({ sign, text, plate, status: sign.querySelector<SVGGElement>('.region-status'), cx, w })
   }
-  const GAP = 3
+  // Plan item 602: 5 units (was 3): on a phone the middle row read as one run of plates, a disc 2 px off the next name
+  const GAP = 5
   // The board's left edge in its own units (the svg's box, wider than the viewBox where the board is height-bound): a
   // disc moved to a plaque's left end must not leave the board. The right end stays bounded by neighbours only.
   const ctm = svg.getScreenCTM?.()
