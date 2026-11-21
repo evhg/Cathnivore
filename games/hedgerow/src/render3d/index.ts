@@ -134,16 +134,19 @@ interface EnemyView {
 
 /** Plan item 561: the field's grade (display-referred): warm, a mild S-curve and a soft vignette. */
 const FIELD_GRADE = {
-  uniforms: { tDiffuse: { value: null as THREE.Texture | null } },
+  // Plan item 604: `shape` scales the vignette's reach per axis by the frame's sides over its long side, so an upright
+  // phone's narrow frame isn't darkened down both sides (in plain UV space its sides took the corners' falloff, a
+  // dark band over the lane and Cath; a 1440x900 frame keeps its old (1, 0.8)).
+  uniforms: { tDiffuse: { value: null as THREE.Texture | null }, shape: { value: new THREE.Vector2(1, 0.8) } },
   vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
   fragmentShader: [
-    "uniform sampler2D tDiffuse; varying vec2 vUv;",
+    "uniform sampler2D tDiffuse; uniform vec2 shape; varying vec2 vUv;",
     "void main() {",
     "  vec4 t = texture2D(tDiffuse, vUv);",
     "  vec3 c = clamp(t.rgb, 0.0, 1.0);",
     "  c = mix(c, c * c * (3.0 - 2.0 * c), 0.3);",
     "  c *= vec3(1.03, 1.0, 0.94);",
-    "  vec2 d = (vUv - 0.5) * vec2(1.0, 0.8);",
+    "  vec2 d = (vUv - 0.5) * shape;",
     "  c *= 1.0 - 0.22 * smoothstep(0.3, 0.72, length(d));",
     "  gl_FragColor = vec4(clamp(c, 0.0, 1.0), t.a);",
     "}",
@@ -243,6 +246,7 @@ const TOWER_RISE: Partial<Record<string, number>> = { hedgerow: 1.3, beehive: 1.
 export class Renderer3D {
   private renderer: THREE.WebGLRenderer;
   private composer: EffectComposer;
+  private grade: ShaderPass;
   private bloom: UnrealBloomPass;
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(32, 1, 0.1, 120);
@@ -421,7 +425,8 @@ export class Renderer3D {
     this.composer.addPass(new OutputPass());
     // Plan item 561: the field's grade, in display space after the tone map: a warm, gently S-shaped curve and a soft
     // vignette to the frame's edges, so the board reads as a printed poster on warm paper.
-    this.composer.addPass(new ShaderPass(FIELD_GRADE));
+    this.grade = new ShaderPass(FIELD_GRADE);
+    this.composer.addPass(this.grade);
 
     // Selection square, range ring and pie aim.
     const sq = new THREE.LineSegments(
@@ -517,6 +522,8 @@ export class Renderer3D {
     this.composer.setPixelRatio(dpr);
     this.composer.setSize(this.w, this.h);
     this.bloom.resolution.set(this.w / 2, this.h / 2);
+    const long = Math.max(this.w, this.h);
+    (this.grade.uniforms.shape!.value as THREE.Vector2).set(Math.max(this.w / long, 0.5), Math.max(this.h / long, 0.5) * (this.w >= this.h ? 1.05 : 1));
     this.pxScale = this.h * dpr * 0.9;
     this.sparks.setScale(this.pxScale);
     this.camera.aspect = this.w / this.h;
