@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-21T23:14Z
 
 
 
@@ -6056,5 +6055,51 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Runnel solved D (1285-1390 x 730-750): the 'Bea's garden' label over the sunflowers.
 - Hedgerow P (`hedge-l34-2d-P` 600-665): on level 34 the second depot ('283 NEXT', seen at D) is off-frame, so the Same-Day vans enter from the edge with no source.
 - Hedgerow act map D (`hedge-menu-D` 165-195 x 300-425): Cath's figure overlaps level 21's coin rim (stands on the stop, not beside it).
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 628. [ ] Hedgerow: the build shop as seed packets
+*(planned 2026-11-21 23:25, lane A, plan1121m critique)*
+- **Why:** `plan1121m/hedge-l21-2d-D` 900-1290 x 80-370 (also l21-3d-D, l34-2d-D): the shop is a 3x3 grid of beige tiles, ~40 px icons, ~11 px grey role words and cryptic 'T✓' badges; the phone tray (`hedge-l21-2d-P` 68-340 x 700-765) three cramped tiles. The most form-like UI left in any game. VISION 1, 6.
+- **Build:** `games/hedgerow/src/` shop and tray (main.ts, roles.ts, icons.ts, ui css): each tower a seed-packet card (packet art with the tower large, a price tag, a role glyph and range pips); locked towers sealed packets; the picked packet lifts and its stats slide out; the 'T✓' badge replaced by a worded or explained mark; the phone tray a fanned row of packets.
+- **Accept:** tower art 56 px+ at D, 44 px+ at P; role text 13 px+ at AA; no unexplained glyph badges; picking a packet lifts it within 250 ms (e2e in `?2d`); hedgerow tray/shop specs pass; shot P, D and L.
+- **Size:** 2
+
+## 629. [ ] NIGHT SHIFT: the case loading screen as a staged briefing
+*(planned 2026-11-21 23:25, lane A, plan1121m critique)*
+- **Why:** `plan1121m/ns-street-D` (the case loader, 'Julian Crisp 94%'): about 60% of the frame is empty black rain (640-1440 x 430-900); Cath is a 64 px 2D bust (68-130 x 725-818) unlike her 3D self on the title and pick; The List (1290-1385 x 755-815) is tiny. VISION 5, 1.
+- **Build:** `games/cathode/src/ui/` loader (find the view that renders it; busts.ts, districtmap.ts): a case-file briefing: the target's surveillance still pinned by the quote, the district's survey map with a red-string route to the objective, Cath as the large class-pick poster render (not the bust), progress as the string drawing itself.
+- **Accept:** Cath's art 280 px+ tall at 1440x900; the target's still present; no empty region over 40% of the frame; at 390x844 and 844x390 nothing overlaps (e2e); cathode loader specs pass; shot P, D, L.
+- **Size:** 2
+
+## 630. [ ] Runnel: the solve's payoff in view, the result beside it
+*(planned 2026-11-21 23:25, lane A, plan1121m critique; item 620 runs the water already: this is the layout and the garden beat)*
+- **Why:** `plan1121m/runnel-solved-P` 0-390 x 625-840: the result card covers Bea's garden, the place the solve plants ('Planted in Bea's garden: a tomato'); `runnel-solved-D` 500-1300 x 758-890: the strip cuts the board's bottom row and the garden. VISION 4.
+- **Build:** `games/runnel/src/main.ts` (result strip), garden: after the water reaches the garden, the new plant grows in at hero size with Bea's reaction; then the result docks clear of the garden (beside the board at D, a sheet that can be swiped down on the phone). Reduced motion: fades only.
+- **Accept:** after the finale the garden's box doesn't meet the result's box at P or D (e2e); the new plant 40 px+; reduced motion finishes in 400 ms or less; runnel win/garden specs pass; shot P and D.
+- **Size:** 2
+
+## 631. [ ] /games/: Cath behind the stall, the games as its wares
+*(planned 2026-11-21 23:25, lane A, plan1121m critique)*
+- **Why:** `plan1121m/games-D` 420-520 x 300-490: Cath stands full length in front of the counter, her legs over its front, so the stall looks pasted on; on the phone (`games-P` 150-245 x 300-480) she is a flat bust in another style. VISION 5, 1.
+- **Build:** `site/src/` hero (booth/scene/shelf): Cath behind the counter, cropped at the waist by it, with an idle wave; each game a ware on the counter that opens its card; the same art on the phone.
+- **Accept:** the counter covers her lower body at P and D; each ware is a link to its game (e2e:site); key art re-shot; site specs pass; shot P and D.
+- **Size:** 1
+
+## 632. [ ] Cathnivore desktop table: the board as the hero
+*(planned 2026-11-21 23:25, lane A, plan1121m critique; check item 614/618 layouts first)*
+- **Why:** `plan1121m/cath-game-D` 570-1210 x 95-720: the board is ~640 px wide (44% of 1440) between Cath's column (340-530) and Tomas and Mara (1180-1405), on a plain beige cloth with no light; the Saving-for card (35-300 x 385-660) is a grey pencil sketch beside full-colour cards. VISION 2, 1.
+- **Build:** `src/ui/Game.tsx`, `TableProps.tsx`, `tableLight.ts`, table css: the cloth lit (a warm pool under the board, falloff to the rails), the board grown into the freed width (the producers tuck to the board's corners or a shared rail), the Saving-for goal drawn in colour like the hand cards.
+- **Accept:** the board 760 px+ wide at 1440x900 with no figure over a hex (e2e); the goal art in colour (no greyscale image); P unchanged (shot and specs); board and table specs pass; shot D light and dark.
+- **Size:** 2
+
+## 633. [ ] The bugs from the 2026-11-21 23:25 critique, fixed as one batch
+*(planned 2026-11-21 23:25, lane A, plan1121m critique; check each on today's build first)*
+- Runnel solved D (1296-1400 x 703-728): a garden sprite over the 'Bea's garden' label.
+- Runnel solved D (40-320 x 850-882): 'Solved. Next in 44m.' and 'See result' cramped at the foot, repeating the open result.
+- Cathnivore setup D (997-1143 x 567-775): the 'This week at the market' card over Cath's arm and the counter.
+- /games/ P (220-380 x 512-558): 'Browse the games' brown italic on brown: check AA, make it read as a button.
+- NIGHT SHIFT play P (184-600 x 750-810) and D (80-290 x 715-740): a line fading to grey and clipped mid-sentence ('Somebody reads about'); if it's the typewriter, `?shot` should freeze its end.
+- Hedgerow act map P (130-240 x 640-765): 'The Unboxing' and 'Sea Fret' cut under the briefing card with no edge treatment.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
