@@ -4269,3 +4269,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 14:21 lane B: 565 checks; a disc clamp reverted (region-status caught it); board-pieces red was load (passes alone).
 - 2026-11-20 14:51 lane A: 565 and 571 done, 566-570 planned; targeted specs green (plan-strip, table-hand*, hedgerow-map, cathode-front upright); full check: one red (Hedgerow key art stale after render.ts), re-shot and green.
 - 2026-11-20 15:21 lane B: 567 slice 1; 133 Runnel specs + a new greening spec pass.
+- **2026-11-20 15:51 lane A:** 566 slice 1 (1 code commit). table-hand, table-hand-fan, desktop-no-scroll (D, 12 passed, --retries=0); a scripted cover check over random deals at 1440x900 and 1280x800; tsc, eslint. No full check. Shots scratchpad b566. Lock released.
