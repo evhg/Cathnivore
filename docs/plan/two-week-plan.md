@@ -5816,7 +5816,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** a fresh game at 1440x900 shows a card's art and an 'N more' figure, no 'Nothing yet' (spec); Keep pins in one tap and the goal survives a reload; text 13 px+ (desktop-rail's scan passes); saving-goal and desktop-rail specs pass; shot P and D.
 - **Size:** 1
 
-## 596. [ ] Hedgerow act map: locked stops show their landmark in colour under the glass
+## 596. [ ] Hedgerow act map: locked stops show their landmark in colour under the glass *(lane B, in progress)*
 *(planned 2026-11-21 07:45, lane B, plan1121d critique)*
 - **Why:** `plan1121d/hedge-menu-D` 285-1060 x 320-850 (and `hedge-menu-P` 105-270 x 215-560): the act's locked stops read as identical white coins with grey line icons, like disabled buttons; item 569 drew each landmark's own outline, but under item 471's Hollowell glass they stay grey. VISION: the poster look, rich and legible.
 - **Build:** `games/hedgerow/src/stopart.ts`, `stopland.ts`, `map.ts`: keep item 471's glass over locked stops (decided), but draw the landmark under it in its act's palette on a small turf plinth, sepia-toned while locked; a freed stop drops the glass and shows full colour with its rosette.
