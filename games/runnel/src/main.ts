@@ -1372,7 +1372,9 @@ const strip = {
 
 /** Plan item 68: the result as a strip under the watered board: time, taps against par, the streak, and three buttons. */
 function showStrip(isDaily: boolean, streak: number): void {
-  strip.cath.innerHTML = cathMoment('win', 'face')
+  // Plan item 615 slice 3: on a phone Cath stands at half length at the strip's edge, rising over it, with a line on
+  // the result (at D the strip's row is the buttons', so she keeps her portrait ring, and her line is the valley's).
+  strip.cath.innerHTML = cathMoment('win', matchMedia('(max-width: 600px)').matches ? 'half' : 'face')
   strip.eyebrow.textContent = ui.winEyebrow.textContent
   strip.title.textContent = ui.winTitle.textContent
   // Plan item 615 slice 1: the result reads as figures, not a line of small print: the time and the taps large, the
@@ -1409,6 +1411,9 @@ function showStrip(isDaily: boolean, streak: number): void {
     parts.push(jars)
   }
   strip.nums.replaceChildren(...parts)
+  const say = $<HTMLParagraphElement>('strip-say')
+  say.textContent =
+    diff < 0 ? `${-diff} under par! Bea will want to hear about this.` : diff === 0 ? 'Right on par, love. Not a drop wasted.' : 'Every field watered. Par can wait for tomorrow.'
   // Plan item 615 slice 2: a daily's solve plants today's crop in Bea's garden: the strip shows it, ripe as it will
   // grow, with its gold star when solved on par or under.
   const planted = $<HTMLElement>('strip-plant')

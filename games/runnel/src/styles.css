@@ -5199,3 +5199,46 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .sp-cap { font-size: var(--fs-small); color: var(--ink-muted); line-height: 1.2; }
 .sp-cap b { font-family: var(--font-display); color: var(--soil); }
 .strip-plant[data-gold] .sp-cap b::after { content: " \2605"; color: var(--gold); }
+
+/* Plan item 615 slice 3: Cath at half length at the strip's left, rising over its top edge (no portrait ring), and
+   her line about the result under the headline. */
+.win-strip .strip-cath {
+  align-self: end;
+  width: 56px;
+  height: 84px;
+  margin: -34px 0 -10px -2px;
+  border-radius: 0;
+  overflow: visible;
+  background: none;
+  box-shadow: none;
+  -webkit-mask-image: linear-gradient(var(--ink) 80%, transparent);
+  mask-image: linear-gradient(var(--ink) 80%, transparent);
+}
+.strip-say {
+  margin: 2px 0 0;
+  font: italic 500 var(--fs-small)/1.3 var(--font-voice, var(--font-display));
+  color: var(--ink);
+}
+@media (max-width: 600px) {
+  .win-strip .strip-cath { width: 52px; height: 78px; margin: -30px 0 0 -2px; }
+}
+/* (at D her solve line is already her bubble in the valley: the strip keeps her figure, not a second line) */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .strip-say { display: none; }
+}
+/* (at D the strip shares its row with four buttons, and the half figure squeezed the figures into a column 260 px tall:
+   there she keeps the portrait ring; the half figure is the phone's, whose buttons take their own row) */
+@media (min-width: 601px) {
+  .win-strip .strip-cath {
+    align-self: center;
+    width: 52px;
+    height: 52px;
+    margin: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--paper-2);
+    box-shadow: 0 0 0 2px var(--pasture-deep);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
