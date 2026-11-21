@@ -20,8 +20,11 @@ for (const [w, h] of [
       const mini = page.locator(`.layout-tile .board-mini[data-layout="${id}"]`)
       expect(Number(await mini.getAttribute('data-regions'))).toBe(Object.keys(LAYOUTS[id].hexes).length)
       await expect(mini.locator('[data-region]')).toHaveCount(Object.keys(LAYOUTS[id].hexes).length)
-      expect((await page.locator(`.layout-tile[data-layout="${id}"]`).boundingBox())!.width).toBeGreaterThanOrEqual(120)
-      expect((await mini.boundingBox())!.width).toBeGreaterThanOrEqual(40)
+      // Plan item 605: three little boards side by side (was a column of 120 px rows with a 48 px icon): each one's
+      // miniature 56 px or more (72 at 1440x900), the tile a 44 px+ target
+      const tile = (await page.locator(`.layout-tile[data-layout="${id}"]`).boundingBox())!
+      expect(tile.height).toBeGreaterThanOrEqual(44)
+      expect((await mini.boundingBox())!.width).toBeGreaterThanOrEqual(w === 1440 ? 70 : 56)
     }
     expect((await page.locator('[data-opening-preview]').boundingBox())!.width).toBeGreaterThanOrEqual(w === 1440 ? 360 : 300)
     // The Delta shows its river and its two bridges.

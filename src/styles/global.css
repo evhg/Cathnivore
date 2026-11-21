@@ -5128,3 +5128,25 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
 @media (min-width: 1280px) and (min-height: 861px) {
   .setup[data-steps] .setup-cath-stand .cath-art { width: 264px; }
 }
+
+/* Plan item 605: at D the maps are three little boards side by side (each its real hex layout as large as the column
+   lets it, ~76 px, over its name), not three list rows with a 48 px icon; the picked one lifted on a wheat edge. */
+@media (min-width: 1100px) {
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile {
+    grid-template-columns: 1fr; grid-template-rows: auto auto; justify-items: center; align-content: start; row-gap: 4px;
+    min-height: 44px; padding: 6px 4px 7px; text-align: center;
+  }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .board-mini { width: 100%; height: auto; max-width: 100%; max-height: 72px; }
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-name { font-size: var(--fs-small); line-height: 1.15; text-wrap: balance; }
+  /* the larger board over the tile's centre took the pointer from its radio: a click falls through to the input */
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .layout-tile > :not(input) { pointer-events: none; }
+}
+@media (min-width: 1100px) and (max-height: 860px) {
+  .setup[data-steps] .setup-table[data-setup-table] .layout-picker .board-mini { max-height: 58px; }
+}
+/* Plan item 605: the week's poster still hangs over the table's rim, but clear of the board's hexes (its edge lay 3 px
+   over Rivermead's at 1440x900) */
+@media (min-width: 1100px) {
+  .setup[data-steps] .market-event[data-flyer] { margin-left: -56px; }
+}

@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 // luggage tag, Start an OPEN sign). At 1440x900 and 1280x800 every control is on screen with no scroll, each map board
 // is at least 120 px wide, and Start is reachable by keyboard.
 for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
-  test(`desktop Setup at ${width}x${height}: everything on screen, maps 120 px or wider, Start by keyboard`, async ({ page }, testInfo) => {
+  test(`desktop Setup at ${width}x${height}: everything on screen, maps as little boards, Start by keyboard`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-chromium', 'the desktop spread')
     await page.setViewportSize({ width, height })
     await page.goto('/')
@@ -23,7 +23,12 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
       }
     const maps = await page.locator('.layout-tile').all()
     expect(maps).toHaveLength(3)
-    for (const m of maps) expect((await m.boundingBox())!.width).toBeGreaterThanOrEqual(120)
+    // Plan item 605: three little boards in a row (each 70 px+ wide, a 44 px+ target; item 502's 120 px rows retired)
+    for (const m of maps) {
+      const b = (await m.boundingBox())!
+      expect(b.width).toBeGreaterThanOrEqual(70)
+      expect(b.height).toBeGreaterThanOrEqual(44)
+    }
     // The staging is there: a slate, framed boards, the sign's kicker.
     await expect(page.locator('.setup .open-sign-kicker')).toBeVisible()
     // Start by keyboard alone.
