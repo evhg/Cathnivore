@@ -195,7 +195,8 @@ export default function Setup({ onStart }: Props) {
               <span className="pc-short" aria-hidden="true">{shortName(PRODUCERS[id].name)}</span>
               <span className="pc-role">{PRODUCERS[id].roleName}</span>
               {/* Plan item 328: at D the power is an ink stamp with its own picture (the hand's role card art). */}
-              <span className="pc-stamp" aria-hidden="true">
+              {/* Plan item 593: a two-word power ('Second Opinion') set a size down so it keeps one line like the others. */}
+              <span className="pc-stamp" aria-hidden="true" data-long={powerName(PRODUCERS[id].roleName).length > 12 || undefined}>
                 <RoleProducerContext.Provider value={id}>
                   <RoleArt size={22} />
                 </RoleProducerContext.Provider>

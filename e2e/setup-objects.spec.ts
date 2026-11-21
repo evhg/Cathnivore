@@ -110,3 +110,23 @@ test('phone Setup at 390x844: each choice an illustrated object, inside the gutt
   expect(stamp.y).toBeGreaterThanOrEqual(head.y + head.height - 4)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
+
+// Plan item 593: 'Second Opinion' wrapped to two lines on its nameplate where every other power keeps one.
+for (const [width, height] of [[1440, 900], [1280, 800], [1920, 1080]] as const) {
+  test(`desktop Setup at ${width}x${height}: every producer's power stamp keeps one line inside its card`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'the desktop spread')
+    await page.setViewportSize({ width, height })
+    await open(page)
+    const stamps = await page.locator('.producer-card').evaluateAll((cards) => cards.map((c) => {
+      const s = c.querySelector('.pc-stamp')!
+      const r = s.getBoundingClientRect(), cr = c.getBoundingClientRect()
+      return { h: r.height, lh: parseFloat(getComputedStyle(s).fontSize), over: s.scrollWidth - s.clientWidth, right: r.right - cr.right }
+    }))
+    expect(stamps.length).toBe(4)
+    for (const s of stamps) {
+      expect(s.h).toBeLessThan(s.lh * 2)
+      expect(s.over).toBeLessThanOrEqual(1)
+      expect(s.right).toBeLessThanOrEqual(0)
+    }
+  })
+}

@@ -602,10 +602,15 @@ function bigCloud(b: Brush, x: number, y: number, w: number, c: CloudInk, lx: nu
   const clip = b.def(`bk${x},${y},${w}`, (id) => `<clipPath id="${id}"><path d="${all}"/></clipPath>`);
   const ink = c.ink ?? "#6f7890";
   return `<g opacity="${a}"><path d="${circ(upper, lx * 0.07, -0.05)}" fill="${c.rim}" opacity=".7"/>` +
-    `<path d="${all}" fill="none" stroke="${ink}" stroke-width="${f(Math.max(0.8, w * 0.014))}" stroke-linejoin="round"/>` +
+    `<path d="${all}" fill="none" stroke="${ink}" stroke-width="${f(Math.max(0.8, w * 0.01))}" stroke-linejoin="round"/>` +
     `<path d="${all}" fill="url(#${g})"/>` +
     `<rect x="${f(x - w)}" y="${f(y - w * 0.075)}" width="${f(w * 2)}" height="${f(w * 0.2)}" fill="${c.base}" opacity=".6" clip-path="url(#${clip})"/>` +
-    `<rect x="${f(x - w)}" y="${f(y - w * 0.11)}" width="${f(w * 2)}" height="${f(w * 0.035)}" fill="${c.base}" opacity=".3" clip-path="url(#${clip})"/></g>`;
+    `<rect x="${f(x - w)}" y="${f(y - w * 0.11)}" width="${f(w * 2)}" height="${f(w * 0.035)}" fill="${c.base}" opacity=".3" clip-path="url(#${clip})"/>` +
+    // Plan item 593: modelled billows. Magnified on an act banner the cloud read as one flat blob in an outline:
+    // each upper billow now casts a soft mid-tone shadow away from the sun and takes a lit cap toward it, clipped to
+    // the cloud, so the mass reads as heaped puffs in four tonal steps (lit cap, top, shade, belly).
+    `<path d="${circ(upper, -lx * 0.25, 0.55)}" fill="${c.base}" opacity=".3" clip-path="url(#${clip})"/>` +
+    `<path d="${circ(upper.filter((_, i) => i % 2 === 0).map(([px, py, r]) => [px + lx * r * 0.2, py - r * 0.5, r * 0.42] as [number, number, number]), 0, 0)}" fill="${c.top}" opacity=".75" clip-path="url(#${clip})"/></g>`;
 }
 
 const DAY_CLOUD: CloudInk = { top: "#fffdf6", mid: "#eef0f2", base: "#a9b6c9", rim: "#fff8e2", ink: "#6c7a92" };

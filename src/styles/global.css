@@ -4677,6 +4677,8 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
   .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp { max-width: 100%; white-space: normal; line-height: 1.1; }
   /* plan item 528: a one-word power ('Injunction') ran 1-2 px past its stamp's border in the column: the type closes up */
   .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp { padding-right: 5px; letter-spacing: 0; }
+  /* plan item 593: 'Second Opinion' wrapped to two lines where every other power keeps one: the long ones a size down. */
+  .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp[data-long] { padding-inline: 4px; font-size: 0.75rem; letter-spacing: -0.01em; white-space: nowrap; }
 
   /* Hollowell's tags in a row in the left column; the threat lines and the pins under them. */
   .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented { gap: 4px; }
