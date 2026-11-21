@@ -111,7 +111,8 @@ export function drawBooth(): void {
   if (!hero || !cath || !games || !text || !wide) {
     back?.remove()
     front?.remove()
-    back = front = null
+    wares?.remove()
+    back = front = wares = null
     if (hero) delete hero.dataset.booth
     return
   }
@@ -182,6 +183,9 @@ export function drawBooth(): void {
   f += crate(x1 - 4, Math.min(c.l + 26, x1 + 104) - x1 + 4, rail, 0)
   f += crate(x1 + 8, Math.min(c.l + 8, x1 + 86) - x1 - 8, rail - 50, 3)
   if (cr - c.r > 300) f += crate(cr - 96, 84, rail, 5)
+  // Plan item 631: the four games stand on the counter beside her as its wares, each a framed print of the game with
+  // its name, a link to it (the posters below are the keyboard's way in, so these stay out of the tab order).
+  placeWares(hero, c.r + 4, cr - 2, top + 4)
   if (!back) {
     back = layer('hero-booth')
     hero.prepend(back)
@@ -194,6 +198,41 @@ export function drawBooth(): void {
   front.innerHTML = f
   hero.dataset.booth = ''
   drawnAt = signature()
+}
+
+const WARES: [string, string][] = [
+  ['cathnivore', 'Cathnivore'],
+  ['runnel', 'Runnel'],
+  ['hedgerow', 'Hedgerow'],
+  ['nightshift', 'NIGHT SHIFT'],
+]
+let wares: HTMLElement | null = null
+
+function placeWares(hero: HTMLElement, l: number, rgt: number, foot: number): void {
+  if (!wares) {
+    wares = document.createElement('div')
+    wares.className = 'stall-wares'
+    wares.setAttribute('aria-hidden', 'true')
+    for (const [id, name] of WARES) {
+      const a = document.createElement('a')
+      a.className = 'stall-ware'
+      a.href = `/${id}/`
+      a.tabIndex = -1
+      a.dataset.game = id
+      a.innerHTML = `<img src="/work/games-${id}-640.webp" alt="" width="640" height="400" decoding="async" loading="lazy"><span>${name}</span>`
+      // pointing at a ware lights its poster below
+      const poster = () => document.querySelector<HTMLElement>(`.hero-game-${id}`)
+      a.addEventListener('pointerenter', () => poster()?.setAttribute('data-ware-lit', ''))
+      a.addEventListener('pointerleave', () => poster()?.removeAttribute('data-ware-lit'))
+      wares.append(a)
+    }
+    hero.append(wares)
+  }
+  const w = Math.max(0, rgt - l)
+  wares.hidden = w < 200
+  wares.style.setProperty('--ware-l', `${r(l)}px`)
+  wares.style.setProperty('--ware-w', `${r(w)}px`)
+  wares.style.setProperty('--ware-t', `${r(foot)}px`)
 }
 
 /** Where the parts the stall is drawn from stand now (page px), to tell when a drawn stall has gone stale. */

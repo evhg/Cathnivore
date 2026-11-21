@@ -1899,8 +1899,46 @@ body {
   .ready .hero-booth,
   .ready .hero-counter { opacity: 1; }
   .hero-booth { z-index: var(--z-booth); filter: drop-shadow(0 14px 22px var(--shadow-deep)); }
-  /* Plan item 563: she stands in front of her counter, whole, the stall's host rather than a bust over the fruit */
-  .hero[data-booth] .hero-cath { position: relative; z-index: var(--z-booth-host); }
+  /* Plan item 631 (reverses item 563): she stands behind her counter, its top at her hips, so the stall is hers and
+     not pasted on behind her legs */
+  .hero[data-booth] .hero-cath { position: relative; z-index: var(--z-booth-cath); }
+  /* the four games stand on the counter as its wares: framed prints leaning on the produce, each a link */
+  .stall-wares {
+    position: absolute;
+    left: var(--ware-l);
+    top: var(--ware-t);
+    width: var(--ware-w);
+    z-index: var(--z-booth-host);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 4px;
+    translate: 0 -100%;
+    opacity: 0;
+    transition: opacity 900ms var(--ease-out) 700ms;
+  }
+  .ready .stall-wares { opacity: 1; }
+  .stall-ware {
+    display: grid;
+    flex: 1 1 0;
+    max-width: 84px;
+    gap: 2px;
+    padding: 2px 2px 1px;
+    border-radius: 4px;
+    background: var(--awning-cream);
+    box-shadow: 0 0 0 2px var(--wood-lo), 0 4px 8px var(--shadow-art);
+    color: var(--wood-lo);
+    text-align: center;
+    text-decoration: none;
+    rotate: -3deg;
+    transform-origin: 50% 100%;
+    transition: rotate 200ms var(--ease-out), translate 200ms var(--ease-out);
+  }
+  .stall-ware:nth-child(even) { rotate: 2.5deg; }
+  .stall-ware:hover { rotate: 0deg; translate: 0 -6px; }
+  .stall-ware img { display: block; width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: cover; border-radius: 2px; }
+  .stall-ware span { font: 700 0.75rem / 1.15 var(--font-ui); letter-spacing: -0.01em; white-space: nowrap; }
+  .hero-game[data-ware-lit] { translate: 0 -6px; }
   .hero-counter { z-index: var(--z-booth-counter); filter: drop-shadow(0 -2px 6px var(--shadow-art)); }
   .hero[data-booth] .hero-text,
   .hero[data-booth] .hero-games,
@@ -1914,7 +1952,9 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-booth,
-  .hero-counter { transition: none; }
+  .hero-counter,
+  .stall-wares,
+  .stall-ware { transition: none; }
 }
 
 /* Plan item 332: each poster is the game's own: its logotype across the top of the art (each lettered its own way in

@@ -66,11 +66,11 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
       return { hero: hero.width, back: box(document.querySelector('.hero-booth')!), counter: box(document.querySelector('.hero-counter')!), rail, cath: { l: cath.left, r: cath.right, t: cath.top, b: cath.bottom }, words: { l: words.left, r: words.right, t: words.top, b: words.bottom }, zc: z('#hero-cath'), zf: z('.hero-counter'), zb: z('.hero-booth') }
     })
     expect((m.back.r - m.back.l) / m.hero).toBeGreaterThanOrEqual(0.35)
-    // the counter's foot on the rail, its top at her hips, clear of the buttons; plan item 563: she stands in front of
-    // it, whole, 300 px or more of her above the rail
+    // the counter's foot on the rail, its top at her hips, clear of the buttons; plan item 631 (reversing 563): she
+    // stands behind it, so it covers her lower body, 300 px or more of her figure
     expect(Math.abs(m.counter.b - m.rail)).toBeLessThanOrEqual(4)
     expect(m.zb).toBeLessThan(m.zc)
-    expect(m.zf).toBeLessThan(m.zc)
+    expect(m.zf).toBeGreaterThan(m.zc)
     if (vp.width >= 1440) expect(m.cath.b - m.cath.t).toBeGreaterThanOrEqual(300)
     expect(m.counter.t).toBeGreaterThan(m.cath.t + (m.cath.b - m.cath.t) * 0.45)
     expect(m.counter.l).toBeLessThan(m.cath.l)
@@ -81,3 +81,26 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
     expect(m.back.r).toBeGreaterThan(m.words.r)
   })
 }
+
+// Plan item 631: the four games stand on the counter as its wares, each a link to its game, at her side.
+test('at D each game is a ware on the counter that links to it', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.includes('phone'), 'desktop')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/games/')
+  await page.waitForTimeout(3400)
+  const wares = page.locator('.stall-ware')
+  await expect(wares).toHaveCount(4)
+  expect(await wares.evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['/cathnivore/', '/runnel/', '/hedgerow/', '/nightshift/'])
+  const m = await page.evaluate(() => {
+    const cath = document.querySelector('#hero-cath svg')!.getBoundingClientRect()
+    const w = [...document.querySelectorAll('.stall-ware')].map((e) => e.getBoundingClientRect())
+    return { cathR: cath.right, cathB: cath.bottom, wares: w.map((b) => ({ l: b.left, b: b.bottom, w: b.width })) }
+  })
+  for (const w of m.wares) {
+    expect(w.l).toBeGreaterThanOrEqual(m.cathR - 8)
+    expect(w.b).toBeLessThan(m.cathB)
+    expect(w.w).toBeGreaterThanOrEqual(56)
+  }
+  await wares.nth(1).click()
+  await expect(page).toHaveURL(/\/runnel\//)
+})
