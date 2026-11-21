@@ -5887,7 +5887,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 the field's mean luminance (inside the field frame, HUD and bench excluded) within 10% of D's on level 21; the lower third's Laplacian variance at least 80% of the upper third's; hedgerow-3d/3dframe specs pass P and D; Hedgerow key art unchanged unless D changes; shot P and D.
 - **Size:** 1
 
-## 605. [ ] Cathnivore Quick Game setup: the boards to pick from as little boards, not list rows
+## 605. [ ] Cathnivore Quick Game setup: the boards to pick from as little boards, not list rows *(lane B, in progress)*
 - **Why:** `plan1121g/cath-setup-D` 100-375 x 260-440: 'The Ring / The Long Coast / The Delta' are beige rows with 30 px icons; the difficulty memos are ~60x40 px; and the 'This week at the market' card (985-1120 x 565-775) lies over the board's Rivermead and Shingle Bay rims. VISION 1: nothing looks like a default form.
 - **Build:** `src/ui` setup (step 2 and 3), `src/styles`: each board a card with its mini hex layout drawn from the real map data (90 px+), its name and a one-line hook; the chosen one lifted with a stamp; the memos a step larger; the week card moved off the board (into Cath's stall column or under the board's caption). Phone: the same cards as a row that fits 390 without sideways scroll.
 - **Accept:** each board card's art 90 px+ at D, 64 px+ at P, drawn from the map's regions (not an icon); every choice target 44 px+ tall; smallest setup text 13 px+; the week card intersects no hex's box at 1280x800 and 1440x900; setup-* specs pass P and D; shot P and D.
