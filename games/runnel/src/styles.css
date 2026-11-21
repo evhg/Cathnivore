@@ -5185,3 +5185,17 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 }
 .sn-jars i[data-full] { background: linear-gradient(transparent 30%, var(--water) 30%); border-color: var(--soil); }
 .sn-jars-n { margin-left: 3px; font-weight: 700; color: var(--soil); }
+
+/* Plan item 615 slice 2: what today's solve planted in Bea's garden, drawn ripe as it will grow, with its gold star
+   when solved on par or under. */
+.strip-plant:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+}
+.strip-plant svg { flex: none; width: 28px; height: 28px; }
+.strip-plant[data-gold] svg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gold) 70%, transparent)); }
+.sp-cap { font-size: var(--fs-small); color: var(--ink-muted); line-height: 1.2; }
+.sp-cap b { font-family: var(--font-display); color: var(--soil); }
+.strip-plant[data-gold] .sp-cap b::after { content: " \2605"; color: var(--gold); }

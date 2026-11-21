@@ -3,7 +3,7 @@ import '../../../shared/ui/palette.css'
 import { drawShareCard, CARD_W, CARD_H, type CardResult } from './sharecard'
 import { postcard, seasonOf, weatherMarkup } from './season'
 import { ORCHARD_LEVELS, orchardName, orchardOptions, orchardSeed, recordOrchard, totalDrops, unlockedLevel } from './orchard'
-import { gardenPlots, gardenVisitor } from './garden'
+import { cropFor, gardenPlots, gardenVisitor } from './garden'
 import { beaWateringSvg, cropSvg, dropSvg, eventCropSvg, treeSvg, visitorSvg } from './gardenart'
 import { creditBoard, eventBoardOf, eventCrops, eventOn } from './events'
 import './fonts.css'
@@ -1409,6 +1409,17 @@ function showStrip(isDaily: boolean, streak: number): void {
     parts.push(jars)
   }
   strip.nums.replaceChildren(...parts)
+  // Plan item 615 slice 2: a daily's solve plants today's crop in Bea's garden: the strip shows it, ripe as it will
+  // grow, with its gold star when solved on par or under.
+  const planted = $<HTMLElement>('strip-plant')
+  planted.hidden = !isDaily
+  if (isDaily) {
+    const crop = cropFor(playDay)
+    const gold = game.taps <= puzzle.par
+    planted.toggleAttribute('data-gold', gold)
+    planted.innerHTML = `${cropSvg(crop, 'ripe')}<span class="sp-cap">Planted in Bea's garden: <b>a ${crop}</b></span>`
+    planted.setAttribute('aria-label', `Planted in Bea's garden: a ${crop}${gold ? ', with a gold star' : ''}`)
+  }
   strip.next.textContent = ui.btnNext.textContent
   strip.toast.textContent = ui.toast.textContent
   // Plan item 478: Watch, when this solve's turns were all logged (a game resumed from before the log has a partial one).

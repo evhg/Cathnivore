@@ -38,6 +38,8 @@ const jobs = {
   },
   async runnel(p, s) {
     await p.goto(`${base}/runnel/`); await p.waitForTimeout(2000); await p.screenshot({ path: `${out}/runnel-${s}.png` })
+    // Plan item 615: the solved daily's result strip (the critiques never saw a win)
+    await p.goto(`${base}/runnel/?shotwin&nohelp`); await p.waitForTimeout(5000); await p.screenshot({ path: `${out}/runnel-solved-${s}.png` })
   },
   async hedgerow(p, s) {
     await p.goto(`${base}/hedgerow/?2d`)

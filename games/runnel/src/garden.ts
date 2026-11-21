@@ -33,6 +33,11 @@ function daysBetween(a: string, b: string): number {
   return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000)
 }
 
+/** Plan item 615: the crop a day's solve plants in Bea's garden (the same one its plot grows). */
+export function cropFor(day: string): CropId {
+  return CROP_IDS[hash(day) % CROP_IDS.length]!
+}
+
 /** The newest `GARDEN_SIZE` solved days as plots, oldest first. */
 export function gardenPlots(results: Record<string, DailyResult>, today: string): Plot[] {
   const days = Object.keys(results).sort().slice(-GARDEN_SIZE)
@@ -40,7 +45,7 @@ export function gardenPlots(results: Record<string, DailyResult>, today: string)
     const r = results[day]!
     const age = daysBetween(day, today)
     const stage = age < 2 ? 'sprout' : age < 7 ? 'growing' : 'ripe'
-    const crop = CROP_IDS[hash(day) % CROP_IDS.length]!
+    const crop = cropFor(day)
     const gold = r.taps <= r.par
     const state = stage === 'ripe' ? `a ripe ${crop}` : stage === 'growing' ? `a ${crop}, still growing` : 'just planted'
     return { day, crop, stage, gold, label: `${day}: ${state}, solved in ${r.taps} taps (par ${r.par})${gold ? ', a gold star' : ''}.` }
