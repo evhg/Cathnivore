@@ -5125,3 +5125,14 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .tc-lit { stop-color: color-mix(in srgb, var(--paper) 58%, transparent); }
 .cell:not(.stone) .tile-bevel { stroke: url(#tile-cut); stroke-width: 6px; }
 @media (max-width: 600px) { .cell:not(.stone) .tile-bevel { stroke-width: 4px; } }
+
+/* Plan item 590: the lesson notebook's field notes, a pencil tally and Cath's margin note, in the rail's free space. */
+.lc-field-notes { display: none; }
+@media (min-width: 1100px) and (min-height: 640px) { .lc-field-notes { display: block; } }
+.lc-field-notes { margin: 14px 0 0; padding: 10px 0 4px; border-top: 1px dashed color-mix(in srgb, var(--soil) 35%, transparent); }
+.lc-fn-head { margin: 0 0 6px; font-size: var(--fs-small); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft, var(--ink)); }
+.lc-fn-tally { display: flex; align-items: baseline; gap: 10px; margin: 0 0 6px; }
+.lc-fn-k { font-weight: 700; }
+.lc-fn-marks { min-width: 3ch; font: 700 1.5em/1 var(--font-hand, var(--font-display)); letter-spacing: .18em; color: var(--pasture-deep, var(--ink)); }
+.lc-fn-of { color: var(--ink-soft, var(--ink)); }
+.lc-fn-line { margin: 0; font-style: italic; }

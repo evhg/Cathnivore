@@ -129,3 +129,24 @@ test('plan item 582: the tiles have a 6 px cut edge at D and a solve fills every
   await page.locator('[data-last]').click({ force: true })
   await expect.poll(() => page.evaluate(() => document.querySelectorAll('#board .cell.channel:not(.wet), #board .cell.field:not(.wet)').length), { timeout: 5000 }).toBe(0)
 })
+
+// Plan item 590: at D the lesson notebook has no dead stretch: its field notes tally the taps and Cath's margin
+// note follows the water.
+test('plan item 590: the lesson notebook fills its rail and its field notes follow each tap', async ({ page }) => {
+  const vp = page.viewportSize()!
+  test.skip(vp.width < 1100 || vp.height < 640, 'the desktop notebook rail')
+  await page.goto('/runnel/?lesson')
+  await page.waitForSelector('#board .tiles > g.cell.lesson-target')
+  const gap = () =>
+    page.evaluate(() => {
+      const kids = [...document.getElementById('lesson-card')!.children].map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0)
+      let g = 0
+      for (let i = 1; i < kids.length; i++) g = Math.max(g, kids[i]!.top - kids[i - 1]!.bottom)
+      return g
+    })
+  expect(await gap()).toBeLessThanOrEqual(48)
+  const before = await page.locator('#lc-field-notes').innerText()
+  await page.locator('#board .tiles > g.cell.lesson-target').click()
+  await expect(page.locator('#lc-fn-of')).toHaveText('1 of 3')
+  expect(await page.locator('#lc-field-notes').innerText()).not.toBe(before)
+})

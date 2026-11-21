@@ -5764,9 +5764,9 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 at most 4 rail sections visible; no rendered text in the rail under 13 px (computed style scan); the rail at most 22% of the viewport width; desktop-no-scroll, table-hand and saving-goal specs pass; shots D before and after.
 - **Size:** 2
 
-## 590. [ ] Runnel desktop: the notebook rail live through the daily *(lane B, in progress)*
+## 590. [x] Runnel desktop: the notebook rail live through the daily *(done 2026-11-21 04:45, lane B: the shot was the first-visit lesson, not a daily (the daily's rail is full with the almanac and stats). The lesson notebook gets its field notes under the legend: a pencil tally of the taps (0-3 of 3) and Cath's margin note for where the water is, updated with each step (`markLessonCard`, `FIELD_NOTES`); desktop notebook only (on a phone they pushed the lesson's board down). Largest gap between the rail's parts 34 px at 1440x900 and 1280x800, no page scroll; new spec in runnel-greened (gap 48 px or less, the notes change after a tap); 143 Runnel specs pass P and D. Shots scratchpad les-both.png)*
 *(planned 2026-11-21 04:45, lane B, plan1121b critique)*
-- **Why:** `plan1121b/runnel-D` 45-345 x 540-690: a blank 150 px of notebook between the legend and Up next during a daily (item 586 filled the lesson's rail, not the daily's).
+- **Why:** `plan1121b/runnel-D` 45-345 x 540-690: in the first-visit lesson, a blank 150 px of notebook between the legend and the pinned Up next card (item 586 pinned the card to the rail's foot; the page between stayed empty).
 - **Build:** the daily's notebook fills with live content: taps against par as a pencil tally, a small sketch of the fields still dry (from the board), and a margin note from Cath that changes with the water's progress (`games/runnel/src/main.ts`, styles.css).
 - **Accept:** at 1440x900 no vertical gap over 48 px between the rail's visible children; the notebook's text changes after a tap that waters a field (spec); no page scroll at 1280x800 and 1440x900; Runnel specs pass P and D.
 - **Size:** 1

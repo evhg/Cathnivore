@@ -2146,6 +2146,13 @@ document.addEventListener('pointerdown', () => document.body.classList.remove('k
 
 /** The lesson's step while it runs, else -1. */
 let lessonStep = -1
+/** Plan item 590: Cath's margin note in the lesson notebook, one for each tap made (the last once it's watered). */
+const FIELD_NOTES = [
+  'Spring\'s full. The bend is in the way.',
+  'Water\'s moving. Line up the channel next.',
+  'Nearly there. Turn the field to face it.',
+  'Watered. Today\'s puzzle is next.',
+]
 /** The lesson tiles the water has reached so far (each gets its ring once). */
 let lessonWet = new Set<number>()
 function startLesson(): void {
@@ -2258,6 +2265,14 @@ function markLessonCard(step: number): void {
     // Plan item 326: the day on its own line under "Up next" (no dot: the column is too narrow for one line, and a wrap left the dot dangling).
     next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next <span class="lc-next-day">${upNextDay(today)}</span></small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
   }
+  // Plan item 590: the field notes: a pencil tally of the taps and Cath's margin note for where the water is.
+  const taps = Math.max(0, Math.min(LESSON_STEPS.length, step))
+  const marks = document.getElementById('lc-fn-marks')
+  if (marks) marks.textContent = '|'.repeat(taps)
+  const of = document.getElementById('lc-fn-of')
+  if (of) of.textContent = `${taps} of ${LESSON_STEPS.length}`
+  const line = document.getElementById('lc-fn-line')
+  if (line) line.textContent = FIELD_NOTES[Math.min(FIELD_NOTES.length - 1, taps)] ?? ''
   card.querySelectorAll<HTMLLIElement>('.lc-steps li').forEach((li, i) => {
     const done = i < step || step >= LESSON_STEPS.length
     li.classList.toggle('done', done)
