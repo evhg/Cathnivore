@@ -3476,21 +3476,29 @@ export class Renderer3D {
     const taken: Rect[] = [];
     for (const d of depots) {
       const spots = (d.userData.spots as Array<{ x: number; y: number; z: number; d: number }> | undefined) ?? [];
-      let best: { sp: (typeof spots)[number]; score: number; r: Rect } | null = null;
-      for (const sp of spots) {
-        d.position.set(sp.x, sp.y, sp.z);
-        d.updateMatrixWorld(true);
-        const r = this.boxRect(new THREE.Box3().setFromObject(d), w, h);
-        const area = Math.max(1, r.w * r.h);
-        const inside = meet(r, { x: 0, y: 0, w, h }) / area;
-        const field = cells.reduce((a, c) => a + meet(r, c), 0) / area;
-        const blocked = [...signs, ...taken, ...(cath ? [cath] : [])].reduce((a, c) => a + meet(r, c), 0) / area;
-        // Off the frame weighs most, then over Cath, a sign or the other depot, then over the field; the gate's
-        // distance (in cells) settles the rest.
-        // Plan item 391: off the frame weighs double what it did (40): at D on level 1 a fifth of the depot stood past
-        // the canvas's right edge (8) rather than lean its roof over the lane's first row from the north verge.
-        const score = (1 - inside) * 90 + blocked * 30 + field * 12 + sp.d * 0.6;
-        if (!best || score < best.score) best = { sp, score, r };
+      let best: { sp: (typeof spots)[number]; score: number; r: Rect; inside: number } | null = null;
+      // Plan item 584: the depot at its full size where a spot keeps it in frame, else a step smaller each time, down
+      // to item 179's 0.8 (level 1 at D has no spot wholly in frame for the bigger building).
+      const base = (d.userData.baseScale as number | undefined) ?? d.scale.x;
+      for (const k of [1, 0.9, 0.8, 0.71]) {
+        d.scale.setScalar(base * k);
+        best = null;
+        for (const sp of spots) {
+          d.position.set(sp.x, sp.y, sp.z);
+          d.updateMatrixWorld(true);
+          const r = this.boxRect(new THREE.Box3().setFromObject(d), w, h);
+          const area = Math.max(1, r.w * r.h);
+          const inside = meet(r, { x: 0, y: 0, w, h }) / area;
+          const field = cells.reduce((a, c) => a + meet(r, c), 0) / area;
+          const blocked = [...signs, ...taken, ...(cath ? [cath] : [])].reduce((a, c) => a + meet(r, c), 0) / area;
+          // Off the frame weighs most, then over Cath, a sign or the other depot, then over the field; the gate's
+          // distance (in cells) settles the rest.
+          // Plan item 391: off the frame weighs double what it did (40): at D on level 1 a fifth of the depot stood past
+          // the canvas's right edge (8) rather than lean its roof over the lane's first row from the north verge.
+          const score = (1 - inside) * 90 + blocked * 30 + field * 12 + sp.d * 0.6;
+          if (!best || score < best.score) best = { sp, score, r, inside };
+        }
+        if (!best || best.inside >= 0.92) break;
       }
       if (!best) continue;
       d.position.set(best.sp.x, best.sp.y, best.sp.z);

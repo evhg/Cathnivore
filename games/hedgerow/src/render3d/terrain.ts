@@ -65,6 +65,9 @@ const timeU = { value: 0 };
 const cloudOff = { value: new THREE.Vector2() };
 const cloudAmt = { value: 0.3 };
 /** Plan item 486 (tests): the drifting cloud shadows off (or back to `amt`), so a sampled frame is the same each run. */
+/** Plan item 584: the 3D depot's scale (its footprint twice item 179's 0.8). */
+const DEPOT_3D_SCALE = 1.13;
+
 export function setCloudShadows(amt: number): void {
   cloudAmt.value = amt;
 }
@@ -2116,13 +2119,15 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
     // screen), none on a gate.
     const depot = buildDepot();
     // Plan item 179: big enough that the shed itself (not only its bay) reads, about 90 px wide at D.
-    depot.scale.setScalar(0.8);
+    // Plan item 584: twice that footprint (0.8 -> 1.13), so Hollowell's building outweighs the farm's sheds.
+    depot.scale.setScalar(DEPOT_3D_SCALE);
+    depot.userData.baseScale = DEPOT_3D_SCALE;
     depot.rotation.y = -Math.PI / 2;
     const gx = gate.position.x, gz = gate.position.z;
     const spots: Array<{ x: number; z: number; near?: number }> = [];
     // Plan item 391: and hard by the field's west and east edges (0.75 out, its flank on the verge's first strip), for
     // a frame that crops the verge (at D level 1's east depot stood a fifth past the canvas's edge); a cell dearer.
-    for (let z = 0.5; z < level.rows; z += 1) spots.push({ x: -1.1, z }, { x: level.cols + 1.1, z }, { x: -0.75, z, near: 1 }, { x: level.cols + 0.75, z, near: 1 });
+    for (let z = 0.5; z < level.rows; z += 1) spots.push({ x: -1.25, z }, { x: level.cols + 1.25, z }, { x: -1.0, z, near: 1 }, { x: level.cols + 1.0, z, near: 1 }, { x: -0.75, z, near: 1.5 }, { x: level.cols + 0.75, z, near: 1.5 });
     for (let x = -0.5; x <= level.cols + 0.5; x += 1) spots.push({ x, z: -1.9 });
     // Beside the gate or the lane's first six cells, where the round queues (further off, it reads as another
     // lane's), and off every gate.
