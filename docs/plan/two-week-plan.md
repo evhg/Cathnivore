@@ -5956,7 +5956,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the board 45%+ of the width at D and 340 px+ at P; the play-of-the-game region highlighted; no default-looking buttons; end-screen specs pass; shot P and D, a win and a loss.
 - **Size:** 2
 
-## 615. [ ] Runnel: the daily result as Bea's harvest card
+## 615. [ ] Runnel: the daily result as Bea's harvest card *(lane B, in progress)*
 *(planned 2026-11-21 13:50, lane B, plan1121i critique; newest solve shot `b416/solveD` (11-15): shoot today's build first)*
 - **Why:** `b416/solveD` 135-640 x 630-680: a whole daily's result is a 45 px pill bar of ~12 px stats ('0:00 · 1 tap · par 77 · streak 1') over the board's foot. VISION 4, 6 (wit in the small print).
 - **Build:** `games/runnel/src/main.ts`, `garden.ts`/`gardenart.ts`, `sharecard.ts`, `weekstrip.ts`, `styles.css`: once the water reaches the garden a card rises with what today's water grew in Bea's beds (the season's crop), taps against par as a seed-packet stamp ('2 under par'), the streak as a shelf of seven jars for the week, Cath half length with a line about the result; Share, Your card and Practice as card buttons. Add a solved-daily shot to `scripts/plan-shots.mjs`.
