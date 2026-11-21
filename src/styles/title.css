@@ -2096,3 +2096,62 @@ html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .tit
   .title-menu .title-daily .title-daily-event-name::after { content: none; }
   .title-menu .title-daily .title-daily-event { margin-right: 0; }
 }
+
+/* Plan item 581: on a tall phone the board is the hero. It lies across the counter at full width (312 px at
+   390x844), its foot on the tags; Cath stands behind its top-left corner, her head, shoulders and wave over its
+   far edge, under the awning hung just below the wordmark, and her line beside her head over the street. The
+   tagline steps aside (the kicker says the same). Supersedes item 453's 'Cath the largest thing on screen'. */
+@media (max-width: 600px) and (min-height: 760px) {
+  .title-tagline { display: none; }
+  .title-art.title-table {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-self: stretch;
+    padding-top: 0;
+    /* the board's width follows the room the art is given, so her head and shoulders always clear its top */
+    container-type: size;
+  }
+  .title-art.title-table .title-awning { top: 2px; }
+  .title-art.title-table .title-cath,
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-cath {
+    grid-area: 1 / 1;
+    align-self: start;
+    justify-self: start;
+    width: 200px;
+    margin: 30px 0 0 -14px;
+    z-index: var(--z-base);
+  }
+  .title-art.title-table .title-board {
+    grid-area: 1 / 1;
+    align-self: end;
+    justify-self: end;
+    width: min(380px, calc(100cqw + 8px), calc((100cqh - 182px) * 1.035));
+    margin: 0 -4px -12px 0;
+    transform: none;
+    z-index: var(--z-lift);
+  }
+  .title-art.title-table .title-board .map,
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-board .map { max-height: none; }
+  /* her line: beside her head, the tail pointing back at her face */
+  .title-art.title-table .title-cath-line {
+    left: 160px;
+    top: 14px;
+    bottom: auto;
+    width: calc(100vw - 180px);
+    z-index: var(--z-lift);
+  }
+  .title-art.title-table .title-cath-line::after {
+    left: -12px;
+    top: 26px;
+    bottom: auto;
+    width: 14px;
+    height: 16px;
+    clip-path: polygon(100% 0, 100% 100%, 0 20%);
+  }
+  /* yesterday's receipt: pinned to the wall right of her, just above the board's far edge (under her line) */
+  .daily-ritual.is-compact {
+    top: auto;
+    right: 14px;
+    bottom: calc(min(380px, 100cqw + 8px, (100cqh - 182px) * 1.035) * 0.965 - 6px);
+  }
+}

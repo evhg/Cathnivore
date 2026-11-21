@@ -3,8 +3,8 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 231: on a phone the menu sits on the counter. Plan item 316: Cath stands half-length at the stall
 // beside the board (150 px or taller, her face whole), the board 240 px or wider and still the largest thing on screen; every menu entry is 44 px or taller and on screen with no page scroll;
 // no dark panel: under 20% of the light-theme screen is darker than L 0.3 (the old chalkboard was about 30%).
-// Plan item 453: at 390x844 Cath is the star: 170x300 or more and the largest thing on screen; the board, laid before
-// her, 196 px or wider and larger than everything else.
+// Plan item 581 (superseding item 453's 'Cath the largest'): at 390x844 the board is the hero, 300 px or wider and
+// the largest thing on screen with nothing over it; Cath stands behind it, her face whole above its far edge.
 
 async function measure(page: Page) {
   const shot = (await page.screenshot()).toString('base64')
@@ -38,8 +38,8 @@ async function measure(page: Page) {
       boardW: board.width,
       cathH: cath.height,
       cathW: cath.width,
-      cathLargest: cath.width * cath.height > board.width * board.height,
-      faceWhole: face.top >= 0 && face.bottom <= board.bottom && face.width > 0,
+      faceWhole: face.top >= 0 && face.bottom <= board.top && face.width >= 60,
+      lineClear: box(document.querySelector('.title-cath-line')!).bottom <= board.top,
       largest: others.every((r) => r.width * r.height < board.width * board.height),
       entries: entries.map((r) => ({ h: r.height, inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth })),
       scroll: document.documentElement.scrollHeight - innerHeight,
@@ -64,11 +64,12 @@ for (const withSave of [false, true]) {
     await page.waitForTimeout(1800) // the title's fade-ins
     if (withSave) await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible()
     const m = await measure(page)
-    expect(m.boardW).toBeGreaterThanOrEqual(196)
-    expect(m.cathH).toBeGreaterThanOrEqual(300)
-    expect(m.cathW).toBeGreaterThanOrEqual(170)
-    expect(m.cathLargest).toBe(true)
+    // with a save the menu takes a row, so the board gives up the room
+    expect(m.boardW).toBeGreaterThanOrEqual(withSave ? 240 : 300)
+    expect(m.cathH).toBeGreaterThanOrEqual(280)
+    expect(m.cathW).toBeGreaterThanOrEqual(190)
     expect(m.faceWhole).toBe(true)
+    expect(m.lineClear).toBe(true)
     expect(m.largest).toBe(true)
     expect(m.entries.length).toBeGreaterThanOrEqual(withSave ? 7 : 6)
     for (const e of m.entries) {

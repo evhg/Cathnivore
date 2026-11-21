@@ -64,8 +64,8 @@ test("the phone title's Daily slip stays off the board and Cath's figure, on two
     const board = await boxOf(page, '.title-board')
     const cath = await boxOf(page, '.title-cath')
     expect(meets(slip, board), `board at ${width}`).toBe(false)
-    // Plan item 453: on a tall phone she is the star and the counter's front holds the tags: the slip is pinned to
-    // the stall's wall beside her, clear of her figure's box (and so of her face and wave) and of her line.
+    // Plan items 453 and 581: the counter's front holds the tags, so the slip is pinned to the stall's wall beside
+    // her, over the board's far edge: clear of her figure's box (and so of her face and wave), her line and the board.
     const line = await boxOf(page, '.title-cath-line')
     expect(meets(slip, line), `her line at ${width}`).toBe(false)
     expect(slip.left, `clear of her at ${width}`).toBeGreaterThanOrEqual(cath.right - 40)
