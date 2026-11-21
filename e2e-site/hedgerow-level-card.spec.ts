@@ -60,6 +60,8 @@ test('the level card shows a 3D still of its level', async ({ page }, info) => {
   await page.goto('/hedgerow/')
   const still = page.locator('[data-level-card] .lcard-thumb svg image.lcard-still')
   await expect(still.first()).toBeAttached({ timeout: 10_000 })
+  // the still replaces the animated plate: no convoy frames are drawn under it
+  await expect(page.locator('[data-level-card] .lcard-thumb')).not.toHaveAttribute('data-preview-playing')
   if (!info.project.name.includes('phone')) {
     const plate = await page.locator('[data-level-card] .lcard-thumb svg').evaluateAll((s) => s.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0).map((r) => [r.width, r.height]))
     expect(plate.length).toBeGreaterThan(0)

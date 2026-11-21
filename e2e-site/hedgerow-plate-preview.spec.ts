@@ -3,7 +3,10 @@ import { expect, test, type Page } from '@playwright/test'
 // Plan item 493: the level card's field plate plays its level: the first round's convoy rolls down the plate's lane
 // (one of each vehicle the card lists), looping while the card shows; pointing at or focusing a vehicle's row lights
 // that vehicle on the plate; nothing is drawn while the card is hidden; one still under reduced motion.
+// Since plan item 583 the level's 3D still replaces the plate once it loads; the animated plate is the fallback when
+// the still can't load, so these tests block the stills (the still itself is tested in hedgerow-level-card.spec.ts).
 async function seed(page: Page, done: number) {
+  await page.route('**/stills/level-*.webp', (r) => r.abort())
   await page.goto('/hedgerow/?2d')
   await page.evaluate((done) => {
     const stars: Record<string, number> = {}
