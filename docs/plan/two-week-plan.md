@@ -5905,7 +5905,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 608. [ ] Hedgerow phone act map: one winding trail down the land, every name on a signboard
+## 608. [ ] Hedgerow phone act map: one winding trail down the land, every name on a signboard *(lane A, in progress)*
 *(planned 2026-11-21 11:55, lane B, plan1121h critique)*
 - **Why:** `plan1121h/hedge-menu-P` 20-390 x 210-590: the phone's stops are a stiff two-column ladder joined by short straight stubs, no lane like the desktop's S path (item 564 left phones out); names are bare text on the terrain ('Brand Ambassador' 290-385 x 520-560 runs within 5 px of the edge); Cath (185-210 x 235-280) is ~45 px, smaller than a coin. VISION 1, 5.
 - **Build:** `games/hedgerow/src/map.ts`, map CSS: on an upright phone the act is one single-file trail snaking down a taller scrolling landscape with its landmarks between the bends; each name on the desktop's signboard plate; Cath beside the next stop about a coin tall; the map opens scrolled to her.
