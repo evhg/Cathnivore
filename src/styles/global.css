@@ -4678,7 +4678,8 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
   /* plan item 528: a one-word power ('Injunction') ran 1-2 px past its stamp's border in the column: the type closes up */
   .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp { padding-right: 5px; letter-spacing: 0; }
   /* plan item 593: 'Second Opinion' wrapped to two lines where every other power keeps one: the long ones a size down. */
-  .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp[data-long] { padding-inline: 4px; font-size: 0.75rem; letter-spacing: -0.01em; white-space: nowrap; }
+  .setup[data-steps] .setup-table[data-setup-table] .producer-card .pc-stamp[data-long] { padding-inline: 3px; font-size: 0.8125rem; letter-spacing: -0.035em; white-space: nowrap; }
+  /* plan item 598: and no smaller than the Setup's 13 px floor (setup-steps): 12 px broke it; the letters close up instead */
 
   /* Hollowell's tags in a row in the left column; the threat lines and the pins under them. */
   .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented { gap: 4px; }
@@ -5095,4 +5096,35 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
 }
 @media (max-width: 599px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
   .setup[data-phone-steps] .setup-dot .setup-dot-n { transition: none; }
+}
+
+/* Plan item 598: the top of Cath's column stood empty cream above her quote (cath-setup-D 1040-1440 x 0-320). Her
+   stall gets its awning there, scalloped in the market's stripe, and a painted board hanging from it on two cords:
+   the column reads as the stall the Start key opens, top to counter. Decoration only (the board's name is CSS text). */
+@media (min-width: 1100px) {
+  .setup[data-steps] .setup-cath-stand { overflow: visible; }
+  .setup[data-steps] .setup-cath-stand::before {
+    content: ""; position: absolute; z-index: var(--z-base, 0); top: 0; left: -10px; right: -10px; height: 58px;
+    border-radius: 6px 6px 0 0;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--wood-lo) 30%, transparent) 0 6px, transparent 14px),
+      repeating-linear-gradient(90deg, var(--clay) 0 26px, var(--paper-hi) 26px 52px);
+    box-shadow: inset 0 6px 0 var(--wood);
+    -webkit-mask: linear-gradient(var(--ink), var(--ink)) 0 0 / 100% calc(100% - 13px) no-repeat, radial-gradient(circle at 13px 0, var(--ink) 12.5px, transparent 13px) 0 100% / 26px 13px repeat-x;
+    mask: linear-gradient(var(--ink), var(--ink)) 0 0 / 100% calc(100% - 13px) no-repeat, radial-gradient(circle at 13px 0, var(--ink) 12.5px, transparent 13px) 0 100% / 26px 13px repeat-x;
+    filter: drop-shadow(0 6px 6px rgb(var(--shadow-ink) / .2));
+  }
+  .setup[data-steps] .setup-cath-stand::after {
+    content: "Cath’s stall"; position: absolute; top: 50px; left: 50%; translate: -50% 0; rotate: -1.5deg;
+    padding: 10px 26px 12px; border-radius: 6px;
+    font: 700 var(--fs-h3)/1 var(--font-display); letter-spacing: .02em; white-space: nowrap; color: var(--wood-ink);
+    background:
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--wood-lo) 22%, transparent) 0 1px, transparent 1px 8px),
+      linear-gradient(var(--wood), color-mix(in srgb, var(--wood) 80%, var(--wood-lo)));
+    box-shadow: inset 0 0 0 2px var(--wood-lo), inset 0 0 0 5px var(--wood), inset 0 0 0 6px color-mix(in srgb, var(--wood-ink) 35%, transparent), 0 6px 10px rgb(var(--shadow-ink) / .25);
+  }
+}
+/* and on a full-height desktop she stands a size up (226 -> 264 px), so the board and her quote meet the space under it */
+@media (min-width: 1280px) and (min-height: 861px) {
+  .setup[data-steps] .setup-cath-stand .cath-art { width: 264px; }
 }

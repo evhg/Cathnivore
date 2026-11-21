@@ -58,6 +58,10 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
       return out
     })
     expect(small).toEqual([])
+    // Plan item 598: her column's top is her stall's awning and board, not empty cream above her quote.
+    const top = await page.locator('.setup-cath-stand').evaluate((e) => ({ awning: getComputedStyle(e, '::before').height, sign: getComputedStyle(e, '::after').content }))
+    expect(parseFloat(top.awning)).toBeGreaterThanOrEqual(40)
+    expect(top.sign).toContain('stall')
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
   })
 }
