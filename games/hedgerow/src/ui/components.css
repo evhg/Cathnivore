@@ -5465,3 +5465,17 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .panel .intel-locks .lock-chip[data-pictures] .prop-icon { display: inline-block; width: 20px; height: 20px; }
 .play .panel .intel-locks .lock-chip .lock-arrow { flex: none; color: var(--ink-3, var(--ink)); font-weight: 800; }
 .play .panel .intel-locks .lock-chip .lock-tower { flex: none; width: 22px; height: 22px; }
+
+/* Plan item 599 slice 4: on a desktop the round ticket's vehicles are pictures with their counts (each chip keeps its
+   name as hover text and for a reader), as the convoy's already are, so the panel's words drop by a third on every
+   level (level 34's ticket spelt 'Same-Day van' and 'Box Lorry' out and its words grew past item 599's baseline). */
+@media (min-width: 900px) and (min-height: 520.02px) {
+  .play .panel .ticket-chips .chip-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
