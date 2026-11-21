@@ -5868,7 +5868,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 no two label boxes intersect and none crosses into a neighbouring hex (spec on boxes); the board 48%+ of the viewport height; all three plan moves reachable in one tap; table and phone specs pass; shot P and D.
 - **Size:** 2
 
-## 603. [ ] The bugs from the 2026-11-21 08:50 critique, fixed as one batch *(lane B, in progress)*
+## 603. [x] The bugs from the 2026-11-21 08:50 critique, fixed as one batch *(done 2026-11-21 09:00, lane B: (1) fixed: 'Same-Day va' was a fallen oak's log drawn over the plate (the oaks were drawn after the sorted items); now on the ground under vehicles, Cath and plates (`render.ts`), whole at P l34; Hedgerow key art re-shot. (2) fixed: the 3D coaching ghost was every part cloned at 0.5 opacity (inner faces through each other, the red roof over the farmhouse); now a depth-only pass then one cream tint over the front faces (`ghostDepth`, `ghostTint`): a soft cream scarecrow at D l21. (3) closed: Cathnivore P's 'Saving for' tab is the shelf's divider in the scrolling hand, 10 px clear of the card before it and 5 px of the one after (seed 7). (4) closed: Hedgerow 3D P l21's depot is whole, its tag ~40 px under the HUD's foot (item 591). hedgerow-3dframe (D), gatequeue, critique, biome3d (P, D) pass. Shots scratchpad h603-van3, h603-ghost2, h603-depot)*
 *(planned 2026-11-21 08:50, lane B, plan1121e critique; check each on today's build first)*
 - Hedgerow P (`hedge-l34-2d-P` 56-178 x 478-496): the 'Same-Day van' label clipped to 'Same-Day va'.
 - Hedgerow 3D D (`hedge-l21-3d-D` 550-650 x 405-500): a see-through red scarecrow ghost and ring over the farmhouse roof (a placement hint that reads as a glitch).

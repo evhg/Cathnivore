@@ -300,6 +300,8 @@ export class Renderer3D {
   private coachRing: THREE.Mesh;
   private ghost: THREE.Group | null = null;
   private ghostKey = "";
+  private ghostDepth = new THREE.MeshBasicMaterial({ colorWrite: false });
+  private ghostTint = new THREE.MeshLambertMaterial({ color: "#fff2c8", emissive: "#5a4a20", transparent: true, opacity: 0.6, depthFunc: THREE.LessEqualDepth, depthWrite: false });
   private bossBar: HTMLElement;
   /** Swarm badges (plan item 10), one per queue of more than 12, pooled; `key` is what each one shows. */
   private swarmEls: Array<{ el: HTMLElement; key: string }> = [];
@@ -2781,16 +2783,29 @@ export class Renderer3D {
       this.ghost = null;
       this.ghostKey = gk;
       if (ghostKind && at) {
-        const g = buildTower(ghostKind, 1, null);
-        g.traverse((o) => {
+        // Plan item 603: one soft cream silhouette, not each part at half opacity (the tower's inner faces showed
+        // through each other and its red roof read as a glitch over the farmhouse at D l21): a depth-only pass of the
+        // tower first, then the tint over its front faces alone.
+        const g = new THREE.Group();
+        const depth = buildTower(ghostKind, 1, null);
+        const tint = buildTower(ghostKind, 1, null);
+        depth.traverse((o) => {
           const m = o as THREE.Mesh;
           if (m.isMesh) {
-            m.material = (m.material as THREE.Material).clone();
-            (m.material as THREE.Material).transparent = true;
-            (m.material as THREE.Material).opacity = 0.5;
+            m.material = this.ghostDepth;
             m.castShadow = false;
+            m.renderOrder = 1;
           }
         });
+        tint.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh) {
+            m.material = this.ghostTint;
+            m.castShadow = false;
+            m.renderOrder = 2;
+          }
+        });
+        g.add(depth, tint);
         g.position.set(at.col + 0.5, this.height(at.col + 0.5, at.row + 0.5), at.row + 0.5);
         this.ghost = g;
         this.scene.add(g);
