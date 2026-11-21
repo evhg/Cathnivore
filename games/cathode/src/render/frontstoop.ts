@@ -639,9 +639,13 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
         for (const t of tinted) {
           t.mat.color.copy(t.base);
           if (hex == null) continue;
-          // The key's hue at the wash's own brightness.
+          // The key's hue at the wash's own brightness. Plan item 574: and no brighter than the wash in luminance, so
+          // the Gunslinger's gold and the Fixer's green (bright in every channel that counts) don't light the wall
+          // beside her head brighter than her face, as the violet and red never did.
           keyC.set(hex);
+          const lum = (c: THREE.Color) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
           keyC.multiplyScalar(Math.max(t.base.r, t.base.g, t.base.b) / Math.max(keyC.r, keyC.g, keyC.b, 1e-3));
+          keyC.multiplyScalar(Math.min(1, lum(t.base) / Math.max(lum(keyC), 1e-3)));
           t.mat.color.lerp(keyC, 0.75);
         }
       }

@@ -36,11 +36,12 @@ const FLAT_GAIN = 3.2;
 // Plan item 514: the halo behind her washes the whole set round her in the key's colour; the Ghost's cyan and the
 // Butcher's red were brighter there than her face, so theirs is softer (her face 1.3x+ the set).
 // Plan item 574: softer again (the disc was most of the 'blue fog' round her head on the Ghost).
-const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.14, butcher: 0.08 };
+// The Gunslinger's gold and the Fixer's green are the brightest keys in luminance: theirs is softer too.
+const HALO_CLASS: Partial<Record<string, number>> = { ghost: 0.14, butcher: 0.08, gunslinger: 0.12, fixer: 0.16 };
 // With the flat in front of the street's facade (plan item 514) it is most of what's behind her: each a little down,
 // so her face stays 1.3x the set.
 // Plan item 574: down again so her face is 1.6x the wall beside it (the practicals, bright in the paint, keep their glow).
-const FLAT_CLASS_GAIN: Partial<Record<string, number>> = { ghost: 0.62, butcher: 0.42, gunslinger: 0.42, wirewitch: 0.6, fixer: 0.5 };
+const FLAT_CLASS_GAIN: Partial<Record<string, number>> = { ghost: 0.62, butcher: 0.42, gunslinger: 0.34, wirewitch: 0.6, fixer: 0.5 };
 
 type Paint = (g: CanvasRenderingContext2D, X: (m: number) => number, Y: (m: number) => number, s: number) => void;
 
