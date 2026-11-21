@@ -1839,12 +1839,17 @@ function fitColumn(p: HTMLElement): void {
       if (on && el.matches(".ticket-note, .ticket-title") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
     }
   };
-  p.classList.remove("shop-tight", "convoy-wrap", "bench-tight");
+  p.classList.remove("shop-tight", "convoy-wrap", "bench-tight", "bench-slim");
   const gone: string[] = [];
   for (const sel of PREVIEW_SPARE) {
     if (!over()) break;
     // Plan item 599: before the tabbed card goes, Cath's tall bench column gives way to the compact row
     if (sel === PREVIEW_SPARE[PREVIEW_SPARE.length - 1] && p.querySelector(".cath-plate:not([hidden])")) {
+      // Plan item 599 slice 5: first her column slims (a smaller half figure, the ticket wider), and only if that
+      // still runs past the foot does she fold to the compact row's 72 px portrait (level 30's stamped ticket).
+      p.classList.add("bench-slim");
+      if (!over()) break;
+      p.classList.remove("bench-slim");
       p.classList.add("bench-tight");
       if (!over()) break;
     }

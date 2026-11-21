@@ -5479,3 +5479,11 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: nowrap;
   }
 }
+
+/* Plan item 599 slice 5: a slimmer bench before the compact row: her half figure in a 70 px column, so a tall ticket
+   keeps her standing (level 30's stamp folded her to a 72 px ring). */
+@media (min-width: 900px) and (min-height: 560px) {
+  .play .panel.bench-slim:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) {
+    --bench-cath: 70px;
+  }
+}
