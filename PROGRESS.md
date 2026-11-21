@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (04:51 11-21): E2E red on 295b4fd4 fixed (535317d6: hedgerow-plate-preview expected the convoy that item 583's 3D still replaces; it now tests the fallback with stills blocked). 588 slices 1-2 (gun studio as a noir stage; rack icons brighter); left: the booking photos as 3D renders. Open: 543, 319, 587, 589.
+- Lane A (05:51 11-21): 588 done (the booking photos are 3D noir stills of her per class, `render/bookingphoto.ts`; slice 1's red E2E was the rack contrast slice 2 already fixed). 589: rail design decided (four sections, in the plan) and the width tried and reverted (it clips the shelf at 1280 until the Saving-for card is built); handed back. Open: 543, 319, 589.
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-21 05:51 lane A:** 588 done (1 code commit), posters and key art re-rendered; 589 design decided, width tried and reverted. classpick booking-photo specs (P, D; new 3D-stills spec D), five-guns (P, D), classstage (D), all --retries=0 (the D 48 px test timed out under load waiting for the pick, passed alone in 36 s; its wait raised to 120 s); keyart-fresh, css lint, cathode-type; tsc, eslint. No full check. Shots scratchpad s588b (v1-v3, pick3-D/P), s589. Lock released.
 - 2026-11-21 05:21 lane B: E2E red checked; 587 closed (checked); 589 findings; no code commits.
 - **2026-11-21 04:51 lane A:** E2E fix, 588 slices 1-2 (3 code commits). hedgerow-plate-preview, -level-card, -map (P, D, --retries=0); cathode-gunstudio (new), armoury, classpick 382/607 (P, D, --retries=0); gunportrait unit tests, keyart-fresh; tsc, eslint. No full check. Shots scratchpad s588 (before, a1-a9, cp-after-D, cp-after-P). Lock released.
 - 2026-11-21 04:21 lane B: 584 closed, planning 587-590, 590 done, 589 findings (2 code commits); 143 Runnel specs pass P and D.
@@ -51,4 +52,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-21 00:21 lane B: 575 done, 570 closed by decision (2 code commits); cathode-front and title-focal pass at P, classpick specs P and D.
 - 2026-11-20 23:21 lane B: 575 slices 1-2 (2 code commits); classpick and classstage pass P and D.
 - 2026-11-20 22:21 lane B: 576 done (1 code commit); Hedgerow phone suite 172 pass, depot specs P and D.
-- **2026-11-20 21:51 lane A:** 574 slice 1 (1 code commit), NIGHT SHIFT posters and key art re-shot. cathode-classpick (13 passed P and D, --retries=0; the run's tail out of time), keyart-fresh, cathode-setprops; tsc, eslint. No full check. Shots scratchpad b574w/a574w (5 classes, P and D, with and without her). Lock released.
