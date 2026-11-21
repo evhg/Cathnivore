@@ -5823,7 +5823,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** mean chroma inside each locked stop 2x today's or more (measured on the shot); each stop's landmark 64 px or larger at P; hedgerow-map-diorama still finds no two stops alike; label plates 4.5:1+; hedgerow-map specs pass P and D; key art re-shot if a keyart source changes; shot P and D.
 - **Size:** 1
 
-## 597. [ ] Runnel lesson: a spotlight on the tiles, the valley in its colours
+## 597. [ ] Runnel lesson: a spotlight on the tiles, the valley in its colours *(lane B, in progress)*
 *(planned 2026-11-21 07:45, lane B, plan1121d critique)*
 - **Why:** `plan1121d/runnel-D` 390-1420 x 280-880 and `runnel-P` 0-390 x 200-680: the first screen a new player sees is the dullest; item 90's lesson dim lays a flat grey-mauve wash over ~70% of the frame and the folk and sheep vanish. VISION: every screen an illustration, the poster look.
 - **Build:** `games/runnel/src/` lesson and valley drawing, `styles.css`: replace the whole-valley dim with a soft radial spotlight round the lesson tiles (falling off over ~250 px); outside it the season's colours stay; Bea's garden and the spring house stay lit as the water's start and end.
