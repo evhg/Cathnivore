@@ -1,6 +1,7 @@
 import postcss, { type AtRule, type Root, type Rule } from 'postcss'
 import type { Plugin, ResolvedConfig } from 'vite'
 
+// 2026-11-22: widened from the Game chunk to every lazy screen (see generateBundle).
 // Gate 7 (Lighthouse mobile >= 85), 2026-11-11: about 90% of the entry stylesheet styles the game table, which
 // the title never shows, yet the whole 65 kB (gzip) blocked the first paint. The build now links a *critical*
 // copy render-blocking: every rule except those that can only match inside the Game chunk's markup. The
@@ -83,15 +84,28 @@ export function criticalCss(): Plugin {
       const cssAsset = cssFile?.type === 'asset' ? cssFile : undefined
       if (!cssName || !cssAsset) return
 
-      const inGame = new Set<string>()
+      // 2026-11-22: every lazy screen (Setup, campaign, scenes, rules, settings, credits, the table) waits for the
+      // full sheet (App.tsx), so a rule is deferrable when every selector needs a class that only lazy code names.
+      // Eager code is the entry chunk and the chunks it imports statically; the HTML counts as eager too.
+      const eager = new Set<string>([entry.fileName])
+      const byName = new Map(chunks.map((c) => [c.fileName, c]))
+      const queue = [entry.fileName]
+      while (queue.length) {
+        for (const dep of byName.get(queue.pop()!)?.imports ?? []) {
+          if (!eager.has(dep)) {
+            eager.add(dep)
+            queue.push(dep)
+          }
+        }
+      }
+      const lazyTokens = new Set<string>()
       const elsewhere = new Set<string>()
-      tokens(game.code, inGame)
-      for (const c of chunks) if (c !== game) tokens(c.code, elsewhere)
+      for (const c of chunks) tokens(c.code, eager.has(c.fileName) ? elsewhere : lazyTokens)
       tokens(String(html.source), elsewhere)
-      const gameOnly = (cls: string) => inGame.has(cls) && !reachable(cls, elsewhere)
+      const lazyOnly = (cls: string) => lazyTokens.has(cls) && !reachable(cls, elsewhere)
 
       const full = String(cssAsset.source)
-      const { critical, moved } = splitCritical(full, gameOnly)
+      const { critical, moved } = splitCritical(full, lazyOnly)
       if (moved === 0) return
       const ref = this.emitFile({ type: 'asset', name: 'critical.css', source: critical })
       const criticalName = this.getFileName(ref)
@@ -100,7 +114,7 @@ export function criticalCss(): Plugin {
         .replace(`${base}${cssName}"`, `${base}${criticalName}"`)
         .replace('</head>', `  <meta name="${FULL_CSS_META}" content="${base}${cssName}" />\n</head>`)
       config.logger.info(
-        `critical-css: ${moved} game-only rules deferred; first-paint CSS ${(critical.length / 1024).toFixed(0)} kB of ${(full.length / 1024).toFixed(0)} kB`,
+        `critical-css: ${moved} lazy-screen rules deferred; first-paint CSS ${(critical.length / 1024).toFixed(0)} kB of ${(full.length / 1024).toFixed(0)} kB`,
       )
     },
   }

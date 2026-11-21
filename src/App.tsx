@@ -30,7 +30,7 @@ import { openExternalLink } from './platform/externalLink'
 import { isNativePlatform } from './platform/native'
 import { CHAPTERS, CHAPTERS_BY_ID, CHAPTER_1, CHAPTER_3, CHAPTER_4, chapterConfig, chapter4Config, survivingWholesomeHollowContracts, type Chapter } from './content/chapters'
 import { sealsEarned } from './content/campaignMap'
-import { MarrowBadge } from './ui/CampaignMap'
+import { MarrowBadge } from './ui/MarrowBadge'
 import { SCENES as FRESH_MEAT_SCENES } from './content/story/fresh-meat'
 import { SCENES as WORD_OF_MOUTH_SCENES } from './content/story/word-of-mouth'
 import { SCENES as GROWING_SEASON_SCENES } from './content/story/growing-season'
@@ -48,15 +48,18 @@ import { OPENING_MS, openingThisLoad } from './ui/titleOpening'
 
 // Gate 7 (Lighthouse mobile >= 85): the title paints from the first chunk; every other screen loads on demand
 // (the service worker precaches every chunk, so offline play is unchanged).
-const Setup = lazy(() => (void loadFullCss(), import('./ui/Setup')))
-// The table's rules ship in the full stylesheet (platform/fullCss.ts): Setup and the campaign start loading it on
-// the way to the table, and the Game screen waits for it. The title never pays for it.
-const Game = lazy(() => Promise.all([import('./ui/Game'), loadFullCss()]).then(([m]) => m))
-const Scene = lazy(() => import('./ui/Scene'))
-const RulesReference = lazy(() => import('./ui/RulesReference'))
-const Settings = lazy(() => import('./ui/Settings'))
-const Credits = lazy(() => import('./ui/Credits'))
-const CampaignScreen = lazy(() => (void loadFullCss(), import('./ui/CampaignScreen')))
+// Every screen but the title styles itself from the full stylesheet (platform/fullCss.ts, scripts/critical-css.ts):
+// each lazy screen waits for it, so none draws unstyled, and the title's first paint never pays for it.
+function withFullCss<T>(load: () => Promise<T>): () => Promise<T> {
+  return () => Promise.all([load(), loadFullCss()]).then(([m]) => m)
+}
+const Setup = lazy(withFullCss(() => import('./ui/Setup')))
+const Game = lazy(withFullCss(() => import('./ui/Game')))
+const Scene = lazy(withFullCss(() => import('./ui/Scene')))
+const RulesReference = lazy(withFullCss(() => import('./ui/RulesReference')))
+const Settings = lazy(withFullCss(() => import('./ui/Settings')))
+const Credits = lazy(withFullCss(() => import('./ui/Credits')))
+const CampaignScreen = lazy(withFullCss(() => import('./ui/CampaignScreen')))
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
