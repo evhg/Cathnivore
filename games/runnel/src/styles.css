@@ -5251,3 +5251,8 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
     mask-image: none;
   }
 }
+/* Plan item 627: watered, the sunflowers and the wigwam's tip rise above the back row's box and met the garden's name
+   tag ('Bea's garden' sat on a sunflower head at D): the tag stands clear above them. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .bea-garden:not([data-sign-under]) > .farm-sign { margin-bottom: 18px; }
+}

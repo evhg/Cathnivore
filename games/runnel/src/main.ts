@@ -2406,6 +2406,8 @@ if ((!data.seenHelp && !params.has('nohelp')) || params.has('lesson')) startLess
 if (params.has('shotwin')) shotWin()
 function shotWin(): void {
   if (!game.solved && game.taps === 0) game.taps = puzzle.par
+  // Plan item 627: and a time a solve would take (the shot read '0:00 time': the hook kept no clock; a real solve does)
+  if (!game.solved && game.elapsedMs === 0) game.elapsedMs = 134_000
   // Plan item 620: the shot shows the board as a solve leaves it, every channel running (it finished a dry board,
   // so the card said 'Every field is watered.' over dry channels). Rotation 0 is each tile's solution.
   if (!game.solved) {
