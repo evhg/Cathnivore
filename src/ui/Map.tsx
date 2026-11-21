@@ -119,6 +119,8 @@ interface Props {
   aim?: { region: RegionId; chips: { text: string; sign: '+' | '-' | '!' }[]; going?: ('o' | 'b' | 'd')[] }
   /** Plan item 451: a card just played into this region lands with a stamp and a puff of paper dust (`key` replays it). */
   stamp?: { region: RegionId; key: number }
+  /** Plan item 614: the end screen's play of the game: the region gets a gold rim and a pinned tag, the rest stays lit. */
+  featured?: { region: RegionId; label: string }
   /** Plan item 507: the Setup's opening board plays a producer's power over their home region before they're picked. */
   showcase?: AbilityMomentView[]
   /** Plan item 451: a card is being aimed (pressed, dragged or armed): the hexes it can't go to darken, not fade. */
@@ -762,7 +764,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, aiming, onHoverRegion, showcase }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, featured, aiming, onHoverRegion, showcase }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1336,6 +1338,26 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           })}
         </g>
       )}
+      {/* Plan item 614: under the region signs, so the rim and its tag never cover a name. */}
+      {featured && active.includes(featured.region) && (() => {
+        const { x, y } = hexCenter(featured.region, layout)
+        const tx = 0
+        const ty = HEX_R * 0.52
+        const w = Math.max(84, featured.label.length * 10 + 26)
+        return (
+          <g className="featured-region" data-featured={featured.region} pointerEvents="none" aria-hidden="true" transform={`translate(${x} ${y})`}>
+            <polygon className="featured-rim" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} />
+            <polygon className="featured-rim-hi" points={hexPoints(0, 0, HEX_R * GAP_SCALE * 0.97)} />
+            <g className="featured-tag" transform={`translate(${tx} ${ty}) rotate(-4)`}>
+              <rect className="featured-tag-card" x={-w / 2} y={-17} width={w} height={34} rx={3} />
+              <text className="featured-tag-text" x={0} y={1} fontSize={17} dominantBaseline="central" textAnchor="middle">
+                {featured.label}
+              </text>
+              <circle className="featured-tag-pin" cx={-w / 2 + 10} cy={-11} r={6} />
+            </g>
+          </g>
+        )
+      })()}
       {active.map((id) => {
         const def = REGIONS[id]
         const { x, y } = hexCenter(id, layout)

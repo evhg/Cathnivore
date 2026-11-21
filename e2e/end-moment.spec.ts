@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 // Plan item 48: the end screen is a moment, with the result in view at once: Cath, the stamp, the headline, the
-// chart and Play again all on screen without scrolling, and nothing of the chart under the sticky action bar.
+// final board (plan item 614; the chart too at D) and Play again all on screen without scrolling, and nothing of the chart under the sticky action bar.
 test('the end screen shows Cath, the headline, the chart and Play again without scrolling', async ({ page }) => {
   test.setTimeout(120_000)
   await page.goto('/?e2eAutoplay=1')
@@ -12,11 +12,21 @@ test('the end screen shows Cath, the headline, the chart and Play again without 
   expect(await page.evaluate(() => window.scrollY)).toBe(0)
   const vh = page.viewportSize()!.height
   const bar = (await page.locator('.end-actions').boundingBox())!
-  for (const sel of ['.end-screen-cath', '.end-stamp', '.end-screen h1', '.end-chart']) {
+  // Plan item 614: the final board is the hero, so it (not the chart) stands above the bar on a phone.
+  const vw = page.viewportSize()!.width
+  const sels = ['.end-screen-cath', '.end-stamp', '.end-screen h1', '.end-screen-map']
+  if (vw >= 1200) sels.push('.end-chart')
+  for (const sel of sels) {
     const b = (await page.locator(sel).boundingBox())!
     expect(b.y, `${sel} top`).toBeGreaterThanOrEqual(0)
     expect(b.y + b.height, `${sel} clear of the action bar`).toBeLessThanOrEqual(bar.y + 1)
   }
+  const board = (await page.locator('.end-screen-map').boundingBox())!
+  if (vw < 600) expect(board.width, 'the board at P').toBeGreaterThanOrEqual(340)
+  if (vw >= 1200) expect(board.width / vw, 'the board at D').toBeGreaterThanOrEqual(0.45)
+  // The play of the game is pinned on its region on the board.
+  const playRegion = await page.locator('.end-play').getAttribute('data-region')
+  if (playRegion) await expect(page.locator(`.end-screen-map [data-featured="${playRegion}"]`)).toHaveCount(1)
   const play = (await page.getByRole('button', { name: /Play again/ }).boundingBox())!
   expect(play.y + play.height).toBeLessThanOrEqual(vh)
   // Cath stands in the pose for the result.

@@ -2056,7 +2056,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           )}
           <p className="end-screen-story">{won ? WIN_LINE : LOSS_LINE[state.result.lossReason!]}</p>
           {summary.play && (
-            <article className="end-play">
+            <article className="end-play" data-region={summary.play.region}>
               <h2>
                 <small>Play of the game, round {summary.play.round}</small>
                 {summary.play.title}
@@ -2080,8 +2080,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               </div>
             ))}
           </dl>
-          <div className="end-screen-map">
-            <RegionMap state={state} />
+          {/* Plan item 614: the final table is the hero; the play of the game is pinned on its region. */}
+          <div className="end-screen-map" data-featured={summary.play?.region}>
+            <RegionMap state={state} featured={summary.play?.region ? { region: summary.play.region, label: `★ Round ${summary.play.round}` } : undefined} />
           </div>
         </section>
         {/* Plan item 484: a Daily ends with a postcard to share; the text share stays as its fallback */}

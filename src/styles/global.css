@@ -5172,3 +5172,28 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
   .end-screen-stats { grid-area: stats; align-self: start; margin-top: 12px; grid-template-columns: repeat(2, 1fr); max-width: none; }
   .end-actions { grid-area: actions; }
 }
+/* Plan item 614: the play of the game pinned on the final board: a gold rim round its region and a paper tag pinned
+   at its foot (the rest of the board stays lit, it is the hero). The card in the story wears the same pin. */
+.featured-rim { fill: none; stroke: var(--wheat-ink); stroke-width: 10; stroke-linejoin: round; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--wheat-hi) 90%, transparent)); }
+.featured-rim-hi { fill: none; stroke: var(--wheat-hi); stroke-width: 4; stroke-linejoin: round; }
+.featured-tag-card { fill: var(--paper); stroke: var(--wheat-ink); stroke-width: 1.5; filter: drop-shadow(0 3px 2px color-mix(in srgb, var(--ink) 30%, transparent)); }
+.featured-tag-text { fill: var(--ink); font-family: var(--font-display, inherit); font-weight: 800; }
+.featured-tag-pin { fill: var(--clay-deep); stroke: var(--paper); stroke-width: 1.5; }
+.featured-region { animation: featured-in 0.45s ease 1.6s both; }
+@keyframes featured-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .featured-region { animation: none; } }
+html.no-animations .featured-region { animation: none; }
+.end-play { position: relative; }
+.end-play[data-region]::before {
+  content: ''; position: absolute; top: -6px; right: 18px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--clay-deep); border: 2px solid var(--paper); box-shadow: 0 2px 2px color-mix(in srgb, var(--ink) 30%, transparent);
+}
+/* Plan item 614 at P: the board comes straight after the verdict at full width (about 358 px), on the table and
+   unframed, above the sticky bar; the story, the play of the game, the chart and the stats follow. */
+@media (max-width: 600px) {
+  .end-screen-map { order: 6; width: calc(100% + 16px); max-width: 420px; margin: 0 -8px; padding: 0; background: none; border: 0; transform: none; }
+  .end-screen-story { order: 7; }
+  .end-play { order: 8; }
+  .end-chart { order: 9; }
+  .end-screen-stats { order: 10; }
+}

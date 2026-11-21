@@ -6,7 +6,7 @@ import { applyAction, createGame } from '../engine/api'
 import { REGIONS } from '../content/map'
 import { PRODUCERS } from '../content/producers'
 import { SCHEMES_BY_ID } from '../content/schemes'
-import type { GameState, GameEvent } from '../engine/types'
+import type { GameState, GameEvent, RegionId } from '../engine/types'
 
 export interface RoundPoint {
   round: number
@@ -17,6 +17,8 @@ export interface RoundPoint {
 
 export interface PlayOfTheGame {
   round: number
+  /** Plan item 614: where it happened, pinned on the final board (none for a Scheme with no target). */
+  region?: RegionId
   title: string
   line: string
 }
@@ -67,6 +69,7 @@ export function playOfTheGame(events: Timed[]): PlayOfTheGame | null {
     const where = REGIONS[lib.event.region].name
     return {
       round: lib.round,
+      region: lib.event.region,
       title: capital ? `${where} falls` : `${where} liberated`,
       line: capital
         ? `${who} broke the capital in round ${lib.round}. The Kingsmarket stalls opened for the first time in a generation.`
@@ -82,7 +85,7 @@ export function playOfTheGame(events: Timed[]): PlayOfTheGame | null {
     const who = PRODUCERS[best.event.producer].name.split(' ')[0]
     const name = SCHEMES_BY_ID.get(best.event.schemeId)?.name ?? 'a Scheme'
     const where = best.event.target ? ` on ${REGIONS[best.event.target].name}` : ''
-    return { round: best.round, title: name, line: `${who} played ${name}${where} in round ${best.round}. Marrow noticed.` }
+    return { round: best.round, region: best.event.target ?? undefined, title: name, line: `${who} played ${name}${where} in round ${best.round}. Marrow noticed.` }
   }
   return null
 }
