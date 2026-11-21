@@ -179,3 +179,27 @@ describe('studio log', async () => {
     expect(runs.sessions.map((s) => [s.lane, s.game])).toEqual([['B', 'nightshift'], ['B', 'runnel'], ['A', 'hedgerow']])
   })
 })
+
+// Plan item 626: the studio track's notches wear their game's colour, 3:1 or more on the track, and say what changed.
+describe('studio track colours and names', async () => {
+  const { GAME_COLORS, notchLabel } = await import('../portfolio/src/studio')
+  const { readFileSync } = await import('node:fs')
+  const tokens = readFileSync('portfolio/src/tokens.css', 'utf8')
+  const hex = (name: string) => tokens.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, 'i'))![1]!
+  const lum = (h: string) => {
+    const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * c[0]! + 0.7152 * c[1]! + 0.0722 * c[2]!
+  }
+  it('every game colour is 3:1 or more on the track (text at 4% over the darkest ink)', () => {
+    const track = '#141319'
+    for (const token of Object.values(GAME_COLORS)) {
+      const ratio = (lum(hex(token)) + 0.05) / (lum(track) + 0.05)
+      expect(ratio, token).toBeGreaterThanOrEqual(3)
+    }
+  })
+  it("names a notch by lane, time, game and its first change", () => {
+    const s = { lane: 'B' as const, start: 0, end: 60, game: 'hedgerow' as const, subjects: ['Hedgerow: hens', 'Hedgerow: a fix', 'Hedgerow: more'] }
+    expect(notchLabel(s, '14:05')).toBe('Lane B, 14:05, Hedgerow: hens, and 2 more changes')
+    expect(notchLabel({ ...s, game: 'runnel', subjects: ["Runnel (plan item 623 done): Bea's garden is a bed"] }, '22:34')).toBe("Lane B, 22:34, Runnel: Bea's garden is a bed")
+  })
+})

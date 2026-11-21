@@ -14,6 +14,23 @@ export const GAME_NAMES: Record<StudioGame, string> = {
   portfolio: 'This site',
 }
 
+/** Plan item 626: each game's colour on the track (a token in tokens.css, 3:1 or more on the track: tested). */
+export const GAME_COLORS: Record<StudioGame, string> = {
+  cathnivore: '--game-cathnivore',
+  hedgerow: '--game-hedgerow',
+  runnel: '--game-runnel',
+  nightshift: '--game-nightshift',
+  portfolio: '--game-site',
+}
+
+/** A notch's accessible name: its lane, its start, its game and what it changed ('Lane B, 14:05, Hedgerow: ...'). */
+export function notchLabel(s: StudioSession, time: string): string {
+  const more = s.subjects.length > 1 ? `, and ${s.subjects.length - 1} more ${s.subjects.length === 2 ? 'change' : 'changes'}` : ''
+  // A subject that opens with its game's name ('Hedgerow 3D (plan item 621): ...') loses that lead: the label says it.
+  const first = (s.subjects[0] ?? 'work in progress').replace(new RegExp(`^${GAME_NAMES[s.game]}\\b[^:]{0,40}:\\s*`, 'i'), '')
+  return `Lane ${s.lane}, ${time}, ${GAME_NAMES[s.game]}: ${first}${more}`
+}
+
 /** The game's frame, the 640 px cut of the same key art the portfolio's games entry shows (apps.ts). */
 export function frameFor(game: StudioGame): string | null {
   return game === 'portfolio' ? null : `/work/games-${game}-640.webp`
@@ -79,9 +96,16 @@ export function renderStudio(host: HTMLElement, log: StudioLog, opts: { reduced:
   host.replaceChildren()
   const head = el('div', 'studio-head')
   const title = el('p', 'studio-title')
-  title.append(el('span', 'studio-eyebrow', 'Today in the studio'), el('span', 'studio-sum', `${sessions.length} sessions, ${commits} changes shipped to the build in the last 24 hours`))
+  title.append(el('span', 'studio-eyebrow', 'Today in the studio'), el('span', 'studio-sum', `${sessions.length} sessions, ${commits} changes in the last 24 hours`))
+  // Plan item 626: a notch is coloured by the game its session worked on; the two rows are the two lanes.
   const legend = el('p', 'studio-legend')
-  legend.append(el('span', 'studio-key studio-key-a', 'Lane A'), el('span', 'studio-key studio-key-b', 'Lane B'))
+  const shown = (Object.keys(GAME_NAMES) as StudioGame[]).filter((g) => sessions.some((s) => s.game === g))
+  for (const g of shown) {
+    const key = el('span', 'studio-key', GAME_NAMES[g])
+    key.dataset.game = g
+    legend.append(key)
+  }
+  legend.append(el('span', 'studio-key-lanes', 'Rows: lane A, lane B'))
   head.append(title, legend)
 
   const track = el('div', 'studio-track')
@@ -126,7 +150,7 @@ export function renderStudio(host: HTMLElement, log: StudioLog, opts: { reduced:
     b.style.setProperty('--at', `${left}%`)
     b.style.setProperty('--w', `${width}%`)
     b.setAttribute('aria-controls', `studio-card-${i}`)
-    b.setAttribute('aria-label', `Lane ${s.lane}, ${clock(s.start)}: ${GAME_NAMES[s.game]}, ${s.subjects.length} ${s.subjects.length === 1 ? 'change' : 'changes'}`)
+    b.setAttribute('aria-label', notchLabel(s, clock(s.start)))
     track.querySelector<HTMLElement>(`.studio-row[data-lane="${s.lane}"]`)!.append(b)
     notches.push(b)
     cards.append(card(s, i))

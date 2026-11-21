@@ -35,6 +35,9 @@ test('the track has a notch per session, spans the page at D and never scrolls t
     expect(box.x).toBeGreaterThanOrEqual(99)
     expect(box.x + box.width).toBeLessThanOrEqual(1341)
     expect(box.width).toBeGreaterThanOrEqual(1200)
+    // Plan item 626: the numbers under the band clear the fold at 1440x900
+    const st = (await page.locator('.studio .stats').boundingBox())!
+    if (page.viewportSize()!.height <= 900) expect(st.y + st.height).toBeLessThanOrEqual(890)
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
   // notches stand in time order along the track
@@ -70,6 +73,10 @@ test('the cards are reachable from the keyboard', async ({ page }) => {
   expect(focused).toBeDefined()
   await expect(page.locator('.notch[aria-pressed="true"]')).toHaveAttribute('data-index', focused!)
   await expect(page.locator(`#studio-card-${focused}`)).toHaveClass(/is-active/)
+  // Plan item 626: a notch names its lane, time, game and change, and wears its game's colour.
+  await expect(page.locator('.notch[data-game="hedgerow"]')).toHaveAttribute('aria-label', /^Lane A, .+, Hedgerow: the day passes over the field, and 3 more changes$/)
+  const colors = await page.locator('.notch').evaluateAll((ns) => ns.map((n) => getComputedStyle(n).backgroundColor))
+  expect(new Set(colors).size).toBe(3)
 })
 
 test('on a phone the cards are a swiped row that opens on the newest session', async ({ page }) => {

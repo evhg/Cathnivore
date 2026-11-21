@@ -46,6 +46,12 @@
   --glow-a: rgba(184, 162, 255, 0.22);
   --glow-b: rgba(244, 199, 116, 0.14);
   --glow-c: rgba(127, 216, 207, 0.12);
+  /* Plan item 626: the studio track's game colours (each 3:1+ on the track, tests/portfolio.test.ts). */
+  --game-cathnivore: #ff8f7a;
+  --game-hedgerow: #b9e36a;
+  --game-runnel: #74c3f2;
+  --game-nightshift: #d68cff;
+  --game-site: #f4c774;
   --live: #8ef0a8;
   --live-halo: rgba(142, 240, 168, 0.35);
 

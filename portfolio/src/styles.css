@@ -2040,7 +2040,7 @@ h1 {
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-2) var(--sp-5);
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 .studio-title, .studio-legend { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-2) var(--sp-4); margin: 0; }
 .studio-eyebrow {
@@ -2052,19 +2052,37 @@ h1 {
 }
 .studio-sum, .studio-legend { font-size: var(--fs-small); color: var(--text-muted); }
 .studio-key { display: inline-flex; align-items: center; gap: var(--sp-2); }
-.studio-key::before { content: ""; width: 18px; height: 8px; border-radius: var(--r-pill); background: var(--lane); }
-.studio-key-a, .notch[data-lane="A"], .studio-card[data-lane="A"] { --lane: var(--accent-gold); }
-.studio-key-b, .notch[data-lane="B"], .studio-card[data-lane="B"] { --lane: var(--accent-teal); }
+.studio-key::before { content: ""; width: 18px; height: 8px; border-radius: var(--r-pill); background: var(--game); }
+.studio-key-lanes { color: var(--text-faint); }
+/* Plan item 626: a notch, its key and its card wear the game's colour; the row says the lane. */
+[data-game="cathnivore"] { --game: var(--game-cathnivore); }
+[data-game="hedgerow"] { --game: var(--game-hedgerow); }
+[data-game="runnel"] { --game: var(--game-runnel); }
+[data-game="nightshift"] { --game: var(--game-nightshift); }
+[data-game="portfolio"] { --game: var(--game-site); }
+@media (max-width: 1099.98px) { .studio-row::before { display: none; } }
+/* At D the rows carry their lane's letter, so the legend names only the games (one line with the title). */
+@media (min-width: 1100px) { .studio-key-lanes { display: none; } }
+.studio-row::before {
+  content: attr(data-lane);
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  translate: 0 -50%;
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  color: var(--text-faint);
+}
 .studio-stage { position: relative; }
 .studio-track {
   position: relative;
   display: grid;
-  gap: 6px;
-  padding: 10px 0 30px;
+  gap: 5px;
+  padding: 6px 0 26px;
 }
 .studio-row {
   position: relative;
-  height: 22px;
+  height: 20px;
   border-radius: var(--r-pill);
   background: color-mix(in srgb, var(--text) 4%, transparent);
 }
@@ -2101,13 +2119,13 @@ h1 {
 .notch {
   position: absolute;
   left: var(--at);
-  top: 3px;
+  top: 2px;
   width: max(var(--w), 10px);
   height: 16px;
   padding: 0;
   border: 0;
   border-radius: var(--r-pill);
-  background: var(--lane);
+  background: var(--game);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 70%, transparent);
   cursor: pointer;
   transition: scale 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
@@ -2115,12 +2133,12 @@ h1 {
 .notch::after { content: ""; position: absolute; inset: -6px -3px; }
 .notch:hover, .notch[aria-pressed="true"] {
   scale: 1 1.35;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 70%, transparent), 0 0 18px color-mix(in srgb, var(--lane) 60%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 70%, transparent), 0 0 18px color-mix(in srgb, var(--game) 60%, transparent);
 }
 .notch:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .studio-card {
   border: 1px solid var(--line-strong);
-  border-top: 2px solid var(--lane);
+  border-top: 2px solid var(--game);
   border-radius: 16px;
   background: var(--glass-solid);
   overflow: hidden;
@@ -2135,7 +2153,7 @@ h1 {
 .studio-frame-word { font: 400 1.5rem/1 var(--font-display); color: var(--text); }
 .studio-card-body { padding: var(--sp-3) var(--sp-4) var(--sp-4); }
 .studio-card-meta { display: flex; gap: var(--sp-3); margin: 0; font-size: var(--fs-eyebrow); color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.studio-lane { color: var(--lane); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.studio-lane { color: var(--text); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 .studio-card-game { margin: var(--sp-1) 0 var(--sp-2); font: 400 1.375rem/1.15 var(--font-display); }
 .studio-card-list { display: grid; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; font-size: var(--fs-small); line-height: 1.4; color: var(--text-muted); }
 .studio-card-list li {
@@ -2143,7 +2161,7 @@ h1 {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
-  padding-left: var(--sp-3); border-left: 2px solid color-mix(in srgb, var(--lane) 45%, transparent); }
+  padding-left: var(--sp-3); border-left: 2px solid color-mix(in srgb, var(--game) 45%, transparent); }
 .studio-card-list .studio-more { border-left-color: transparent; color: var(--text-faint); }
 /* the numbers as captions under the track's two ends */
 .has-studio .studio .stats {
