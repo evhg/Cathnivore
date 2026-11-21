@@ -5942,7 +5942,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 613. [ ] Hedgerow: the level win as a scene on the field, not a form in a modal
+## 613. [ ] Hedgerow: the level win as a scene on the field, not a form in a modal *(lane A, in progress)*
 *(planned 2026-11-21 13:50, lane B, plan1121i critique; the newest win shots are `payout46/` (11-20): shoot today's build first)*
 - **Why:** `payout46/win-D` 500-940 x 10-890: the field blurred grey behind a tall cream modal of form boxes (stat tiles 530-910 x 262-320, rosette strip 425-470, 'Spend her points' 480-690); at P (`win-P`) the card fills the screen, 'Next' cut at y 790, Continue under a scroll. VISION 4: winning is a small staged moment.
 - **Build:** `games/hedgerow/src/debrief.ts`, `main.ts` (`renderPayout`), `rosettes.ts`, `render3d/` camera, `styles.css`: the field stays sharp, the camera (3D) or a zoom (2D) settles on the farmhouse; Cath full length on the field, delighted, the result her bubble's line; stars stamp in one by one, rosettes pinned to a fence-post board, Marks, knockouts and goodwill as three painted tally boards; level-up and Next a slim bench at the foot, Continue always above the fold.
