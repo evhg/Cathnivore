@@ -6284,3 +6284,11 @@ img.act-scene {
     scroll-padding-inline-start: 52px;
   }
 }
+
+/* Plan item 617: on a phone the briefing card rides over the map's foot (item 88), and its 92%-opaque paper let the
+   stop labels under it show through ('Sea Fret' read faintly in the card): there it is solid paper. */
+@media (max-width: 899.98px) {
+  #screen-select .level-card {
+    background: linear-gradient(180deg, var(--paper-hi), var(--surface));
+  }
+}
