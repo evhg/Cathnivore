@@ -9,7 +9,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Critique bugs from the 2026-11-03, 11-05 and 11-08 shots: all closed 2026-11-21 01:35 (lane B, checked on today's build): Cathnivore P title keys 16 px; Hedgerow l34 2D D no count over a farmer; NIGHT SHIFT D poster's LUNA sign whole, P FIXER tab whole (item 575's photo tabs), P class pick renders; /games/ hero not ghosted; Hedgerow map P no Hollowell boards by the stop names (item 569), D map clean. Shots scratchpad hm/, games-D, h34-D.
-- Lane B (00:21 11-21): 575 done (each booking photo in the class's kit; unpicked text measured 4.77:1+ at D, 8.99:1+ at P); 570 closed by decision (the upright title's brick glows in its own texture, the canopy stands against it; posters and key art re-rendered). Lock released.
+- Lane B (01:21 11-21): old critique bugs (11-03/05/08) checked and closed; 543 slice 1 (NIGHT SHIFT long hair: strand-aligned gloss), posters and key art re-rendered; handed back. Lock released.
 - Critique bug seen 2026-11-04 13:30 (lane A, 1280x800): a Not-yet name cut on a 1280 desktop. Fixed 2026-11-04 14:15 (item 104 slice 1).
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -38,6 +38,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - **2026-11-21 00:51 lane A:** 574 done (1 code commit), posters re-rendered; planning 579-586. cathode-classpick D (13 of 14 pass, --retries=0; the rack-stinger test timed out beside the planning shots, rerun alone), keyart-fresh, cathode-setprops; tsc, eslint. No full check. Shots scratchpad a2/sheet-a2-D/P (5 classes), b2 (before). Lock released.
+- 2026-11-21 01:21 lane B: critique bugs closed; 543 slice 1 (1 code commit); cathode-front 23 pass at P.
 - **2026-11-20 23:51 lane A:** 574 slice 2 (1 code commit), NIGHT SHIFT posters re-rendered. keyart-fresh; tsc, eslint; a scripted face/wall measure of all 5 classes at P and D before and after (scratchpad cpexp.mjs; `e2e/screenshots/s574/`). classpick specs left to CI. No full check. Lock released.
 - 2026-11-21 00:21 lane B: 575 done, 570 closed by decision (2 code commits); cathode-front and title-focal pass at P, classpick specs P and D.
 - 2026-11-20 23:21 lane B: 575 slices 1-2 (2 code commits); classpick and classstage pass P and D.
