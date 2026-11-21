@@ -32,6 +32,18 @@ for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]] 
       if (!beside) expect(b!.y + Math.min(b!.height, 40), `${sel} above the buttons`).toBeLessThanOrEqual(actions!.y + 1)
       expect(b!.y + Math.min(b!.height, 40), `${sel} on the card`).toBeLessThanOrEqual(box!.y + box!.height)
     }
+    if (name === 'D') {
+      // Plan item 613: the win is a scene on the field: the card docked right (60%+ of the width still field, unblurred)
+      // and Cath full length on the field beside it, 200 px or taller.
+      expect(box!.x, 'field left of the card').toBeGreaterThanOrEqual(w * 0.6)
+      const blur = await dlg.evaluate((d) => getComputedStyle(d, '::backdrop').backdropFilter)
+      expect(blur).toBe('none')
+      const fig = await page.locator('#win-cath svg').boundingBox()
+      expect(fig, 'Cath on the field').not.toBeNull()
+      expect(fig!.height).toBeGreaterThanOrEqual(200)
+      expect(fig!.x + fig!.width, 'beside the card').toBeLessThanOrEqual(box!.x + 60)
+      expect(await dlg.locator('.payout-cath').isVisible()).toBe(false)
+    }
     await page.screenshot({ path: `e2e/screenshots/payout46/win-${name}.png` })
     await ctx.close()
   })

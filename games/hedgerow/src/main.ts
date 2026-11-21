@@ -5881,6 +5881,7 @@ function finish(g: Game): void {
   ui.resultStars.hidden = false;
   ui.resultPrimary.hidden = false;
   ui.dlgResult.classList.remove("has-causes");
+  fieldWin(null);
   const lv = g.level;
   rememberBuilds(g);
   if (lv.orchard) return finishOrchard(g, lv);
@@ -6005,7 +6006,25 @@ function finish(g: Game): void {
     leaveLevel();
   };
   ui.dlgResult.classList.toggle("lost", !won);
+  fieldWin(won ? momentForResult(won, n) : null);
   ui.dlgResult.showModal();
+}
+
+/**
+ * Plan item 613: a win is a scene on the field, not a form over a blur. On a desktop the field stays sharp, the card
+ * docks over the bench, and Cath stands full length on the field beside it, delighted. She leaves with the card.
+ */
+function fieldWin(moment: Parameters<typeof cathSceneSvg>[0] | null): void {
+  document.getElementById("win-cath")?.remove();
+  ui.dlgResult.classList.toggle("field-win", !!moment);
+  if (!moment) return;
+  const fig = document.createElement("div");
+  fig.id = "win-cath";
+  fig.className = "win-cath";
+  fig.setAttribute("aria-hidden", "true");
+  fig.innerHTML = cathSceneSvg(moment, { framing: "full", outfit: art() });
+  document.body.append(fig);
+  ui.dlgResult.addEventListener("close", () => fig.remove(), { once: true });
 }
 
 interface Payout {
