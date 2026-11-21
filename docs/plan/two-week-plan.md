@@ -6033,7 +6033,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** her figure 160 px+ at 1440x900; vehicle art 56 px+; the card inside 900 px with Play visible; her expression follows the level's difficulty (test); hedgerow-level-card and map specs pass; shot P and D.
 - **Size:** 1
 
-## 625. [ ] Cathnivore desktop title: the menu belongs to the stall
+## 625. [ ] Cathnivore desktop title: the menu belongs to the stall *(lane B, in progress)*
 *(planned 2026-11-21 19:45, lane B, plan1121k critique)*
 - **Why:** `plan1121k/cath-title-D` 45-350 x 430-770: the menu is a dark slate panel floating over the street, apart from the stall; the counter front (0-1440 x 760-870) is a blank brown band. VISION 1. Items 581 and 609 changed only the phone title.
 - **Build:** the title (`TitleArt.tsx`, `title.css`) at 1024 px+: Campaign the hanging painted sign, Quick Game and Daily chalk A-boards or crate labels on the counter, How to Play / Settings / Credits tags tied to crates, the counter front planked with the Daily plaque on it.
