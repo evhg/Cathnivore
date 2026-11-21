@@ -22,3 +22,25 @@ export function producerMoods(
   }
   return out
 }
+
+/** Plan item 594: the pose a producer strikes when a beat of theirs resolves: a cheer for a gain (a region they
+ *  liberate, an Improvement bought, a big haul), a raised finger for their own role ability ("a point made"), a slump
+ *  when a Squeeze lands on their Stall. Same precedence as the faces: later events win. */
+export type ProducerPose = 'cheer' | 'point' | 'slump'
+export const PRODUCER_POSES: readonly ProducerPose[] = ['cheer', 'point', 'slump']
+
+export function producerPoses(
+  events: readonly GameEvent[],
+  regionsBefore: Record<RegionId, RegionState>,
+): Partial<Record<ProducerId, ProducerPose>> {
+  const out: Partial<Record<ProducerId, ProducerPose>> = {}
+  for (const e of events) {
+    if (e.type === 'action' && e.action.kind === 'role') out[e.producer] = 'point'
+    if (e.type === 'liberated' || e.type === 'invest') out[e.producer] = 'cheer'
+    if (e.type === 'squeeze') {
+      const stalls = regionsBefore[e.region]?.stalls ?? {}
+      for (const [p, n] of Object.entries(stalls)) if ((n ?? 0) > 0) out[p as ProducerId] = 'slump'
+    }
+  }
+  return out
+}

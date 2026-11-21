@@ -313,7 +313,7 @@ function Outfit({ kind, base, accent }: { kind: CharacterPortrait['accessory']; 
 }
 
 /** What each speaker holds, so they read at a glance: Mara's crook, Sol's mic, Tomas's carrots, Ines's notebook. */
-function Prop({ who, skin, skinLine }: { who: string; skin: string; skinLine: string }) {
+function Prop({ who, skin, skinLine, posed }: { who: string; skin: string; skinLine: string; posed?: boolean }) {
   const hand = (cx: number, cy: number, flip = 1) => (
     <g>
       <ellipse cx={cx} cy={cy} rx={15} ry={13} fill={skin} stroke={skinLine} strokeWidth={1.8} />
@@ -363,8 +363,9 @@ function Prop({ who, skin, skinLine }: { who: string; skin: string; skinLine: st
             ))}
             <path d="M 236 362 v 76" stroke="#9AA0A6" strokeWidth={4} strokeDasharray="3 4" />
           </g>
-          <path d="M 222 420 L 252 360" stroke="#C9302C" strokeWidth={5} strokeLinecap="round" />
-          {hand(226, 414, -1)}
+          {/* posed, her pen hand is the one in the air (plan item 594) */}
+          {!posed && <path d="M 222 420 L 252 360" stroke="#C9302C" strokeWidth={5} strokeLinecap="round" />}
+          {!posed && hand(226, 414, -1)}
           {hand(290, 430)}
         </g>
       )
@@ -373,7 +374,32 @@ function Prop({ who, skin, skinLine }: { who: string; skin: string; skinLine: st
   }
 }
 
-export default function Figure({ character, expression, title }: { character: string; expression?: CathExpression; title?: string }) {
+/** Plan item 594: the poses a producer strikes at the table (see `producerPoses`). */
+export type FigurePose = 'cheer' | 'point' | 'slump'
+/** Which arm is free (not holding the prop): Mara's crook is in her left hand (the viewer's left), so her right is free. */
+const FREE_SIDE: Record<string, 1 | -1> = { mara: 1 }
+
+/** The free arm, raised: a fist overhead for a cheer, a forearm up with one finger raised for a point. Drawn on the
+ *  viewer's left (x < 200) and mirrored for a right-side free arm; kept inside the rest pose's shoulder span. */
+function PoseArm({ pose, side, sx, cloth, line, skin, skinLine }: { pose: 'cheer' | 'point'; side: 1 | -1; sx: (x: number) => number; cloth: string; line: string; skin: string; skinLine: string }) {
+  const X = (x: number) => sx(side < 0 ? x : 400 - x)
+  const arm =
+    pose === 'cheer'
+      ? `M ${X(112)} 330 Q ${X(78)} 290 ${X(88)} 236 Q ${X(94)} 196 ${X(100)} 168`
+      : `M ${X(112)} 330 Q ${X(84)} 380 ${X(98)} 408 Q ${X(110)} 380 ${X(104)} 300`
+  const [hx, hy] = pose === 'cheer' ? [X(100), 158] : [X(104), 290]
+  return (
+    <g className="fig-pose-arm" data-pose-arm={pose}>
+      <path d={arm} stroke={line} strokeWidth={36} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <path d={arm} stroke={cloth} strokeWidth={31} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      {pose === 'point' && <rect x={hx - 5} y={hy - 34} width={10} height={30} rx={5} fill={skin} stroke={skinLine} strokeWidth={1.8} />}
+      <ellipse cx={hx} cy={hy} rx={16} ry={14} fill={skin} stroke={skinLine} strokeWidth={1.8} />
+      <path d={`M ${hx - 9} ${hy - 3} h 18 M ${hx - 9} ${hy + 4} h 18`} stroke={skinLine} strokeWidth={1.2} opacity={0.6} />
+    </g>
+  )
+}
+
+export default function Figure({ character, expression, title, pose }: { character: string; expression?: CathExpression; title?: string; pose?: FigurePose }) {
   const spec = CHARACTERS[character]
   if (!spec) return null
   const extra = EXTRA[character] ?? { iris: '#3A2A24', build: 1 }
@@ -391,6 +417,8 @@ export default function Figure({ character, expression, title }: { character: st
   const torso = `M ${sx(96)} 504 L ${sx(100)} 360 Q ${sx(104)} 300 ${sx(160)} 284 L ${sx(240)} 284 Q ${sx(296)} 300 ${sx(300)} 360 L ${sx(304)} 504 Z`
   const armL = `M ${sx(104)} 318 Q ${sx(84)} 360 ${sx(82)} 504 L ${sx(118)} 504 Q ${sx(118)} 400 ${sx(128)} 352 Z`
   const armR = `M ${sx(296)} 318 Q ${sx(316)} 360 ${sx(318)} 504 L ${sx(282)} 504 Q ${sx(282)} 400 ${sx(272)} 352 Z`
+  const raised = pose === 'cheer' || pose === 'point' ? pose : undefined
+  const free = FREE_SIDE[character] ?? -1
   const head = 'M 144 160 Q 142 92 200 88 Q 258 92 256 160 Q 256 208 226 232 Q 200 248 174 232 Q 144 208 144 160 Z'
   const browY = 146
   const brow = (cx: number, side: -1 | 1) => {
@@ -409,6 +437,7 @@ export default function Figure({ character, expression, title }: { character: st
       xmlns="http://www.w3.org/2000/svg"
       viewBox="40 20 320 480"
       className={`fig fig-${character}`}
+      data-pose={pose}
       role={title ? 'img' : undefined}
       aria-label={title}
       aria-hidden={title ? undefined : true}
@@ -430,8 +459,10 @@ export default function Figure({ character, expression, title }: { character: st
         <HairBack style={spec.hairStyle} c={spec.hair} />
       </g>
       <g className="fig-body">
-        <path d={armL} fill={tone(cloth, -0.2)} stroke={clothLine} strokeWidth={2} />
-        <path d={armR} fill={tone(cloth, 0.04)} stroke={clothLine} strokeWidth={2} />
+        {/* Plan item 594: a raised pose replaces the free arm's hanging sleeve with the gesture (drawn after the torso). */}
+        {/* The hanging sleeve stays in the DOM, faded out, so the seating's measure of the figure doesn't change mid-pose. */}
+        <path d={armL} fill={tone(cloth, -0.2)} stroke={clothLine} strokeWidth={2} className={raised && free < 0 ? 'fig-arm-off' : undefined} />
+        <path d={armR} fill={tone(cloth, 0.04)} stroke={clothLine} strokeWidth={2} className={raised && free > 0 ? 'fig-arm-off' : undefined} />
         <path d={torso} fill={`url(#${id}-cloth)`} stroke={clothLine} strokeWidth={2.4} />
         <g clipPath={`url(#${id}-torso)`}>
           {/* shadow side and a rim light, cel style */}
@@ -441,8 +472,9 @@ export default function Figure({ character, expression, title }: { character: st
         </g>
         {/* held at chest height so the caption never hides it */}
         <g transform="translate(0 -60)">
-          <Prop who={character} skin={spec.skin} skinLine={skinLine} />
+          <Prop who={character} skin={spec.skin} skinLine={skinLine} posed={!!raised} />
         </g>
+        {raised && <PoseArm pose={raised} side={free} sx={sx} cloth={tone(cloth, free < 0 ? -0.12 : 0.04)} line={clothLine} skin={spec.skin} skinLine={skinLine} />}
         {spec.accessory === 'clipboard' && (
           <g transform="rotate(-8 270 420)">
             <rect x={246} y={380} width={56} height={74} rx={4} fill="#B98A52" stroke="#5E3E1E" strokeWidth={2} />

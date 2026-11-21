@@ -60,7 +60,7 @@ import RulesReference from './RulesReference'
 import Scene from './Scene'
 import Portrait from './portraits/Portrait'
 import type { ProducerFace } from './portraits/producerFaces'
-import { producerMoods } from './producerMood'
+import { producerMoods, producerPoses, type ProducerPose } from './producerMood'
 import { producerReply, type ProducerReply } from '../content/producerLines'
 import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
@@ -350,7 +350,8 @@ function figFractions(p: HTMLElement): Parts {
   // The torso and arms; a held prop (Mara's staff, Tomas's carrots) may cross an edge, as a hand would.
   const body = frac([...p.querySelectorAll('.fig-body > path')], { left: 0.1, top: 0.54, right: 0.9, bottom: 1 })
   // Plan item 413: the held prop (Mara's crook) too, so it no longer crosses a hex corner as clutter on the board.
-  const propEls = [...p.querySelectorAll('.fig-body > g:not([clip-path]) *')]
+  // (Item 594: a pose's raised arm is a gesture of a few seconds, not where they stand.)
+  const propEls = [...p.querySelectorAll('.fig-body > g:not([clip-path]):not(.fig-pose-arm) *')]
   const prop = propEls.length ? frac(propEls, body) : undefined
   return { head: { ...head, bottom: Math.min(head.bottom, body.top) }, body, prop }
 }
@@ -373,10 +374,15 @@ function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box
   const parts = people.map(figFractions)
   const fits = (x: number, y: number, h: number, f: Parts) => {
     const head = figPart(x, y, h, f.head)
-    return x >= w.left + PAD && x + h * FIG_ASPECT * 0.76 <= w.right - PAD && head.top >= w.top + PAD && clear(head) && clear(figPart(x, y, h, f.body)) && (!f.prop || clearHex(figPart(x, y, h, f.prop)))
+    // Plan item 594: wholly inside the table's frame (an outer arm used to pass behind its edge, cut by it).
+    const body = figPart(x, y, h, f.body)
+    return x >= w.left + PAD && Math.max(body.right, head.right) <= w.right - PAD && head.top >= w.top + PAD && clear(head) && clear(body) && (!f.prop || clearHex(figPart(x, y, h, f.prop)))
   }
   const unseat = () => people.forEach((p) => (p.dataset.unseated = ''))
-  for (const k of [0.84, 0.81, 0.76, 0.7, 0.64, 0.6]) {
+  // Plan item 594: first look for a pair standing side by side on the rim at any scale down to 76% of Cath (a
+  // producer lifted high behind a tall crate stack can't step up to act); only then let the back one be lifted.
+  const tries = [0.84, 0.81, 0.76].map((k) => ({ k, maxLift: 0.04 })).concat([0.84, 0.81, 0.76, 0.7, 0.64, 0.6].map((k) => ({ k, maxLift: 0.6 })))
+  for (const { k, maxLift } of tries) {
     const h = Math.round(cathH * k)
     const fw = h * FIG_ASPECT
     const y = w.bottom - h
@@ -384,7 +390,7 @@ function standProducers(wrap: HTMLElement, people: HTMLElement[], obstacles: Box
     // Where the second one could stand at all, found once per scale (it doesn't depend on the first one's spot).
     const spots: { bx: number; by: number; lift: number }[] = []
     if (people.length > 1)
-      for (let lift = 0; lift <= h * 0.6; lift += STEP)
+      for (let lift = 0; lift <= h * maxLift; lift += STEP)
         for (let bx = w.left + PAD; bx + fw * 0.76 <= w.right - PAD; bx += STEP) if (fits(bx, y - lift, h, parts[1]!)) spots.push({ bx, by: y - lift, lift })
     for (let fx = w.right - PAD - fw * 0.76; fx >= w.left + PAD; fx -= STEP) {
       if (!fits(fx, y, h, parts[0]!)) continue
@@ -1560,6 +1566,17 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const moodRegionsRef = useRef(initial.regions)
   const moodTimerRef = useRef<number | undefined>(undefined)
   const [producerFaces, setProducerFaces] = useState<Partial<Record<ProducerId, ProducerFace>>>({})
+  // Plan item 594: and they act it: the producer a beat belongs to steps up into a pose (a cheer, a raised finger, a
+  // slump) at once, held while their reply is spoken (it comes 1.2 s later, for 3.5 s).
+  const [producerPose, setProducerPose] = useState<Partial<Record<ProducerId, ProducerPose>>>({})
+  const producerPoseTimer = useRef<number | undefined>(undefined)
+  const strikeProducerPoses = useCallback((poses: Partial<Record<ProducerId, ProducerPose>>) => {
+    if (Object.keys(poses).length === 0) return
+    setProducerPose(poses)
+    window.clearTimeout(producerPoseTimer.current)
+    producerPoseTimer.current = window.setTimeout(() => setProducerPose({}), 4800)
+  }, [])
+  useEffect(() => () => window.clearTimeout(producerPoseTimer.current), [])
   // Plan item 489: one producer answers the turn's beat in their own voice, after Cath's line has settled (1.2 s),
   // for 3.5 s, from their seat. One bubble at a time; a newer turn's reply replaces it.
   const [producerLine, setProducerLine] = useState<(ProducerReply & { n: number }) | null>(null)
@@ -1603,6 +1620,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }, [sealRiskKey])
   const haulHarvest = useCallback((producer: ProducerId) => {
     setProducerFaces((f) => ({ ...f, [producer]: 'delighted' }))
+    strikeProducerPoses({ [producer]: 'cheer' })
     haulTimers.current.push(
       window.setTimeout(() => setProducerFaces((f) => {
         if (f[producer] !== 'delighted') return f
@@ -1611,7 +1629,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         return next
       }), 2400),
     )
-  }, [])
+  }, [strikeProducerPoses])
   // The Cath companion (CathCompanion.tsx): react to whatever's newest in the log each time it grows,
   // picking the highest-ranked reaction if a round produced more than one (see `cathReactionFor`).
   useEffect(() => {
@@ -1633,6 +1651,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
     // Plan item 80: the producers react too, for a few seconds.
     const moods = producerMoods(newEvents, moodRegionsRef.current)
+    strikeProducerPoses(producerPoses(newEvents, moodRegionsRef.current))
     if (newEvents.length > 0 && !state.result) {
       sayProducerLine(producerReply(newEvents, moodRegionsRef.current, state.config.producers, state.round, state.round + state.pressureDeck.length))
     }
@@ -1642,7 +1661,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       window.clearTimeout(moodTimerRef.current)
       moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
     }
-  }, [state.log, state.regions, state.config.producers, state.round, state.pressureDeck.length, state.result, strikePose, beat, papersKey, pellReact, sayProducerLine])
+  }, [state.log, state.regions, state.config.producers, state.round, state.pressureDeck.length, state.result, strikePose, beat, papersKey, pellReact, sayProducerLine, strikeProducerPoses])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
   // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
   useEffect(() => {
@@ -1674,6 +1693,8 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         // Stall yet goes to the first producer, so the moment always has its reply).
         const team = producersRef.current
         const said: GameEvent[] = d.kind === 'liberate' && !holder && team[0] ? [{ type: 'liberated', region: d.region, producer: team[0] }] : events
+        // Plan item 594: and whoever answers acts it (a staged liberation with no Stall holder cheers the first producer).
+        strikeProducerPoses(producerPoses(said, moodRegionsRef.current))
         sayProducerLine(producerReply(said, moodRegionsRef.current, team, 2, 10))
       }
     }
@@ -1685,7 +1706,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       window.removeEventListener('cathnivore-moment', on)
       delete w.cathnivorePell
     }
-  }, [strikePose, beat, pellReact, sayProducerLine])
+  }, [strikePose, beat, pellReact, sayProducerLine, strikeProducerPoses])
 
   useEffect(() => {
     setSelectedGroup(null)
@@ -3896,13 +3917,13 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {deskTableCath && (
           <div className="table-producers table-producers-desk" aria-hidden="true">
             {state.config.producers.map((id) => (
-              <span key={id} className={`table-producer pc-${id}`} data-table-producer={id} data-expression={producerFaces[id] ?? 'neutral'} data-active={id === state.activeProducer ? '' : undefined}>
+              <span key={id} className={`table-producer pc-${id}`} data-table-producer={id} data-expression={producerFaces[id] ?? 'neutral'} data-pose={producerPose[id]} data-active={id === state.activeProducer ? '' : undefined}>
                 {/* Plan item 374: at a desktop table they stand half length at Cath's scale (the cast's Figure, drawn in
                     her `half` framing), behind the board's far rim; a phone keeps the small busts. */}
                 {phoneTableCath ? (
                   <Portrait character={id} size={54} expression={faceExpression(producerFaces[id])} />
                 ) : (
-                  <Figure character={id} expression={faceExpression(producerFaces[id])} />
+                  <Figure character={id} expression={faceExpression(producerFaces[id])} pose={producerPose[id]} />
                 )}
                 {/* Plan item 374: at a desktop table each seat carries its producer's name on a plate in their colour. */}
                 {!phoneTableCath && <span className="table-producer-name">{PRODUCERS[id].name.split(' ')[0]}</span>}
@@ -4045,6 +4066,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   className={`table-producer pc-${id}`}
                   data-table-producer={id}
                   data-expression={producerFaces[id] ?? 'neutral'}
+                  data-pose={producerPose[id]}
                   data-active={id === state.activeProducer ? '' : undefined}
                   data-speaking={producerLine?.producer === id ? '' : undefined}
                   aria-label={`${PRODUCERS[id].name}${id === state.activeProducer ? ', playing now' : ''}: open the Farm`}

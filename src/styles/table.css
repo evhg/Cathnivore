@@ -6574,3 +6574,40 @@ html.no-animations .table-cath-figure { animation: none; }
 @media (min-width: 1024px) {
   .rail-book .log-sheet > .frame-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
+
+/* Plan item 594: the producers act on stage. When a beat of theirs resolves (their ability, a liberation or a buy, a
+   Squeeze on their Stall) the producer steps up to the table's rim, 14 px, into a pose drawn by Figure (a fist up, a
+   finger raised, or a slump), held while their reply is spoken. The hanging sleeve the gesture replaces fades out in
+   the DOM so the seating's measure of the figure never changes mid-pose. */
+.fig .fig-arm-off { opacity: 0; }
+.fig-pose-arm { animation: pose-arm-in var(--dur-base) var(--ease-settle) both; }
+@keyframes pose-arm-in { from { opacity: 0; translate: 0 18px; } }
+.table-producers-desk .table-producer > svg { transition: translate var(--dur-base) var(--ease-settle), scale var(--dur-base) var(--ease-settle), filter var(--dur-2); transform-origin: 50% 100%; }
+.table-producers-desk .table-producer[data-pose] > svg { translate: 0 -14px; scale: 1.04; }
+.table-producers-desk .table-producer[data-pose="cheer"] > svg { animation: producer-cheer var(--dur-slow) var(--ease-pop) both; }
+@keyframes producer-cheer { 40% { translate: 0 -24px; } }
+.table-producer[data-pose] .fig-head, .table-producer[data-pose] .fig-body { transform-box: fill-box; transition: transform var(--dur-base) var(--ease-settle); }
+.table-producer[data-pose] .fig-head { transform-origin: 50% 90%; }
+.table-producer[data-pose] .fig-body { transform-origin: 50% 100%; }
+.table-producer[data-pose="cheer"] .fig-head { transform: rotate(5deg) translateY(-4px); }
+.table-producer[data-pose="point"] .fig-head { transform: rotate(-4deg); }
+.table-producer[data-pose="slump"] .fig-head { transform: rotate(-7deg) translateY(10px); }
+.table-producer[data-pose="slump"] .fig-body { transform: scaleY(.96); }
+/* A slump steps up all the same (they come to the rim to see the damage), but the light goes out of them. */
+.table-producers-desk .table-producer[data-pose="slump"] > svg { filter: saturate(.7) brightness(.9) drop-shadow(0 4px 5px rgb(var(--shadow-ink) / .28)); }
+/* Phone: the bust pops in its frame (a hop up for a cheer, a nod for a point, a sink for a slump). */
+.counter-bench .table-producer[data-pose] > svg { filter: none; }
+.counter-bench .table-producer[data-pose="cheer"] > svg { animation: bust-cheer var(--dur-slow) var(--ease-pop) both; }
+.counter-bench .table-producer[data-pose="point"] > svg { animation: bust-point var(--dur-slow) var(--ease-settle) both; }
+.counter-bench .table-producer[data-pose="slump"] > svg { animation: bust-slump var(--dur-slow) var(--ease-settle) both; }
+@keyframes bust-cheer { 0% { translate: 0 6px; scale: .94; } 45% { translate: 0 -6px; scale: 1.1; } 100% { translate: 0 -3px; scale: 1.06; } }
+@keyframes bust-point { 0% { rotate: 0deg; } 40% { rotate: -6deg; translate: 0 -3px; } 100% { rotate: -3deg; translate: 0 -2px; } }
+@keyframes bust-slump { to { translate: 0 5px; filter: saturate(.7) brightness(.85); } }
+@media (prefers-reduced-motion: reduce) {
+  .table-producers-desk .table-producer > svg { transition: filter var(--dur-2); }
+  .table-producers-desk .table-producer[data-pose] > svg { translate: none; scale: none; animation: none; }
+  .table-producer[data-pose] .fig-head, .table-producer[data-pose] .fig-body { transform: none; transition: none; }
+  .fig-pose-arm { animation: pose-arm-fade var(--dur-base) linear both; }
+  @keyframes pose-arm-fade { from { opacity: 0; } }
+  .counter-bench .table-producer[data-pose] > svg { animation: none; }
+}
