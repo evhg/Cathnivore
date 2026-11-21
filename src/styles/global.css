@@ -5302,3 +5302,12 @@ html.no-animations .end-cast, html.no-animations .end-cast-producer > svg { anim
   .end-seals { order: 5; margin: 0; }
   .end-actions > button:not(.primary) { max-width: 200px; }
 }
+
+/* Plan item 619 slice 1: on a desktop 861 px tall or more the left column's objects take the cloth's spare foot
+   (about 140 px of bare gingham under the pins): Hollowell's memos stand as taller slips (64 px, were 50) and Cath's
+   pins are 52 px badges on their ribbon (38), so each choice reads as a thing on the table. */
+@media (min-width: 1100px) and (min-height: 861px) {
+  .setup[data-steps] .setup-table[data-setup-table] .setup-difficulty .segmented label.price-tag { min-height: 64px; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin svg { width: 52px; height: 52px; }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin ul::before { top: 16px; height: 20px; }
+}
