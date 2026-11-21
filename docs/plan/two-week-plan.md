@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-21T18:02Z
 
 
 
@@ -5980,4 +5979,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Hedgerow 2D D (`hedge-l21-2d-D` 915-1150 x 585-605): the Coming up summary row ('12 → Scarecrow +4 more') at ~11 px, under the bench's type scale.
 - Hedgerow 2D P (`hedge-l34-2d-P` 350-390 x 260-312): Cath on the field's right edge, cut by the screen; her '1' coin over the lane.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 618. [ ] Cathnivore table: Hollowell in glossy plastic, the players in wood and paper
+*(planned 2026-11-21 18:20, lane A, plan1121j critique; shoot today's build first)*
+- **Why:** `plan1121j/cath-game-D` 575-1210 x 130-700 and `cath-game-P` 20-380 x 140-470: Outlets, Buyouts and the players' stalls share one small (~35 px) orange stall icon, so who holds a region doesn't read at a glance. VISION "Art direction": the glossy-corporate against paper-and-ink contrast *is* the design system.
+- **Build:** `src/ui/BoardObjects.tsx`, `pieceLayout.ts`, `Map.tsx`, `TableProps.tsx`, tokens: Hollowell's pieces as over-lit franchise kiosks (specular band, hard shadow, chrome H sign); the players' stalls ink-outlined and paper-textured with hand-painted awnings in the player's colour; a region's piece count readable from silhouettes.
+- **Accept:** pieces 56 px+ at D, 40 px+ at P; a unit test maps each piece kind to a distinct look; board specs pass; shot P and D, light and dark.
+- **Size:** 2
+
+## 619. [ ] Cathnivore Quick Game desktop: the setup steps as objects on the stall
+*(planned 2026-11-21 18:20, lane A, plan1121j critique; item 605 made the boards little boards)*
+- **Why:** `plan1121j/cath-setup-D` 100-370 x 110-720: the left column is still a form of chips, stamps and a slider, the least designed part of Cathnivore. VISION 1 (nothing looks like a default form).
+- **Build:** `src/ui/Setup.tsx`, `stallLayout.ts`: the mode as two place settings on the cloth, the difficulty as Hollowell memos to pick up, Cath's pins as pins on a cork strip, producers as portrait cards dealt onto the cloth.
+- **Accept:** every choice an illustrated object 96x96+ at D, no control under 44 px; setup specs pass; shot P and D.
+- **Size:** 2
+
+## 620. [ ] Runnel: the solved valley in full flow *(lane A, in progress)*
+*(planned 2026-11-21 18:20, lane A, plan1121j critique; check first whether the dry channels are only `?shotwin`'s)*
+- **Why:** `plan1121j/runnel-solved-D` 465-1335 x 40-760 and `-P` 0-390 x 230-690: the card says 'Every field is watered.' over dry tan channels and brown plots; Cath's bubble still says the pre-solve line (D 385-525 x 512-590). VISION 4 (the payoff).
+- **Build:** `games/runnel/src/water.ts`, `board.ts`, `valley.ts`, `main.ts`: the shot hook and a real solve both show water in every channel; on a solve it runs from the spring in path order (800-1200 ms) and plots green tile by tile before the card; reduced motion shows the end; Cath's bubble takes her solve line.
+- **Accept:** after a solve every channel samples water-blue (spec, `?shotwin` and a real solve); card 1 s+ after the last tap; shot P and D.
+- **Size:** 1
+
+## 621. [ ] Hedgerow 2D: the field as a diorama, towers and vans at hero size
+*(planned 2026-11-21 18:20, lane A, plan1121j critique)*
+- **Why:** `plan1121j/hedge-l21-2d-D` 150-875 x 75-890 and `hedge-l34-2d-D`: plots are near-identical green rectangles and towers and vans ~40 px, so there's no focal action; the Ford's river is a thin stripe. VISION 2.
+- **Build:** `games/hedgerow/src/render.ts`, `sprites.ts`, `terrain.ts`: varied plot looks (5+ per level), towers 1.5x with drop shadows, glossy vans with legible livery, the river as a landmark with banks.
+- **Accept:** towers 60 px+ at D, 36 px+ at P; 5+ plot looks per level; Hedgerow 2D specs pass; key art re-shot, keyart-fresh passes; shot P and D.
+- **Size:** 2
+
+## 622. [ ] The bugs from the 2026-11-21 18:15 critique, fixed as one batch
+*(planned 2026-11-21 18:20, lane A, plan1121j critique; check each on today's build first)*
+- NIGHT SHIFT class pick D (`ns-play-D` 565-900 x 780-830): the typed subtitle overlaps Cath's skirt and boots and repeats the quote card; P breaks it mid-phrase with the second line faded.
+- Cathnivore setup P (`cath-setup-P` 45-145 x 343-357): 'Brindle Hills' touches its '1' badge; step labels (150-370 x 213-223) low-contrast grey.
+- Cathnivore setup D (`cath-setup-D` 998-1140 x 565-775): 'This week at the market' covers Cath's arm; 'Second Opinion' tag touches its card edge (715-812 x 183-200).
+- Cathnivore table P (`cath-game-P` 10-250 x 482-552): Tomas's line sits beside Cath's portrait, so it reads as hers.
+- Hedgerow 3D D (`hedge-l21-3d-D` 30-235 x 140-300): the depot cut by the field frame.
+- **Accept:** each fixed or closed with a measurement; touched specs pass; shot P and D.
 - **Size:** 1
