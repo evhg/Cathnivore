@@ -1772,6 +1772,27 @@ function vehicle(ctx: C, x: number, y: number, s: number, t: number, o: VehicleO
     ctx.arc(x0 + L * 0.98, top + H * 0.8, s * 0.025, 0, Math.PI * 2);
     ctx.fill();
   }
+  // Plan item 621: Hollowell's fleet is glossy plastic: a sheen across the box's upper half and a darker sill, so a
+  // van reads as lacquered, not flat.
+  {
+    const bw = L * (o.cabFront === false ? 1 : 0.74);
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(x0, top, bw, H, s * 0.05);
+    ctx.clip();
+    const g = ctx.createLinearGradient(0, top, 0, top + H);
+    g.addColorStop(0, "rgba(255,255,255,0.34)");
+    g.addColorStop(0.42, "rgba(255,255,255,0.06)");
+    g.addColorStop(0.5, "rgba(255,255,255,0)");
+    g.addColorStop(0.78, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(0,0,0,0.2)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x0, top, bw, H);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.roundRect(x0, top, bw, H, s * 0.05);
+    ctx.stroke();
+  }
   if (o.stripe) {
     ctx.fillStyle = o.stripe;
     ctx.fillRect(x0 + s * 0.02, top + H * 0.62, L * 0.7, H * 0.16);
