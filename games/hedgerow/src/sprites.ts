@@ -1645,6 +1645,27 @@ function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): vo
       ctx.fill();
     }
   }
+  // Plan item 621: the lacquered roof from above: a pale ridge down the middle, the sides falling darker (symmetric,
+  // so it reads the same up or down the lane).
+  {
+    const bl = L * (cabFront ? 0.74 : 1);
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(x0, y0, bl, W, s * 0.06);
+    ctx.clip();
+    const g = ctx.createLinearGradient(0, y0, 0, y0 + W);
+    g.addColorStop(0, "rgba(0,0,0,0.16)");
+    g.addColorStop(0.32, "rgba(255,255,255,0.08)");
+    g.addColorStop(0.5, "rgba(255,255,255,0.3)");
+    g.addColorStop(0.68, "rgba(255,255,255,0.08)");
+    g.addColorStop(1, "rgba(0,0,0,0.16)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x0, y0, bl, W);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.roundRect(x0, y0, bl, W, s * 0.06);
+    ctx.stroke();
+  }
   if (o.stripe) {
     ctx.fillStyle = o.stripe;
     for (const side of [-1, 1]) ctx.fillRect(x0 + s * 0.03, y + side * W * 0.36 - W * 0.06, L * (cabFront ? 0.68 : 0.94), W * 0.12);
