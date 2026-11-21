@@ -5919,7 +5919,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** her figure 260 px+ tall, no board pixels over her face or torso box; the board 280 px+ wide; Campaign, Quick Game and Daily visible without scrolling at 390x844 and 375x667; title specs pass; shot P and D.
 - **Size:** 1
 
-## 610. [ ] Cathnivore phone campaign: Cath narrates at half length, the nav off the map
+## 610. [ ] Cathnivore phone campaign: Cath narrates at half length, the nav off the map *(lane A, in progress)*
 *(planned 2026-11-21 11:55, lane B, plan1121h critique)*
 - **Why:** `plan1121h/cath-campaign-P`: Cath is a ~90 px figure on crates (290-360 x 95-185) beside a bubble that takes the width; the 'Back to Title' plank (95-295 x 505-540) sits over the map's lower frame. D does this well (items 556, 562). VISION 5: story scenes staged like a graphic novel.
 - **Build:** `src/ui` campaign screen, `src/styles`: Cath a ~150 px half figure at the header's right, cut by the map's top edge, her bubble left with its tail to her mouth; Back to Title becomes a header back chevron (as Runnel and Hedgerow).
