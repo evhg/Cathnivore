@@ -5444,11 +5444,12 @@ body:has(#dlg-pause[open]) .paused-note {
   justify-self: center;
   display: inline-block;
   min-width: 26px;
-  padding: 1px 10px 2px 6px;
+  /* (no taller than the 'Round 18' line it replaced: 4 px more pushed level 30's Coming up past the column's foot) */
+  padding: 1px 10px 0 6px;
   clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
   background: color-mix(in srgb, var(--brass) 80%, var(--paper-hi));
   color: var(--ink);
-  font: 800 var(--fs-rack) / 1.15 var(--font-num, var(--font-ui));
+  font: 800 var(--fs-rack) / 1 var(--font-num, var(--font-ui));
   letter-spacing: 0;
   text-align: left;
 }
