@@ -132,7 +132,8 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     await page.goto('/')
     await page.locator('.title-table-front').waitFor()
     const empty = await page.evaluate(() => {
-      const parts = ['.title-kicker', '.title-wordmark', '.title-tagline', '.title-bunting', '.title-menu', '.title-cath svg', '.title-cath-line', '.title-board', '.title-table-front', '.title-prop']
+      // (plan item 625: and the stall's hanging 'Marrow Market' sign on its strings, over the menu)
+      const parts = ['.title-kicker', '.title-wordmark', '.title-tagline', '.title-bunting', '.title-hang', '.title-menu', '.title-cath svg', '.title-cath-line', '.title-board', '.title-table-front', '.title-prop']
         .flatMap((s) => [...document.querySelectorAll(s)])
         .map((e) => e.getBoundingClientRect())
         .filter((r) => r.width > 0 && r.height > 0)

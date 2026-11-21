@@ -2182,3 +2182,50 @@ html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .tit
       linear-gradient(180deg, color-mix(in srgb, var(--wood) 92%, var(--paper)), var(--wood-lo));
   }
 }
+
+/* Plan item 625 slice 2: at D the minor links are paper tags pinned along the counter's front, under the
+   chalkboard (they were chalk words at the board's foot): the counter's left half carries them, the board is shorter. */
+@media (min-width: 1024px) {
+  .title-menu .title-minor {
+    position: absolute;
+    left: -8px;
+    top: calc(100% + 22px);
+    gap: 14px;
+    margin: 0;
+    justify-content: flex-start;
+  }
+  .title-menu .title-minor .quiet {
+    min-height: 44px;
+    padding: 6px 14px 6px 22px;
+    border: 0;
+    border-radius: 3px 8px 8px 3px;
+    background:
+      radial-gradient(circle at 9px 50%, var(--wood-lo) 0 2.5px, transparent 3px),
+      linear-gradient(180deg, var(--paper-hi, var(--paper)), color-mix(in srgb, var(--paper) 85%, var(--wheat)));
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--ink) 30%, transparent);
+    color: var(--ink);
+    font: 700 var(--fs-small)/1 var(--font-display, serif);
+    text-decoration: none;
+  }
+  .title-menu .title-minor .quiet:nth-child(odd) { rotate: -2deg; }
+  .title-menu .title-minor .quiet:nth-child(even) { rotate: 2deg; }
+}
+/* (and the stall's motto signwritten on the boards between the tags and the Daily plaque, so no bare stretch) */
+@media (min-width: 1280px) {
+  .title-table-front::before {
+    content: "Fresh \00B7  Fair \00B7  Local";
+    position: absolute;
+    left: 40%;
+    top: 30%;
+    translate: -50% 0;
+    padding: 4px 16px 5px;
+    border-top: 1.5px solid color-mix(in srgb, var(--wheat) 60%, transparent);
+    border-bottom: 1.5px solid color-mix(in srgb, var(--wheat) 60%, transparent);
+    font: italic 700 1.375rem/1 var(--font-display, serif);
+    letter-spacing: 0.06em;
+    color: color-mix(in srgb, var(--wheat) 85%, var(--paper));
+    text-shadow: 0 1px 0 color-mix(in srgb, var(--wood-lo) 80%, transparent);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
