@@ -6223,6 +6223,9 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
 .counter-bench .producer-line[data-tail="none"]::after { display: none; }
 /* the speaker sits in the light while they talk (the dimming is on the art: a seat filter would break the plate's stacking) */
 .counter-bench .table-producer[data-speaking] > svg { filter: none; }
+/* plan item 622: and Cath steps back while they talk, her bust dimmed beside the bubble (the line lay beside her lit
+   portrait, so Tomas's opener still read as hers) */
+.cath-dock:has(.counter-bench .producer-line) .cath-dock-bust { opacity: .55; filter: saturate(.4); transition: opacity var(--dur-2, 200ms) ease, filter var(--dur-2, 200ms) ease; }
 
 /* Plan item 495 slice 2: from 1240 px (was 1400) the readings fold beside tomorrow's papers, so the board takes the
    status bar's row back (1280x800: board 16% -> 22% of the window). The row is about 160 px narrower there, so Pell's
