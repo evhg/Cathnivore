@@ -5117,3 +5117,11 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   body.in-lesson .app[data-valley-say=''] .hud > .lesson-panel[data-notebook] { flex: 1 1 auto; display: flex; flex-direction: column; }
   body.in-lesson .app[data-valley-say=''] .lesson-panel[data-notebook] .lc-next { margin-top: auto; }
 }
+
+/* Plan item 582: the plot's cut edge, 6 px at every board size: shaded at the top where the floor's rim overhangs it,
+   lit at the foot (board.ts's #tile-cut), so the tiles read as crafted sunken plots (item 389's no-plate look kept). */
+.tc-shade { stop-color: color-mix(in srgb, var(--soil) 62%, transparent); }
+.tc-mid { stop-color: color-mix(in srgb, var(--soil) 14%, transparent); }
+.tc-lit { stop-color: color-mix(in srgb, var(--paper) 58%, transparent); }
+.cell:not(.stone) .tile-bevel { stroke: url(#tile-cut); stroke-width: 6px; }
+@media (max-width: 600px) { .cell:not(.stone) .tile-bevel { stroke-width: 4px; } }

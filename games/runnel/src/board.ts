@@ -138,6 +138,12 @@ export class Board {
 
     // Plan item 138: each tile's ditches end inside its own dark rim (they used to run over it into the seam). The
     // clip is in the tile's own frame and doesn't turn with the piece, so it holds at every rotation.
+    // Plan item 582: each plot's cut edge, shaded where the floor's rim overhangs it (the top) and lit where the cut
+    // faces the sky (the foot), so a tile reads as a crafted, sunken plot rather than a flat print.
+    const cut = el('linearGradient', { id: 'tile-cut', x1: '0', y1: '0', x2: '0', y2: '1' }, defs)
+    el('stop', { offset: '0', class: 'tc-shade' }, cut)
+    el('stop', { offset: '0.45', class: 'tc-mid' }, cut)
+    el('stop', { offset: '1', class: 'tc-lit' }, cut)
     const tileClip = el('clipPath', { id: 'tile-clip' }, defs)
     el('polygon', { points: hexPoints(S * 0.965 - 2.6) }, tileClip)
     const tiles = el('g', { class: 'tiles' }, svg)
@@ -320,7 +326,7 @@ export class Board {
       }
     }
 
-    el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.9) }, root)
+    el('polygon', { class: 'tile-bevel', points: hexPoints(S * 0.88) }, root)
 
     const view: CellView = { root, piece: null, water: [], spokeDirs: [], banks: [], angle: cell.rot * 60 }
 

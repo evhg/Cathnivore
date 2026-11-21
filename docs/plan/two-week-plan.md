@@ -5710,7 +5710,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** board 300 px+ wide at 390x844 and nothing over it; title specs pass at P; D unchanged (shots).
 - **Size:** 1
 
-## 582. [ ] Runnel tiles as crafted objects, with water you can see *(lane B, in progress)*
+## 582. [x] Runnel tiles as crafted objects, with water you can see *(done 2026-11-21 02:40, lane B: checked first: a solved board already carries blue water in every connected ditch, the turns already overshoot (150 ms, 1.45 back-ease) and wet fields already glint (item 365), so the critique's shot was mid-play. Built: each plot's cut edge, 6 px at D (4 at P), shaded where the floor's rim overhangs it and lit at its foot (`#tile-cut` gradient in board.ts, the bevel inside the rim so runnel-tiles' edge contrast holds), item 389's sunken-plot look kept. New spec in runnel-greened (6 px edge at D, no dry channel or field after a solve); 142 Runnel specs pass P and D; key art re-shot. Shots scratchpad rs-a2.png)*
 - **Why:** `plan1121a/runnel-D` 580-1230 x 110-745: pale parchment hexes with thin beige grooves; a connected tile (795-1000) shows little water in its channel. (Check against item 6's running rivers first: it may only be the shot's moment.)
 - **Build:** bevelled tile bodies with a stone-lined groove; connected grooves carry a glossy water ribbon from the spring outward (~250 ms a tile), a field sparkles when wet; turns overshoot a little (`games/runnel/src/`).
 - **Accept:** blue water pixels (sat > 0.35) in every connected groove of a solved shot at P and D; tile edge 6 px+ at D; Runnel lesson and daily specs pass; key art re-shot.

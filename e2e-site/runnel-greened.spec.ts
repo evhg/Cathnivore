@@ -115,3 +115,17 @@ test('plan item 567: Bea waves as she reaches her garden at a solve, and only th
   await expect(wave).toBeAttached()
   expect(await wave.evaluate((el) => getComputedStyle(el).animationName)).toBe('bea-wave')
 })
+
+// Plan item 582: each plot has a cut edge (6 px at D, shaded at the top and lit at the foot), and a solved board's
+// every connected ditch carries visible water.
+test('plan item 582: the tiles have a 6 px cut edge at D and a solve fills every ditch', async ({ page }) => {
+  const vp = page.viewportSize()!
+  await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, seenHelp: true, results: {} })))
+  await page.goto('/runnel/?shotsolve')
+  await page.locator('[data-last]').waitFor()
+  const bevel = await page.locator('.cell:not(.stone) .tile-bevel').first().evaluate((e) => ({ w: getComputedStyle(e).strokeWidth, s: getComputedStyle(e).stroke }))
+  expect(bevel.s).toContain('tile-cut')
+  if (vp.width >= 1100) expect(parseFloat(bevel.w)).toBeGreaterThanOrEqual(6)
+  await page.locator('[data-last]').click({ force: true })
+  await expect.poll(() => page.evaluate(() => document.querySelectorAll('#board .cell.channel:not(.wet), #board .cell.field:not(.wet)').length), { timeout: 5000 }).toBe(0)
+})
