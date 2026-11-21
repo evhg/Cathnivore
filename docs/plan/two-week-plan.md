@@ -6026,7 +6026,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each solved daily of the week adds exactly one plant to both beds (unit test on results -> plants); no dot placeholders; the valley garden 200 px+ wide at D, its label on no plant; reduced motion fades only; shot P and D.
 - **Size:** 2
 
-## 624. [ ] Hedgerow desktop level card: Cath briefs at half length, the fleet as pictures
+## 624. [ ] Hedgerow desktop level card: Cath briefs at half length, the fleet as pictures *(lane B, in progress)*
 *(planned 2026-11-21 19:45, lane B, plan1121k critique)*
 - **Why:** `plan1121k/hedge-menu-D` 1138-1188 x 415-470: Cath is a 48 px head beside her briefing line where the phone map, the table and the bench show her at half length (items 599, 610); the fleet is four list rows with 40 px icons (1140-1410 x 498-675). VISION 5, 1.
 - **Build:** the act map's level card at D (`map.ts`, styles, `shared/cath/`): Cath half length (~170 px) cropped at the card's left edge, her line a tailed bubble; each vehicle a 64 px picture chip (its face, name, one trait) in a 2x2 grid.
