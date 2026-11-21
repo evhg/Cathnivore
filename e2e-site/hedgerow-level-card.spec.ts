@@ -54,3 +54,16 @@ test('the level card is a catalogue page, clear of the map stops', async ({ page
     expect(met).toBe(false)
   }
 })
+
+// Plan item 583: the card shows the level as it plays, a 3D still over the schematic plate (230x160 or more at D).
+test('the level card shows a 3D still of its level', async ({ page }, info) => {
+  await page.goto('/hedgerow/')
+  const still = page.locator('[data-level-card] .lcard-thumb svg image.lcard-still')
+  await expect(still.first()).toBeAttached({ timeout: 10_000 })
+  if (!info.project.name.includes('phone')) {
+    const plate = await page.locator('[data-level-card] .lcard-thumb svg').evaluateAll((s) => s.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0).map((r) => [r.width, r.height]))
+    expect(plate.length).toBeGreaterThan(0)
+    expect(plate[0]![0]).toBeGreaterThanOrEqual(230)
+    expect(plate[0]![1]).toBeGreaterThanOrEqual(158)
+  }
+})

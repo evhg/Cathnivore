@@ -6214,3 +6214,9 @@ img.act-scene {
   font-family: var(--font-ui, system-ui);
   font-weight: 800;
 }
+
+/* Plan item 583: on a phone the peek's still keeps the schematic's slim width (a wider photo wrapped the level's name
+   onto two lines and pushed the next act below the first screen); it crops to fill. */
+@media (max-width: 899.98px) {
+  .level-card:not(.open) .lcard-thumb[data-still] svg { width: 42px; height: 48px; }
+}

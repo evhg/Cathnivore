@@ -2337,6 +2337,31 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
       shown = lv;
       preview?.stop();
       thumb.innerHTML = fieldThumb(lv) + fieldThumb(lv, true);
+      // Plan item 583: the level as it plays, a 3D still (scripts/hedgerow-stills.mjs), laid over each schematic plate
+      // inside its own viewBox once it has loaded, so the card keeps its size everywhere; the plate (and its convoy)
+      // stays as the fallback.
+      const stillUrl = `${import.meta.env.BASE_URL}stills/level-${lv.id}.webp`;
+      const still = new Image();
+      still.src = stillUrl;
+      still
+        .decode()
+        .then(() => {
+          if (shown !== lv) return;
+          preview?.stop();
+          // (the plate takes the still's shape: its viewBox becomes the photo's, which covers the schematic)
+          for (const svg of thumb.querySelectorAll<SVGSVGElement>("svg")) {
+            svg.setAttribute("viewBox", "0 0 400 275");
+            svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+            const img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+            img.setAttribute("class", "lcard-still");
+            img.setAttribute("href", stillUrl);
+            img.setAttribute("width", "400");
+            img.setAttribute("height", "275");
+            svg.append(img);
+          }
+          thumb.dataset.still = "";
+        })
+        .catch(() => undefined);
       const stars = data.stars[String(lv.id)] ?? 0;
       const kinds = new Map<EnemyKind, number>();
       for (const g of lv.waves.flat()) kinds.set(g.enemy, (kinds.get(g.enemy) ?? 0) + g.count);
