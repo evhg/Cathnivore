@@ -9,7 +9,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Critique bugs from the 2026-11-03, 11-05 and 11-08 shots: all closed 2026-11-21 01:35 (lane B, checked on today's build): Cathnivore P title keys 16 px; Hedgerow l34 2D D no count over a farmer; NIGHT SHIFT D poster's LUNA sign whole, P FIXER tab whole (item 575's photo tabs), P class pick renders; /games/ hero not ghosted; Hedgerow map P no Hollowell boards by the stop names (item 569), D map clean. Shots scratchpad hm/, games-D, h34-D.
-- Lane B (16:25 11-21): 599 done (a slim bench keeps Cath standing on level 30's tall ticket); 615 slice 3 (phone strip: her half figure and a line on the result; D keeps the ring) handed back. Lock released.
+- Lane B (17:25 11-21): 617 done (the LUNA neon high on the wall on the class pick, not at her shoulder; posters and key art re-rendered over lane A's 319 slice 99). Lock released.
 - Critique bug seen 2026-11-04 13:30 (lane A, 1280x800): a Not-yet name cut on a 1280 desktop. Fixed 2026-11-04 14:15 (item 104 slice 1).
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -38,6 +38,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - **2026-11-21 16:51 lane A:** 614 done, 319 slice 99 (2 code commits, posters and key art re-rendered). end-moment (P, D; cast check added), quick-game (D alone after load flakes), chapter-seals, daily-postcard; cathode-classpick/-classpose (D) cut off by the 15 min cap before a verdict (left to CI E2E); keyart-fresh, css lint, tsc, eslint; --retries=0. No full check. Shots scratchpad s614c, f319. Lock released.
+- 2026-11-21 17:21 lane B: 617 done (2 code commits); cathode-front and -classpick (P, D, 61 passed); keyart-fresh.
 - 2026-11-21 16:21 lane B: 599 done, 615 slice 3 (2 code commits); hedgerow panel specs (P, D, 75), runnel solve specs (P, D, 62), ui-css-lint; --retries=0.
 - **2026-11-21 15:51 lane A:** E2E red checked (already fixed), 614 slices 2-3 (2 code commits). end-moment (P, L, D; updated), quick-game (D alone after a load flake), chapter-seals, daily-postcard, desktop-no-scroll (P, D), --retries=0; tsc, eslint, css lint. No full check. Shots scratchpad s614 (before, a1-a4, b1-b3, win). Lock released.
 - 2026-11-21 15:21 lane B: 615 slice 2, 599 slice 4 (2 code commits); runnel solve specs (P, D, 63), hedgerow panel specs (P, D, 95), ui-css-lint; --retries=0.
