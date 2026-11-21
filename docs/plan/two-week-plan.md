@@ -5981,7 +5981,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 618. [ ] Cathnivore table: Hollowell in glossy plastic, the players in wood and paper
+## 618. [ ] Cathnivore table: Hollowell in glossy plastic, the players in wood and paper *(lane B, in progress)*
 *(planned 2026-11-21 18:20, lane A, plan1121j critique; shoot today's build first)*
 - **Why:** `plan1121j/cath-game-D` 575-1210 x 130-700 and `cath-game-P` 20-380 x 140-470: Outlets, Buyouts and the players' stalls share one small (~35 px) orange stall icon, so who holds a region doesn't read at a glance. VISION "Art direction": the glossy-corporate against paper-and-ink contrast *is* the design system.
 - **Build:** `src/ui/BoardObjects.tsx`, `pieceLayout.ts`, `Map.tsx`, `TableProps.tsx`, tokens: Hollowell's pieces as over-lit franchise kiosks (specular band, hard shadow, chrome H sign); the players' stalls ink-outlined and paper-textured with hand-painted awnings in the player's colour; a region's piece count readable from silhouettes.
