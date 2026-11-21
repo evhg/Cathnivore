@@ -5743,7 +5743,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 587. [ ] Hedgerow 3D: Cath and the farm's folk as characters, not dolls
+## 587. [ ] Hedgerow 3D: Cath and the farm's folk as characters, not dolls *(lane B, in progress)*
 *(planned 2026-11-21 04:45, lane B, plan1121b critique)*
 - **Why:** `plan1121b/hedge-l21-3d-D` 150-240 x 490-630 (Cath), 105-165 x 680-790 and 785-830 x 405-505 (farmers); `hedge-l21-3d-P` 20-60 x 480-550: in the 3D field (the default view) Cath is a small low-poly figure without a readable face, hair or olive jacket, and the farmers are box dolls. VISION: Cath is the face of every game; characters with presence.
 - **Build:** `games/hedgerow/src/render3d/`: her figure from `shared/cath`'s proportions and colours: a hair mass with a shine band, the olive jacket and collar, and her 2D face (shared/cath bust, `face` framing) baked once to a canvas texture on the head's front; her idle, point and cheer read at field distance. The farmers get the same kit's head and a costume each.
