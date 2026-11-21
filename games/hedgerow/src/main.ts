@@ -4684,7 +4684,8 @@ function syncCathSay(g: Game, now: number): void {
   const win = { x: cath.x - 360, y: cath.y - 260, w: cath.w + 720, h: cath.h + 520 };
   const near = (b: Box) => b.x < win.x + win.w && win.x < b.x + b.w && b.y < win.y + win.h && win.y < b.y + b.h;
   const avoid: Box[] = [];
-  for (const o of ui.stage.querySelectorAll<HTMLElement>(".gate-plate, .banner.show, .round-rosette")) {
+  // Plan item 627: and Hollowell's depots, the vans' source (on a phone's level 34 the bubble hid the second one).
+  for (const o of ui.stage.querySelectorAll<HTMLElement>(".gate-plate, .banner.show, .round-rosette, .depot")) {
     const r = o.getBoundingClientRect();
     if (r.width) avoid.push(shift({ x: r.left, y: r.top, w: r.width, h: r.height }));
   }
