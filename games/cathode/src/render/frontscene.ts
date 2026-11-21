@@ -188,6 +188,10 @@ const MENU_MOOD: Record<string, { pose: string; face: FaceExpression }> = {
   credits: { pose: "fond", face: "smirk" },
 };
 const MENU_MOOD_S = 4;
+/** Plan item 585: how much closer to her head the key-art lens stands than the title's (2: half the distance). */
+const KEYART_PUSH = 1.9;
+/** Plan item 585: the key art's toe (the title's 0.6 crushed the street round her to black at card size). */
+const KEYART_TOE = 0;
 /** Plan item 574: how much of the street's fog the class pick clears (0.5: half). */
 const PICK_FOG_CUT = 0.5;
 const WARDROBE = { pos: [1.5, 1.4, 4.3] as [number, number, number], look: [0.05, 1.05, 0] as [number, number, number] };
@@ -242,7 +246,7 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
   // Behind the menus the street can afford less: a half-resolution mirror, shadows every second frame (render/world.ts).
   world.calm?.(true);
   // Plan item 456: the title's noir toe (blacks black, her trench charcoal); play's grade gets it back at handover.
-  world.setToe?.(TITLE_TOE);
+  world.setToe?.(o.keyart ? KEYART_TOE : TITLE_TOE);
   const phone = o.quality === "phone";
   const cam = world.camera;
   cam.fov = FOV;
@@ -597,7 +601,8 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     }
     // Plan item 456: the noir toe is the title's; on the pick it eases out with the wardrobe, so the class coats keep
     // their colours apart (under it butcher-fixer read dE 6.7, was 16.7).
-    world.setToe?.(TITLE_TOE * (1 - wd.w));
+    // Plan item 585: the key art keeps the street's mid-tones (it sits beside three bright posters at card size).
+    world.setToe?.((o.keyart ? KEYART_TOE : TITLE_TOE) * (1 - wd.w));
     // Plan item 574: the pick's air thins to half, so the set's lights and her key read through it, not a blue veil.
     if (world.scene.fog instanceof THREE.FogExp2) world.scene.fog.density = fogBase * (1 - PICK_FOG_CUT * wd.w);
     faceKey.intensity = (phone ? 2.0 : 2.2) * wd.w * (FACE_GAIN[world.renderer.domElement.dataset.class ?? ""] ?? 1);
@@ -901,6 +906,12 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       idleHead.set(0, upr ? 0.12 : 0, upr ? 0.04 : 0).applyMatrix4(cath.head.matrixWorld);
       const g = 1 + (upr ? 0.3 : 0.45) * idleK * titleK;
       cam.position.sub(idleHead).divideScalar(g).add(idleHead);
+    }
+    // Plan item 585: the key-art shoot comes in along the same line to her head (which keeps its place in the frame),
+    // so at card size she reads as the poster's subject: her head about a fifth of its height, not a tenth.
+    if (o.keyart && titleK > 0.5) {
+      idleHead.set(0, 0, 0).applyMatrix4(cath.head.matrixWorld);
+      cam.position.sub(idleHead).divideScalar(KEYART_PUSH).add(idleHead);
     }
     canvas.dataset.idlePush = (idleK * titleK).toFixed(2);
     if (!o.still) {

@@ -5728,7 +5728,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** depot footprint 2x+ at D; the vehicle types distinguishable in a greyscale shot; level 21 3D draw calls within budget; 3D specs pass.
 - **Size:** 2
 
-## 585. [ ] NIGHT SHIFT key art that reads at card size *(lane A, in progress)*
+## 585. [x] NIGHT SHIFT key art that reads at card size *(done 2026-11-21 03:30, lane A: measured first: mean gamma luma 0.173 (Hedgerow 0.47, Runnel 0.55), her head ~9% of the poster's height. The `?keyart` shoot now comes in along the lens's line to her head (`KEYART_PUSH` 1.9: the head keeps its place, about 22% of the height, close three-quarter under the umbrella with LUNA behind), and drops the title's noir toe (`KEYART_TOE` 0), so luma 0.218. The neon rim stays the existing pink blade and cyan rim; the List's string and a Ledger page in the foreground were not built (a prop pass; logged). New spec in e2e-site/keyart.spec.ts (luma 0.2+); key art and title posters re-rendered (posters unchanged in look: the change is keyart-only). Shots scratchpad s585 (a: push 2.1, b: final))*
 - **Why:** `plan1121a/games-D` 1040-1330 x 580-740, `portfolio-D` 637-927 x 352-537: the frame is mostly near-black with Cath small; the other three posters are bright, so NIGHT SHIFT looks unfinished.
 - **Build:** re-stage the `?keyart` frame: closer three-quarter camera, a neon rim, the List's red string and a Ledger page in the foreground; `npm run keyart` for it.
 - **Accept:** poster mean luminance 0.2+ (measure the current first); her head 18%+ of the poster height; keyart-fresh and site specs pass.

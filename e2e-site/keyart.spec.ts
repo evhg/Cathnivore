@@ -48,3 +48,24 @@ test('Hedgerow ?keyart shows the field alone', async ({ page }) => {
   const stage = await page.locator('#stage').boundingBox()
   expect(stage?.width).toBeGreaterThanOrEqual(1400)
 })
+
+test('NIGHT SHIFT key art reads at card size: mean luma 0.2+, beside three bright posters', async ({ page }) => {
+  // Plan item 585: the frame was mostly near-black (luma 0.17) with Cath a tenth of its height; the shoot now comes in
+  // on her head and keeps the street's mid-tones.
+  await page.goto('/')
+  const luma = await page.evaluate(async () => {
+    const img = new Image()
+    img.src = '/work/games-nightshift-960.webp'
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.naturalWidth
+    c.height = img.naturalHeight
+    const g = c.getContext('2d')!
+    g.drawImage(img, 0, 0)
+    const d = g.getImageData(0, 0, c.width, c.height).data
+    let l = 0
+    for (let i = 0; i < d.length; i += 4) l += (0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!) / 255
+    return l / (d.length / 4)
+  })
+  expect(luma).toBeGreaterThanOrEqual(0.2)
+})
