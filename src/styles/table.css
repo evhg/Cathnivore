@@ -6653,3 +6653,32 @@ html.no-animations .table-cath-figure { animation: none; }
 @media (max-width: 480px) {
   .game:has(.cath-dock) .beas-drawing { left: 4px; width: 52px; }
 }
+
+/* Plan item 616: the week's market event on the cards it cheapens: the price chip becomes a hand-tied sale tag (a
+   punched hole and its string, tilted on it), the old price struck through in front of the new one. */
+.action-cost[data-event-tag] {
+  position: relative;
+  gap: 3px;
+  padding-left: 12px;
+  border-radius: 3px 6px 6px 3px;
+  background:
+    radial-gradient(circle at 5px 50%, var(--ink) 0 1.5px, transparent 2px),
+    linear-gradient(180deg, var(--paper-hi), color-mix(in srgb, var(--wheat) 30%, var(--paper-hi)));
+  box-shadow: inset 0 0 0 1px var(--ink-a35), 0 1px 2px rgb(var(--shadow-ink) / .2);
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 8px 100%, 0 50%);
+  rotate: -4deg;
+}
+.action-cost-was {
+  color: var(--ink-muted, var(--ink));
+  font-weight: 600;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--hollowell, var(--ink));
+}
+/* (the hole needs its room on the hand's chips too, whose padding rule is more specific) */
+.action-cost[data-event-tag][data-event-tag][data-event-tag][data-event-tag][data-event-tag] { padding-left: 12px; }
+/* Plan item 616 (a fix for item 595): on a short desktop (1280x800) Cath's pick with her line grew the Saving-for card
+   12 px past the rail, so the column scrolled and its 'Saving for' heading hid at the fold (table-hand, disabled-
+   actions red): there the card keeps her pick, its meter and Keep, and her line steps aside. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .goal-feature[data-suggested] .goal-feature-line { display: none; }
+}

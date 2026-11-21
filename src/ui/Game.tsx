@@ -3,6 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { useMedia } from './useMedia'
 import { BoardObject } from './BoardObjects'
 import { MARKET_EVENTS } from '../engine/marketEvent'
+import { eventWasPrice } from './eventTag'
 import { PELL_EVENT_POSE, pellPoseFor, rivalMood, type PellEvent } from './portraits/rivalFace'
 import type { PellPose } from './portraits/ExecPortrait'
 import ExecPortrait from './portraits/ExecPortrait'
@@ -554,12 +555,18 @@ const ACTION_ICON: Partial<Record<Action['kind'], typeof OpenStallIcon>> = {
 // next to `actionLabel`'s existing cost-as-text (e.g. "(4 Marks)") — additive, not a replacement, so no
 // existing button text changes (several e2e tests match button names by prefix, e.g. `/^Graft:/`).
 // `undefined` renders nothing, for the actions `actionCost` already returns no cost for.
-function ActionCostChip({ cost }: { cost: { resource: ResourceKind; amount: number } | undefined }) {
+function ActionCostChip({ cost, was }: { cost: { resource: ResourceKind; amount: number } | undefined; was?: number }) {
   if (!cost) return null
   const Icon = COST_ICON[cost.resource]
+  // Plan item 616: a card the week's market event cheapens wears a hand-tied sale tag, its old price struck.
   return (
-    <span className="action-cost">
+    <span className="action-cost" data-event-tag={was !== undefined ? '' : undefined}>
       <Icon size={14} />
+      {was !== undefined && (
+        <s className="action-cost-was" aria-label={`was ${was}`}>
+          {was}
+        </s>
+      )}
       {cost.amount}
     </span>
   )
@@ -726,7 +733,7 @@ function ActionButton({
         )}
         {action.kind === 'role' ? roleCardText(action, state) : <BuyVerb text={text} />}
       </span>
-      {action.kind === 'role' ? ROLE_FREE_CHIP : <ActionCostChip cost={cost} />}
+      {action.kind === 'role' ? ROLE_FREE_CHIP : <ActionCostChip cost={cost} was={action.kind === 'invest' ? eventWasPrice(state, action.improvementId) : undefined} />}
     </button>
   )
 }
@@ -3037,7 +3044,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                     <WhyNot text={`Need ${missing} more ${missing === 1 ? 'Mark' : 'Marks'}`} />
                   </span>
                   {shelfMeter(card.name, cost, missing, 'marks')}
-                  <ActionCostChip cost={{ resource: 'marks', amount: cost }} />
+                  <ActionCostChip cost={{ resource: 'marks', amount: cost }} was={eventWasPrice(state, card.id)} />
                 </button>
                 <Tooltip term="Invest" label="What is Invest?">
                   ?
