@@ -1771,7 +1771,8 @@ function placeYou(you: HTMLElement, trail: HTMLElement, placed: { el: HTMLElemen
   // Plan item 406: on a phone's vertical road her own stop's name and 'Next' tag sit on the coin's outer side, where
   // she stood over them; there she stands on the road side of her coin and keeps clear of her own labels too.
   const vertical = matchMedia("(max-width: 599px)").matches;
-  if (vertical) you.dataset.side = own?.closest(".stop")?.classList.contains("vc1") ? "right" : "left";
+  // (plan item 608: the names sit on the bend's inner side, so she stands on its outer side)
+  if (vertical) you.dataset.side = own?.closest(".stop")?.classList.contains("vc1") ? "left" : "right";
   // Each name with 6 px to spare: it can still widen a little as the web font settles after this runs.
   // (Coins keep 3 px on a phone, so she fits on the road between two coins, 38 px apart, beside her own.)
   const others = placed
@@ -2663,10 +2664,11 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const unlocked = isUnlocked(data, lv.id);
       const stars = data.stars[String(lv.id)] ?? 0;
       const item = document.createElement("li");
-      // Plan item 209: on an upright phone the act's road snakes down the screen, two stops a bend (CSS places
-      // them by `v`/`vc` under 600 px; wider screens keep the two rows of five).
-      const vrow = Math.floor(i / 2);
-      const vcol = vrow % 2 === 0 ? i % 2 : 1 - (i % 2);
+      // Plan item 209: on an upright phone the act's road snakes down the screen (CSS places them by `v`/`vc` under
+      // 600 px; wider screens keep the two rows of five). Plan item 608: single file, one stop a bend, swinging from
+      // the left of the land to the right and back, each name on the bend's inner side.
+      const vrow = i;
+      const vcol = i % 2;
       item.className = `stop c${col + 1} r${row + 1} v${vrow + 1} vc${vcol + 1}`;
       // Plan item 230: the land round the stop: coloured in once won, Hollowell's clutter until then.
       const state = landState(stars, lv.id === nextId);

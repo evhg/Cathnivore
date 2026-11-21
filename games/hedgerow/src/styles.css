@@ -5633,28 +5633,40 @@ img.act-scene {
   #screen-select .act > .act-pencil-note { position: relative; top: auto; margin: 2px auto 0; }
 }
 
-/* Plan item 209: on an upright phone the act's road snakes down the screen, two stops a bend (map.ts sets the
-   v/vc classes and data-road). Each name sits beside its coin, on the outer side, never under the road. */
+/* Plan item 209: on an upright phone the act's road snakes down the screen (map.ts sets the v/vc classes and
+   data-road). Plan item 608: single file, one stop a bend: a stop in each row, swinging between the land's left
+   (vc1) and right (vc2) at four offsets so the lane winds rather than ladders; each name on a signboard on the bend's
+   inner side, never under the road. */
 @media (max-width: 599px) {
   #screen-select .trail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(5, auto);
-    row-gap: 22px;
-    column-gap: 28px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(10, auto);
+    /* the lane crosses the land between two bends, so the gap keeps the crossing off both signs */
+    row-gap: 34px;
+    column-gap: 0;
   }
-  #screen-select .trail.has-home { grid-template-rows: auto repeat(5, auto); }
-  #screen-select .trail > .stop.vc1 { grid-column: 1; }
-  #screen-select .trail > .stop.vc2 { grid-column: 2; }
-  #screen-select .trail > .stop.v1 { grid-row: 1; }
-  #screen-select .trail > .stop.v2 { grid-row: 2; }
-  #screen-select .trail > .stop.v3 { grid-row: 3; }
-  #screen-select .trail > .stop.v4 { grid-row: 4; }
-  #screen-select .trail > .stop.v5 { grid-row: 5; }
+  #screen-select .trail.has-home { grid-template-rows: auto repeat(10, auto); }
+  #screen-select .trail > .stop { grid-column: 1; }
+  #screen-select .trail > .stop.v1 { grid-row: 1; --bend: 24%; }
+  #screen-select .trail > .stop.v2 { grid-row: 2; --bend: 74%; }
+  #screen-select .trail > .stop.v3 { grid-row: 3; --bend: 31%; }
+  #screen-select .trail > .stop.v4 { grid-row: 4; --bend: 68%; }
+  #screen-select .trail > .stop.v5 { grid-row: 5; --bend: 22%; }
+  #screen-select .trail > .stop.v6 { grid-row: 6; --bend: 76%; }
+  #screen-select .trail > .stop.v7 { grid-row: 7; --bend: 30%; }
+  #screen-select .trail > .stop.v8 { grid-row: 8; --bend: 69%; }
+  #screen-select .trail > .stop.v9 { grid-row: 9; --bend: 24%; }
+  #screen-select .trail > .stop.v10 { grid-row: 10; --bend: 74%; }
   #screen-select .trail.has-home > .stop.v1 { grid-row: 2; }
   #screen-select .trail.has-home > .stop.v2 { grid-row: 3; }
   #screen-select .trail.has-home > .stop.v3 { grid-row: 4; }
   #screen-select .trail.has-home > .stop.v4 { grid-row: 5; }
   #screen-select .trail.has-home > .stop.v5 { grid-row: 6; }
+  #screen-select .trail.has-home > .stop.v6 { grid-row: 7; }
+  #screen-select .trail.has-home > .stop.v7 { grid-row: 8; }
+  #screen-select .trail.has-home > .stop.v8 { grid-row: 9; }
+  #screen-select .trail.has-home > .stop.v9 { grid-row: 10; }
+  #screen-select .trail.has-home > .stop.v10 { grid-row: 11; }
   #screen-select .trail > .stop { justify-items: stretch; }
   #screen-select .trail .node {
     max-width: none;
@@ -5667,17 +5679,17 @@ img.act-scene {
   #screen-select .trail .node > * { grid-column: 2; }
   #screen-select .trail .node > .level-num { grid-column: 1; grid-row: 1 / span 4; justify-self: center; }
   #screen-select .trail .node .level-name { text-align: left; max-width: 100%; font-size: var(--fs-small); }
-  /* The left column mirrors: the coin on the inside, its name on the outer (left) side. */
-  #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 64px; justify-items: end; }
-  #screen-select .trail > .stop.vc1 .node > * { grid-column: 1; }
-  #screen-select .trail > .stop.vc1 .node > .level-num { grid-column: 2; }
-  #screen-select .trail > .stop.vc1 .node .level-name { text-align: right; }
+  /* A left bend's coin stands at its bend, its sign to the right; a right bend mirrors, its sign to the left. */
+  #screen-select .trail > .stop.vc1 .node { padding-left: max(0px, calc(var(--bend) - 38px)); }
+  #screen-select .trail > .stop.vc2 .node { padding-right: max(0px, calc(100% - var(--bend) - 38px)); }
+  #screen-select .trail > .stop.vc2 .node { grid-template-columns: minmax(0, 1fr) 64px; justify-items: end; }
+  #screen-select .trail > .stop.vc2 .node > * { grid-column: 1; }
+  #screen-select .trail > .stop.vc2 .node > .level-num { grid-column: 2; }
+  #screen-select .trail > .stop.vc2 .node .level-name { text-align: right; }
   /* Plan item 569: each stop a diorama of its landmark 64 px across on an upright phone (was a 44 px coin whose
      landmark read as an icon), the boss lot 68 */
   #screen-select .trail .node > .level-num { width: 64px; height: 64px; }
   #screen-select .trail .node.level-boss > .level-num { width: 68px; height: 68px; }
-  /* (the bends 4 px apart, not 22: the coins' 20 px more would push the next act's peek below the fold, item 153) */
-  #screen-select .trail { row-gap: 4px; }
 }
 
 /* Plan item 314: a locked stop is a warm sepia print, not a grey one: the coin a parchment wash, its landmark in
@@ -5843,23 +5855,25 @@ img.act-scene {
 @media (max-width: 599px) {
   /* (plan item 569: 76 px for its 64 px diorama, so the number badge on the rim stays clear of the name) */
   #screen-select .trail .node { grid-template-columns: 76px minmax(0, 1fr); column-gap: 4px; }
-  #screen-select .trail > .stop.vc1 .node { grid-template-columns: minmax(0, 1fr) 76px; }
+  #screen-select .trail > .stop.vc2 .node { grid-template-columns: minmax(0, 1fr) 76px; }
   #screen-select .trail .node .level-name { justify-self: start; }
-  #screen-select .trail > .stop.vc1 .node .level-name { justify-self: end; }
+  #screen-select .trail > .stop.vc2 .node .level-name { justify-self: end; }
   /* Plan item 406: a long name (to 152 px at 14 px) can't fit the 117 px beside its coin, so its two lines split
      evenly ('The Board / of Directors'), never one word left alone on the second. */
   #screen-select .trail .node .level-name { text-wrap: balance; }
-  /* Plan item 471: a stop's name is lettered on the land, map style (ink in a soft paper halo), not on a cream pill:
-     the trail read as a list of pills (critique plan1117c hedge-menu-P). */
+  /* Plan item 608: a stop's name on a signboard, as at D (item 471 lettered it on the land, where it read as loose
+     text on the terrain): a cream plank with a soil edge and a drop, its twist under the name. */
   #screen-select .trail .node .level-name {
-    padding: 0;
-    background: none;
+    padding: 2px 8px 3px;
+    border-radius: 6px;
+    background: var(--surface);
     color: var(--ink);
     opacity: 1;
     font-weight: 700;
-    text-shadow:
-      0 0 1px var(--surface), 0 0 2px var(--surface), 0 0 4px var(--surface), 0 0 7px var(--surface),
-      0 0 12px color-mix(in srgb, var(--surface) 70%, transparent);
+    line-height: 1.2;
+    box-shadow:
+      0 0 0 1.5px color-mix(in srgb, var(--soil) 40%, transparent),
+      0 2px 0 1px color-mix(in srgb, var(--soil) 30%, transparent);
   }
   #screen-select .trail .node:disabled .level-name { color: var(--ink-2); }
   #screen-select .trail .node:disabled .level-stars.level-lock { display: none; }

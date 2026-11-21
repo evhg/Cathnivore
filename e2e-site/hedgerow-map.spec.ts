@@ -253,12 +253,14 @@ test('plan item 153: every act is on one map, the locked ones in pencil', async 
       return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
     })
     const headH = document.querySelector('#levels li[data-act="3"] .act-head')!.getBoundingClientRect().height
-    return { into: Math.min(innerHeight, list.bottom) - nextTop, names, headH, wide: innerWidth >= 1200 && innerHeight >= 700 }
+    return { into: Math.min(innerHeight, list.bottom) - nextTop, names, headH, wide: innerWidth >= 1200 && innerHeight >= 700, upright: innerWidth < 600 }
   })
   // Plan item 372: at 1200 px+ the act in play fills the screen, so the next act's banner is wholly in view or wholly
-  // below the fold, never cut by it; narrower, the next act still peeks onto the first screen (item 153).
+  // below the fold, never cut by it; narrower, the next act still peeks onto the first screen (item 153). Plan item
+  // 608: on an upright phone the act is one single-file trail, longer than the screen, so the next act is a scroll
+  // away (its banner is checked whole by the fade test).
   if (m.wide) expect(m.into <= 0 || m.into >= m.headH, `into ${m.into}`).toBe(true)
-  else expect(m.into).toBeGreaterThanOrEqual(60)
+  else if (!m.upright) expect(m.into).toBeGreaterThanOrEqual(60)
   for (const c of m.names) expect(c).toBeGreaterThanOrEqual(4.5)
 })
 
@@ -854,5 +856,61 @@ test('plan item 564: a field path joins the rows and Cath walks to scale', async
     expect(m.mid, `${n} won: path points between the rows`).toBeGreaterThanOrEqual(20)
     expect(m.h).toBeLessThanOrEqual(m.coin * 1.2 + 0.5)
     expect(m.hits, `${n} won: labels under Cath`).toBe(0)
+  }
+})
+
+// Plan item 608: on an upright phone the act is one single-file trail winding down the land: the lane shows between
+// every pair of consecutive stops (sampled points clear of signs, stars and other coins), each name on a signboard
+// 8 px or more from the screen's edges and meeting no other, and Cath 0.9-1.2x a coin's height.
+test('plan item 608: the phone act is one winding trail, every name on a signboard', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'site-phone', 'phone layout')
+  for (const n of [0, 13, 20]) {
+    await seed(page, n)
+    await page.evaluate(() => document.fonts.ready)
+    await page.waitForTimeout(1200)
+    const r = await page.evaluate(() => {
+      const act = [...document.querySelectorAll('li.act')].find((l) => l.querySelector('.node.next'))!
+      const trail = act.querySelector<HTMLElement>('.trail')!
+      const coins = [...trail.querySelectorAll('.stop .level-num')].map((c) => c.getBoundingClientRect())
+      const signs = [...trail.querySelectorAll<HTMLElement>('.stop .level-name')]
+      const sb = signs.map((c) => c.getBoundingClientRect())
+      const blocks = [...sb, ...[...trail.querySelectorAll('.stop .level-stars, .stop .level-medals')].map((c) => c.getBoundingClientRect()).filter((b) => b.width > 0)]
+      const path = [...trail.querySelectorAll<SVGPathElement>('.trail-path path')]
+        .filter((p) => !(p.getAttribute('class') ?? '').startsWith('foot-'))
+        .sort((a, b) => b.getTotalLength() - a.getTotalLength())[0]!
+      const m = path.getScreenCTM()!
+      const len = path.getTotalLength()
+      const inside = (p: DOMPoint, b: DOMRect) => p.x > b.left && p.x < b.right && p.y > b.top && p.y < b.bottom
+      const shown: number[] = []
+      for (let i = 0; i + 1 < coins.length; i++) {
+        const [a, b] = [coins[i]!, coins[i + 1]!]
+        let seen = 0
+        for (let s = 0; s <= len; s += 0.25) {
+          const p = path.getPointAtLength(s).matrixTransform(m)
+          if (p.y <= a.top + a.height / 2 || p.y >= b.top + b.height / 2 || inside(p, a) || inside(p, b)) continue
+          if (!blocks.some((x) => inside(p, x)) && !coins.some((c, j) => j !== i && j !== i + 1 && inside(p, c))) seen++
+        }
+        shown.push(seen)
+      }
+      const meet = (a: DOMRect, b: DOMRect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+      const you = document.querySelector('#screen-select .node.next .you')!.getBoundingClientRect()
+      const coin = document.querySelector('#screen-select .node.next .level-num')!.getBoundingClientRect()
+      return {
+        rows: new Set(coins.map((c) => Math.round(c.top))).size,
+        count: coins.length,
+        shown,
+        edge: Math.min(...sb.map((s) => Math.min(s.left, innerWidth - s.right))),
+        meets: sb.some((a, i) => sb.some((b, j) => j > i && meet(a, b))),
+        plates: signs.every((s) => !/rgba\(0, 0, 0, 0\)|transparent/.test(getComputedStyle(s).backgroundColor)),
+        ratio: you.height / coin.height,
+      }
+    })
+    expect(r.rows, `${n} won: one stop a row`).toBe(r.count)
+    for (const [i, s] of r.shown.entries()) expect(s, `${n} won: lane from stop ${i + 1}`).toBeGreaterThanOrEqual(8)
+    expect(r.edge, `${n} won`).toBeGreaterThanOrEqual(8)
+    expect(r.meets, `${n} won`).toBe(false)
+    expect(r.plates, `${n} won`).toBe(true)
+    expect(r.ratio, `${n} won`).toBeGreaterThanOrEqual(0.9)
+    expect(r.ratio, `${n} won`).toBeLessThanOrEqual(1.2)
   }
 })
