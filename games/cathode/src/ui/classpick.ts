@@ -49,6 +49,8 @@ export interface ClassPickHooks {
   /** Plan item 313: a weapon class's lit thumbnail for the names' rack, from the same meshes. null keeps the stencil. */
   /** Plan item 423: `cls` rims the thumbnail in that class's key colour. */
   gunIcon?(weaponCls: string, cls?: ClassId): string | null;
+  /** Plan item 588: her booking photo for a class as a noir still of the 3D figure; null (or no hook) keeps the 2D bust. */
+  bookingPhoto?(cls: ClassId): string | null;
   /** Plan item 449: the hold is complete (the 520 ms exit starts): she shoulders her weapon and turns to the lens. */
   onCommit?(cls: ClassId): void;
   /** Plan item 464: a test shot of the class weapon (the scene flashes her muzzle, the audio fires the class's gun). */
@@ -111,6 +113,7 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     // Plan item 575: each row is a dossier with her booking photo: the bust against a height chart, the case file's
     // number on the placard, her look the class's (shared/cath, drawn once with the row).
     const mug = el("span", "cp-opt-mug", opt);
+    mug.dataset.cls = cls;
     mug.setAttribute("aria-hidden", "true");
     mug.innerHTML = mugHtml(cls);
     // Plan item 233: on a desktop each row is a slot in a lit rack: the name over a four-pip stat strip (Grit,
@@ -159,7 +162,13 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
   const gears = [...list.querySelectorAll<HTMLElement>(".cp-opt-gear")];
   const swapIcon = () => {
     const gear = gears.shift();
-    if (!gear) return;
+    if (!gear) {
+      // (a beat after the guns: the first photo builds her figure, a few hundred ms on a slow device; a still's
+      // waits only for the rest of the pick, the tabs' photos, to be built)
+      if (still) queueMicrotask(swapMug);
+      else iconTimer = window.setTimeout(() => (iconRaf = requestAnimationFrame(swapMug)), 1200);
+      return;
+    }
     const url = hooks.gunIcon?.(gear.dataset.weapon ?? "", gear.dataset.cls as ClassId | undefined);
     // Plan item 334: the pick opens before the street's renderer is up, so a gun that can't be shot yet waits its
     // turn again (it kept the flat stencil for good).
@@ -180,10 +189,40 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     if (still) swapIcon();
     else iconRaf = requestAnimationFrame(swapIcon);
   };
+  // Plan item 588: then her booking photos become stills of the 3D figure in each class's kit, one per animation
+  // frame (the first builds the photo room's figure), the 2D bust keeping the frame until the street can shoot them.
+  const mugQueue: ClassId[] = hooks.bookingPhoto ? [...CLASS_IDS] : [];
+  let mugTries = 0;
+  const swapMug = () => {
+    const cls = done ? undefined : mugQueue.shift();
+    if (!cls) return;
+    const url = hooks.bookingPhoto?.(cls) ?? null;
+    if (!url && mugTries++ < 40) {
+      mugQueue.unshift(cls);
+      iconTimer = window.setTimeout(() => (iconRaf = requestAnimationFrame(swapMug)), 500);
+      return;
+    }
+    if (url) {
+      for (const mug of root.querySelectorAll<HTMLElement>(`.cp-opt-mug[data-cls="${cls}"]`)) {
+        const img = document.createElement("img");
+        img.className = "cp-mug-photo";
+        img.alt = "";
+        img.decoding = "sync";
+        img.src = url;
+        mug.querySelector("svg")?.replaceWith(img);
+        mug.dataset.photo = "3d";
+      }
+    }
+    if (still) swapMug();
+    else iconRaf = requestAnimationFrame(swapMug);
+  };
   let iconTimer = 0;
   if (hooks.gunIcon) {
     if (still) swapIcon();
     else iconTimer = window.setTimeout(() => (iconRaf = requestAnimationFrame(swapIcon)), 600);
+  } else if (hooks.bookingPhoto) {
+    if (still) queueMicrotask(swapMug);
+    else iconTimer = window.setTimeout(() => (iconRaf = requestAnimationFrame(swapMug)), 600);
   }
 
   const words = el("div", "cp-words", left);
@@ -206,7 +245,9 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const base = WEAPON_BASES[CLASS_SIGNATURE[cls]];
     if (base) el("span", "cp-dot-gun", d).innerHTML = weaponArtSvg(base.cls);
     // Plan item 575: and her booking photo, which the upright tabs show in place of the gun (styles.css).
-    el("span", "cp-opt-mug cp-dot-mug", d).innerHTML = mugHtml(cls);
+    const dmug = el("span", "cp-opt-mug cp-dot-mug", d);
+    dmug.dataset.cls = cls;
+    dmug.innerHTML = mugHtml(cls);
     el("span", "cp-dot-name", d, CLASSES[cls].name);
     d.addEventListener("click", () => select(cls, false));
     dotFor.set(cls, d);

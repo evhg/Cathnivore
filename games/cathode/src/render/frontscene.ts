@@ -11,6 +11,7 @@
 // leave it; the street, its build and its shaders stay warm), so no second load runs for the market.
 
 import { gunIcon, gunReel, type GunReel } from "./gunportrait";
+import { bookingPhoto } from "./bookingphoto";
 import { CATH_HERO } from "../game/armdress";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -143,6 +144,8 @@ export interface FrontScene {
   gunReel(weaponCls: string, cls: string, still: boolean): GunReel | null;
   /** Plan item 313: the names' rack thumbnail of a weapon class, from the same meshes. */
   gunIcon(weaponCls: string, cls?: string): string | null;
+  /** Plan item 588: a class's booking photo, the 3D Cath in its coat, kit, pose and face under a noir key (cached). */
+  bookingPhoto(cls: string): string | null;
   readonly stats: { frames: number; drawCalls: number; triangles: number; cathTriangles: number; ms: number };
 }
 
@@ -1644,6 +1647,11 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     gunIcon(weaponCls, cls) {
       return gunIcon(world.renderer, weaponCls, cls ? CLASS_KEY[cls] : undefined);
+    },
+    bookingPhoto(cls) {
+      const key = CLASS_KEY[cls];
+      if (!key) return null;
+      return bookingPhoto(world.renderer, phone, cls, { coat: CLASS_COAT[cls] ?? null, key, expression: CLASS_EXPRESSION[cls] ?? "smirk" }, Object.keys(CLASS_KEY));
     },
   };
   return scene;

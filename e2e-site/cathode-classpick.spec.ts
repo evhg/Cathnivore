@@ -715,10 +715,48 @@ test('each class shows her booking photo, 48 px or more', async ({ page, hasTouc
   await fresh(page, hasTouch)
   await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
   const mugs = page.locator(hasTouch ? '.cp-dot .cp-dot-mug' : '.cp-opt > .cp-opt-mug')
-  await expect(mugs).toHaveCount(5, { timeout: 60_000 })
-  const sizes = await mugs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), !!e.querySelector('svg')] }))
+  await expect(mugs).toHaveCount(5, { timeout: 120_000 })
+  // (the 2D bust, or item 588's 3D still once the street can shoot it)
+  const sizes = await mugs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), !!e.querySelector('svg, img.cp-mug-photo')] }))
   for (const [w, h, art] of sizes) {
     expect(Math.min(w as number, h as number), JSON.stringify(sizes)).toBeGreaterThanOrEqual(48)
     expect(art).toBe(true)
   }
+})
+
+// Plan item 588: once the street is up, the five booking photos are stills of the 3D figure in each class's coat, kit,
+// pose and face (not the 2D cartoon), each set apart from the others by 15% or more of its pixels.
+test('the booking photos are 3D stills of her, five different looks', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'one renderer, one set of photos: the desktop rows are enough')
+  test.setTimeout(200_000)
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=ghost&rs=0.5')
+  const photos = page.locator('.cp-opt > .cp-opt-mug[data-photo="3d"] img.cp-mug-photo')
+  await expect(photos).toHaveCount(5, { timeout: 150_000 })
+  const diff = await photos.evaluateAll(async (imgs) => {
+    const px: Uint8ClampedArray[] = []
+    for (const img of imgs as HTMLImageElement[]) {
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.naturalWidth
+      c.height = img.naturalHeight
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      px.push(x.getImageData(0, 0, c.width, c.height).data)
+    }
+    const out: number[] = []
+    for (let a = 0; a < px.length; a++)
+      for (let b = a + 1; b < px.length; b++) {
+        const A = px[a]!
+        const B = px[b]!
+        let n = 0
+        for (let i = 0; i < A.length; i += 4) {
+          if (Math.abs(A[i]! - B[i]!) + Math.abs(A[i + 1]! - B[i + 1]!) + Math.abs(A[i + 2]! - B[i + 2]!) + Math.abs(A[i + 3]! - B[i + 3]!) > 60) n++
+        }
+        out.push(n / (A.length / 4))
+      }
+    return out
+  })
+  expect(diff).toHaveLength(10)
+  for (const d of diff) expect(d, JSON.stringify(diff)).toBeGreaterThanOrEqual(0.15)
 })

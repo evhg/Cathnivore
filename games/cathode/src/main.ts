@@ -73,6 +73,7 @@ let scene: FrontScene | null = null;
 /** Plan item 313: the pick's class weapon, lit by the street's renderer in the class's key colour. */
 const pickGunReel = (weaponCls: string, cls: ClassId, still: boolean) => scene?.gunReel(weaponCls, cls, still) ?? null;
 const pickGunIcon = (weaponCls: string, cls?: ClassId) => scene?.gunIcon(weaponCls, cls) ?? null;
+const pickBookingPhoto = (cls: ClassId) => scene?.bookingPhoto(cls) ?? null;
 let sceneReady: Promise<FrontScene | null> = Promise.resolve(null);
 function webgl2(): boolean {
   try {
@@ -799,6 +800,7 @@ async function begin(fromTitle: boolean): Promise<void> {
           onSkillPreview: (t) => void sceneReady.then((fs) => fs?.skillPreview(t)),
           gunReel: pickGunReel,
           gunIcon: pickGunIcon,
+          bookingPhoto: pickBookingPhoto,
         },
       );
       stagePick();
@@ -1129,6 +1131,7 @@ async function boot(): Promise<void> {
         still: true,
         gunReel: pickGunReel,
         gunIcon: pickGunIcon,
+        bookingPhoto: pickBookingPhoto,
         onTestFire: (c) => s?.testFire(c),
         onSkillPreview: (tr) => s?.skillPreview(tr),
       });
