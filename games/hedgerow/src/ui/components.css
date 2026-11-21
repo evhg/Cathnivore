@@ -5224,3 +5224,214 @@ body:has(#dlg-pause[open]) .paused-note {
     font: 700 var(--fs-label) / 1.1 var(--font-ui);
   }
 }
+
+/* ================================================================= The bench as pictures (plan item 599) */
+/* Each round ahead is a little convoy: its lead in front at full size, the next kinds behind it, smaller, as if further
+   down the lane; the count on a tag under it and the trait as an icon badge (its word for a reader and on hover). */
+.round-chip-btn {
+  grid-template-areas: "no no" "convoy convoy" "road road" "count trait";
+  align-items: center;
+  row-gap: 2px;
+}
+/* the round's mix is the road the convoy drives on (it was a gauge at the card's foot, with its own padding) */
+.round-chip-btn .mix-bar,
+.round-chip-btn:not(.round-chip.boss .round-chip-btn) .mix-bar {
+  grid-area: road;
+  position: static;
+  justify-self: stretch;
+  width: auto;
+  margin: -4px 2px 0;
+}
+.round-chip-btn:not(.round-chip.boss .round-chip-btn),
+.round-chip.boss .round-chip-btn {
+  padding-bottom: 5px;
+}
+.round-chip-btn .round-convoy {
+  grid-area: convoy;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+}
+.round-chip-btn .round-convoy .convoy-car {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  margin-right: -6px;
+  filter: drop-shadow(0 1px 0 var(--ink-a14));
+}
+.round-chip-btn .round-convoy .convoy-car:nth-child(2) {
+  order: 1;
+  width: 29px;
+  height: 29px;
+}
+/* the lead, in front: the vehicles face right, so it leads on the right and the rest queue behind it, smaller */
+.round-chip-btn .round-convoy .chip-icon {
+  order: 2;
+  width: 33px;
+  height: 33px;
+  margin-right: 0;
+  position: relative;
+  z-index: var(--z-raise);
+}
+.round-chip-btn .round-count {
+  grid-area: count;
+  justify-self: end;
+  padding: 1px 6px 1px 7px;
+  border-radius: 3px 999px 999px 3px;
+  background: var(--paper-hi);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--ink) 55%, transparent);
+  font: 800 var(--fs-small) / 1.05 var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+.round-chip-btn .round-trait.round-badge {
+  grid-area: trait;
+  justify-self: start;
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper-hi);
+  box-shadow: inset 0 0 0 2.5px color-mix(in srgb, var(--trait, var(--ink-3)) 80%, var(--ink));
+}
+.round-chip-btn .round-trait.round-badge .trait-icon {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  vertical-align: 0;
+}
+/* a round without a trait: the convoy already shows its lead; its name is for a reader and on hover */
+.round-chip-btn .round-trait.round-lead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  padding: 0;
+  border: 0;
+}
+.round-chip-btn:has(.round-lead) .round-count {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+@media (max-width: 899.98px), (max-height: 520px) {
+  .round-chip-btn .round-convoy .chip-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .round-chip-btn .round-convoy .convoy-car {
+    width: 22px;
+    height: 22px;
+  }
+  .round-chip-btn .round-convoy .convoy-car:nth-child(2) {
+    width: 24px;
+    height: 24px;
+  }
+  .round-chip-btn .round-trait.round-badge {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* At D Cath stands on the bench at half length, in a column of her own beside the round's ticket and her line, which
+   is a tailed bubble pointing at her: her portrait was a 72 px head on a text plate. The ticket's stub turns into a
+   line across the ticket's top so the column has her width. A round whose ticket is tall (a stamp) would push Coming
+   up out of the column: there the fit sets .bench-tight and the bench keeps item 460's compact row, her portrait in
+   its ring. */
+@media (min-width: 900px) and (min-height: 560px) {
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) {
+    --bench-cath: 94px;
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) > :is(.round-ticket, .cath-plate) {
+    margin-left: var(--bench-cath);
+    width: calc(100% - var(--bench-cath));
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .round-ticket {
+    --stub: 0px;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .round-ticket::before {
+    left: 12px;
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-stub {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 7px 10px 0 9px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-no {
+    font-size: var(--fs-d2);
+    line-height: 1;
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-body {
+    padding: 2px 4px 4px 9px;
+  }
+  /* the head's tags and (i) share the stub's line */
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-body:has(.ticket-head > :is(.tag, .ticket-info)) {
+    margin-top: -28px;
+  }
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-head {
+    justify-content: flex-end;
+    min-height: 26px;
+  }
+  /* the round's name gives way to the number on this line (a reader still has it) */
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .play .panel:not(.bench-tight) .cath-plate:not([hidden]) {
+    position: relative;
+    align-items: stretch;
+    min-height: 58px;
+    margin-top: 2px;
+    padding: 7px 10px 7px 12px;
+    border-top: 0;
+    border-radius: 12px;
+    background: var(--paper-hi);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--oak-ink) 28%, transparent);
+  }
+  .play .panel:not(.bench-tight) .cath-plate:not([hidden])::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    bottom: auto;
+    left: -9px;
+    width: 10px;
+    height: 14px;
+    border: 0;
+    background: var(--paper-hi);
+    clip-path: polygon(100% 0, 0 45%, 100% 100%);
+  }
+  /* she stands in her column, from the ticket's top to the bubble's foot, on a soft shadow; no frame or ring */
+  .play .panel:not(.bench-tight) .cath-plate:not([hidden]) .cath-plate-face {
+    position: absolute;
+    right: calc(100% + 6px);
+    bottom: -2px;
+    width: calc(var(--bench-cath) - 4px);
+    height: var(--bench-cath-h, 150px);
+    border-radius: 0;
+    overflow: hidden;
+    background: radial-gradient(48% 7px at 50% calc(100% - 4px), color-mix(in srgb, var(--oak-ink) 30%, transparent), transparent);
+    box-shadow: none;
+  }
+  .play .panel:not(.bench-tight) .cath-plate:not([hidden]) .cath-plate-face svg {
+    width: 100%;
+    height: 100%;
+  }
+  .play .panel:not(.bench-tight) .cath-plate:not([hidden]):is([data-mood="worried"], [data-mood="delighted"]) .cath-plate-face {
+    box-shadow: none;
+  }
+}

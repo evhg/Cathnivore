@@ -4,7 +4,8 @@ import { expect, test } from '@playwright/test'
 // its mix (segments summing to the bar), a flood round under a 'Flood' banner (12 px or more), a tap opening its
 // vehicles, and on a phone the strip inside the round drawer, clear of the tray. Plan item 348: three readable cards
 // (not five micro-chips): 'Round N', the lead at 32 px+ (28 on a phone), the count with its unit, the trait as a word
-// 13 px or more.
+// 13 px or more. Plan item 599: the lead in front of a convoy of 3+ vehicles; the trait an icon badge (its word for a
+// reader), the count 14 px+.
 type W = { hedgerow?: { game: () => { wave: number; level: { setPieces?: Array<{ kind: string; wave?: number }> } } | null } }
 
 test('the rounds ahead are chips with their mix, the flood round bannered', async ({ page, isMobile }, info) => {
@@ -25,7 +26,12 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
   for (const c of await chips.all()) {
     await expect(c).toBeVisible()
     await expect(c.locator('.round-no')).toHaveText(/^Round \d+$/i)
-    await expect(c.locator('.round-count')).toHaveText(/^\d+vehicles?$/)
+    await expect(c.locator('.round-count')).toHaveText(/^\d+ vehicles?$/)
+    // Plan item 599: each round a convoy of 3+ vehicles, each 20 px or more; its count no smaller than 14 px
+    const cars = await c.locator('.round-convoy img').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))
+    expect(cars.length).toBeGreaterThanOrEqual(3)
+    for (const h of cars) expect(h).toBeGreaterThanOrEqual(20)
+    expect(parseFloat(await c.locator('.round-count').evaluate((e) => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(14)
     const m = await c.evaluate((e) => ({
       // the vehicle inside its round plate's padding
       art: (() => {

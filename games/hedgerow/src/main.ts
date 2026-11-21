@@ -1811,6 +1811,10 @@ const PREVIEW_SPARE = [
   ":scope > .round-group > :is(.field-tabs, .field-notebook)",
 ] as const;
 function fitPreview(p: HTMLElement): void {
+  fitColumn(p);
+  benchCath(p);
+}
+function fitColumn(p: HTMLElement): void {
   for (const el of p.querySelectorAll<HTMLElement>(".fit-dropped")) el.classList.remove("fit-dropped");
   // Only the desktop side column (plan item 87): a phone's peeking drawer is shorter than its tray, and dropping
   // there took Cath's notebook out of the drawer.
@@ -1835,10 +1839,15 @@ function fitPreview(p: HTMLElement): void {
       if (on && el.matches(".ticket-note, .ticket-title") && ticket && !ticket.title) ticket.title = el.textContent ?? "";
     }
   };
-  p.classList.remove("shop-tight", "convoy-wrap");
+  p.classList.remove("shop-tight", "convoy-wrap", "bench-tight");
   const gone: string[] = [];
   for (const sel of PREVIEW_SPARE) {
     if (!over()) break;
+    // Plan item 599: before the tabbed card goes, Cath's tall bench column gives way to the compact row
+    if (sel === PREVIEW_SPARE[PREVIEW_SPARE.length - 1] && p.querySelector(".cath-plate:not([hidden])")) {
+      p.classList.add("bench-tight");
+      if (!over()) break;
+    }
     drop(sel, true);
     gone.push(sel);
     // Plan item 87: a long round (five vehicle groups on a ten-tower level) still runs past the foot with only the
@@ -1858,6 +1867,14 @@ function fitPreview(p: HTMLElement): void {
     p.classList.add("convoy-wrap");
     if (over()) p.classList.remove("convoy-wrap");
   }
+}
+/** Plan item 599: at D Cath stands in her own column from the round ticket's top to her bubble's foot. */
+function benchCath(p: HTMLElement): void {
+  const plate = p.querySelector<HTMLElement>(":scope > .round-group > .cath-plate:not([hidden])");
+  const ticket = p.querySelector<HTMLElement>(":scope > .round-group > .round-ticket");
+  if (!plate || !ticket) return;
+  const h = plate.getBoundingClientRect().bottom - ticket.getBoundingClientRect().top + 2;
+  if (h > 0) plate.style.setProperty("--bench-cath-h", `${Math.round(h)}px`);
 }
 const refit = () => {
   if (ui.panel.classList.contains("panel-preview")) fitPreview(ui.panel);
@@ -2486,7 +2503,16 @@ function fieldIntel(g: Game): HTMLElement {
       const no = document.createElement("span");
       no.className = "round-no";
       no.textContent = `${Word(g)} ${n}`;
-      b.append(no, img(enemyIcon(lead), "chip-icon"));
+      // Plan item 599: the round as a little convoy, its lead in front at full size and the next kinds behind it
+      // (the lead again when the round has fewer kinds), so each round ahead reads as pictures, not a table of figures.
+      const convoy = document.createElement("span");
+      convoy.className = "round-convoy";
+      convoy.setAttribute("aria-hidden", "true");
+      const kinds = [...mix].sort((a, c) => c.count - a.count).map((m) => m.kind).filter((k) => k !== lead);
+      const cars = [lead, ...kinds].slice(0, 3);
+      while (cars.length < 3) cars.push(lead);
+      cars.forEach((k, j) => convoy.append(img(enemyIcon(k), j === 0 ? "chip-icon convoy-car" : "convoy-car")));
+      b.append(no, convoy);
       const bar = document.createElement("span");
       bar.className = "mix-bar";
       for (const m of mix) {
@@ -2499,8 +2525,9 @@ function fieldIntel(g: Game): HTMLElement {
       const count = document.createElement("span");
       count.className = "round-count";
       const unit = document.createElement("span");
-      unit.className = "round-unit";
-      unit.textContent = total === 1 ? "vehicle" : "vehicles";
+      // Plan item 599: the unit for a reader; the eye reads the count on the convoy's tag
+      unit.className = "round-unit sr-only";
+      unit.textContent = total === 1 ? " vehicle" : " vehicles";
       count.append(String(total), unit);
       const trait = propsOf(roundProps(g.level, groups))[0];
       const word = document.createElement("span");
@@ -2514,7 +2541,12 @@ function fieldIntel(g: Game): HTMLElement {
       word.textContent = trait ? PROPERTIES[trait].name : (short ?? ENEMIES[lead].name);
       if (short) word.title = ENEMIES[lead].name;
       // Plan item 511: a trait's pill leads with its icon (the vehicles' own prop artwork), so the ticket reads at a glance
-      if (trait) word.prepend(img(propIcon(trait), "trait-icon"));
+      // Plan item 599: the trait is an icon badge; its word for a reader and on hover
+      if (trait) {
+        word.title = PROPERTIES[trait].name;
+        word.replaceChildren(img(propIcon(trait), "trait-icon"), Object.assign(document.createElement("span"), { className: "sr-only", textContent: PROPERTIES[trait].name }));
+        word.classList.add("round-badge");
+      }
       b.append(bar, count, word);
       b.onclick = () => open(openRound === b.dataset.key ? null : b.dataset.key!);
       chips.push(b);
@@ -4551,7 +4583,9 @@ function fillCathPlate(g: Game, text: string): boolean {
   const key = `${face}:${art()}`;
   if (key !== plateFaceKey) {
     plateFaceKey = key;
-    cathPlate.querySelector<HTMLElement>(".cath-plate-face")!.innerHTML = cathSvg({ framing: "bust", expression: face, outfit: art(), animate: true });
+    cathPlate.querySelector<HTMLElement>(".cath-plate-face")!.innerHTML = cathSvg({ framing: "half", expression: face, outfit: art(), animate: true });
+    // Plan item 599: her column is taller than the half framing: keep her head at the top, crop her sides
+    cathPlate.querySelector(".cath-plate-face svg")?.setAttribute("preserveAspectRatio", "xMidYMin slice");
   }
   cathPlate.title = "Show me where";
   return changed;
