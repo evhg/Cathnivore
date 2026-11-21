@@ -5785,14 +5785,14 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 on levels 1, 21 and 34 the depot's projected box lies below the HUD's bottom + 8 px and above the tray; the lane's projected box spans 85%+ of the safe rect's width; hedgerow-3dframe passes P and D; key art unchanged at D.
 - **Size:** 1
 
-## 592. [ ] Cathnivore table: Cath speaks in her own bubble and her figure reacts
+## 592. [ ] Cathnivore table: Cath speaks in her own bubble and her figure reacts *(lane A, in progress)*
 *(planned 2026-11-21 07:05, lane A, plan1121c critique)*
 - **Why:** `plan1121c/cath-game-D` 355-550 x 205-375: her line is a loose note card with no tail, while Tomas (1220-1400 x 335-430) gets a real bubble; her figure (360-545 x 405-890) stands hands clasped whatever happens. VISION: 'She reacts to what the player does'; characters with presence.
 - **Build:** check first what the desktop figure already varies (`CathDock`/`CathCompanion` carry expressions). Her line becomes a tailed bubble pointing at her head, in the producers' bubble language; her full figure takes the dock's expression and a pose per beat (liberation: delighted and point; Squeeze: worried; Hollowell's turn: determined; Undo: wink), easing between them.
 - **Accept:** at 1440x900 her bubble's tail tip is within 40 px of her head box; after a scripted liberation the figure's `data-expression` reads `delighted` within 300 ms (spec); desktop-no-scroll and table specs pass at 1280x800 and 1440x900; shot P and D.
 - **Size:** 1
 
-## 593. [ ] The bugs from the 2026-11-21 07:00 critique, fixed as one batch *(lane A, in progress)*
+## 593. [x] The bugs from the 2026-11-21 07:00 critique, fixed as one batch *(done 2026-11-21 07:20, lane A, 940af06e: (1) fixed: a power name over 12 letters takes `data-long` and sets at 0.75rem on one line (stamp 96-98 px, text 94-95; was 97x38 on two lines), new spec at 1280/1440/1920. (5) fixed: bigCloud's billows are modelled (a base-tone shade under each upper billow, a lit cap on every other, ink 0.014w -> 0.01w); hedgerow-map 52 pass at P and D. Kept, checked: (2) the week card is pinned over the frame's edge on purpose (its pin and shadow), (3) 'Browse the games' is cream on the plank's dark half, 5.9:1 by item 222's design (the shot's soft italic read paler than it is), (4) the portfolio's phone lede beside Cath is item 146's hero composition and reads five lines at 17 px. Shots scratchpad s593, cloud-before/after2)*
 *(planned 2026-11-21 07:05, lane A, plan1121c critique)*
 - Cathnivore Setup D (`cath-setup-D` 718-812 x 172-210): Ines Farrow's ability tag 'Second Opinion' wraps to two lines and spills its box; the others are one line.
 - Cathnivore Setup D (980-1120 x 565-775): the 'This week at the market' card overlaps the board frame's right edge (x 1035): pin it clear or make the overlap read as deliberate (a pinned card's shadow on the frame).
