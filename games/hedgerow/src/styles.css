@@ -6397,6 +6397,7 @@ img.act-scene {
     margin: auto 0 0;
     width: 100%;
     max-width: none;
+    min-height: 60dvh;
     max-height: 60dvh;
     padding: 14px 16px 12px;
     border-radius: 22px 22px 0 0;
@@ -6623,4 +6624,23 @@ img.act-scene {
 }
 #dlg-result.field-win .payout-ribbon .payout-head {
   display: none;
+}
+/* Plan item 613: on a win scene the stars stamp in under her line on the field; the card's row is kept for screen
+   readers only. (The win scene shows at D and on an upright phone: the same two queries as .win-cath.) */
+.win-stars {
+  display: block;
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 2.1em;
+  line-height: 1;
+}
+@media (min-width: 1000px) and (min-height: 600px), (max-width: 599.98px) and (min-height: 640px) {
+  #dlg-result.field-win #result-stars {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }

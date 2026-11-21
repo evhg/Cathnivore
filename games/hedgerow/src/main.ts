@@ -5909,7 +5909,9 @@ function finish(g: Game): void {
       if (i < n) {
         // The fanfare: a gold spark burst and a rising chime as each star lands.
         setTimeout(() => {
-          burst(sEl, { color: "#f2c94c", n: 10, dist: 54 });
+          // Plan item 613: on a win scene the stars stamp in her bubble on the field.
+          const shown = document.querySelector<HTMLElement>(`#win-cath .star:nth-child(${i + 1})`);
+          burst(shown?.offsetParent ? shown : sEl, { color: "#f2c94c", n: 10, dist: 54 });
           sfx.playStar(i);
         }, 260 * i + 200);
       }
@@ -6030,6 +6032,16 @@ function fieldWin(moment: Parameters<typeof cathSceneSvg>[0] | null): void {
   const say = document.createElement("p");
   say.className = "win-say";
   say.textContent = ui.resultTitle.textContent;
+  // ...and her stars stamp in under it (the card's row stays for screen readers).
+  if (!ui.resultStars.hidden && ui.resultStars.childElementCount) {
+    const stars = ui.resultStars.cloneNode(true) as HTMLElement;
+    stars.removeAttribute("id");
+    stars.removeAttribute("role");
+    stars.removeAttribute("aria-label");
+    stars.className = "stars win-stars";
+    stars.setAttribute("aria-hidden", "true");
+    say.append(stars);
+  }
   fig.append(say);
   document.body.append(fig);
   ui.dlgResult.addEventListener("close", () => fig.remove(), { once: true });
@@ -6210,7 +6222,9 @@ function flyCoins(chip: HTMLElement, n: number): void {
   const word = (k: number) => `+${k} ★ for the Seed Bank`;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || typeof chip.animate !== "function") return;
   chip.textContent = word(0);
-  const stars = [...ui.resultStars.querySelectorAll<HTMLElement>(".star.earned")].slice(-n);
+  // Plan item 613: the coins leave from the stars that show (her bubble's on a win scene, else the card's).
+  const shown = [...document.querySelectorAll<HTMLElement>("#win-cath .star.earned")];
+  const stars = (shown.some((e) => e.offsetParent) ? shown : [...ui.resultStars.querySelectorAll<HTMLElement>(".star.earned")]).slice(-n);
   setTimeout(() => {
     if (!chip.isConnected) return;
     // Skipped before the coins set off: bank them at once.

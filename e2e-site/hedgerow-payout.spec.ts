@@ -45,7 +45,9 @@ for (const [name, w, h] of [['P', 390, 844], ['L', 844, 390], ['D', 1440, 900]] 
       expect(await dlg.locator('.payout-cath').isVisible()).toBe(false)
       // Her line is said on the field, clear of the card.
       const say = page.locator('#win-cath .win-say')
-      await expect(say).toHaveText('Not a scratch on the farmhouse.')
+      await expect(say).toContainText('Not a scratch on the farmhouse.')
+      // Plan item 613: her three stars stamp in under her line, on the field.
+      await expect(say.locator('.win-stars .star.earned')).toHaveCount(3)
       const sb = await say.boundingBox()
       expect(sb!.x, 'bubble on screen').toBeGreaterThanOrEqual(0)
       expect(sb!.x + sb!.width, 'bubble off the card').toBeLessThanOrEqual(box!.x)
