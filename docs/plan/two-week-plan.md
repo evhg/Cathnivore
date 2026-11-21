@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-21 11:45 UTC
-
 
 
 
@@ -5904,5 +5902,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Cathnivore D campaign (`cath-campaign-D` 95-390 x 230-630): chapter 1's regions don't glow as they do at P.
 - Cathnivore P (`cath-setup-P` 45-62 x 343-358, `cath-game-P` 14-32 x 240-258): Brindle Hills' count badge sits left of its name, pressed to the screen edge, where every other badge is on the right.
 - Hedgerow 2D P (`hedge-l21-2d-P` 0-42 x 330-372): the Hollowell depot cut by the left edge, only '216' showing.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 608. [ ] Hedgerow phone act map: one winding trail down the land, every name on a signboard
+*(planned 2026-11-21 11:55, lane B, plan1121h critique)*
+- **Why:** `plan1121h/hedge-menu-P` 20-390 x 210-590: the phone's stops are a stiff two-column ladder joined by short straight stubs, no lane like the desktop's S path (item 564 left phones out); names are bare text on the terrain ('Brand Ambassador' 290-385 x 520-560 runs within 5 px of the edge); Cath (185-210 x 235-280) is ~45 px, smaller than a coin. VISION 1, 5.
+- **Build:** `games/hedgerow/src/map.ts`, map CSS: on an upright phone the act is one single-file trail snaking down a taller scrolling landscape with its landmarks between the bends; each name on the desktop's signboard plate; Cath beside the next stop about a coin tall; the map opens scrolled to her.
+- **Accept:** at 390x844 sampled lane pixels join every pair of consecutive stops; no stop label's box meets the screen edge (8 px) or another label; Cath 0.9-1.2x a coin's height; hedgerow-map specs pass P and D; shot P and D.
+- **Size:** 2
+
+## 609. [ ] Cathnivore phone title: Cath in front at the stall, not behind the board *(lane B, in progress)*
+*(planned 2026-11-21 11:55, lane B, plan1121h critique)*
+- **Why:** `plan1121h/cath-title-P` 45-180 x 150-330: the board (62-370 x 300-595) covers her from the chest down; only her head and waving hand peek out, where at D she stands whole and waves (`cath-title-D` 540-800 x 320-760). Cath bible: the face of every game.
+- **Build:** `src/ui/TitleArt.tsx`, title styles: on a tall phone she stands half length at the board's lower left, in front of it, her waving arm over its edge; the board shifts right and ~10% smaller; her bubble stays above.
+- **Accept:** her figure 260 px+ tall, no board pixels over her face or torso box; the board 280 px+ wide; Campaign, Quick Game and Daily visible without scrolling at 390x844 and 375x667; title specs pass; shot P and D.
+- **Size:** 1
+
+## 610. [ ] Cathnivore phone campaign: Cath narrates at half length, the nav off the map
+*(planned 2026-11-21 11:55, lane B, plan1121h critique)*
+- **Why:** `plan1121h/cath-campaign-P`: Cath is a ~90 px figure on crates (290-360 x 95-185) beside a bubble that takes the width; the 'Back to Title' plank (95-295 x 505-540) sits over the map's lower frame. D does this well (items 556, 562). VISION 5: story scenes staged like a graphic novel.
+- **Build:** `src/ui` campaign screen, `src/styles`: Cath a ~150 px half figure at the header's right, cut by the map's top edge, her bubble left with its tail to her mouth; Back to Title becomes a header back chevron (as Runnel and Hedgerow).
+- **Accept:** Cath 140 px+ tall; no control meets the map frame's box; the chapter card's Start visible without scrolling at 390x844; campaign specs pass; shot P and D.
+- **Size:** 1
+
+## 611. [ ] Hedgerow 2D phone: one bench, the tray and Cath's line together
+*(planned 2026-11-21 11:55, lane B, plan1121h critique)*
+- **Why:** `plan1121h/hedge-l21-2d-P` 0-390 x 688-765: in 2D Cath's coach line replaces the build tray (towers and prices hidden); 3D at the same state shows the tray (`hedge-l21-3d-P` 65-390 x 698-765) but drops her line. The two renderers disagree and neither shows both. VISION 3 (no mystery waits), 1.
+- **Build:** the phone bench in `games/hedgerow/src/` (`hero.ts`, `cathsay.ts`, bench CSS): both renderers keep the tray row; Cath's line rises as a bubble from her bust over the field's lower edge, fading after 4 s or the first tap.
+- **Accept:** at 390x844 in `?2d` and 3D the tray shows 3+ tower prices while Cath's line shows; the line 15 px+ at 4.5:1; the field 580 px+ tall; hedgerow play specs pass; shot P and D.
+- **Size:** 1
+
+## 612. [ ] The bugs from the 2026-11-21 11:50 critique, fixed as one batch
+*(planned 2026-11-21 11:55, lane B, plan1121h critique; check each on today's build first)*
+- Cathnivore D (`cath-game-D` 35-300 x 380-665): the Saving-for card ~60% empty cream; its content sits in 160-295 x 440-600 (item 595's pick ticket centred small).
+- NIGHT SHIFT D class list (`ns-play-D` 360-475 x 190-620): the guns render as blown-out white silhouettes (Wirewitch, Fixer), not gunmetal (item 588 fixed the photos only).
+- Runnel P (`runnel-P` 0-390 x 780-844): a 60 px empty cream band under Cath's dock, her figure cut at the waist over it.
+- Cathnivore P (`cath-game-P` 5-70 x 60-125): Hollowell's portrait ring over the Squeeze plaque's left edge; the MUM drawing (15-65 x 128-180) over Highmoor's hex corner.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
