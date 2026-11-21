@@ -5722,7 +5722,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** a still for every level (unit test); D image 230x160+; map and level-card specs pass P and D.
 - **Size:** 1
 
-## 584. [ ] Hedgerow 3D: Hollowell's depot and convoys as glossy corporate models *(lane B, in progress)*
+## 584. [ ] Hedgerow 3D: Hollowell's depot and convoys as glossy corporate models *(handed back 2026-11-21 04:00 by lane B after slice 1)* *(slice 1, lane B: the depot at twice its footprint (`DEPOT_3D_SCALE` 1.13, was 0.8; level 21 at D 224x214 px, was 145x141), its verge spots set out to 1.0-1.25 cells, and the renderer steps it back to 0.9/0.8/0.71 of that only where no spot keeps it 92% in frame (level 1 at D: hedgerow-depot3d's in-frame check), the old 0.75 spot kept as a costlier fallback; a scale, so no new draw calls. depot3d, 3dframe, camera3d, showdown3d and fleet3d pass P and D; key art re-shot. Shots scratchpad d3-before/after.png. **Left:** chrome-and-glass detail and the roller door, each vehicle's livery and silhouette in greyscale)*
 - **Why:** `plan1121a/hedge-l21-3d-D` 115-240 x 150-240: the depot is a small box; the pink vans (245-300 x 225-400) read as toy blocks. VISION: the corporations glossy, plastic, over-lit, clinical.
 - **Build:** a chrome-and-glass depot with a lit H sign and a roller door that opens as a wave leaves; each vehicle type its own livery and silhouette with specular highlights (`games/hedgerow/src/render3d/`).
 - **Accept:** depot footprint 2x+ at D; the vehicle types distinguishable in a greyscale shot; level 21 3D draw calls within budget; 3D specs pass.

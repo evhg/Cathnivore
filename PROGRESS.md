@@ -9,7 +9,7 @@ Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every s
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
 - Critique bugs from the 09:35 shots (`e2e/screenshots/plan1103d/`): NIGHT SHIFT wordmark 'H's: closed 2026-11-07 06:30 (lane A: whole at L and D at 8 s and 20 s; the SVG path, no dash left). Runnel P's spring house and garden: closed 2026-11-04 (item 106).
 - Critique bugs from the 2026-11-03, 11-05 and 11-08 shots: all closed 2026-11-21 01:35 (lane B, checked on today's build): Cathnivore P title keys 16 px; Hedgerow l34 2D D no count over a farmer; NIGHT SHIFT D poster's LUNA sign whole, P FIXER tab whole (item 575's photo tabs), P class pick renders; /games/ hero not ghosted; Hedgerow map P no Hollowell boards by the stop names (item 569), D map clean. Shots scratchpad hm/, games-D, h34-D.
-- Lane B (02:21 11-21): 582 done (Runnel plots' 6 px cut edge, key art re-shot); 583 slice 1 (100 Hedgerow level stills baked, script and unit test; showing them on the card left for the next slice). Lock released.
+- Lane B (03:21 11-21): 583 done (the level card shows the level's 3D still, every card context kept); 584 slice 1 (Hollowell's 3D depot at twice its footprint, scaled back only where the frame is tight); key art re-shot. Lock released.
 - Critique bug seen 2026-11-04 13:30 (lane A, 1280x800): a Not-yet name cut on a 1280 desktop. Fixed 2026-11-04 14:15 (item 104 slice 1).
 ## Blocked
 None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed by the owner, not blocked; see ROADMAP "Postponed".)
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- 2026-11-21 03:21 lane B: 583 done, 584 slice 1 (2 code commits); map, level-card and 3D depot specs pass P and D.
 - **2026-11-21 02:51 lane A:** 581, 580, 585 done (3 code commits), posters and key art re-rendered. title-*, critique166, daily-ritual (P, --retries=0); campaign-map, campaign (P, D; 'letters fill to the foot' P fails on base too locally); site keyart (new NIGHT SHIFT luma spec); keyart-fresh, css lint, campaign unit tests; tsc, eslint. Full `npm run check` green (2855/2855). Shots scratchpad s581, s580, s585; 579 findings noted. Lock released.
 - 2026-11-21 02:21 lane B: 582 done, 583 slice 1 (2 code commits); 142 Runnel specs pass P and D.
 - **2026-11-21 01:51 lane A:** 586 done (2 code commits), 581 tried and handed back. producer-line (phone; the two D liberation cases fail on the base commit too locally), saving-goal, setup-phone, setup-objects (P, D), Runnel lesson/win/one-cath/critique91 (35, P and D), title specs (P, the try); css lint, cathode-type, keyart-fresh; tsc, eslint. Full `npm run check` green (2854/2854). Shots scratchpad b586, bench-after, setupa, gD, rn-after, nst, t1-t6. Lock released.
@@ -51,4 +52,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-20 21:21 lane B: 576 slice 1 (1 code commit); Hedgerow phone specs pass after two fixes found by the full phone run.
 - 2026-11-20 20:21 lane B: Runnel render-path fix (156 Runnel specs pass P and D, 2 workers); 577 done (2 code commits).
 - **2026-11-20 19:51 lane A:** release 67ef937d; red E2E fixed (spec); planning 572-578; 578 done (2 code commits). hedgerow-map-diorama (P, D, x2), region-status, board-control, papers-placard, rival-face (alone), plan-cards, phone-counter (P, D); css lint; tsc, eslint. Shots scratchpad plan1120u, after578(b). Lock released.
-- 2026-11-20 19:21 lane B: red E2E fixed (Runnel render path); 570 tried and handed back (1 code commit).
