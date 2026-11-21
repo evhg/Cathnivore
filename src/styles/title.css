@@ -2155,3 +2155,18 @@ html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .tit
     bottom: calc(min(380px, 100cqw + 8px, (100cqh - 182px) * 1.035) * 0.965 - 6px);
   }
 }
+
+/* Plan item 609: on a tall phone Cath stands in front at the stall, not behind the board (item 581 hid her from the
+   chest down): her half-length figure, waist and all, over the board's top-left corner, her wave over its edge; the
+   board 10% smaller and held to the right, so the corner she covers is the cluster's empty shoulder. */
+@media (max-width: 600px) and (min-height: 760px) {
+  .title-art.title-table .title-cath,
+  .title-screen:has(.title-menu > :nth-child(5)) .title-art.title-table .title-cath { z-index: var(--z-lift); }
+  /* her half-length figure ends at her coat's hem: it settles into the cloth rather than stopping on a hard line */
+  .title-art.title-table .title-cath svg { mask-image: linear-gradient(180deg, var(--ink) 80%, transparent 99%); }
+  .title-art.title-table .title-board {
+    width: min(346px, calc(92cqw), calc((100cqh - 182px) * 0.95));
+    z-index: var(--z-raised);
+  }
+  .daily-ritual.is-compact { bottom: calc(min(346px, 92cqw, (100cqh - 182px) * 0.95) * 0.965 - 6px); }
+}

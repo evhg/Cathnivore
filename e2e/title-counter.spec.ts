@@ -5,6 +5,8 @@ import { expect, test, type Page } from '@playwright/test'
 // no dark panel: under 20% of the light-theme screen is darker than L 0.3 (the old chalkboard was about 30%).
 // Plan item 581 (superseding item 453's 'Cath the largest'): at 390x844 the board is the hero, 300 px or wider and
 // the largest thing on screen with nothing over it; Cath stands behind it, her face whole above its far edge.
+// Plan item 609 (superseding item 581's 'behind'): Cath stands in front of the board, nothing of it over her, the board
+// about 10% smaller (280 px or wider; 215 with a save) and held to the right.
 
 async function measure(page: Page) {
   const shot = (await page.screenshot()).toString('base64')
@@ -39,6 +41,8 @@ async function measure(page: Page) {
       cathH: cath.height,
       cathW: cath.width,
       faceWhole: face.top >= 0 && face.bottom <= board.top && face.width >= 60,
+      cathFront: Number(getComputedStyle(document.querySelector('.title-cath')!).zIndex) > Number(getComputedStyle(document.querySelector('.title-board')!).zIndex),
+      boardRight: innerWidth - board.right <= 24,
       lineClear: box(document.querySelector('.title-cath-line')!).bottom <= board.top,
       largest: others.every((r) => r.width * r.height < board.width * board.height),
       entries: entries.map((r) => ({ h: r.height, inside: r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth })),
@@ -65,7 +69,9 @@ for (const withSave of [false, true]) {
     if (withSave) await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible()
     const m = await measure(page)
     // with a save the menu takes a row, so the board gives up the room
-    expect(m.boardW).toBeGreaterThanOrEqual(withSave ? 240 : 300)
+    expect(m.boardW).toBeGreaterThanOrEqual(withSave ? 215 : 280)
+    expect(m.cathFront).toBe(true)
+    expect(m.boardRight).toBe(true)
     expect(m.cathH).toBeGreaterThanOrEqual(280)
     expect(m.cathW).toBeGreaterThanOrEqual(190)
     expect(m.faceWhole).toBe(true)
