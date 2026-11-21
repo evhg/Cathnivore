@@ -5778,7 +5778,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 no vertical gap over 48 px between the rail's visible children; the notebook's text changes after a tap that waters a field (spec); no page scroll at 1280x800 and 1440x900; Runnel specs pass P and D.
 - **Size:** 1
 
-## 591. [ ] Hedgerow phone 3D: the camera frames the whole lane, depot to farmhouse *(lane A, in progress)*
+## 591. [x] Hedgerow phone 3D: the camera frames the whole lane, depot to farmhouse *(done 2026-11-21 07:15, lane A, 671be1ae: once the depots stand, an upright phone's fitted view steps back (by 0.4% steps) and slides towards the far edge by the least that puts every depot's top 3 px inside the canvas (6 px under the HUD) with the field's near edge 3 px above the canvas foot (`dropToDepots`). Level 13's depot was 30 px off the top, level 21's 9 px; both now whole; field share 0.72 -> 0.67 (l13) and 0.70 -> 0.68 (l21), above item 78's 0.65; level 1 and 34 unchanged (already clear). The Closer key stays: it sits right, the depots left. Level 34's second lane's depot stays half off the left edge (item 486 leans to the first only). New spec at P (levels 21, 34); hedgerow-3dframe and hedgerow-3d pass at P, 3dframe at D. Shots scratchpad s591 (before), s591a/b (after))*
 *(planned 2026-11-21 07:05, lane A, plan1121c critique)*
 - **Why:** `plan1121c/hedge-l21-3d-P` 0-200 x 55-160: at 390x844 on level 21 the Hollowell depot (where the convoy enters) sits under the HUD bar, cut off, and the CLOSER key (280-380 x 65-105) floats over the field. VISION: big, rich, legible; the player should see where the threat comes from.
 - **Build:** `games/hedgerow/src/render3d/` camera fit: frame the depot, the lane and Cath inside the safe rect between the HUD's bottom and the tray's top (not the full canvas); keep the Closer/Whole field key inside the HUD row or the safe rect's corner clear of the depot.
@@ -5792,7 +5792,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 her bubble's tail tip is within 40 px of her head box; after a scripted liberation the figure's `data-expression` reads `delighted` within 300 ms (spec); desktop-no-scroll and table specs pass at 1280x800 and 1440x900; shot P and D.
 - **Size:** 1
 
-## 593. [ ] The bugs from the 2026-11-21 07:00 critique, fixed as one batch
+## 593. [ ] The bugs from the 2026-11-21 07:00 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-21 07:05, lane A, plan1121c critique)*
 - Cathnivore Setup D (`cath-setup-D` 718-812 x 172-210): Ines Farrow's ability tag 'Second Opinion' wraps to two lines and spills its box; the others are one line.
 - Cathnivore Setup D (980-1120 x 565-775): the 'This week at the market' card overlaps the board frame's right edge (x 1035): pin it clear or make the overlap read as deliberate (a pinned card's shadow on the frame).
