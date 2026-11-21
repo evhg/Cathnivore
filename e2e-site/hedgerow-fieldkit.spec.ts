@@ -67,3 +67,58 @@ test('plan item 399: Saltmarsh and Rivermead sow their own beds, and their plots
   console.log(`hue l21 ${salt.hue.toFixed(1)} l34 ${river.hue.toFixed(1)} gap ${gap.toFixed(1)}`)
   expect(gap).toBeGreaterThanOrEqual(15)
 })
+
+// Plan item 621: towers at hero size on the 2D field: a Scarecrow placed on a plot draws 60 px tall or more at D and
+// 36 px or more on a phone (measured as the rows that change in its column when it is built).
+type Place = { hedgerow?: { game(): unknown; place(g: unknown, kind: string, c: number, r: number): { ok: boolean }; plotLooks(): Array<[string, string]>; cellCenter(c: number, r: number): { x: number; y: number } | null } }
+test('plan item 621: a tower on the 2D field stands 60 px+ at D, 36 px+ on a phone', async ({ page }, info) => {
+  await open(page, 21)
+  const before = (await page.screenshot()).toString('base64')
+  const at = await page.evaluate(() => {
+    const h = (window as unknown as Place).hedgerow!
+    const g = h.game()
+    const a = h.cellCenter(0, 0)!, b = h.cellCenter(1, 0)!
+    const cell = Math.abs(b.x - a.x)
+    const plots = h.plotLooks().map(([k]) => k.split(',').map(Number) as [number, number])
+      .map(([c, r]) => ({ c, r, p: h.cellCenter(c, r)! }))
+      .filter(({ p }) => p.y > cell * 2.5)
+      .sort((x, y) => x.p.y - y.p.y)
+    for (const { c, r, p } of plots) if (h.place(g, 'scarecrow', c, r).ok) return { x: p.x, y: p.y, cell }
+    return null
+  })
+  expect(at).not.toBeNull()
+  await page.waitForTimeout(900)
+  const after = (await page.screenshot()).toString('base64')
+  const tall = await page.evaluate(async ([a, b, at]) => {
+    const load = async (s: string) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${s}`
+      await img.decode()
+      const cv = document.createElement('canvas')
+      cv.width = img.width
+      cv.height = img.height
+      const ctx = cv.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+      return { ctx, w: img.width }
+    }
+    const A = await load(a as string), B = await load(b as string)
+    const dpr = A.w / innerWidth
+    const { x, y, cell } = at as { x: number; y: number; cell: number }
+    const x0 = Math.round((x - cell * 0.12) * dpr), w = Math.max(1, Math.round(cell * 0.24 * dpr))
+    const y0 = Math.round((y - cell * 1.6) * dpr), h = Math.round(cell * 2.4 * dpr)
+    const da = A.ctx.getImageData(x0, y0, w, h).data, db = B.ctx.getImageData(x0, y0, w, h).data
+    let top = -1, bottom = -1
+    for (let r = 0; r < h; r++) {
+      let n = 0
+      for (let c = 0; c < w; c++) {
+        const i = (r * w + c) * 4
+        if (Math.abs(da[i]! - db[i]!) + Math.abs(da[i + 1]! - db[i + 1]!) + Math.abs(da[i + 2]! - db[i + 2]!) > 60) n++
+      }
+      if (n >= w * 0.15) { if (top < 0) top = r; bottom = r }
+    }
+    return top < 0 ? 0 : (bottom - top + 1) / dpr
+  }, [before, after, at] as const)
+  const phone = (page.viewportSize()?.width ?? 1440) < 600
+  console.log(`${info.project.name}: tower ${tall.toFixed(0)} px tall, cell ${at!.cell.toFixed(0)}`)
+  expect(tall).toBeGreaterThanOrEqual(phone ? 36 : 60)
+})

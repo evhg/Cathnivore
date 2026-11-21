@@ -6002,7 +6002,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** after a solve every channel samples water-blue (spec, `?shotwin` and a real solve); card 1 s+ after the last tap; shot P and D.
 - **Size:** 1
 
-## 621. [ ] Hedgerow 2D: the field as a diorama, towers and vans at hero size *(lane A, in progress)*
+## 621. [x] Hedgerow 2D: the field as a diorama, towers and vans at hero size *(done 2026-11-21 19:25, lane A: (1) every level sows 5+ bed looks: each act's three plus two margin beds borrowed from a neighbouring country (`FieldKit.margins`, sown after the act's own at equal use; Rivermead's are hay, oats and stubble, so its hue stays 22-27 deg from Saltmarsh's); unit-tested on every level with five fields or more. (2) Rivermead's mill race is a river with earth banks, pale shallows over a deeper channel, ripples and reeds (margins.ts). (3) Hollowell's vans are lacquered: a sheen over the box's top half and a dark sill side-on, a pale roof ridge from above. (4) Towers measured, not rescaled: a Scarecrow built on l21 draws 95 px tall at D and 63 px on a phone (item 322's 1.4x already exceeds the 60/36 accept; new check in hedgerow-fieldkit.spec). Key art re-shot. Shots scratchpad h621-before, h621-a..e)*
 *(planned 2026-11-21 18:20, lane A, plan1121j critique)*
 - **Why:** `plan1121j/hedge-l21-2d-D` 150-875 x 75-890 and `hedge-l34-2d-D`: plots are near-identical green rectangles and towers and vans ~40 px, so there's no focal action; the Ford's river is a thin stripe. VISION 2.
 - **Build:** `games/hedgerow/src/render.ts`, `sprites.ts`, `terrain.ts`: varied plot looks (5+ per level), towers 1.5x with drop shadows, glossy vans with legible livery, the river as a landmark with banks.
