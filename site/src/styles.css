@@ -2170,3 +2170,46 @@ body {
 @media (max-width: 599.98px) and (prefers-reduced-motion: reduce) {
   .hero-dots i { transition: none; }
 }
+
+/* Plan item 600: on a desktop the posters stand tall (280 px at 900 px high, was 200): today's line hangs on the poster as
+   a paper price tag on a string (it was a coloured line of text under the hook), and the hook sits beside the Play
+   button in one row, so the cards still end above the fold. A shorter window takes a shorter poster (220 px at 800 high). */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .hero-game {
+    --art-h: clamp(200px, calc(100svh - 580px), 280px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr;
+  }
+  .hero-game-art { grid-column: 1 / -1; aspect-ratio: auto; height: var(--art-h); }
+  .hero-game-text { grid-column: 1; align-self: center; padding: 6px 4px 7px 12px; }
+  .hero-game-cathnivore .hero-game-text,
+  .hero-game-hedgerow .hero-game-text,
+  .hero-game-nightshift .hero-game-text { padding-top: 6px; }
+  .hero-game-hook { font-size: 0.875rem; line-height: 1.25; }
+  .hero-game-play { grid-column: 2; align-self: center; margin: 0 12px 0 0; padding: 7px 13px; }
+  .hero-game-status {
+    position: absolute;
+    z-index: var(--z-poster-logo);
+    top: calc(var(--art-h) - 40px);
+    left: 12px;
+    max-width: calc(100% - 24px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 4px 10px 5px 18px;
+    border-radius: 3px;
+    background:
+      radial-gradient(circle at 8px 50%, var(--gold-ink) 0 2.5px, transparent 3px),
+      linear-gradient(180deg, var(--cream), color-mix(in srgb, var(--cream) 82%, var(--gold-mid)));
+    box-shadow: 0 3px 6px var(--shadow-deep), inset 0 0 0 1px color-mix(in srgb, var(--gold-ink) 22%, transparent);
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
+    color: var(--gold-ink);
+    font-size: 0.8125rem;
+    rotate: -3deg;
+    transform-origin: 8px 50%;
+  }
+  /* (the per-game colours of the old line are for dark ground; on the paper tag it is ink) */
+  .hero-game :is(.hero-game-status) { color: var(--gold-ink); }
+  /* Runnel's Cath stands at the poster's left, so its tag hangs at the right */
+  .hero-game-runnel .hero-game-status { left: auto; right: 12px; rotate: 3deg; }
+}

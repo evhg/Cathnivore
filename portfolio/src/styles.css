@@ -2331,5 +2331,5 @@ h1 {
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .show-strip { gap: var(--sp-4); padding-top: 6px; }
+  .show-strip { gap: var(--sp-4); }
 }
