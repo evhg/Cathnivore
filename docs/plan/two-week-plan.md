@@ -5716,7 +5716,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** blue water pixels (sat > 0.35) in every connected groove of a solved shot at P and D; tile edge 6 px+ at D; Runnel lesson and daily specs pass; key art re-shot.
 - **Size:** 2
 
-## 583. [ ] Hedgerow level card: a 3D still of the level
+## 583. [ ] Hedgerow level card: a 3D still of the level *(lane B, in progress)*
 - **Why:** `plan1121a/hedge-menu-D` 1160-1390 x 140-300: the briefing shows a flat 2D schematic while the game plays in 3D; on the phone (`hedge-menu-P` 20-55 x 640-690) a 35 px blur.
 - **Build:** bake a 3D still per level (the key-art path, `render3d/`) to webp and show it in the card (schematic as fallback); a larger image when the phone card opens.
 - **Accept:** a still for every level (unit test); D image 230x160+; map and level-card specs pass P and D.
