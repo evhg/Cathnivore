@@ -864,6 +864,8 @@ test('plan item 564: a field path joins the rows and Cath walks to scale', async
 // 8 px or more from the screen's edges and meeting no other, and Cath 0.9-1.2x a coin's height.
 test('plan item 608: the phone act is one winding trail, every name on a signboard', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'site-phone', 'phone layout')
+  // three seeded map loads (~10 s each on a phone map) overran the default 30 s (E2E red on 907d903)
+  test.setTimeout(120_000)
   for (const n of [0, 13, 20]) {
     await seed(page, n)
     await page.evaluate(() => document.fonts.ready)
