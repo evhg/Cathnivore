@@ -427,3 +427,43 @@ test('phone 390x844: the letters fill to the foot, Back to Title on the map fram
     expect(await goal.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
+
+test('the map speaks the board: tiles with a body, held land under Hollowell wrap, freed land 1.5x as colourful', async ({ page }) => {
+  // Plan item 580: each region is a board tile (an inked face on a tile body); held land carries the shrink-wrap,
+  // freed land is in full market colour.
+  await page.addInitScript((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: ['fresh-meat', 'word-of-mouth', 'growing-season'], tutorialDone: true })), KEY)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(page.locator('.cmp-map-edges polygon.cmp-map-edge')).toHaveCount(7)
+  await page.waitForTimeout(1200)
+  const wrap = await page.locator('.cmp-map-hex').evaluateAll((els) =>
+    els.map((e) => [e.getAttribute('data-state'), Number(getComputedStyle(e.querySelector('.cmp-map-wrap')!).opacity)] as const),
+  )
+  for (const [state, o] of wrap) expect(o, String(state)).toBe(state === 'freed' ? 0 : 1)
+  const shot = (await page.screenshot()).toString('base64')
+  const sat = await page.evaluate(async (shot) => {
+    const img = new Image()
+    img.src = `data:image/png;base64,${shot}`
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const g = c.getContext('2d')!
+    g.drawImage(img, 0, 0)
+    const by: Record<string, number[]> = {}
+    for (const e of document.querySelectorAll('.cmp-map-hex')) {
+      const r = e.querySelector('.cmp-map-ground')!.getBoundingClientRect()
+      const rad = r.width * 0.3
+      const d = g.getImageData(Math.round(r.x + r.width / 2 - rad), Math.round(r.y + r.height / 2 - rad), Math.round(rad * 2), Math.round(rad * 2)).data
+      let s = 0
+      for (let i = 0; i < d.length; i += 4) {
+        const mx = Math.max(d[i]!, d[i + 1]!, d[i + 2]!)
+        s += mx ? (mx - Math.min(d[i]!, d[i + 1]!, d[i + 2]!)) / mx : 0
+      }
+      ;(by[e.getAttribute('data-state')!] ??= []).push(s / (d.length / 4))
+    }
+    const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / a.length
+    return { freed: mean(by.freed!), locked: mean(by.locked!) }
+  }, shot)
+  expect(sat.freed).toBeGreaterThanOrEqual(sat.locked * 1.5)
+})

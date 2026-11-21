@@ -1908,3 +1908,48 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   .campaign-screen > .cmp-path > .cmp-stop { padding-bottom: 6px; }
   .campaign-screen > .cmp-path .cmp-card { padding-block: 8px; }
 }
+
+/* Plan item 580: the map's regions are the board's tiles: an inked face with the table's light and bevel on a
+   tile body, and Hollowell's held land under its glossy shrink-wrap (a clear film and one long streak), which
+   peels away when the region is freed. */
+.cmp-map-edge { fill: var(--region-capital); stroke: var(--ink-on-fixed-fill); stroke-width: 1.1; stroke-linejoin: round; }
+.cmp-map-pasture .cmp-map-edge { fill: var(--region-pasture); }
+.cmp-map-crop .cmp-map-edge { fill: var(--region-crop); }
+.cmp-map-coast .cmp-map-edge { fill: var(--region-coast); }
+.cmp-map-edge-shade { fill: var(--ink-on-fixed-fill); opacity: 0.34; }
+.cmp-map-hex:not(.is-next) > .cmp-map-ground { stroke: var(--ink-on-fixed-fill); stroke-width: 1.1; stroke-linejoin: round; }
+.cmp-map-light, .cmp-map-bevel, .cmp-map-wrap { pointer-events: none; }
+.cmp-map-bevel { fill: none; stroke: var(--paper-on-fixed-fill); stroke-opacity: 0.3; stroke-width: 1.2; }
+.cmp-light-hi { stop-color: var(--paper-on-fixed-fill); stop-opacity: 0.22; }
+.cmp-light-clear { stop-color: var(--paper-on-fixed-fill); stop-opacity: 0; }
+.cmp-shade-clear { stop-color: var(--ink); stop-opacity: 0; }
+.cmp-shade-lo { stop-color: var(--ink-on-fixed-fill); stop-opacity: 0.16; }
+.cmp-film-hi { stop-color: var(--wrap-film); stop-opacity: 0.4; }
+.cmp-film-clear { stop-color: var(--wrap-film); stop-opacity: 0.1; }
+.cmp-film-lo { stop-color: var(--corp-slate); stop-opacity: 0.2; }
+.cmp-streak-0 { stop-color: var(--wrap-shine); stop-opacity: 0; }
+.cmp-streak-1 { stop-color: var(--wrap-shine); stop-opacity: 0.6; }
+.cmp-map-wrap { transition: opacity 600ms ease-out; }
+.cmp-map-hex.is-free .cmp-map-wrap { opacity: 0; }
+/* held land drains further under the film; the freed ground is the board's full colour */
+.cmp-map-hex[data-state='locked'] .cmp-map-paint { filter: saturate(0.22) brightness(1.02); }
+/* Plan item 580: the moment a region is freed, Hollowell's wrap peels off it from the near corner (it rests on the
+   held land until the flood begins). */
+.cmp-map[data-phase='before'] .cmp-map-hex.is-flooding .cmp-map-wrap { opacity: 1; transition: none; }
+.cmp-map[data-phase='flood'] .cmp-map-hex.is-flooding .cmp-map-wrap,
+.cmp-map[data-phase='walk'] .cmp-map-hex.is-flooding .cmp-map-wrap {
+  animation: cmp-wrap-peel 750ms cubic-bezier(0.5, 0, 0.7, 1) both;
+  transform-box: fill-box;
+  transform-origin: 100% 0;
+}
+@keyframes cmp-wrap-peel {
+  0% { opacity: 1; transform: none; }
+  45% { opacity: 0.9; transform: rotate(-4deg) translate(3px, -4px) scale(0.97, 0.9); }
+  100% { opacity: 0; transform: rotate(-9deg) translate(10px, -14px) scale(0.9, 0.55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campaign-screen .cmp-map[data-phase='flood'] .cmp-map-hex.is-flooding .cmp-map-wrap,
+  .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-hex.is-flooding .cmp-map-wrap { animation: cmp-fade 600ms ease reverse both !important; }
+}
+:root.reduce-motion .campaign-screen .cmp-map[data-phase='flood'] .cmp-map-hex.is-flooding .cmp-map-wrap,
+:root.reduce-motion .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-hex.is-flooding .cmp-map-wrap { animation: cmp-fade 600ms ease reverse both !important; }

@@ -64,6 +64,8 @@ function Stall() {
 const WAVES: [number, number][] = [[-150, -120], [-128, -96], [118, -128], [140, -104], [-152, 96], [-130, 122], [128, 118], [-60, 138], [36, -146]]
 
 const GROUND_SCALE = MAP_FACE_R / BOARD_FACE_R
+// Plan item 580: the tile's thickness under its face, in map units (the board's TILE_DEPTH scaled to the map).
+const TILE_DEPTH = 4
 
 // A swag of pennants across a freed hex's upper edge.
 function Bunting() {
@@ -336,6 +338,25 @@ export default function CampaignMap({
           <pattern id="cmp-hold-hatch" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
             <line x1={0} y1={0} x2={0} y2={6} className="cmp-hold-line" />
           </pattern>
+          {/* Plan item 580: the board's tile body (its light and bevel), and Hollowell's shrink-wrap over held land
+              (item 525's film and streak), so the map speaks the board's art language. */}
+          <linearGradient id="cmp-tile-light" x1="0.15" y1="0" x2="0.75" y2="1">
+            <stop offset="0" className="cmp-light-hi" />
+            <stop offset="0.42" className="cmp-light-clear" />
+            <stop offset="0.62" className="cmp-shade-clear" />
+            <stop offset="1" className="cmp-shade-lo" />
+          </linearGradient>
+          <linearGradient id="cmp-wrap-film" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" className="cmp-film-hi" />
+            <stop offset="0.38" className="cmp-film-clear" />
+            <stop offset="0.62" className="cmp-film-clear" />
+            <stop offset="1" className="cmp-film-lo" />
+          </linearGradient>
+          <linearGradient id="cmp-wrap-streak" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0.3" className="cmp-streak-0" />
+            <stop offset="0.5" className="cmp-streak-1" />
+            <stop offset="0.7" className="cmp-streak-0" />
+          </linearGradient>
         </defs>
         <AtlasSheet />
         {/* Plan item 49: Marrow is an island. The coast is every hex grown outward and merged (round joins
@@ -365,6 +386,18 @@ export default function CampaignMap({
           })}
         </g>
         <AtlasMarks />
+        {/* Plan item 580: every tile's thickness goes down before any face, as on the board (Map's tile-edges). */}
+        <g className="cmp-map-edges" aria-hidden="true">
+          {regionIds.map((id) => {
+            const c = centre(id)
+            return (
+              <g key={id} className={`cmp-map-${REGIONS[id].type}`} transform={`translate(${c.x.toFixed(1)} ${(c.y + TILE_DEPTH).toFixed(1)})`}>
+                <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-edge" />
+                <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-edge-shade" />
+              </g>
+            )
+          })}
+        </g>
         {regionIds.map((id) => {
           const c = centre(id)
           const isFree = free.has(id)
@@ -381,6 +414,14 @@ export default function CampaignMap({
               </g>
               <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-tint" />
               <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-hatch" fill="url(#cmp-hold-hatch)" />
+              <polygon points={hexPoints(MAP_FACE_R)} className="cmp-map-light" fill="url(#cmp-tile-light)" />
+              <polygon points={hexPoints(MAP_FACE_R - 2.2)} className="cmp-map-bevel" />
+              {/* Plan item 580: Hollowell's gloss: held land under shrink-wrap that catches the light in one streak;
+                  freeing the region peels it away. */}
+              <g className="cmp-map-wrap">
+                <polygon points={hexPoints(MAP_FACE_R)} fill="url(#cmp-wrap-film)" />
+                <polygon points={hexPoints(MAP_FACE_R)} fill="url(#cmp-wrap-streak)" />
+              </g>
             </g>
           )
         })}
