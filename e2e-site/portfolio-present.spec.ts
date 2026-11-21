@@ -51,3 +51,29 @@ test('the stats end on a live last-shipped line', async ({ page }) => {
     expect(line.y + line.height).toBeLessThanOrEqual(page.viewportSize()!.height)
   } else expect(box.y).toBeGreaterThanOrEqual(stats.y + stats.height - 1)
 })
+
+// Plan item 601: her line's tail points at her head (at D it met her knees, 360 px from her face), on a phone too; the
+// phone's prints are framed with a name plate, not a black caption bar.
+test("Cath's line points at her head, and the phone's prints are framed", async ({ page }) => {
+  await page.goto('/')
+  await page.waitForTimeout(2500)
+  const m = await page.evaluate(() => {
+    const vis = [...document.querySelectorAll('.show-say-text, .show-say-short')].find((e) => getComputedStyle(e).display !== 'none')!
+    const tip = getComputedStyle(vis, '::after')
+    const b = vis.getBoundingClientRect()
+    const c = document.querySelector('#hero-cath')!.getBoundingClientRect()
+    const tail = { x: b.right - parseFloat(tip.right) - parseFloat(tip.width) / 2, y: b.bottom - parseFloat(tip.bottom) }
+    const head = { l: c.left, r: c.right, t: c.top, b: c.top + c.height * 0.22 }
+    const d = Math.hypot(Math.max(head.l - tail.x, 0, tail.x - head.r), Math.max(head.t - tail.y, 0, tail.y - head.b))
+    const card = document.querySelector('.show-a')!
+    const label = document.querySelector('.show-a .show-label')!
+    return { d, bottom: b.bottom, h: innerHeight, frame: parseFloat(getComputedStyle(card).paddingLeft), plate: getComputedStyle(label).backgroundImage, scroll: document.documentElement.scrollWidth - innerWidth }
+  })
+  expect(m.d, JSON.stringify(m)).toBeLessThanOrEqual(24)
+  expect(m.bottom).toBeLessThanOrEqual(m.h)
+  expect(m.scroll).toBeLessThanOrEqual(0)
+  if (page.viewportSize()!.width <= 720) {
+    expect(m.frame).toBeGreaterThanOrEqual(5)
+    expect(m.plate).toContain('gradient')
+  }
+})

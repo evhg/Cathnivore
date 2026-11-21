@@ -2240,3 +2240,96 @@ h1 {
   .hero .shipped { grid-row: 5; order: 0; margin: var(--sp-3) 0 var(--sp-2); }
   .hero .show-strip { grid-row: 6; grid-column: 1 / -1; margin-top: 0; }
 }
+
+/* Plan item 601: her line's bubble points at her head. At D it hangs over her, above the wall, its tail down to her
+   (under the wall its tail met her knees, 360 px from her face). On a phone she has a line too, a short one in a
+   bubble over her head, and the prints hang framed as at D (a cream mat, a lacquer frame with a gold hairline, a brass
+   name plate) instead of thumbnails over black caption bars. */
+.show-say-short { display: none; }
+@media (min-width: 1100px) {
+  .show-say {
+    left: auto;
+    top: -62px;
+    right: calc(-1 * var(--hang) + var(--cath-w) / 2 - 34px);
+    width: max-content;
+    max-width: min(46ch, calc(100% + var(--hang)));
+  }
+  .show-say-text { border-radius: 16px 16px 6px 16px; }
+  .show-say-text::after {
+    top: auto;
+    bottom: -7px;
+    right: 26px;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+    border-right: 1px solid var(--line-strong);
+  }
+}
+@media (max-width: 720px) {
+  .hero .show-say {
+    display: block;
+    grid-row: 2 / 4;
+    grid-column: 2;
+    align-self: end;
+    justify-self: stretch;
+    position: relative;
+    z-index: var(--z-1);
+    /* her figure is 88 px wide and 220 px tall: the bubble stands bottom-aligned with her, lifted by her height */
+    top: calc(-220px - 10px);
+    margin: 0 0 var(--sp-2) -66px;
+    text-align: right;
+    pointer-events: none;
+  }
+  .hero .show-say-text { display: none; }
+  .hero .show-say-short {
+    display: inline-block;
+    position: relative;
+    padding: 6px 11px 7px;
+    border-radius: 14px 14px 5px 14px;
+    background: var(--glass-solid);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font: italic 400 0.875rem/1.25 var(--font-voice);
+    text-align: left;
+  }
+  .hero .show-say-short::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    right: 34px;
+    width: 10px;
+    height: 10px;
+    background: var(--glass-solid);
+    border-bottom: 1px solid var(--line-strong);
+    border-right: 1px solid var(--line-strong);
+    rotate: 45deg;
+  }
+  .ready .hero .show-say { animation: rise 1s var(--ease-out) 900ms both; }
+  /* the prints, framed */
+  .show-strip .show-card {
+    padding: 5px 5px 0;
+    border: 0;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--text) 88%, var(--ink));
+    box-shadow:
+      0 0 0 4px var(--ink-raised),
+      0 0 0 5px color-mix(in srgb, var(--accent-gold) 35%, transparent),
+      0 18px 26px -14px var(--show-shadow);
+  }
+  .show-strip .show-card img { border-radius: 1px; }
+  .show-strip .show-label {
+    display: block;
+    align-self: center;
+    margin: 5px 0 6px;
+    padding: 2px 9px 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-gold) 92%, var(--text)), color-mix(in srgb, var(--accent-gold) 70%, var(--ink)));
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 60%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text) 50%, transparent);
+    color: var(--ink);
+    font: 600 0.8125rem/1.2 var(--font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .show-strip { gap: var(--sp-4); padding-top: 6px; }
+}
