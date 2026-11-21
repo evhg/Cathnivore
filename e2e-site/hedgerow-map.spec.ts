@@ -182,7 +182,7 @@ test('plan item 74: on a fresh farm the start tag replaces the empty stars, and 
 
 // Plan item 73: every stop is a painted vignette (its landmark on the plinth, its number a badge), 44 px or larger,
 // in colour once open and in pencil grey while locked.
-test('plan item 73: every stop is a landmark vignette, 44 px or larger, in Hollowell grey while locked', async ({ page }) => {
+test('plan item 73: every stop is a landmark vignette, 44 px or larger, in its own colours under cellophane while locked', async ({ page }) => {
   await seed(page, 6)
   // The stops scale in as the map opens; measure them at rest.
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
@@ -204,14 +204,18 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, in Hollo
     if (n.next) expect(n.pennant).toBe('pennant-bob')
   })
   expect(new Set(nodes.map((n) => n.art)).size).toBeGreaterThanOrEqual(8)
-  const lockedInk = new Set(nodes.filter((n) => n.locked).map((n) => n.ink))
-  expect(lockedInk.size).toBe(1)
-  // Plan item 372 (was 314's sepia): a locked stop is still Hollowell's, drawn in one cool grey line on plastic and
-  // wearing the corporate seal; an open one keeps its own colours.
-  const [grey] = [...lockedInk]
-  const rgb = (grey ?? '').match(/[\d.]+/g)!.map(Number)
-  expect(rgb[2]!, 'cool grey, not sepia').toBeGreaterThanOrEqual(rgb[0]!)
-  for (const n of nodes.filter((x) => !x.locked)) expect(n.ink).not.toBe(grey)
+  // Plan item 596 (was 372's one cool grey line): a locked stop shows its own landmark in its colours, toned sepia,
+  // under Hollowell's cellophane sheen (its plastic coin and H tag kept); its colour is checked in item 124's test.
+  const wrap = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLButtonElement>('button.node:disabled')].slice(0, 4).map((b) => {
+      const coin = b.querySelector('.level-num')!
+      return { filter: getComputedStyle(coin.querySelector('.level-landmark')!).filter, sheen: getComputedStyle(coin, '::after').backgroundImage }
+    }),
+  )
+  for (const w of wrap) {
+    expect(w.filter).toContain('sepia')
+    expect(w.sheen).toContain('gradient')
+  }
   // Plan item 471: the seal is merged into the number tag (one Hollowell tag, 'H | 15')
   const seals = await page.evaluate(() => [...document.querySelectorAll<HTMLButtonElement>('button.node')].slice(0, 10).map((b) => [b.disabled, getComputedStyle(b.querySelector('.level-n')!, '::before').content]))
   for (const [locked, content] of seals) if (locked) expect(content).toBe('"H"')
@@ -374,7 +378,7 @@ test('plan item 111: at 1280x800 Play is on screen on act 1', async ({ page }, t
 // Plan item 124: Cath stands on the road at full length beside her stop, clear of every label and padlock, and a
 // locked stop is a pencil sketch (under 15% saturation) that comes into colour (over 30%) when it opens.
 for (const upTo of [3, 23]) {
-  test(`plan item 124: Cath at full length on the road, and locked stops in pencil (act ${upTo < 10 ? 1 : 3})`, async ({ page, hasTouch }) => {
+  test(`plan item 124: Cath at full length on the road, and locked stops toned, not in full colour (act ${upTo < 10 ? 1 : 3})`, async ({ page, hasTouch }) => {
     await seed(page, upTo)
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
     const m = await page.evaluate(() => {
@@ -414,7 +418,11 @@ for (const upTo of [3, 23]) {
     const open = await sat(upTo)
     const locked = await sat(upTo + 2)
     expect(open, `open ${upTo}`).toBeGreaterThan(0.3)
-    expect(locked, `locked ${upTo + 2}`).toBeLessThan(0.15)
+    // Plan item 596: a locked landmark keeps its own colours (it was pencil line art) and is toned sepia under the
+    // cellophane, so the open stop still stands out in full colour.
+    expect(locked, `locked ${upTo + 2}`).toBeGreaterThan(0.15)
+    const tone = await page.evaluate((l) => getComputedStyle(document.querySelector(`button.node[data-level="${l}"] .level-landmark`)!).filter, upTo + 2)
+    expect(tone).toContain('sepia')
   })
 }
 

@@ -5303,18 +5303,9 @@ img.act-scene {
   filter: grayscale(1);
   opacity: 1;
 }
-#screen-select .node:disabled .level-num.vignette .level-landmark * {
-  fill: var(--paper-2);
-  stroke: var(--pencil, color-mix(in srgb, var(--ink) 58%, var(--paper)));
-  stroke-width: 0.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-#screen-select .node:disabled .level-num.vignette .level-landmark [fill="none"] { fill: none; }
 /* Plan item 241: each stop's landmark is painted with its own patch of ground, so it fills more of the coin; a
    locked one drops its shading and light (`data-sh`) and keeps the pencil line. */
 #screen-select .node .level-num.vignette .level-landmark { inset: 6% 8% 8%; }
-#screen-select .node:disabled .level-num.vignette .level-landmark [data-sh] { display: none; }
 /* The next stop flies a pennant on a pole, bobbing slowly (still under reduced motion). */
 #screen-select .node.next .level-num::before {
   content: "";
@@ -5722,21 +5713,12 @@ img.act-scene {
       linear-gradient(170deg, transparent 22%, color-mix(in srgb, var(--plastic) 22%, transparent) 23% 27%, transparent 28%),
       radial-gradient(ellipse 70% 60% at 50% 35%, color-mix(in srgb, var(--corp-ink) 45%, var(--plastic-shade)), color-mix(in srgb, var(--corp-ink) 70%, var(--plastic-shade)));
   }
-  #screen-select .node:disabled .level-num.vignette .level-landmark * {
-    fill: color-mix(in srgb, var(--corp-ink) 40%, var(--plastic-shade));
-    stroke: color-mix(in srgb, var(--corp-ink) 10%, var(--plastic-shade));
-  }
 }
 /* The next stop to play is the farm's in full colour: a sunlit wheat ground behind its landmark (and its pulse). */
 #screen-select .node.next:not(.cleared) .level-num {
   background: radial-gradient(ellipse 70% 60% at 50% 35%, color-mix(in srgb, var(--wheat) 45%, var(--paper)), color-mix(in srgb, var(--wheat) 80%, var(--soil)));
 }
 #screen-select .node:disabled .level-num.vignette .level-landmark { filter: none; }
-#screen-select .node:disabled .level-num.vignette .level-landmark * {
-  fill: color-mix(in srgb, var(--corp-ink) 6%, var(--plastic));
-  stroke: color-mix(in srgb, var(--corp-ink) 55%, var(--plastic-shade));
-}
-#screen-select .node:disabled .level-num.vignette .level-landmark [fill="none"] { fill: none; }
 @media (prefers-color-scheme: dark) {
   #screen-select .node:disabled .level-num.vignette .level-landmark { filter: none; }
 }
@@ -6219,4 +6201,29 @@ img.act-scene {
    onto two lines and pushed the next act below the first screen); it crops to fill. */
 @media (max-width: 899.98px) {
   .level-card:not(.open) .lcard-thumb[data-still] svg { width: 42px; height: 48px; }
+}
+
+/* Plan item 596: a locked stop shows its own landmark in its act's colours, toned sepia, under Hollowell's cellophane
+   (items 124/314/372 drew it as grey line art, so a locked act read as a row of disabled buttons). Item 471's
+   plastic coin, turf plinth and H tag stay; a sheen across the coin lays the wrap over the picture. It still wakes
+   into full colour when it opens (item 73's vignette-wake). */
+#screen-select .node:disabled .level-num.vignette .level-landmark {
+  filter: sepia(.5) saturate(.9) contrast(.92) brightness(1.02);
+  opacity: 1;
+}
+#screen-select .node:disabled .level-num.vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  box-shadow: none;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(160deg, transparent 18%, color-mix(in srgb, var(--plastic) 55%, transparent) 20% 25%, transparent 27% 60%, color-mix(in srgb, var(--plastic) 30%, transparent) 62% 64%, transparent 66%),
+    radial-gradient(ellipse 80% 70% at 50% 40%, transparent 55%, color-mix(in srgb, var(--plastic-shade) 35%, transparent));
+}
+@media (prefers-color-scheme: dark) {
+  #screen-select .node:disabled .level-num.vignette .level-landmark { filter: sepia(.5) saturate(.75) brightness(.78); }
 }
