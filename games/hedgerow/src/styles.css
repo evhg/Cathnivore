@@ -5033,6 +5033,7 @@ img.act-scene {
 .lcard-cath-face { flex: none; width: 32px; height: 32px; overflow: hidden; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 2px var(--line); }
 .lcard-cath-face svg { display: block; width: 100%; height: 100%; }
 .lcard-cath p { margin: 0; font: italic 500 var(--fs-small) / 1.3 var(--font-voice); color: var(--ink); text-wrap: pretty; }
+.lcard-cath-fig, .lcard-foe .lcard-trait { display: none; }
 /* Each vehicle as a portrait with what it does, two by two */
 .lcard-enemies { grid-area: foes; display: grid; grid-template-columns: repeat(2, minmax(0, 222px)); gap: 6px 12px; margin: 0; padding: 0 0 0 16px; border-left: 2px dashed color-mix(in srgb, var(--soil) 30%, transparent); list-style: none; }
 .lcard-enemies li { display: flex; align-items: center; gap: 8px; min-width: 0; }
@@ -5838,6 +5839,54 @@ img.act-scene {
   #screen-select li.act.act-has-card .lcard-enemies .enemy-portrait img { width: 36px; height: 36px; }
   #screen-select li.act.act-has-card .lcard-enemies li { padding-left: 4px; gap: 12px; }
   #screen-select li.act.act-has-card .lcard-play { width: 100%; }
+  @media (min-height: 860px) {
+    /* Plan item 624: Cath briefs at half length (164 px), cropped at the card's left edge, her line a tailed bubble
+       beside her; the plate is a little shorter to make the room (the card still ends above a 900 px fold).
+       From 860 px tall and from act 2 (act 1's card sits under Cath's own header line, with no room): under that the card keeps item 372's list, which fits an 800 px screen. */
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-thumb svg.lcard-plate-wide { max-height: 112px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath { align-items: center; gap: 4px; min-height: 164px; margin-left: -14px; padding-top: 0; overflow: hidden; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath-face { display: none; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath-fig { display: block; flex: none; align-self: end; width: 104px; height: 164px; overflow: hidden; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath-fig svg { display: block; width: auto; height: 172px; margin-left: -18px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath p {
+      position: relative;
+      margin: 8px 0;
+      padding: 8px 10px;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper-hi);
+      font-size: var(--fs-small);
+    }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath p::before {
+      content: "";
+      position: absolute;
+      left: -9px;
+      top: 26px;
+      width: 14px;
+      height: 14px;
+      border-left: 1.5px solid var(--line);
+      border-bottom: 1.5px solid var(--line);
+      background: var(--paper-hi);
+      rotate: 45deg;
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+    }
+    /* the fleet as pictures: a 2x2 grid of chips, each its 64 px portrait, its name and one trait */
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-enemies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-enemies li {
+      flex-direction: column;
+      gap: 2px;
+      padding: 4px 4px 5px;
+      text-align: center;
+    }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-enemies .enemy-portrait { width: 64px; height: 64px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-enemies .enemy-portrait img:not(.lcard-counter-badge) { width: 58px; height: 58px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe { justify-items: center; width: 100%; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe b { max-width: 100%; font-size: 0.8125rem; }
+    /* its one trait a stamp (the threat sentence stays on the phone's sheet and on narrower desktops) */
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe .lcard-threat { display: none; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe .lcard-trait { display: block; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--soil) 14%, transparent); font: 800 0.8125rem / 1.35 var(--font-ui); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .level-card { gap: 6px; }
+  }
 }
 /* Plan item 471: on a desktop 860 px tall or more each stop is a little diorama of its landmark, 112 px (the boss lot
    124), not a 72 px icon; under 860 px the 72 px coins keep act 1's trail inside the 1280x800 fold (item 372). */

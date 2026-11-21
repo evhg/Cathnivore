@@ -10,6 +10,7 @@ import { countersFor, needsUpgrade, traitsOf } from "./intro";
 import { towerRole } from "./roles";
 import { enemyIcon, towerIcon } from "./icons";
 import { driverFace } from "./fleetfaces";
+import { briefExpression } from "./brief";
 import { startPlatePreview, type PlatePreview } from "./platepreview";
 import { openActs } from "./unlocks";
 import { landState, stopLandSvg } from "./stopland";
@@ -2201,6 +2202,13 @@ function counterLine(kind: EnemyKind, lv: Level): string {
   return `<span class="lcard-counter" data-counter="${c.tower}">${TOWERS[c.tower].name}${c.upgrade ? " (upgraded)" : ""} ${c.verb}</span>`;
 }
 
+/** Plan item 624: a vehicle's one trait as a word, for its picture chip on the D card. */
+const TRAIT_WORD: Record<string, string> = { boss: "Boss", flies: "Flies", stealth: "Unseen", armour: "Plated", wrapped: "Wrapped", sealed: "Sealed", reefer: "Chilled", heavy: "Heavy", splits: "Splits", fast: "Fast", slow: "Slow" };
+function traitWord(kind: EnemyKind): string {
+  const t = traitsOf(kind)[0];
+  return t ? (TRAIT_WORD[t] ?? t) : "Steady";
+}
+
 function threatLine(kind: EnemyKind): string {
   const e = ENEMIES[kind];
   if (e.hp >= 1500) return "The boss: a long, hard slog.";
@@ -2276,8 +2284,13 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
   face.className = "lcard-cath-face";
   face.setAttribute("aria-hidden", "true");
   face.innerHTML = cathSvg({ framing: "face", expression: "smirk" });
+  // Plan item 624: at D she briefs at half length, cropped at the card's edge, her line a tailed bubble beside her
+  // (the phone's sheet keeps the face); her expression follows the level's difficulty.
+  const fig = document.createElement("span");
+  fig.className = "lcard-cath-fig";
+  fig.setAttribute("aria-hidden", "true");
   const words = document.createElement("p");
-  say.append(face, words);
+  say.append(face, fig, words);
   const foes = document.createElement("ul");
   foes.className = "lcard-enemies";
   foes.setAttribute("aria-label", "Brings");
@@ -2379,10 +2392,14 @@ function levelCard(data: SaveData, play: (lv: Level) => void): LevelCard {
         (lv.twists?.length ? `<p class="lcard-twist"><span class="lcard-stamp">${lv.twists.map((t) => esc(TWISTS[t].name)).join(" · ")}</span></p>` : "") +
         `<p class="lcard-stars" role="img" aria-label="${stars} of 3 stars" title="${stars} of 3 stars">${[0, 1, 2].map((i) => `<span class="lcard-medal${i < stars ? " is-won" : ""}" aria-hidden="true">${i < stars ? "★" : "☆"}</span>`).join("")}</p>`;
       words.textContent = cathLine(lv);
+      const mood = briefExpression(lv);
+      say.dataset.expression = mood;
+      face.innerHTML = cathSvg({ framing: "face", expression: mood });
+      fig.innerHTML = cathSvg({ framing: "half", expression: mood, pose: mood === "worried" ? "crossed" : mood === "determined" ? "hip" : "clasped" });
       foes.innerHTML = top
         .map(
           ([k]) =>
-            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt="">${counterBadge(k, lv)}<span class="lcard-driver">${driverFace(k)}</span></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span>${esc(threatLine(k))}</span>${counterLine(k, lv)}</span></li>`,
+            `<li data-kind="${k}" tabindex="0"><span class="enemy-portrait"><img src="${enemyIcon(k)}" alt="">${counterBadge(k, lv)}<span class="lcard-driver">${driverFace(k)}</span></span><span class="lcard-foe"><b>${esc(ENEMIES[k].name)}</b><span class="lcard-threat">${esc(threatLine(k))}</span><span class="lcard-trait">${traitWord(k)}</span>${counterLine(k, lv)}</span></li>`,
         )
         .join("");
       preview = startPlatePreview(thumb, lv, matchMedia("(prefers-reduced-motion: reduce)").matches, top.map(([k]) => k));
