@@ -797,7 +797,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const upright = cam.aspect < 1;
     const gap = 0.012 * w;
     // The band for this screen, then the clear space beside her in it.
-    const [y0, y1] = !upright ? (pick ? [0.2 * h, 0.48 * h] : [0.13 * h, 0.5 * h]) : pick ? [0.1 * h, 0.5 * h] : [0.555 * h, 0.715 * h];
+    // Plan item 617: on the pick it hangs high on the wall, above her shoulder (at her shoulder, beside her name-sized
+    // figure, LUNA read as her name tag), so it is the bar across the street, not a label.
+    const [y0, y1] = !upright ? (pick ? [0.06 * h, 0.22 * h] : [0.13 * h, 0.5 * h]) : pick ? [0.05 * h, 0.2 * h] : [0.555 * h, 0.715 * h];
     const her = herSpan(y0, y1);
     const lo = !upright && pick && pickStage ? pickStage.left + gap : 0.04 * w;
     const hi = !upright && pick && pickStage ? pickStage.right - gap : 0.97 * w;
