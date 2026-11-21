@@ -59,8 +59,9 @@ test('plan item 399: Saltmarsh and Rivermead sow their own beds, and their plots
   const salt = await plotHue(page)
   await open(page, 34)
   const river = await plotHue(page)
-  expect(salt.looks).toEqual(['lavender', 'saltgrass', 'samphire'])
-  expect(river.looks).toEqual(['cress', 'meadow', 'swathe'])
+  // Plan item 621: each act's three beds plus its two margin beds borrowed from a neighbouring country
+  expect(salt.looks).toEqual(['lavender', 'saltgrass', 'samphire', 'seakale', 'thrift'])
+  expect(river.looks).toEqual(['cress', 'meadow', 'oats', 'stubble', 'swathe'])
   let gap = Math.abs(salt.hue - river.hue)
   if (gap > 180) gap = 360 - gap
   console.log(`hue l21 ${salt.hue.toFixed(1)} l34 ${river.hue.toFixed(1)} gap ${gap.toFixed(1)}`)

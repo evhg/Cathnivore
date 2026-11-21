@@ -431,26 +431,65 @@ function paintGroundBase(ctx: CanvasRenderingContext2D, ground: MarginSet["groun
       ctx.arc(r.x + rand() * r.w, r.y + rand() * r.h, s * (0.02 + rand() * 0.025), 0, Math.PI * 2);
       ctx.fill();
     }
-    // A mill race: one wide, slow stream down the margin.
+    // A mill race: one wide, slow stream down the margin. Plan item 621: drawn as the act's river, a landmark with
+    // earth banks, pale shallows over a deeper channel and reeds on its lips, not a thin blue stripe.
+    const k = Math.min(1, (r.w * 0.5) / (s * 0.9));
     let x = r.x + r.w * (0.35 + rand() * 0.3);
     const pts: Array<[number, number]> = [];
     for (let y = r.y - s; y <= r.y + r.h + s; y += s * 0.6) {
       x += (rand() - 0.5) * s * 0.35;
-      x = Math.max(r.x + s * 0.3, Math.min(r.x + r.w - s * 0.3, x));
+      x = Math.max(r.x + s * 0.45 * k, Math.min(r.x + r.w - s * 0.45 * k, x));
       pts.push([x, y]);
     }
+    const trace = () => {
+      ctx.beginPath();
+      pts.forEach(([px, py], i) => {
+        if (!i) return ctx.moveTo(px, py);
+        const [qx, qy] = pts[i - 1]!;
+        ctx.quadraticCurveTo(qx, qy, (qx + px) / 2, (qy + py) / 2);
+      });
+    };
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     for (const [width, color] of [
-      [0.32, "rgba(70,100,50,0.45)"],
-      [0.22, "#7fb3cc"],
-      [0.04, "rgba(235,246,246,0.6)"],
+      [0.9, "rgba(58,92,40,0.5)"],
+      [0.8, "rgba(132,104,64,0.85)"],
+      [0.64, "#9cc9d6"],
+      [0.4, "#6ea4c2"],
+      [0.22, "#5a8fb0"],
     ] as const) {
       ctx.strokeStyle = color;
-      ctx.lineWidth = Math.max(1, s * width);
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      pts.forEach(([px, py], i) => (i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+      ctx.lineWidth = Math.max(1, s * width * k);
+      trace();
       ctx.stroke();
+    }
+    // Slow ripples: broken pale lines down the channel.
+    ctx.strokeStyle = "rgba(235,246,246,0.6)";
+    ctx.lineWidth = Math.max(1, s * 0.035);
+    ctx.setLineDash([s * 0.22, s * 0.5]);
+    for (const dx of [-0.12, 0.1]) {
+      ctx.save();
+      ctx.translate(s * dx * k, 0);
+      trace();
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.setLineDash([]);
+    // Reeds on both lips.
+    ctx.strokeStyle = "rgba(64,96,40,0.85)";
+    ctx.lineWidth = Math.max(1, s * 0.025);
+    for (const [px, py] of pts) {
+      for (const side of [-1, 1]) {
+        if (rand() < 0.45) continue;
+        const bx = px + side * s * 0.36 * k;
+        const by = py + (rand() - 0.5) * s * 0.4;
+        for (let j = 0; j < 3; j++) {
+          ctx.beginPath();
+          ctx.moveTo(bx + j * s * 0.03 * side, by);
+          ctx.lineTo(bx + j * s * 0.03 * side + side * s * 0.05, by - s * (0.16 + j * 0.04));
+          ctx.stroke();
+        }
+      }
     }
   } else {
     // Moor: heather-brown ground, purple and bracken-gold patches, grey dry-stone walls across it.
