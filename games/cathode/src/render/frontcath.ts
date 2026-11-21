@@ -1388,7 +1388,8 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // from the lip to the jaw's edge (view normal.y < -0.45 all the way), so the lower face read as a flat,
       // heavy underside. A soft mound under the lip's hollow brings the chin's front up to face the lens, and its
       // underside turns away in a shorter, quicker curve.
-      dz += 0.085 * bump(x, y, 0, -0.8, 0.3, 0.24);
+      // Slice 99: broader (0.3 -> 0.4 wide), so the chin's front is one rounded pad, not a ridge to a point.
+      dz += 0.085 * bump(x, y, 0, -0.8, 0.4, 0.24);
       z += dz * front;
       // Jaw: below the cheekbones the sides draw in, the chin comes forward.
       if (y < 0) {
@@ -1409,7 +1410,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Slice 79: the taper's slope eases off toward the chin (1.25 k^1.1 - 0.25 k^3: the same 0.56 at the chin, a
         // little narrower mid-jaw), so the jaw line rounds into the chin instead of meeting it in a square corner on the
         // far side at the D title.
-        x *= 1 - 0.56 * (1.25 * Math.pow(k, 1.1) - 0.25 * k * k * k);
+        // Slice 99: the tip rounder (the critique read a pointed wedge): over the last stretch (k 0.7-1) the taper
+        // backs off by up to 0.12, so the chin ends in a small U; the jaw above keeps its width.
+        x *= 1 - 0.56 * (1.25 * Math.pow(k, 1.1) - 0.25 * k * k * k - 0.12 * THREE.MathUtils.smoothstep(k, 0.7, 1));
         // Slice 40: the jaw line rises from the chin toward the ear: the lower head's sides and back lift (up to 0.11
         // at the side, none at the chin's front), so its underside slopes up and back instead of lying as one flat
         // shelf whose edge met the cheek in a corner.
