@@ -96,3 +96,39 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
   const inCoat = await page.evaluate(() => (window as unknown as F).cathodeFront!.scene()!.weaponInCoat())
   expect(inCoat.depth, JSON.stringify(inCoat)).toBeLessThanOrEqual(0.005)
 })
+
+// Plan item 579: each class's held stance has its own outline: her silhouettes (scene().figureMask(), her projected
+// triangles on a 4 px grid) for any two classes differ by 12% or more (1 - IoU) on the class pick still.
+test('her five class stances have five outlines (1 - IoU 0.12+ for every pair)', async ({ page, hasTouch }) => {
+  // Five page loads of the 3D street under SwiftShader: about 5 min at D beside another project.
+  test.setTimeout(600_000)
+  await page.setViewportSize(hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+  await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
+  type M = { w: number; h: number; bits: string }
+  type G = { cathodeFront?: { ready?: boolean; scene: () => (S & { setTime(t: number): void; figureMask(cell?: number): M }) | null } }
+  const masks: Record<string, string> = {}
+  for (const cls of CLASSES) {
+    await page.goto(`/nightshift/?front=classpick&shot&t=8&class=${cls}${hasTouch ? '&quality=phone' : ''}`)
+    await page.waitForFunction(() => (window as unknown as G).cathodeFront?.ready, null, { timeout: 200_000 })
+    // setTime runs a second of her updates before it draws: the stance is held at full weight after one call.
+    const r = await page.evaluate(() => {
+      const s = (window as unknown as G).cathodeFront!.scene()!
+      s.setTime(20)
+      return { pose: s.figurePose(), mask: s.figureMask(4) }
+    })
+    expect(r.pose.kind, cls).toBe(cls)
+    expect(r.pose.w, cls).toBe(1)
+    masks[cls] = r.mask.bits
+  }
+  for (let i = 0; i < CLASSES.length; i++)
+    for (let j = i + 1; j < CLASSES.length; j++) {
+      const a = masks[CLASSES[i]!]!, b = masks[CLASSES[j]!]!
+      let inter = 0, uni = 0
+      for (let k = 0; k < a.length; k++) {
+        const x = a[k] === '1', y = b[k] === '1'
+        if (x && y) inter++
+        if (x || y) uni++
+      }
+      expect(1 - inter / uni, `${CLASSES[i]}-${CLASSES[j]}`).toBeGreaterThanOrEqual(0.12)
+    }
+})

@@ -3212,9 +3212,10 @@ float reliefShade( vec2 uv ) {
               const own = clip?.kind === "fixer" && stanceWant === "fixer";
               const k = !clip ? 1 : !own ? 0 : clip.held !== undefined ? 1 : THREE.MathUtils.smoothstep(clip.u, 0.78, 1);
               const c = 1 - k;
-              // Plan item 422: holding her stance she shoulders the launcher, her hand on its grip at her chest; the
-              // briefcase stands on the street beside her.
-              reach(0.02 * c + 0.22 * k, 0.31 * c + 0.11 * k, 0.15 * c + 0.24 * k, 1, -0.7 * c - 0.6 * k, -0.1 * c - 0.3 * k, -1.2 * c);
+              // Plan item 422: holding her stance she carries the launcher, the briefcase on the street beside her.
+              // Plan item 579: carried low at her side, her arm long and the muzzle to the street (shouldered across
+              // her chest it read as the Butcher's pose with a different gun).
+              reach(0.02 * c + 0.31 * k, 0.31 * c - 0.2 * k, 0.15 * c + 0.1 * k, 1 * c + 0.3 * k, -0.7 * c, -0.1 * c - 1 * k, -1.2 * c);
               headPivot.rotation.x += (0.2 * c - 0.05 * k) * e;
               headPivot.rotation.y += (0.22 * c + 0.1 * k) * e;
               chest.rotation.z += (0.04 * c + 0.03 * k) * e;
@@ -4216,11 +4217,11 @@ float reliefShade( vec2 uv ) {
   const RIFLE_DIR = V(-0.14, -1, 0.14);
   // Plan item 422: each side gun's muzzle direction and its top, in the chest frame (+x her left, +z ahead of her).
   // The revolver hangs drawn at her hip, muzzle down and out; the smart SMG stands raised by her shoulder into the
-  // rig's light, its magazine to the lens; the launcher rests back over her left shoulder.
+  // rig's light, its magazine to the lens; the launcher hangs at her side, muzzle down, its profile to the lens.
   const SIDE_DIR: Record<"revolver" | "smg" | "launcher", [THREE.Vector3, THREE.Vector3]> = {
     revolver: [V(0.3, -0.8, 0.52), V(0, 0.6, 0.8)],
     smg: [V(0.2, 1, 0.1), V(-0.2, 0, -1)],
-    launcher: [V(0.42, 1, -0.45), V(0, 0.4, 1)],
+    launcher: [V(-0.16, -1, 0.2), V(1, 0, 0.1)],
   };
   const RIFLE_TOP = V(-1, 0, 0.35);
   const SHOT_DIR = V(0.38, 0.88, 0.28);

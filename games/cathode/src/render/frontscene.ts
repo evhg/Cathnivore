@@ -107,6 +107,11 @@ export interface FrontScene {
   /** Plan item 82: her projected box on screen, in CSS px (for the layout checks). */
   /** Her projected box; `body` leaves the umbrella out (plan item 159: what a menu plate must stay clear of). */
   figureBox(body?: boolean): { left: number; top: number; right: number; bottom: number };
+  /**
+   * Plan item 579: her silhouette (every visible mesh of her, umbrella and props included), rasterised from its
+   * projected triangles onto a grid of `cell` CSS px over the canvas: row-major 0/1, for the pose-difference checks.
+   */
+  figureMask(cell?: number): { w: number; h: number; cell: number; bits: string };
   /** Plan item 498: each prop of the current class's set, its projected box in CSS px (empty off the pick). */
   setPropBoxes(): Array<{ name: string; left: number; top: number; right: number; bottom: number }>;
   /** Plan item 258: the neon sign's projected box (its tubes), in CSS px. */
@@ -1144,6 +1149,45 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
         }
       });
       return { left, top, right, bottom };
+    },
+    figureMask(cell = 4) {
+      const r = world.renderer.domElement.getBoundingClientRect();
+      const w = Math.ceil(r.width / cell), h = Math.ceil(r.height / cell);
+      const cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+      const g = cv.getContext("2d")!;
+      g.fillStyle = "#fff";
+      cath.group.updateMatrixWorld(true);
+      const p = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+      cath.group.traverseVisible((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        const pos = m.geometry.attributes.position as THREE.BufferAttribute | undefined;
+        if (!pos) return;
+        const idx = m.geometry.index;
+        const n = idx ? idx.count : pos.count;
+        g.beginPath();
+        for (let t = 0; t + 2 < n; t += 3) {
+          let behind = false;
+          for (let k = 0; k < 3; k++) {
+            p[k]!.fromBufferAttribute(pos, idx ? idx.getX(t + k) : t + k).applyMatrix4(m.matrixWorld).project(cam);
+            if (p[k]!.z > 1) behind = true;
+          }
+          if (behind) continue;
+          // One winding for every triangle, so a back face never cancels a front one under the nonzero rule.
+          const [a, b, c] = (p[1]!.x - p[0]!.x) * (p[2]!.y - p[0]!.y) - (p[2]!.x - p[0]!.x) * (p[1]!.y - p[0]!.y) < 0 ? [p[0]!, p[2]!, p[1]!] : [p[0]!, p[1]!, p[2]!];
+          g.moveTo(((a.x + 1) / 2) * w, ((1 - a.y) / 2) * h);
+          g.lineTo(((b.x + 1) / 2) * w, ((1 - b.y) / 2) * h);
+          g.lineTo(((c.x + 1) / 2) * w, ((1 - c.y) / 2) * h);
+          g.closePath();
+        }
+        g.fill("nonzero");
+      });
+      const d = g.getImageData(0, 0, w, h).data;
+      let bits = "";
+      for (let i = 0; i < w * h; i++) bits += d[i * 4 + 3]! > 127 ? "1" : "0";
+      return { w, h, cell, bits };
     },
     setPropBoxes() {
       const cls = world.renderer.domElement.dataset.class;
