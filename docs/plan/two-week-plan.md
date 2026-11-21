@@ -1,5 +1,3 @@
-Planning: lane A, 2026-11-21T06:52Z
-
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
 
@@ -5778,4 +5776,28 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Why:** `plan1121b/runnel-D` 45-345 x 540-690: in the first-visit lesson, a blank 150 px of notebook between the legend and the pinned Up next card (item 586 pinned the card to the rail's foot; the page between stayed empty).
 - **Build:** the daily's notebook fills with live content: taps against par as a pencil tally, a small sketch of the fields still dry (from the board), and a margin note from Cath that changes with the water's progress (`games/runnel/src/main.ts`, styles.css).
 - **Accept:** at 1440x900 no vertical gap over 48 px between the rail's visible children; the notebook's text changes after a tap that waters a field (spec); no page scroll at 1280x800 and 1440x900; Runnel specs pass P and D.
+- **Size:** 1
+
+## 591. [ ] Hedgerow phone 3D: the camera frames the whole lane, depot to farmhouse *(lane A, in progress)*
+*(planned 2026-11-21 07:05, lane A, plan1121c critique)*
+- **Why:** `plan1121c/hedge-l21-3d-P` 0-200 x 55-160: at 390x844 on level 21 the Hollowell depot (where the convoy enters) sits under the HUD bar, cut off, and the CLOSER key (280-380 x 65-105) floats over the field. VISION: big, rich, legible; the player should see where the threat comes from.
+- **Build:** `games/hedgerow/src/render3d/` camera fit: frame the depot, the lane and Cath inside the safe rect between the HUD's bottom and the tray's top (not the full canvas); keep the Closer/Whole field key inside the HUD row or the safe rect's corner clear of the depot.
+- **Accept:** at 390x844 on levels 1, 21 and 34 the depot's projected box lies below the HUD's bottom + 8 px and above the tray; the lane's projected box spans 85%+ of the safe rect's width; hedgerow-3dframe passes P and D; key art unchanged at D.
+- **Size:** 1
+
+## 592. [ ] Cathnivore table: Cath speaks in her own bubble and her figure reacts
+*(planned 2026-11-21 07:05, lane A, plan1121c critique)*
+- **Why:** `plan1121c/cath-game-D` 355-550 x 205-375: her line is a loose note card with no tail, while Tomas (1220-1400 x 335-430) gets a real bubble; her figure (360-545 x 405-890) stands hands clasped whatever happens. VISION: 'She reacts to what the player does'; characters with presence.
+- **Build:** check first what the desktop figure already varies (`CathDock`/`CathCompanion` carry expressions). Her line becomes a tailed bubble pointing at her head, in the producers' bubble language; her full figure takes the dock's expression and a pose per beat (liberation: delighted and point; Squeeze: worried; Hollowell's turn: determined; Undo: wink), easing between them.
+- **Accept:** at 1440x900 her bubble's tail tip is within 40 px of her head box; after a scripted liberation the figure's `data-expression` reads `delighted` within 300 ms (spec); desktop-no-scroll and table specs pass at 1280x800 and 1440x900; shot P and D.
+- **Size:** 1
+
+## 593. [ ] The bugs from the 2026-11-21 07:00 critique, fixed as one batch
+*(planned 2026-11-21 07:05, lane A, plan1121c critique)*
+- Cathnivore Setup D (`cath-setup-D` 718-812 x 172-210): Ines Farrow's ability tag 'Second Opinion' wraps to two lines and spills its box; the others are one line.
+- Cathnivore Setup D (980-1120 x 565-775): the 'This week at the market' card overlaps the board frame's right edge (x 1035): pin it clear or make the overlap read as deliberate (a pinned card's shadow on the frame).
+- /games/ P (`games-P` 220-380 x 512-560): 'Browse the games' pale italic on tan; check 4.5:1.
+- Portfolio P (`portfolio-P` 16-275 x 255-415): Cath squeezes the lede into a 260 px column; give the lede the full width.
+- Hedgerow act map D (`hedge-menu-D` 460-745 x 95-200): the cloud is a flat grey blob with a scribble; paint it with the map's tonal steps or drop it.
+- **Accept:** a spec per bug (tag one line, no overlap or a deliberate pin, contrast 4.5+, lede width 330 px+ at 390); shots P and D.
 - **Size:** 1
