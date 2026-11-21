@@ -6040,7 +6040,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the menu inside the stall scene's box; every item 44 px+ and keyboard-focusable in the existing order (e2e); no blank band over 300 px along the counter; title specs pass; shot P and D (P unchanged).
 - **Size:** 1
 
-## 626. [ ] Portfolio: 'Today in the studio' as a timeline you can read
+## 626. [ ] Portfolio: 'Today in the studio' as a timeline you can read *(lane B, in progress)*
 *(planned 2026-11-21 19:45, lane B, plan1121k critique)*
 - **Why:** `plan1121k/portfolio-D` 100-1340 x 775-820: ~90 pills coloured only by lane, nothing says what a session changed or which game; the stats row (860-900) cut by the fold. VISION 1, 6.
 - **Build:** `portfolio/src/studio.ts`, `studioLog.ts`, styles: each notch takes the colour or icon of the game its session touched (from the commit subjects, never names or emails: the repo is public), the lane as its row; focus or hover opens a card with time, game, its one-line subject and the game's key-art thumbnail; the band a little shorter so the stats clear 900 px.
