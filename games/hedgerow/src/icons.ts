@@ -85,6 +85,46 @@ export function enemyIcon(kind: EnemyKind): string {
   });
 }
 
+/**
+ * Plan item 599: the vehicle alone, trimmed to its own outline (the square icon leaves a third of its height empty, so a
+ * 26 px convoy car painted 13 px tall). The picture's box is the vehicle, so a car set 20 px tall paints 20 px tall.
+ */
+export function enemyIconTrim(kind: EnemyKind): string {
+  const key = `et:${kind}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const size = 64;
+  const dpr = 2;
+  const pad = size / 2;
+  const sheet = document.createElement("canvas");
+  sheet.width = sheet.height = (size + pad * 2) * dpr;
+  const sc = sheet.getContext("2d", { willReadFrequently: true });
+  if (!sc) return enemyIcon(kind);
+  sc.scale(dpr, dpr);
+  const k = enemyScale(kind);
+  const s = (size * 1.1) / Math.max(1, k * 1.1);
+  drawEnemy(sc, { kind, facing: 1, hit: 9, ghost: false, phase: 0 }, pad + size / 2, pad + size * 0.78 + enemyLift(kind) * s * 0.4, s, 0);
+  const W = sheet.width;
+  const px = sc.getImageData(0, 0, W, W).data;
+  let x0 = W, y0 = W, x1 = -1, y1 = -1;
+  for (let y = 0; y < W; y++)
+    for (let x = 0; x < W; x++)
+      if (px[(y * W + x) * 4 + 3]! > 60) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+  if (x1 < 0) return enemyIcon(kind);
+  const out = document.createElement("canvas");
+  out.width = x1 - x0 + 1;
+  out.height = y1 - y0 + 1;
+  out.getContext("2d")?.drawImage(sheet, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+  const url = out.toDataURL("image/png");
+  cache.set(key, url);
+  return url;
+}
+
 export function img(src: string, cls: string): HTMLImageElement {
   const el = document.createElement("img");
   el.src = src;

@@ -148,7 +148,7 @@ function webglSupported(): boolean {
     return false;
   }
 }
-import { enemyIcon, img, towerIcon, propIcon } from "./icons";
+import { enemyIcon, enemyIconTrim, img, towerIcon, propIcon } from "./icons";
 import { driverFace, driverSlogan } from "./fleetfaces";
 import { floodAdvice, gapAdvice, roundAdvice } from "./advice";
 import { suggestedPlot } from "./bot";
@@ -2531,7 +2531,8 @@ function fieldIntel(g: Game): HTMLElement {
       const kinds = [...mix].sort((a, c) => c.count - a.count).map((m) => m.kind).filter((k) => k !== lead);
       const cars = [lead, ...kinds].slice(0, 3);
       while (cars.length < 3) cars.push(lead);
-      cars.forEach((k, j) => convoy.append(img(enemyIcon(k), j === 0 ? "chip-icon convoy-car" : "convoy-car")));
+      // (trimmed to each vehicle's outline, so the cars paint as tall as their boxes: item 599's 20 px)
+      cars.forEach((k, j) => convoy.append(img(enemyIconTrim(k), j === 0 ? "chip-icon convoy-car" : "convoy-car")));
       b.append(no, convoy);
       const bar = document.createElement("span");
       bar.className = "mix-bar";

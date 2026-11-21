@@ -5253,25 +5253,33 @@ body:has(#dlg-pause[open]) .paused-note {
   justify-content: center;
   min-width: 0;
 }
+/* (each car is its vehicle trimmed to its outline, so its height is the height it paints: 20 px and more, where the
+   square icons painted 13-19 px inside 26-36 px boxes) */
 .round-chip-btn .round-convoy .convoy-car {
   flex: none;
-  width: 26px;
-  height: 26px;
+  width: auto;
+  height: 20px;
   padding: 0;
-  margin-right: -6px;
+  margin-right: -7px;
   filter: drop-shadow(0 1px 0 var(--ink-a14));
 }
 .round-chip-btn .round-convoy .convoy-car:nth-child(2) {
   order: 1;
-  width: 29px;
-  height: 29px;
+  height: 22px;
 }
-/* the lead, in front: the vehicles face right, so it leads on the right and the rest queue behind it, smaller */
-.round-chip-btn .round-convoy .chip-icon {
+/* the lead, in front: the vehicles face right, so it leads on the right and the rest queue behind it, smaller
+   (no plate of its own: in front and larger is what makes it the lead) */
+.round-chip-btn .round-convoy .chip-icon,
+.play .panel .intel-timeline .round-convoy .chip-icon {
   order: 2;
-  width: 33px;
-  height: 33px;
+  width: auto;
+  height: 27px;
+  padding: 0;
   margin-right: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
   position: relative;
   z-index: var(--z-raise);
 }
@@ -5319,17 +5327,18 @@ body:has(#dlg-pause[open]) .paused-note {
   justify-self: center;
 }
 @media (max-width: 899.98px), (max-height: 520px) {
-  .round-chip-btn .round-convoy .chip-icon {
-    width: 28px;
-    height: 28px;
+  .round-chip-btn .round-convoy .chip-icon,
+  .play .panel .intel-timeline .round-convoy .chip-icon {
+    width: auto;
+    height: 24px;
   }
   .round-chip-btn .round-convoy .convoy-car {
-    width: 22px;
-    height: 22px;
+    width: auto;
+    height: 20px;
   }
   .round-chip-btn .round-convoy .convoy-car:nth-child(2) {
-    width: 24px;
-    height: 24px;
+    width: auto;
+    height: 21px;
   }
   .round-chip-btn .round-trait.round-badge {
     width: 22px;
