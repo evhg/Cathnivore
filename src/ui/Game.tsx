@@ -3078,29 +3078,16 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           const share = Math.min(1, have / Math.max(1, featured.cost))
           const imp = featured.key.startsWith('invest:') ? IMPROVEMENTS_BY_ID.get(featured.key.slice(7)) : undefined
           const pinned = goal === featured.key
-          // Item 586: with nothing pinned the band invites a pin rather than repeating the nearest card, which the row
-          // above already shows with its own meter ('Nearest goal: Letterpress Flyers' under Letterpress Flyers).
-          if (!pinned)
-            return (
-              <div className="goal-feature" data-goal-feature="none" data-empty="">
-                <span className="goal-feature-pic goal-feature-invite" aria-hidden="true">
-                  <svg viewBox="0 0 16 16">
-                    <path d="M8 1.5c-2.3 0-4 1.6-4 3.8 0 2.9 4 7.7 4 7.7s4-4.8 4-7.7c0-2.2-1.7-3.8-4-3.8Z" />
-                    <circle cx="8" cy="5.4" r="1.5" />
-                  </svg>
-                </span>
-                <span className="goal-feature-text">
-                  <span className="goal-feature-eyebrow">Your goal</span>
-                  <span className="goal-feature-name">Nothing yet</span>
-                  <span className="goal-feature-count">Pin a card on the shelf and it waits here, filling as the coins come in.</span>
-                </span>
-              </div>
-            )
+          // Item 595 (replacing item 586's 'Nothing yet' invite, whose reason, the nearest card repeated in the row
+          // above, went with item 589's folded shelf): with nothing pinned, Cath suggests the card nearest its price as
+          // a ghosted ticket in her voice, and one tap on Keep pins it.
+          const coinWord = featured.missing === 1 && featuredCard.coin === 'Marks' ? 'Mark' : featuredCard.coin
           return (
             <div
               className="goal-feature"
               data-goal-feature={featured.key}
               data-pinned={pinned ? '' : undefined}
+              data-suggested={pinned ? undefined : ''}
               data-coin={featuredCard.coin === 'Marks' ? 'marks' : 'goodwill'}
               style={{ ['--goal-fill' as string]: String(share) }}
             >
@@ -3108,7 +3095,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {imp ? <Vignette kind={vignetteFor(imp)} seed={imp.id} /> : <SchemeArt size={72} />}
               </span>
               <span className="goal-feature-text">
-                <span className="goal-feature-eyebrow">Saving for</span>
+                <span className="goal-feature-eyebrow">{pinned ? 'Saving for' : 'Cath\u2019s pick'}</span>
                 <span className="goal-feature-name">{featuredCard.name}</span>
                 <span
                   className="goal-feature-meter"
@@ -3124,6 +3111,18 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   <b>{have}</b> of {featured.cost} {featuredCard.coin}
                   {featured.missing > 0 ? ` · ${featured.missing} to go` : ' · ready'}
                 </span>
+                {!pinned && (
+                  <span className="goal-feature-suggest">
+                    <span className="goal-feature-line voice">
+                      {featured.missing > 0
+                        ? `\u201cI\u2019d save for this one, love: ${featured.missing} ${coinWord} short.\u201d`
+                        : '\u201cThis one\u2019s paid for, love: it\u2019s in your hand.\u201d'}
+                    </span>
+                    <button type="button" className="goal-feature-keep" onClick={() => togglePin(featured.key)} aria-label={`Keep ${featuredCard.name} as your goal`}>
+                      Keep
+                    </button>
+                  </span>
+                )}
               </span>
             </div>
           )

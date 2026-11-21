@@ -6491,6 +6491,32 @@ html.no-animations .table-cath-figure { animation: none; }
   .goal-feature-count { font: 500 var(--fs-small)/1.2 var(--font-ui); color: var(--ink); }
   .goal-feature-count b { font: 700 var(--fs-body)/1 var(--font-num, var(--font-ui)); }
   .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature-pic { width: 96px; height: 76px; }
+  /* item 595: nothing pinned, Cath's pick is a ghosted ticket (a dashed edge, no lift) with her line and a Keep */
+  .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .goal-feature[data-suggested] {
+    background: color-mix(in srgb, var(--paper-hi) 55%, transparent);
+    box-shadow: none;
+    outline: 1.5px dashed var(--ink-a35);
+    outline-offset: -1.5px;
+  }
+  .goal-feature[data-suggested] .goal-feature-pic { filter: saturate(.75); opacity: .85; }
+  /* her line names the coins short, so the count under the meter steps aside (1280x800 had no room for Keep) */
+  .goal-feature[data-suggested] .goal-feature-count { display: none; }
+  .goal-feature-suggest { display: grid; justify-items: start; gap: 6px; margin-top: 2px; }
+  .goal-feature-line { font: italic 500 var(--fs-small)/1.25 var(--font-voice, var(--font-ui)); color: var(--ink); }
+  .goal-feature-keep {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 0 var(--sp-3);
+    border: 0;
+    border-radius: var(--r-pill);
+    font: 700 var(--fs-small)/1 var(--font-ui);
+    color: var(--ink);
+    background: var(--wheat);
+    box-shadow: inset 0 0 0 1px var(--ink-a35), 0 2px 4px rgb(var(--shadow-ink) / .18);
+    cursor: pointer;
+  }
+  .goal-feature-keep:hover { background: color-mix(in srgb, var(--wheat) 85%, var(--paper-hi)); }
+  .goal-feature-keep:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
   .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold { display: block; }
   .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold :is(.fold-one-row, .fold-two-rows) { display: none; }
   .actions-sheet .actions[data-shelf]:not([data-shelf-open]) .shelf-fold .fold-all { display: inline; }

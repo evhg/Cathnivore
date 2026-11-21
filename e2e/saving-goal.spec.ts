@@ -156,9 +156,10 @@ test('the rail shows the goal large in the band under the shelf, and its fill ma
   await page.getByRole('button', { name: 'Start' }).click()
   const feature = page.locator('.goal-feature')
   await expect(feature).toBeVisible()
-  // Item 586: with nothing pinned it invites a pin instead of repeating the nearest card shown in the row.
-  await expect(feature).toHaveAttribute('data-empty', '')
-  await expect(feature.locator('.goal-feature-name')).toHaveText('Nothing yet')
+  // Item 595: with nothing pinned, Cath suggests the card nearest its price (no 'Nothing yet'), with a Keep.
+  await expect(feature).toHaveAttribute('data-suggested', '')
+  await expect(feature).not.toContainText('Nothing yet')
+  await expect(feature.locator('.goal-feature-line')).toContainText(/short|paid for/)
   // Pin the second priced card (the shelf opened from the card's key, then folded): the card shows it, its fill is
   // held / price.
   await page.locator('.shelf-fold').click()
@@ -205,4 +206,35 @@ test('the rail shows the goal large in the band under the shelf, and its fill ma
   for (const h of m.glyphs) expect(h).toBeGreaterThanOrEqual(48)
   // Cath's bubble doesn't repeat what the card shows.
   expect(m.savingShown).toBe(false)
+})
+
+// Plan item 595: Cath's pick pins in one tap on Keep and stays pinned through a reload and Continue.
+test("Cath's suggested goal pins on Keep and survives a reload (1440x900)", async ({ page, isMobile }) => {
+  test.skip(isMobile, 'the shelf is the big desktop column')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  const feature = page.locator('.goal-feature')
+  await expect(feature).toHaveAttribute('data-suggested', '')
+  const name = (await feature.locator('.goal-feature-name').textContent())!
+  const font = await feature.evaluate((f) => Math.min(...[...f.querySelectorAll('.goal-feature-line, .goal-feature-keep')].map((e) => parseFloat(getComputedStyle(e).fontSize))))
+  expect(font).toBeGreaterThanOrEqual(13)
+  // Keep stands whole inside the card at 1440x900 and at 1280x800.
+  for (const [w, h] of [[1280, 800], [1440, 900]] as const) {
+    await page.setViewportSize({ width: w, height: h })
+    const box = await feature.evaluate((f) => {
+      const c = f.getBoundingClientRect(), k = f.querySelector('.goal-feature-keep')!.getBoundingClientRect()
+      return k.height > 0 && k.top >= c.top && k.bottom <= c.bottom + 0.5
+    })
+    expect(box, `Keep inside the card at ${w}x${h}`).toBe(true)
+  }
+  await feature.locator('.goal-feature-keep').click()
+  await expect(feature).toHaveAttribute('data-pinned', '')
+  await expect(feature.locator('.goal-feature-keep')).toHaveCount(0)
+  await page.reload()
+  await page.getByRole('button', { name: /Continue/ }).first().click()
+  await expect(page.locator('.goal-feature')).toHaveAttribute('data-pinned', '')
+  await expect(page.locator('.goal-feature .goal-feature-name')).toHaveText(name)
 })
