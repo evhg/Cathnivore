@@ -5878,3 +5878,31 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Hedgerow 3D P (`hedge-l21-3d-P` 5-195 x 92-112): the depot's 'HOLLOWELL 216 NEXT' tag pressed against the top bar's foot, the depot half under it (item 591's depot fit).
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
+
+*(Items 604-607 planned 2026-11-21 10:15 by lane A from the `plan1121g` shots (e2e/screenshots, `scripts/plan-shots.mjs`), critiqued by a subagent against VISION.md. Not planned: the class pick's identical mugshots and flat Wirewitch/Fixer guns (the shot caught item 588's stills mid-build under SwiftShader), the Hedgerow map's locked stops (item 596's cellophane), Cath's 3D figure (319/543 open), the phone board's size (width-bound, item 602).)*
+
+## 604. [ ] Hedgerow phone 3D: the field as bright and clear as on desktop *(lane A, in progress)*
+- **Why:** `plan1121g/hedge-l21-3d-P` against `hedge-l21-3d-D`: the phone field is a dark muddy green with a haze or blur over its lower left (0-200 x 540-690) and a heavy vignette; the desktop render of the same level is bright and crisp. VISION 2: the board big, rich, legible and alive.
+- **Build:** `games/hedgerow/src/render3d/`: find what the phone path changes (quality tier, exposure, fog, depth of field, vignette, pixel ratio) and give the phone the desktop's grade and clarity within its frame budget.
+- **Accept:** at 390x844 the field's mean luminance (inside the field frame, HUD and bench excluded) within 10% of D's on level 21; the lower third's Laplacian variance at least 80% of the upper third's; hedgerow-3d/3dframe specs pass P and D; Hedgerow key art unchanged unless D changes; shot P and D.
+- **Size:** 1
+
+## 605. [ ] Cathnivore Quick Game setup: the boards to pick from as little boards, not list rows
+- **Why:** `plan1121g/cath-setup-D` 100-375 x 260-440: 'The Ring / The Long Coast / The Delta' are beige rows with 30 px icons; the difficulty memos are ~60x40 px; and the 'This week at the market' card (985-1120 x 565-775) lies over the board's Rivermead and Shingle Bay rims. VISION 1: nothing looks like a default form.
+- **Build:** `src/ui` setup (step 2 and 3), `src/styles`: each board a card with its mini hex layout drawn from the real map data (90 px+), its name and a one-line hook; the chosen one lifted with a stamp; the memos a step larger; the week card moved off the board (into Cath's stall column or under the board's caption). Phone: the same cards as a row that fits 390 without sideways scroll.
+- **Accept:** each board card's art 90 px+ at D, 64 px+ at P, drawn from the map's regions (not an icon); every choice target 44 px+ tall; smallest setup text 13 px+; the week card intersects no hex's box at 1280x800 and 1440x900; setup-* specs pass P and D; shot P and D.
+- **Size:** 1
+
+## 606. [ ] NIGHT SHIFT phone title: a portrait poster framed on Cath
+- **Why:** `plan1121g/ns-title-P` (2x): her face sits at 540-700 x 1100-1260 behind The List; most of the frame is umbrella and a cropped 'HOLLOW…' sign (290-780 x 560-780) that reads as a clipping error. VISION 5 and the Cath bible: she is the face of the game.
+- **Build:** `scripts/cathode-poster.mjs` and the title's phone framing (`frontstoop`/title camera): a portrait camera that frames her from the waist up with her face at 35-55% of the height and clear of the menu and List, the sign whole or out of frame; re-render the phone poster.
+- **Accept:** at 390x844 her face box 60 px+ wide, its centre between y 300 and 470, intersecting no UI card; no partly cropped sign lettering; keyart-fresh and cathode-front pass at P; D unchanged; shot P and D.
+- **Size:** 1
+
+## 607. [ ] The bugs from the 2026-11-21 10:10 critique, fixed as one batch *(check each on today's build first)*
+- /games/ D (`games-D` 112-128 x 636-648): a stray clipped label 'ls' in the Cathnivore poster's art crop; Hedgerow's blurb wraps to 3 lines to the card's foot (740-920 x 828-880) where the others take 2.
+- Cathnivore D campaign (`cath-campaign-D` 95-390 x 230-630): chapter 1's regions don't glow as they do at P.
+- Cathnivore P (`cath-setup-P` 45-62 x 343-358, `cath-game-P` 14-32 x 240-258): Brindle Hills' count badge sits left of its name, pressed to the screen edge, where every other badge is on the right.
+- Hedgerow 2D P (`hedge-l21-2d-P` 0-42 x 330-372): the Hollowell depot cut by the left edge, only '216' showing.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
