@@ -5698,7 +5698,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** her silhouette masks for any two classes differ by 12%+ (1 - IoU) at D; face box still clear of the sheet; classpick specs pass P and D; contact sheet re-shot.
 - **Size:** 2
 
-## 580. [ ] Cathnivore campaign map: the table's regions, freed one by one *(lane A, in progress)*
+## 580. [x] Cathnivore campaign map: the table's regions, freed one by one *(done 2026-11-21 03:20, lane A, 927a51d9: checked first: the map already drew each region from the board's GroundArt and landmarks, drained held land (item 248), bloomed colour, dropped bunting and raised a stall on a win, and Cath raises her flag. Built: each region is the board's tile (an inked face, the tile body 4 units deep, the board's light gradient and bevel; outlines in the fixed ink so dark mode keeps them dark), held land under Hollowell's shrink-wrap film and streak (item 525's look), which peels off from the near corner in the chapter-complete moment (750 ms, a fade under reduced motion). Freed ground saturation 0.32 vs held 0.20 (1.6x, new campaign-map spec). campaign-map and campaign specs pass P and D except 'letters fill to the foot' at P (25.7 px vs 24), which fails on the base commit too locally. Shots scratchpad s580 (before, b1-b3 P/D/zoom light and dark, m-D/m-P the moment frames))*
 - **Why:** `plan1121a/cath-campaign-D` 60-725 x 205-815 and `-P` 15-375 x 185-505: a flat pale atlas with small bunting and generic stall boxes, a different art language from the rich board (`cath-game-D` 580-1210 x 130-715).
 - **Build:** the map drawn from the board's region art and pieces (`src/ui/` campaign map, shared with the board's map): unplayed regions in Hollowell gloss (grey wash, plastic outlets), freed ones in full market colour with a pennant; freeing one plays a 600-900 ms moment (gloss peels, bunting drops, Cath reacts); reduced motion fades.
 - **Accept:** each region uses the board's landmark art (spec); freed regions' mean saturation 1.5x+ locked ones'; the moment shot P and D; campaign specs pass.
@@ -5728,7 +5728,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** depot footprint 2x+ at D; the vehicle types distinguishable in a greyscale shot; level 21 3D draw calls within budget; 3D specs pass.
 - **Size:** 2
 
-## 585. [ ] NIGHT SHIFT key art that reads at card size
+## 585. [ ] NIGHT SHIFT key art that reads at card size *(lane A, in progress)*
 - **Why:** `plan1121a/games-D` 1040-1330 x 580-740, `portfolio-D` 637-927 x 352-537: the frame is mostly near-black with Cath small; the other three posters are bright, so NIGHT SHIFT looks unfinished.
 - **Build:** re-stage the `?keyart` frame: closer three-quarter camera, a neon rim, the List's red string and a Ledger page in the foreground; `npm run keyart` for it.
 - **Accept:** poster mean luminance 0.2+ (measure the current first); her head 18%+ of the poster height; keyart-fresh and site specs pass.
