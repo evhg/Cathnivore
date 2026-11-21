@@ -819,6 +819,7 @@ export class Renderer3D {
     const close = this.zoomed;
     const f = this.openFrame;
     const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[0];
+    this.dropToDepots();
     if (!f || !d) return;
     const box = new THREE.Box3().setFromObject(d);
     if (box.isEmpty()) return;
@@ -847,6 +848,59 @@ export class Renderer3D {
     // The search moved the camera: put it back on the view the player has (item 439: the whole field by default).
     if (close) this.frameClose();
     else this.resetView();
+  }
+  /** Plan item 591: on an upright phone a gate on the field's far edge put its depot past the canvas's top (level 21:
+   *  9 px cut off, its roof under the HUD). Once the depots stand, the fitted view steps back and slides towards the
+   *  far edge, by the least that brings every depot's top 3 px inside the canvas (the canvas starts 6 px under the HUD) while the field's near edge stays
+   *  3 px above its foot. The fitted base itself moves, so the whole-field view, the close frame and Reset agree. */
+  private dropToDepots(): void {
+    const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
+    const boxes = depots.map((o) => new THREE.Box3().setFromObject(o)).filter((b) => !b.isEmpty());
+    if (!boxes.length) return;
+    const h = this.h;
+    const cols = this.fieldSize.x, rows = this.fieldSize.y;
+    const tgt = this.camTarget.clone();
+    const off = this.camBase.clone().sub(tgt);
+    const look = new THREE.Vector3();
+    const p = new THREE.Vector3();
+    const place = (s: number, dz: number) => {
+      look.set(tgt.x, tgt.y, tgt.z + dz);
+      this.camera.position.copy(off).multiplyScalar(s).add(look);
+      this.camera.lookAt(look);
+      this.camera.updateMatrixWorld();
+    };
+    const py = (x: number, y: number, z: number) => (-p.set(x, y, z).project(this.camera).y * 0.5 + 0.5) * h;
+    const top = () => {
+      let t = Infinity;
+      for (const b of boxes) for (let k = 0; k < 8; k++) t = Math.min(t, py(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z));
+      return t;
+    };
+    const foot = () => Math.max(py(0, 0, rows + 0.25), py(cols, 0, rows + 0.25));
+    const TOP = 3, FOOT = h - 3;
+    place(1, 0);
+    if (top() >= TOP) return;
+    for (let s = 1; s <= 1.4001; s += 0.004) {
+      // Looking further towards the far edge (dz < 0) moves everything down the frame.
+      let lo = -rows, hi = 0;
+      place(s, 0);
+      if (top() < TOP) {
+        for (let i = 0; i < 24; i++) {
+          const mid = (lo + hi) / 2;
+          place(s, mid);
+          if (top() >= TOP) lo = mid;
+          else hi = mid;
+        }
+        place(s, lo);
+      } else lo = 0;
+      if (top() >= TOP - 0.5 && foot() <= FOOT) {
+        this.camTarget.set(tgt.x, tgt.y, tgt.z + lo);
+        this.camBase.copy(off).multiplyScalar(s).add(this.camTarget);
+        break;
+      }
+    }
+    this.camera.position.copy(this.camBase);
+    this.camera.lookAt(this.camTarget);
+    this.camera.updateMatrixWorld();
   }
   /** Plan item 486: the whole-field view's sideways lean (world x) that brings the depot's `box` furthest into frame
    *  while the field's edge columns keep 6 px inside the canvas; 0 when the depot is already half in. */

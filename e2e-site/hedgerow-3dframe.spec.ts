@@ -163,3 +163,28 @@ for (const level of [13, 21]) {
     if (r.bubble) for (const s of r.signs) expect(meet(r.bubble, s)).toBe(0)
   })
 }
+
+// Plan item 591: on an upright phone a far-edge gate's depot stood past the canvas's top, its roof under the HUD
+// (level 21: 9 px cut off). The fitted view steps back until every depot's top stands 8 px or more below the HUD.
+type HGD = HG & { depots3d(): Array<{ x: number; y: number; w: number; h: number }> }
+for (const level of [21, 34]) {
+  test(`the phone 3D view keeps the depots clear of the HUD (level ${level})`, async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'an upright phone only')
+    test.setTimeout(150_000)
+    await page.goto('/hedgerow/?sandbox=1')
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
+    await page.waitForFunction(() => ((window as unknown as { hedgerow?: HGD }).hedgerow?.depots3d?.() ?? []).length > 0, null, { timeout: 90_000 })
+    await page.waitForTimeout(3000)
+    const r = await page.evaluate(() => {
+      const hud = document.querySelector('.hud')!.getBoundingClientRect().bottom
+      const top = document.querySelector('canvas')!.getBoundingClientRect().top
+      return { hud, tops: (window as unknown as { hedgerow: HGD }).hedgerow.depots3d().map((d) => top + d.y) }
+    })
+    for (const t of r.tops) expect(t).toBeGreaterThanOrEqual(r.hud + 8)
+  })
+}
