@@ -4352,6 +4352,16 @@ let dockFoldedFor = "";
 /** When her line last opened (shown, or reopened by a tap): it folds to her portrait by itself after DOCK_OPEN_MS. */
 let dockOpenAt = 0;
 const DOCK_OPEN_MS = 6000;
+/** Plan item 611: the fold is also timed, so it happens when nothing redraws the panel (the 2D field draws without
+ *  calling `syncCathDock` once a build goes quiet: her line stayed over the tray for good, where 3D folded it). */
+let dockFoldTimer = 0;
+const armDockFold = () => {
+  clearTimeout(dockFoldTimer);
+  dockFoldTimer = window.setTimeout(() => {
+    const el = ui.cathDock;
+    if (!el.hidden && !el.hasAttribute("data-folded") && !!dockText && performance.now() - dockOpenAt >= DOCK_OPEN_MS - 20) foldDock();
+  }, DOCK_OPEN_MS + 30);
+};
 /** Once folded, or once the player picks a plot, the dock stays away for that build (`level:wave`), so a new line
  *  after each tower never covers the tray again mid-build. */
 let dockQuietFor = "";
@@ -4370,6 +4380,7 @@ const toggleDock = () => {
   if (ui.cathDock.hasAttribute("data-folded")) {
     dockFoldedFor = "";
     dockOpenAt = performance.now();
+    armDockFold();
     ui.cathDock.removeAttribute("data-news");
     syncDockFold();
   } else {
@@ -4440,7 +4451,10 @@ function syncCathDock(g: Game, text: string): void {
   if (!folded && !el.hidden && text === dockText && performance.now() - dockOpenAt > DOCK_OPEN_MS) foldDock();
   const fresh = text !== dockText || el.hidden;
   if (fresh) {
-    if (!folded) dockOpenAt = performance.now();
+    if (!folded) {
+      dockOpenAt = performance.now();
+      armDockFold();
+    }
     // A new line while folded: a dot on her portrait says she has something to say.
     el.toggleAttribute("data-news", folded && !!dockText && text !== dockText);
     dockText = text;

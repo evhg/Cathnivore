@@ -5926,7 +5926,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath 140 px+ tall; no control meets the map frame's box; the chapter card's Start visible without scrolling at 390x844; campaign specs pass; shot P and D.
 - **Size:** 1
 
-## 611. [ ] Hedgerow 2D phone: one bench, the tray and Cath's line together *(lane B, in progress)*
+## 611. [ ] Hedgerow 2D phone: one bench, the tray and Cath's line together *(handed back 2026-11-21 12:55 by lane B after slice 1)* *(slice 1, lane B: the renderers now agree: her docked line folds to her portrait after 6 s in 2D as in 3D (the fold was only checked in `syncCathDock`, which the 2D field stops calling once a build goes quiet, so her line covered the tray for good); a timer armed when the line opens or reopens (`armDockFold`). Level 21 at 390x844 `?2d`: line at 2 s, the tray (Hedgerow, Scarecrow, Windmill) with her portrait tab at 8 s. hedgerow dock specs pass P and D (30). **Left:** the item's real ask, the line and the tray at the same moment (her line as a bubble over the field's foot), not one after the other. Shots scratchpad h611-1000, h611-after-8000)*
 *(planned 2026-11-21 11:55, lane B, plan1121h critique)*
 - **Why:** `plan1121h/hedge-l21-2d-P` 0-390 x 688-765: in 2D Cath's coach line replaces the build tray (towers and prices hidden); 3D at the same state shows the tray (`hedge-l21-3d-P` 65-390 x 698-765) but drops her line. The two renderers disagree and neither shows both. VISION 3 (no mystery waits), 1.
 - **Build:** the phone bench in `games/hedgerow/src/` (`hero.ts`, `cathsay.ts`, bench CSS): both renderers keep the tray row; Cath's line rises as a bubble from her bust over the field's lower edge, fading after 4 s or the first tap.
