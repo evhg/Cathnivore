@@ -2170,3 +2170,15 @@ html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .tit
   }
   .daily-ritual.is-compact { bottom: calc(min(346px, 92cqw, (100cqh - 182px) * 0.95) * 0.965 - 6px); }
 }
+
+/* Plan item 625 slice 1: at D the stall's counter front is boards, not a plain brown band: planks with dark seams
+   and a lit top lip, the grain running along them, so the menu's chalkboard stands on a real counter. */
+@media (min-width: 1024px) {
+  .title-table-front {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--paper) 30%, var(--wood)) 0 3px, color-mix(in srgb, var(--wood-lo) 70%, transparent) 3px 6px, transparent 6px),
+      repeating-linear-gradient(90deg, transparent 0 158px, color-mix(in srgb, var(--wood-lo) 75%, transparent) 158px 160px, color-mix(in srgb, var(--paper) 10%, transparent) 160px 161px),
+      repeating-linear-gradient(180deg, transparent 0 11px, color-mix(in srgb, var(--wood-lo) 14%, transparent) 11px 12px),
+      linear-gradient(180deg, color-mix(in srgb, var(--wood) 92%, var(--paper)), var(--wood-lo));
+  }
+}
