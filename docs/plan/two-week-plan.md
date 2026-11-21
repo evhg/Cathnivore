@@ -5840,7 +5840,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 599. [ ] Hedgerow desktop play: the bench reads as pictures, Cath on it at half length
+## 599. [ ] Hedgerow desktop play: the bench reads as pictures, Cath on it at half length *(lane A, in progress)*
 *(planned 2026-11-21 08:50, lane B, plan1121e critique)*
 - **Why:** `plan1121e/hedge-l34-2d-D` 970-1340 x 595-700 (and `hedge-l21-3d-D` 1110-1420 x 585-700): Coming up is a three-column table of 12-13 px numbers ('365 vehicles', 'Airborne'); Cath's coach plate (970-1045 x 475-550) is a 70 px head beside a text block. VISION: panels support the table, designed not laid out; characters with presence.
 - **Build:** `games/hedgerow/src/` bench (forecast, coach plate; extend item 511's convoy strip, which draws only the current round): each upcoming round a mini convoy of vehicle silhouettes with its twist as an icon badge; the coach plate's head becomes Cath at half length (`shared/cath/`), her line in a tailed bubble, her expression keyed to the round's state.
