@@ -6079,7 +6079,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** after the finale the garden's box doesn't meet the result's box at P or D (e2e); the new plant 40 px+; reduced motion finishes in 400 ms or less; runnel win/garden specs pass; shot P and D.
 - **Size:** 2
 
-## 631. [ ] /games/: Cath behind the stall, the games as its wares
+## 631. [ ] /games/: Cath behind the stall, the games as its wares *(lane B, in progress)*
 *(planned 2026-11-21 23:25, lane A, plan1121m critique)*
 - **Why:** `plan1121m/games-D` 420-520 x 300-490: Cath stands full length in front of the counter, her legs over its front, so the stall looks pasted on; on the phone (`games-P` 150-245 x 300-480) she is a flat bust in another style. VISION 5, 1.
 - **Build:** `site/src/` hero (booth/scene/shelf): Cath behind the counter, cropped at the waist by it, with an idle wave; each game a ware on the counter that opens its card; the same art on the phone.
