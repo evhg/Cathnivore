@@ -241,7 +241,8 @@ test('upright, she stands waist up beside the menu, her face clear of it and of 
   })
   const hits = (a: B, b: B) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
   expect(m.mugs.length).toBeGreaterThan(0)
-  expect(m.fig.top, JSON.stringify(m.fig)).toBeGreaterThanOrEqual(0)
+  // Plan item 606: the upright title frames her, not her umbrella: the canopy may crop at the top; her body stays whole
+  expect(m.body.top, JSON.stringify(m.body)).toBeGreaterThanOrEqual(0)
   // her body keeps off the menu plate (item 526: the plate keeps to a narrower column)
   expect(hits(m.body, m.plate), JSON.stringify({ body: m.body, plate: m.plate })).toBe(false)
   // her face whole on screen, clear of every menu entry and mugshot, above the photo strip

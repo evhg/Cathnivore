@@ -645,7 +645,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     const inv = cath.group.matrixWorld.clone().invert();
     const mm = new THREE.Matrix4();
     const skip = new Set<THREE.Object3D>();
-    if (cloudBody) cath.umbrellaTop.parent?.traverse((o) => skip.add(o));
+    // Plan item 606: the upright title fits her, not her umbrella too: with the canopy in the box her face sat small
+    // and low behind The List under a wall of umbrella and a cropped sign; the canopy may crop at the top, as on the pick.
+    if (cloudBody || cam.aspect < 1) cath.umbrellaTop.parent?.traverse((o) => skip.add(o));
     // Plan item 251: on the title, only what is drawn. The other classes' kits hang hidden on her (a hidden group,
     // visible meshes), and the Fixer's case and the Butcher's extras widened her box, so the title framed her left,
     // under the menu. The class pick (centred) keeps measuring every kit: its framings were tuned on that box.
@@ -665,7 +667,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     // her face then sits level with the other four's.
     // Plan item 422: an upright phone keeps 20 cm (8 over the hair): its stage is short, and the 40 held her to about
     // 35% of the screen's height; the faces still sit level, a little higher.
-    if (cloudBody) cloud.push(new THREE.Vector3(0, cam.aspect < 1 ? 0.2 : 0.4, 0).applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv));
+    // (plan item 606: the upright title keeps 45 cm, so her face sits in the stage's middle third, under the wordmark's
+    // subtitle, not against it)
+    if (cloudBody || cam.aspect < 1) cloud.push(new THREE.Vector3(0, cam.aspect < 1 ? (cloudBody ? 0.2 : 0.45) : 0.4, 0).applyMatrix4(cath.head.matrixWorld).applyMatrix4(inv));
     // Plan item 526: the upright title frames her waist up, a portrait beside the menu rather than a small whole
     // figure: the fit measures only what lies above her waist (58% of her head's height), and the rest runs off the
     // stage's foot behind The List.
@@ -728,7 +732,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
       cam.rotateX(pitch);
       const bx = cloudBox();
       if (pass === 3) break;
-      d *= centred ? Math.max((bx.t - bx.b) / (nt - nb), (bx.r - bx.l) / (nr - nl)) : (bx.t - bx.b) / (nt - nb);
+      // Plan item 606: an upright title fits her width too, into the stage's right 58% (the menu's column holds
+      // its left third), so the closer framing never runs her under the menu
+      d *= centred ? Math.max((bx.t - bx.b) / (nt - nb), (bx.r - bx.l) / (nr - nl)) : cam.aspect < 1 ? Math.max((bx.t - bx.b) / (nt - nb), (bx.r - bx.l) / ((nr - nl) * 0.58)) : (bx.t - bx.b) / (nt - nb);
       // Turn and tilt so the box's middle lands on the stage's (its right edge on the stage's right).
       const half = (bx.r - bx.l) / 2;
       const tx = centred ? (nl + nr) / 2 : Math.max(nl + half, nr - half);
