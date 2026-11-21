@@ -5899,7 +5899,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 her face box 60 px+ wide, its centre between y 300 and 470, intersecting no UI card; no partly cropped sign lettering; keyart-fresh and cathode-front pass at P; D unchanged; shot P and D.
 - **Size:** 1
 
-## 607. [ ] The bugs from the 2026-11-21 10:10 critique, fixed as one batch *(check each on today's build first)*
+## 607. [ ] The bugs from the 2026-11-21 10:10 critique, fixed as one batch *(check each on today's build first)* *(lane A, in progress)*
 - /games/ D (`games-D` 112-128 x 636-648): a stray clipped label 'ls' in the Cathnivore poster's art crop; Hedgerow's blurb wraps to 3 lines to the card's foot (740-920 x 828-880) where the others take 2.
 - Cathnivore D campaign (`cath-campaign-D` 95-390 x 230-630): chapter 1's regions don't glow as they do at P.
 - Cathnivore P (`cath-setup-P` 45-62 x 343-358, `cath-game-P` 14-32 x 240-258): Brindle Hills' count badge sits left of its name, pressed to the screen edge, where every other badge is on the right.
