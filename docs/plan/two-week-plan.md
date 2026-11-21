@@ -5764,7 +5764,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 at most 4 rail sections visible; no rendered text in the rail under 13 px (computed style scan); the rail at most 22% of the viewport width; desktop-no-scroll, table-hand and saving-goal specs pass; shots D before and after.
 - **Size:** 2
 
-## 590. [ ] Runnel desktop: the notebook rail live through the daily
+## 590. [ ] Runnel desktop: the notebook rail live through the daily *(lane B, in progress)*
 *(planned 2026-11-21 04:45, lane B, plan1121b critique)*
 - **Why:** `plan1121b/runnel-D` 45-345 x 540-690: a blank 150 px of notebook between the legend and Up next during a daily (item 586 filled the lesson's rail, not the daily's).
 - **Build:** the daily's notebook fills with live content: taps against par as a pencil tally, a small sketch of the fields still dry (from the board), and a margin note from Cath that changes with the water's progress (`games/runnel/src/main.ts`, styles.css).
