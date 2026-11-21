@@ -6093,7 +6093,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the board 760 px+ wide at 1440x900 with no figure over a hex (e2e); the goal art in colour (no greyscale image); P unchanged (shot and specs); board and table specs pass; shot D light and dark.
 - **Size:** 2
 
-## 633. [ ] The bugs from the 2026-11-21 23:25 critique, fixed as one batch
+## 633. [ ] The bugs from the 2026-11-21 23:25 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-21 23:25, lane A, plan1121m critique; check each on today's build first)*
 - Runnel solved D (1296-1400 x 703-728): a garden sprite over the 'Bea's garden' label.
 - Runnel solved D (40-320 x 850-882): 'Solved. Next in 44m.' and 'See result' cramped at the foot, repeating the open result.
