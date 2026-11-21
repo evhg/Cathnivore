@@ -1953,3 +1953,37 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
 }
 :root.reduce-motion .campaign-screen .cmp-map[data-phase='flood'] .cmp-map-hex.is-flooding .cmp-map-wrap,
 :root.reduce-motion .campaign-screen .cmp-map[data-phase='walk'] .cmp-map-hex.is-flooding .cmp-map-wrap { animation: cmp-fade 600ms ease reverse both !important; }
+
+/* Plan item 610: on a phone Cath narrates at half length, ~150 px of her over the map's top edge (she stood a 90 px
+   bust on crates), her bubble to her left with its tail at her mouth; the way back is a chevron at the header's top
+   (Back to Title's plank hung over the map's frame). */
+@media (max-width: 600px) {
+  .cmp-header .cmp-header-cath { height: 200px; }
+  .cmp-header .cmp-host-stand { margin: -10px -10px -54px -18px; }
+  /* the tail leaves the bubble's top right corner and rises to her mouth */
+  .cmp-header .cmp-cath-line::after { top: -22px; right: -34px; width: 48px; height: 30px; clip-path: polygon(0 100%, 100% 0, 42% 100%); }
+  .cmp-header-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: start;
+    min-height: 44px;
+    margin: -12px 0 -4px -8px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    box-shadow: none;
+    color: var(--ink-muted);
+    font: 600 var(--fs-body) / 1 var(--font-ui, system-ui);
+  }
+  .cmp-header-back svg { width: 9px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cmp-header-back:active { translate: 0 1px; }
+}
+/* (a short phone: she stands a size smaller, so the kicker keeps one line and Play stays on the first screen) */
+@media (max-width: 600px) and (max-height: 740px) {
+  /* the chevron's row takes the kicker's place: 'Campaign' under the way back says it */
+  .cmp-header .cmp-kicker { display: none; }
+  .cmp-header .cmp-header-cath { height: 164px; }
+  .cmp-header .cmp-host-stand { margin: -6px -10px -46px -16px; }
+}

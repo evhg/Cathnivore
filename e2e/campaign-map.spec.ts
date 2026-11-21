@@ -410,9 +410,10 @@ test('at D no chapter card cuts its words', async ({ page }) => {
   }
 })
 
-// Plan item 573: on a 390x844 phone the chapters are a stack of letters filling the screen to its foot (Back to Title
-// hangs on the map frame's foot, no empty band under the stack), and a locked letter's teaser reads at 14 px or more.
-test('phone 390x844: the letters fill to the foot, Back to Title on the map frame, locked teasers 14 px', async ({ page }) => {
+// Plan item 573: on a 390x844 phone the chapters are a stack of letters filling the screen to its foot (no empty band
+// under the stack), and a locked letter's teaser reads at 14 px or more. Plan item 610: Back to Title is a chevron in
+// the header, clear of the map frame (it hung on the frame's foot).
+test('phone 390x844: the letters fill to the foot, Back to Title in the header, locked teasers 14 px', async ({ page }) => {
   test.skip(page.viewportSize()!.width > 600, 'phone layout')
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
@@ -421,8 +422,8 @@ test('phone 390x844: the letters fill to the foot, Back to Title on the map fram
   expect(844 - (card.y + card.height)).toBeLessThanOrEqual(24)
   const back = (await page.getByRole('button', { name: 'Back to Title' }).boundingBox())!
   const map = (await page.locator('.cmp-map').boundingBox())!
-  expect(back.y).toBeLessThan(map.y + map.height)
-  expect(back.y + back.height).toBeGreaterThan(map.y + map.height)
+  expect(back.y + back.height).toBeLessThanOrEqual(map.y)
+  expect(back.y).toBeGreaterThanOrEqual(0)
   for (const goal of await page.locator('.cmp-stop-locked:not(.cmp-stop-next) .chapter-goal').all())
     expect(await goal.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)

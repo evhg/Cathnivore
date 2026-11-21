@@ -112,19 +112,27 @@ test('campaign at 1440x900: one composed spread', async ({ page }, info) => {
   expect(empty, 'flat 300x100 blocks').toEqual([])
 })
 
-// Plan item 444: on a phone her bust ends behind the stall's crates standing on the board's lip, not at the board's edge.
-test('campaign on a phone: Cath stands behind crates on the board', async ({ page }, info) => {
+// Plan item 444: on a phone her bust ended behind the stall's crates on the board's lip. Plan item 610: she narrates
+// at half length instead, 140 px or more of her over the map's top edge and the rest tucked behind it (no crates),
+// her line to her left with its tail rising to her mouth.
+test('campaign on a phone: Cath narrates at half length over the map', async ({ page }, info) => {
   test.skip(info.project.name !== 'phone', 'phone layout')
   await page.goto('/')
   await page.getByText('Campaign', { exact: false }).first().click()
-  const crates = page.locator('.cmp-header .produce-crates')
-  await expect(crates).toBeVisible()
-  const c = (await crates.boundingBox())!
+  await expect(page.locator('.cmp-header-cath')).toBeVisible()
+  await expect(page.locator('.cmp-header .produce-crates')).toHaveCount(0)
   const map = (await page.locator('.campaign-screen > .cmp-map').boundingBox())!
   const cath = (await page.locator('.cmp-header-cath').boundingBox())!
-  expect(Math.abs(c.y + c.height - map.y), 'the crates stand on the board').toBeLessThanOrEqual(8)
-  expect(c.x).toBeGreaterThanOrEqual(cath.x - 4)
-  expect(c.x + c.width).toBeLessThanOrEqual(cath.x + cath.width + 4)
-  // her face (the top 40% of the bust) stays clear of them
-  expect(c.y).toBeGreaterThanOrEqual(cath.y + cath.height * 0.4)
+  const face = (await page.locator('.cmp-header-cath .cath-features').boundingBox())!
+  const line = (await page.locator('.cmp-cath-line').boundingBox())!
+  expect(map.y - cath.y, 'her figure over the map').toBeGreaterThanOrEqual(140)
+  expect(cath.y + cath.height, 'her hem behind the map').toBeGreaterThan(map.y)
+  expect(line.x + line.width).toBeLessThanOrEqual(face.x)
+  // the tail's tip (the bubble's ::after) within 40 px of her mouth (the face box's lower middle)
+  const tip = await page.locator('.cmp-cath-line').evaluate((el) => {
+    const r = el.getBoundingClientRect()
+    const a = getComputedStyle(el, '::after')
+    return { x: r.right - parseFloat(a.right), y: r.top + parseFloat(a.top) }
+  })
+  expect(Math.hypot(tip.x - (face.x + face.width / 2), tip.y - (face.y + face.height * 0.75))).toBeLessThanOrEqual(40)
 })

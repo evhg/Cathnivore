@@ -641,7 +641,7 @@ export default function CampaignScreen({
         />
         {/* Plan item 444: at D she stands behind the stall's produce crates on the table's edge, so her half-length
             figure ends behind something drawn, not in mid-air; on a phone the crates stand on the board's lip */}
-        {(wide || phone) && <ProduceCrates />}
+        {wide && <ProduceCrates />}
       </span>
     </figure>
   )
@@ -663,6 +663,16 @@ export default function CampaignScreen({
       {departing && <button type="button" className="cmp-depart-skip" aria-label={`Skip to ${departing.title}`} onClick={finish} />}
       <header className="cmp-header">
         <div className="cmp-header-text">
+          {/* Plan item 610: on a phone the way back is a chevron in the header (as Runnel's and Hedgerow's), not a
+              plank hung over the map's frame */}
+          {phone && (
+            <button type="button" className="cmp-header-back" onClick={onBack} aria-label="Back to Title">
+              <svg viewBox="0 0 10 16" aria-hidden="true" focusable="false">
+                <path d="M8 2 2 8l6 6" />
+              </svg>
+              Title
+            </button>
+          )}
           <p className="cmp-kicker">The liberation of Marrow</p>
           <h1>Campaign</h1>
           {/* Plan item 398: at D the bar's words are hidden (the ledger says them), so the bar says them on hover. */}
@@ -877,9 +887,11 @@ export default function CampaignScreen({
           )
         })}
       </ol>
-      <button className="cmp-back" onClick={onBack}>
-        Back to Title
-      </button>
+      {!phone && (
+        <button className="cmp-back" onClick={onBack}>
+          Back to Title
+        </button>
+      )}
     </main>
   )
 }
