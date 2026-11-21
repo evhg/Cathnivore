@@ -4282,3 +4282,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 22:21 lane B: 576 done (1 code commit); Hedgerow phone suite 172 pass, depot specs P and D.
 - 2026-11-21 00:21 lane B: 575 done, 570 closed by decision (2 code commits); cathode-front and title-focal pass at P, classpick specs P and D.
 - 2026-11-21 01:21 lane B: critique bugs closed; 543 slice 1 (1 code commit); cathode-front 23 pass at P.
+- **2026-11-21 00:51 lane A:** 574 done (1 code commit), posters re-rendered; planning 579-586. cathode-classpick D (13 of 14 pass, --retries=0; the rack-stinger test timed out beside the planning shots, rerun alone), keyart-fresh, cathode-setprops; tsc, eslint. No full check. Shots scratchpad a2/sheet-a2-D/P (5 classes), b2 (before). Lock released.
