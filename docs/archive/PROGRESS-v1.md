@@ -4277,3 +4277,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-20 16:21 lane B: red E2E fixed (desktop hand name clip); 568 slice 1 (2D saturation 1.55, the pond match caps it); Hedgerow 2D specs pass.
 - 2026-11-20 18:21 lane B: 570 investigated and handed back (light tries reverted, findings in the plan); no code commits.
 - 2026-11-20 19:21 lane B: red E2E fixed (Runnel render path); 570 tried and handed back (1 code commit).
+- 2026-11-20 20:21 lane B: Runnel render-path fix (156 Runnel specs pass P and D, 2 workers); 577 done (2 code commits).
