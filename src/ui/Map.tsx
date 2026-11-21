@@ -1662,7 +1662,21 @@ function fitPlaques(svg: SVGSVGElement) {
     const hi = Math.min(edge1, ...row.filter((p) => p.x0 >= g.cx).map((p) => p.x0)) - GAP
     let clear = DISC_CLEAR
     const reach = (rr: number) => g.w / 2 + Math.max(14, rr + clear) + rr
-    if (g.cx + reach(r) <= hi || g.cx - reach(r) >= lo) continue
+    if (g.cx + reach(r) <= hi) continue
+    // Plan item 607: every other disc rides its plaque's right end, so where the right end would meet the next plate
+    // the sign first slides away from it (as far as the board's edge allows) and keeps its disc on the right; it flips
+    // to the left end only where sliding can't make room (Brindle Hills sat apart from every other badge on a phone).
+    const slide = hi - (g.cx + reach(r))
+    if (g.cx - g.w / 2 - 8 + slide >= lo) {
+      g.cx += slide
+      own.x0 += slide
+      own.x1 += slide
+      g.status.setAttribute('data-fit-r', String(r))
+      g.status.setAttribute('data-fit-side', 'right')
+      g.status.setAttribute('data-fit-clear', String(clear))
+      continue
+    }
+    if (g.cx - reach(r) >= lo) continue
     // where the row is tight (a phone's middle row) the clearance gives way before the disc shrinks
     clear = 1
     // the sign's span with the disc on its right [cx - w/2 - 8, cx + reach], or on its left [cx - reach, cx + w/2 + 8]
@@ -1672,7 +1686,9 @@ function fitPlaques(svg: SVGSVGElement) {
     const shift = (a: number, b: number) => Math.max(lo - a, Math.min(0, hi - b))
     const dxR = shift(g.cx - g.w / 2 - 8, g.cx + reach(rr))
     const dxL = shift(g.cx - reach(rr), g.cx + g.w / 2 + 8)
-    const left = Math.abs(dxL) < Math.abs(dxR)
+    // (item 607: the right end whenever the row holds it there, as every other disc; the left only as a last resort)
+    const fitsR = g.cx - g.w / 2 - 8 + dxR >= lo - 0.01 && g.cx + reach(rr) + dxR <= hi + 0.01
+    const left = !fitsR && Math.abs(dxL) < Math.abs(dxR)
     const dx = left ? dxL : dxR
     g.cx += dx
     own.x0 += dx
