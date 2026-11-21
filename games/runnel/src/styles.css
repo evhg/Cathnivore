@@ -5226,6 +5226,8 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .win-strip { width: min(800px, var(--strip-max, 100vw), calc(100vw - 20px)); }
 }
 @media (max-width: 600px) {
+  /* (her docked valley figure would peek over the card's top edge as a second Cath: the card's is hers now) */
+  .has-win-strip .host { visibility: hidden; }
   .win-strip { grid-template-columns: 90px minmax(0, 1fr); column-gap: 8px; }
   .win-strip .strip-cath { width: 107px; height: 160px; margin: -44px 0 -6px -14px; }
 }

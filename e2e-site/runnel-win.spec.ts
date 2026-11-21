@@ -115,6 +115,15 @@ test('?shotwin shows a solve on par, not zero taps', async ({ page }) => {
   await page.locator('#win-strip').waitFor({ state: 'visible', timeout: 20_000 })
   const text = await page.evaluate(() => `${document.querySelector('#win-strip')!.textContent} ${document.querySelector('#dlg-win')!.textContent}`)
   expect(text).not.toMatch(/\b0 taps\b|under par/)
+  // Plan item 620: the shot shows the board as a solve leaves it, every tile watered (it finished a dry board), and
+  // Cath says her solve line, not her greeting
+  const m = await page.evaluate(() => {
+    const cells = [...document.querySelectorAll('.tiles > g.cell')]
+    return { cells: cells.length, wet: cells.filter((c) => c.classList.contains('wet')).length, dry: cells.filter((c) => !c.classList.contains('wet') && !c.classList.contains('stone')).length }
+  })
+  expect(m.cells).toBeGreaterThan(0)
+  expect(m.dry).toBe(0)
+  await expect(page.locator('#host-line')).toContainText('not a drop spilled')
 })
 
 // Bug 2026-11-20: at D a solve's result strip covered Cath's solve line in the valley; the line steps clear of the

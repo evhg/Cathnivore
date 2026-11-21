@@ -2406,7 +2406,21 @@ if ((!data.seenHelp && !params.has('nohelp')) || params.has('lesson')) startLess
 if (params.has('shotwin')) shotWin()
 function shotWin(): void {
   if (!game.solved && game.taps === 0) game.taps = puzzle.par
+  // Plan item 620: the shot shows the board as a solve leaves it, every channel running (it finished a dry board,
+  // so the card said 'Every field is watered.' over dry channels). Rotation 0 is each tile's solution.
+  if (!game.solved) {
+    puzzle.cells.forEach((c) => {
+      c.locked = false
+      c.rot = 0
+    })
+    game.rots = puzzle.cells.map((c) => c.rot)
+    board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
+    wetCount = computeFlow(puzzle.cells).wet.size
+  }
   finish()
+  // and Cath says her solve line (the bubble kept her greeting beside the solved card)
+  host.react(1, true)
+  render()
 }
 // Screenshot hook: `?shotsolve` sets every piece to its solution except the first turnable one next to
 // the spring, which is left one clockwise tap away (marked `data-last`), so a single tap shows the whole
@@ -2433,6 +2447,8 @@ function shotSolve(): void {
     c.locked = false
     c.rot = i === last ? 5 : 0
   })
+  // (the saved turns follow, so a reload after the tap restores the solved board, not the scrambled one)
+  game.rots = puzzle.cells.map((c) => c.rot)
   board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
   wetCount = computeFlow(puzzle.cells).wet.size
   if (last !== undefined) ui.board.querySelectorAll('.tiles > g.cell')[last]?.setAttribute('data-last', '')
