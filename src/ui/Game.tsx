@@ -3078,6 +3078,24 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
           const share = Math.min(1, have / Math.max(1, featured.cost))
           const imp = featured.key.startsWith('invest:') ? IMPROVEMENTS_BY_ID.get(featured.key.slice(7)) : undefined
           const pinned = goal === featured.key
+          // Item 586: with nothing pinned the band invites a pin rather than repeating the nearest card, which the row
+          // above already shows with its own meter ('Nearest goal: Letterpress Flyers' under Letterpress Flyers).
+          if (!pinned)
+            return (
+              <div className="goal-feature" data-goal-feature="none" data-empty="">
+                <span className="goal-feature-pic goal-feature-invite" aria-hidden="true">
+                  <svg viewBox="0 0 16 16">
+                    <path d="M8 1.5c-2.3 0-4 1.6-4 3.8 0 2.9 4 7.7 4 7.7s4-4.8 4-7.7c0-2.2-1.7-3.8-4-3.8Z" />
+                    <circle cx="8" cy="5.4" r="1.5" />
+                  </svg>
+                </span>
+                <span className="goal-feature-text">
+                  <span className="goal-feature-eyebrow">Your goal</span>
+                  <span className="goal-feature-name">Nothing yet</span>
+                  <span className="goal-feature-count">Pin a card above and it waits here, filling as the coins come in.</span>
+                </span>
+              </div>
+            )
           return (
             <div
               className="goal-feature"
@@ -3090,7 +3108,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                 {imp ? <Vignette kind={vignetteFor(imp)} seed={imp.id} /> : <SchemeArt size={72} />}
               </span>
               <span className="goal-feature-text">
-                <span className="goal-feature-eyebrow">{pinned ? 'Saving for' : 'Nearest goal'}</span>
+                <span className="goal-feature-eyebrow">Saving for</span>
                 <span className="goal-feature-name">{featuredCard.name}</span>
                 <span
                   className="goal-feature-meter"
@@ -3098,7 +3116,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   aria-valuemin={0}
                   aria-valuemax={featured.cost}
                   aria-valuenow={have}
-                  aria-label={`${pinned ? 'Saving for' : 'Nearest goal'} ${featuredCard.name}: ${have} of ${featured.cost} ${featuredCard.coin}`}
+                  aria-label={`Saving for ${featuredCard.name}: ${have} of ${featured.cost} ${featuredCard.coin}`}
                 >
                   <span className="goal-feature-fill" />
                 </span>
@@ -4025,6 +4043,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
                   data-table-producer={id}
                   data-expression={producerFaces[id] ?? 'neutral'}
                   data-active={id === state.activeProducer ? '' : undefined}
+                  data-speaking={producerLine?.producer === id ? '' : undefined}
                   aria-label={`${PRODUCERS[id].name}${id === state.activeProducer ? ', playing now' : ''}: open the Farm`}
                   onClick={() => setShowFarm(true)}
                 >
@@ -4233,6 +4252,10 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
       el.style.setProperty('--pl-w', `${t.width}px`)
       el.style.setProperty('--pl-h', `${t.height}px`)
       el.dataset.placed = 'dock'
+      // Item 586: the tail can only reach the nearest bust; when the far one speaks it goes, and their name and lit
+      // bust say who it is (the tail pointed Tomas's line at Mara).
+      const nearest = el.closest('.counter-bench')?.querySelector('[data-table-producer]')
+      el.dataset.tail = nearest?.getAttribute('data-table-producer') === reply.producer ? 'near' : 'none'
       return
     }
     const map = el.closest('.map-wrap')?.getBoundingClientRect()

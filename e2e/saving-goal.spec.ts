@@ -158,7 +158,9 @@ test('the rail shows the goal large in the band under the shelf, and its fill ma
   await page.getByRole('button', { name: 'Start' }).click()
   const feature = page.locator('.goal-feature')
   await expect(feature).toBeVisible()
-  await expect(feature.locator('.goal-feature-eyebrow')).toHaveText(/Nearest goal/i)
+  // Item 586: with nothing pinned it invites a pin instead of repeating the nearest card shown in the row.
+  await expect(feature).toHaveAttribute('data-empty', '')
+  await expect(feature.locator('.goal-feature-name')).toHaveText('Nothing yet')
   // Pin the second priced card: the card shows it, its fill is held / price.
   const pin = page.locator('.shelf-pin').nth(1)
   const name = (await pin.getAttribute('aria-label'))!.replace(/^Save for /, '')

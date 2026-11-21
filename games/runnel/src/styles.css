@@ -5105,3 +5105,15 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 /* Plan item 537: while Cath's first-field lesson points at a tile, her bubble says how to play, so the footer hint
    stands down (it repeated 'Tap a tile to turn it' under her). It keeps its line, so nothing moves when it returns. */
 body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
+
+/* Plan item 586: at D the lesson's notebook is the whole rail, from under the masthead to the window's foot (it
+   stopped at 776 of 900 with a bare cream band below it, the hidden mode switch's row above it), and Up next is
+   pinned at the page's foot (item 246 centred the card and the hint as one block; the hint is hidden while a tile
+   glows, so the block left bands above and below). */
+@media (min-width: 1100px) and (min-height: 640px) {
+  body.in-lesson .app[data-valley-say=''] { grid-template-rows: auto auto auto auto 1fr auto; }
+  body.in-lesson .app[data-valley-say=''] .hud { grid-row: 2 / 6; align-self: stretch; display: flex; flex-direction: column; }
+  body.in-lesson .app[data-valley-say=''] .foot { grid-row: 6; align-self: end; }
+  body.in-lesson .app[data-valley-say=''] .hud > .lesson-panel[data-notebook] { flex: 1 1 auto; display: flex; flex-direction: column; }
+  body.in-lesson .app[data-valley-say=''] .lesson-panel[data-notebook] .lc-next { margin-top: auto; }
+}

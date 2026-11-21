@@ -4519,6 +4519,10 @@ html.no-animations .setup .opening-preview :is(.piece-tray, .ev-heap, .ev-lanter
   .setup[data-phone-steps] > .setup-board-stage { display: flex; justify-content: center; align-items: center; flex: 1 1 0; min-height: 120px; margin: -2px -10px 0; }
   .setup[data-phone-steps] .setup-board-stage .opening-preview { height: 100%; width: 100%; animation: map-deal var(--dur-base, 280ms) var(--ease-settle, ease) both; }
   .setup[data-phone-steps] .setup-board-stage .opening-preview .map { width: auto; height: 100%; max-width: 100%; margin: 0 auto; filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 22%, transparent)); }
+  /* item 586: the end plates' status discs reach past the board's box (Rivermead's was cut at the right); the stage has room. Out of flow,
+     since an unclipped svg sized itself past the stage's height */
+  .setup[data-phone-steps] .setup-board-stage .opening-preview { position: relative; }
+  .setup[data-phone-steps] .setup-board-stage .opening-preview .map { overflow: visible; position: absolute; inset: 0; }
   .setup[data-phone-steps] .setup-table.setup-track { flex: none; }
   /* The board now carries the power (Map's showcase over their home), so the pair reads as words: each face once. */
   .setup[data-phone-steps] .pair-panel .pair-portrait { display: none; }
