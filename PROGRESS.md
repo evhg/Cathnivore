@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (05:51 11-21): 588 done (the booking photos are 3D noir stills of her per class, `render/bookingphoto.ts`; slice 1's red E2E was the rack contrast slice 2 already fixed). 589: rail design decided (four sections, in the plan) and the width tried and reverted (it clips the shelf at 1280 until the Saving-for card is built); handed back. Open: 543, 319, 589.
+- Lane A (06:51 11-21): planned 591-593 (plan1121c critique); 591 done (Hedgerow phone 3D depots whole under the HUD), 593 done (Setup stamp, act-banner cloud; three kept by design), 592 closed (already built). Open unclaimed: 543, 319 only: next lane plans (fewer than 3).
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -37,6 +37,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-02 20:52 `f282d646`: plan items 10-40 since the last release (Cathnivore tutorial, campaign map, turn show, vignettes; Runnel garden, practice and workshop; the site hero and key art; Hedgerow and NIGHT SHIFT critique batches; NIGHT SHIFT enemy faces in progress). Gates 1-8 passed on the second run (the first failed gate 5 on a tooltip that blocked its own plan card at P, fixed at the root in f282d646; desktop-no-scroll was a load flake); live smoke test passed outright; tag push 403 (harmless).
 
 ## Session log (newest first, last 15)
+- **2026-11-21 06:51 lane A:** planning (591-593, plan1121c shots and a subagent critique), 591 and 593 done, 592 closed (2 code commits). hedgerow-3dframe + hedgerow-3d (P, new depot spec; 3dframe D), hedgerow-map (P, D, 52), setup-objects/-desktop/-placecards (D, new stamp spec), all --retries=0; setup and Hedgerow unit tests (103), css lint, keyart-fresh; tsc, eslint. No full check. Shots e2e/screenshots/plan1121c, scratchpad s591, s591a/b, s592, s593, cloud-*. Lock released.
 - 2026-11-21 06:21 lane B: 589 slice 1 (1 code commit); the rail's game specs pass at D (and P where they run).
 - **2026-11-21 05:51 lane A:** 588 done (1 code commit), posters and key art re-rendered; 589 design decided, width tried and reverted. classpick booking-photo specs (P, D; new 3D-stills spec D), five-guns (P, D), classstage (D), all --retries=0 (the D 48 px test timed out under load waiting for the pick, passed alone in 36 s; its wait raised to 120 s); keyart-fresh, css lint, cathode-type; tsc, eslint. No full check. Shots scratchpad s588b (v1-v3, pick3-D/P), s589. Lock released.
 - 2026-11-21 05:21 lane B: E2E red checked; 587 closed (checked); 589 findings; no code commits.
@@ -51,4 +52,3 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 - 2026-11-21 01:21 lane B: critique bugs closed; 543 slice 1 (1 code commit); cathode-front 23 pass at P.
 - **2026-11-20 23:51 lane A:** 574 slice 2 (1 code commit), NIGHT SHIFT posters re-rendered. keyart-fresh; tsc, eslint; a scripted face/wall measure of all 5 classes at P and D before and after (scratchpad cpexp.mjs; `e2e/screenshots/s574/`). classpick specs left to CI. No full check. Lock released.
 - 2026-11-21 00:21 lane B: 575 done, 570 closed by decision (2 code commits); cathode-front and title-focal pass at P, classpick specs P and D.
-- 2026-11-20 23:21 lane B: 575 slices 1-2 (2 code commits); classpick and classstage pass P and D.
