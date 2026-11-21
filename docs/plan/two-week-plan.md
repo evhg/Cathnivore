@@ -5743,7 +5743,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each point fixed, or checked and noted here; shots P and D.
 - **Size:** 1
 
-## 587. [ ] Hedgerow 3D: Cath and the farm's folk as characters, not dolls *(lane B, in progress)*
+## 587. [x] Hedgerow 3D: Cath and the farm's folk as characters, not dolls *(closed 2026-11-21 05:35, lane B, checked, no code: the critique judged a 1x shot where she stands about 20 px of head; at level 21 D her figure is 81x137 px (cathBox), her head box 38 px tall with skin-tone (559) and dark eye/hair pixels in it at 2x; her face is the painted texture (`cathFaceTexture`), her parts named (jacket, blouse, lapel) and covered by hedgerow-cath3d-parts/-hair/-figure/-budget (pass); the farmers have item 284's faces, hair and hats. Shot scratchpad c3.png)*
 *(planned 2026-11-21 04:45, lane B, plan1121b critique)*
 - **Why:** `plan1121b/hedge-l21-3d-D` 150-240 x 490-630 (Cath), 105-165 x 680-790 and 785-830 x 405-505 (farmers); `hedge-l21-3d-P` 20-60 x 480-550: in the 3D field (the default view) Cath is a small low-poly figure without a readable face, hair or olive jacket, and the farmers are box dolls. VISION: Cath is the face of every game; characters with presence.
 - **Build:** `games/hedgerow/src/render3d/`: her figure from `shared/cath`'s proportions and colours: a hair mass with a shine band, the olive jacket and collar, and her 2D face (shared/cath bust, `face` framing) baked once to a canvas texture on the head's front; her idle, point and cheer read at field distance. The farmers get the same kit's head and a costume each.
