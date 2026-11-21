@@ -29,10 +29,13 @@ async function plotHue(page: Page): Promise<{ hue: number; looks: string[] }> {
     const looks = h.plotLooks()
     const a = h.cellCenter(0, 0)!, b = h.cellCenter(1, 0)!
     const cell = Math.abs(b.x - a.x)
+    // Plan item 611: on a phone Cath's line rises over the field's foot; the plots under it are her bubble, not beds
+    const over = [...document.querySelectorAll('#cath-dock-line, #cath-say')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0)
     let sx = 0, sy = 0
     for (const [k] of looks) {
       const [c, r] = k.split(',').map(Number) as [number, number]
       const p = h.cellCenter(c, r)!
+      if (over.some((o) => p.x + cell / 2 > o.left && p.x - cell / 2 < o.right && p.y + cell / 2 > o.top && p.y - cell / 2 < o.bottom)) continue
       const x0 = Math.round((p.x - cell * 0.25) * dpr), y0 = Math.round((p.y - cell * 0.25) * dpr)
       const n = Math.max(1, Math.round(cell * 0.5 * dpr))
       const d = ctx.getImageData(x0, y0, n, n).data

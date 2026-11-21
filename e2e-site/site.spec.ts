@@ -758,7 +758,8 @@ test.describe('Hedgerow', () => {
     // Plan item 171: on an upright phone Cath's advice docks over the tray; a tap folds it away.
     if (w < 600) {
       await expect(page.locator('#cath-dock')).toBeVisible()
-      await page.locator('#cath-dock-line').click()
+      // (plan item 611: her line lets taps through, so the tap that folds it lands on her portrait)
+      await page.locator('#cath-dock-bust').click()
       // Plan item 392: folded to her portrait on the panel's corner, off the tray.
       await expect(page.locator('#cath-dock-line')).toBeHidden()
     }
