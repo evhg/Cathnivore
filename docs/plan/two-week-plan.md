@@ -6009,7 +6009,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** towers 60 px+ at D, 36 px+ at P; 5+ plot looks per level; Hedgerow 2D specs pass; key art re-shot, keyart-fresh passes; shot P and D.
 - **Size:** 2
 
-## 622. [ ] The bugs from the 2026-11-21 18:15 critique, fixed as one batch
+## 622. [ ] The bugs from the 2026-11-21 18:15 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-21 18:20, lane A, plan1121j critique; check each on today's build first)*
 - NIGHT SHIFT class pick D (`ns-play-D` 565-900 x 780-830): the typed subtitle overlaps Cath's skirt and boots and repeats the quote card; P breaks it mid-phrase with the second line faded.
 - Cathnivore setup P (`cath-setup-P` 45-145 x 343-357): 'Brindle Hills' touches its '1' badge; step labels (150-370 x 213-223) low-contrast grey.
