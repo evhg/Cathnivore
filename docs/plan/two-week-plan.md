@@ -5802,7 +5802,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** a spec per bug (tag one line, no overlap or a deliberate pin, contrast 4.5+, lede width 330 px+ at 390); shots P and D.
 - **Size:** 1
 
-## 594. [ ] Cathnivore table: the producers act on stage, not stand as props
+## 594. [ ] Cathnivore table: the producers act on stage, not stand as props *(lane A, in progress)*
 *(planned 2026-11-21 07:45, lane B, plan1121d critique)*
 - **Why:** `plan1121d/cath-game-D` 1180-1410 x 455-720: Tomas and Mara are still figures cut by the table's foot (Mara's crates over her); only Cath poses and speaks in a bubble (item 592). `cath-game-P` 262-380 x 478-555: 50 px cameos. VISION: Cath and the producers are people you remember (portraits, poses, reactions, voice).
 - **Build:** `src/ui/producerMood.ts`, `Game.tsx`, `Scene.tsx`, `sceneStaging.ts`, the producer portrait art: when a producer's power, buy or liberation resolves, their figure steps forward 12-20 px into a pose (cheer, point, slump on a Squeeze) and speaks one line in their own bubble through item 495's one-voice queue; new lines in `content/`. Phone: the cameo pops and speaks through the docked line.
