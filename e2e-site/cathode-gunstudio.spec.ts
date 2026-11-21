@@ -41,7 +41,8 @@ test('the gun thumbnails read as lit metal, their light spread well past the fla
     return out
   }, Object.keys(BEFORE))
   const ratios = Object.entries(BEFORE).map(([m, b]) => spread[m]! / b)
-  // every gun at 1.4x or more, and the rack as a whole at 1.5x
-  for (const [m, b] of Object.entries(BEFORE)) expect(spread[m]!, m).toBeGreaterThanOrEqual(b * 1.4)
-  expect(ratios.reduce((a, r) => a + r, 0) / ratios.length).toBeGreaterThanOrEqual(1.5)
+  // Every gun at 1.25x or more, the rack as a whole at 1.35x. Item 612 took the rack's exposure from 1.8 to 0.7
+  // (gunmetal, not white silhouettes), which narrows the spread: 1.32-1.52x, mean 1.39x (2026-11-21); 1.8 read 1.4x+.
+  for (const [m, b] of Object.entries(BEFORE)) expect(spread[m]!, m).toBeGreaterThanOrEqual(b * 1.25)
+  expect(ratios.reduce((a, r) => a + r, 0) / ratios.length).toBeGreaterThanOrEqual(1.35)
 })
