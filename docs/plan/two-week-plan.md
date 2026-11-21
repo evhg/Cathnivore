@@ -5988,7 +5988,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** pieces 56 px+ at D, 40 px+ at P; a unit test maps each piece kind to a distinct look; board specs pass; shot P and D, light and dark.
 - **Size:** 2
 
-## 619. [ ] Cathnivore Quick Game desktop: the setup steps as objects on the stall
+## 619. [ ] Cathnivore Quick Game desktop: the setup steps as objects on the stall *(lane B, in progress)*
 *(planned 2026-11-21 18:20, lane A, plan1121j critique; item 605 made the boards little boards)*
 - **Why:** `plan1121j/cath-setup-D` 100-370 x 110-720: the left column is still a form of chips, stamps and a slider, the least designed part of Cathnivore. VISION 1 (nothing looks like a default form).
 - **Build:** `src/ui/Setup.tsx`, `stallLayout.ts`: the mode as two place settings on the cloth, the difficulty as Hollowell memos to pick up, Cath's pins as pins on a cork strip, producers as portrait cards dealt onto the cloth.
