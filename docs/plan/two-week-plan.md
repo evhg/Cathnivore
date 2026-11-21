@@ -5854,7 +5854,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 every card and its Play button end at or above y 890; each poster 280 px+ tall; each daily status on a tag shape; site specs pass P and D; key art unchanged; shot P and D.
 - **Size:** 1
 
-## 601. [ ] Portfolio phone: the games as framed prints, and Cath's line
+## 601. [ ] Portfolio phone: the games as framed prints, and Cath's line *(lane B, in progress)*
 *(planned 2026-11-21 08:50, lane B, plan1121e critique)*
 - **Why:** `plan1121e/portfolio-P` 16-374 x 556-844: four plain thumbnails with black caption bars, unlike the desktop's framed prints (item 534, desktop only) and Cath's bubble (`portfolio-D` 630-1230 x 150-600); Cath on the phone (290-370 x 205-410) has no line. VISION character bible: if a screen has room for a character, it's Cath.
 - **Build:** `portfolio/src` gallery and hero CSS: the desktop's mat, frame and name plate at phone size; Cath a short tailed bubble beside her. Also the desktop bubble's tail: it points at her knees (`portfolio-D` 1225-1235 x 570-585; her mouth near 1330, 215).
