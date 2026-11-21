@@ -5146,3 +5146,42 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .lc-fn-marks { min-width: 3ch; font: 700 1.5em/1 var(--font-hand, var(--font-display)); letter-spacing: .18em; color: var(--pasture-deep, var(--ink)); }
 .lc-fn-of { color: var(--ink-soft, var(--ink)); }
 .lc-fn-line { margin: 0; font-style: italic; }
+
+/* Plan item 615 slice 1: the solve's figures. The time and the taps at 20 px, the taps against par as a little ink
+   stamp, and a daily's streak as a shelf of seven jars (the days of it filled with water). */
+.strip-nums {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin-top: 4px;
+  color: var(--ink-muted);
+}
+.sn-fig { font-size: var(--fs-small); }
+.sn-fig b {
+  font: 700 1.25rem/1 var(--font-display);
+  color: var(--soil);
+  font-variant-numeric: tabular-nums;
+}
+.sn-stamp {
+  padding: 2px 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  color: var(--soil);
+  font: 700 var(--fs-small)/1.1 var(--font-ui, inherit);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  rotate: -4deg;
+}
+.sn-stamp[data-par='under'] { color: var(--water-deep, var(--soil)); }
+.sn-jars { display: inline-flex; align-items: flex-end; gap: 3px; }
+.sn-jars i {
+  width: 10px;
+  height: 14px;
+  border: 1.5px solid var(--ink-muted);
+  border-top-width: 3px;
+  border-radius: 2px 2px 3px 3px;
+  background: transparent;
+}
+.sn-jars i[data-full] { background: linear-gradient(transparent 30%, var(--water) 30%); border-color: var(--soil); }
+.sn-jars-n { margin-left: 3px; font-weight: 700; color: var(--soil); }

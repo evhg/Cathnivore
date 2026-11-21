@@ -1375,8 +1375,40 @@ function showStrip(isDaily: boolean, streak: number): void {
   strip.cath.innerHTML = cathMoment('win', 'face')
   strip.eyebrow.textContent = ui.winEyebrow.textContent
   strip.title.textContent = ui.winTitle.textContent
-  const taps = `${game.taps} tap${game.taps === 1 ? '' : 's'}`
-  strip.nums.textContent = [formatTime(game.elapsedMs), `${taps} · par ${puzzle.par}`, isDaily ? `streak ${streak}` : ''].filter(Boolean).join(' · ')
+  // Plan item 615 slice 1: the result reads as figures, not a line of small print: the time and the taps large, the
+  // taps against par as a stamp, and on a daily the streak as a shelf of seven jars (the days of it, filled).
+  const fig = (value: string, unit: string) => {
+    const f = document.createElement('span')
+    f.className = 'sn-fig'
+    const b = document.createElement('b')
+    b.textContent = value
+    f.append(b, ` ${unit}`)
+    return f
+  }
+  const diff = game.taps - puzzle.par
+  const stamp = document.createElement('span')
+  stamp.className = 'sn-stamp'
+  stamp.dataset.par = diff < 0 ? 'under' : diff > 0 ? 'over' : 'on'
+  stamp.textContent = diff < 0 ? `${-diff} under par` : diff > 0 ? `${diff} over par` : 'on par'
+  stamp.title = `Par ${puzzle.par}`
+  const parts: HTMLElement[] = [fig(formatTime(game.elapsedMs), 'time'), fig(String(game.taps), game.taps === 1 ? 'tap' : 'taps'), stamp]
+  if (isDaily) {
+    const jars = document.createElement('span')
+    jars.className = 'sn-jars'
+    jars.setAttribute('role', 'img')
+    jars.setAttribute('aria-label', `Streak: ${streak} day${streak === 1 ? '' : 's'}`)
+    for (let i = 0; i < 7; i++) {
+      const j = document.createElement('i')
+      if (i < Math.min(7, streak)) j.dataset.full = ''
+      jars.append(j)
+    }
+    const n = document.createElement('span')
+    n.className = 'sn-jars-n'
+    n.textContent = streak > 7 ? `${streak}` : ''
+    jars.append(n)
+    parts.push(jars)
+  }
+  strip.nums.replaceChildren(...parts)
   strip.next.textContent = ui.btnNext.textContent
   strip.toast.textContent = ui.toast.textContent
   // Plan item 478: Watch, when this solve's turns were all logged (a game resumed from before the log has a partial one).
