@@ -300,6 +300,10 @@ const MARSH_BED = {
   // ground to build on, not a dull fill.
   lavender: { base: "sward", tint: "#b4a6b0" },
   saltgrass: { base: "sward", tint: "#94ccb0" },
+  // Plan item 627: item 621's two margin beds borrowed from Shingle, on the marsh's pale sward (as clover and stubble
+  // in 3D they were the field's darkest beds, and the lane no longer stood out from the plots beside it).
+  thrift: { base: "sward", tint: "#b8d0a4" },
+  seakale: { base: "sward", tint: "#c6ccc0" },
 } as const;
 
 function bedTexture(look: "earth" | "stubble" | "clover" | "sward"): THREE.Texture {
@@ -1081,6 +1085,20 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
               clumps.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 1 + deco() * 0.3, sy: 0.6, color: new THREE.Color("#6f8c6c").multiplyScalar(0.9 + deco() * 0.2) });
               for (let j = 0; j < 4; j++)
                 cloverHeads.push({ x: c + dx + (deco() - 0.5) * 0.12, y: h + 0.05, z: r + dz + (deco() - 0.5) * 0.12, ry: deco() * 6.3, s: 1.1, sy: 1, color: new THREE.Color(j % 3 ? "#9a7cb8" : "#bca8d2") });
+            }
+          } else if (look === "thrift") {
+            // Cushions of thrift: a green tuft carrying pink pom-poms (2D's thrift bed).
+            for (let k = 0; k < 6; k++) {
+              const [dx, dz] = rim();
+              clumps.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 0.9 + deco() * 0.3, sy: 0.6, color: new THREE.Color("#6e9a5e").multiplyScalar(0.9 + deco() * 0.2) });
+              for (let j = 0; j < 3; j++)
+                cloverHeads.push({ x: c + dx + (deco() - 0.5) * 0.1, y: h + 0.05, z: r + dz + (deco() - 0.5) * 0.1, ry: deco() * 6.3, s: 1.1, sy: 1, color: new THREE.Color(j % 2 ? "#e88aa8" : "#f4b8c8") });
+            }
+          } else if (look === "seakale") {
+            // Sea kale: broad glaucous grey-blue leaf mounds on the shingle-pale bed.
+            for (let k = 0; k < 5; k++) {
+              const [dx, dz] = rim();
+              clumps.push({ x: c + dx, y: h + 0.02, z: r + dz, ry: deco() * 6.3, s: 1.2 + deco() * 0.4, sy: 0.7, color: new THREE.Color("#8aa6a2").multiplyScalar(0.9 + deco() * 0.2) });
             }
           } else {
             // Short salt sward, the odd white crust of dried salt, and sheep grazing it (as the 2D field has).
