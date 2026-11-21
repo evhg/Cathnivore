@@ -188,3 +188,26 @@ for (const level of [21, 34]) {
     for (const t of r.tops) expect(t).toBeGreaterThanOrEqual(r.hud + 8)
   })
 }
+
+// Plan item 613: a desktop win settles the 3D camera in on the farmhouse she kept (a held move, not a passing one).
+test('a 3D win settles the camera on the farmhouse (level 12, D)', async ({ page }, info) => {
+  test.skip(info.project.name !== 'site-desktop', 'a desktop camera move')
+  test.setTimeout(120_000)
+  type HGC = Omit<HG, 'game'> & { cam3d(): { x: number; y: number; z: number; moving: boolean } | null; game(): { phase: string } }
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: {}, seenBefore: { '12': true }, seen: {}, tips: { all: true } })))
+  await page.goto('/hedgerow/?sandbox=1&level=12')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HGC }).hedgerow?.cam3d(), null, { timeout: 60_000 })
+  const cam = () => page.evaluate(() => (window as unknown as { hedgerow: HGC }).hedgerow.cam3d()!)
+  await page.waitForTimeout(1500)
+  const before = await cam()
+  await page.evaluate(() => {
+    ;(window as unknown as { hedgerow: HGC }).hedgerow.game().phase = 'won'
+  })
+  await expect.poll(async () => (await cam()).moving, { timeout: 30_000 }).toBe(true)
+  // It leans in (the camera comes lower) and stays held while the result shows.
+  await expect.poll(async () => before.y - (await cam()).y, { timeout: 60_000 }).toBeGreaterThan(0.5)
+  await page.waitForTimeout(2500)
+  expect((await cam()).moving).toBe(true)
+})

@@ -1878,7 +1878,7 @@ export class Renderer3D {
 
   // ---- the director (plan item 191): a dolly from the depot along the lane on Go, and at most one close-up a
   // round (a megastructure's merge, or the house at a leak). Reduced motion and phones get no moves at all.
-  private shot: { x: number; z: number; zoom: number; dur: number; t: number; dolly: boolean } | null = null;
+  private shot: { x: number; z: number; zoom: number; dur: number; t: number; dolly: boolean; hold?: boolean } | null = null;
   private shotRound = -1;
   private lastPhase = "";
   private get directs(): boolean {
@@ -1890,10 +1890,15 @@ export class Renderer3D {
       const [c, r] = game.level.path[0] ?? [0, 0];
       this.shot = { x: depot ? depot.position.x : c + 0.5, z: depot ? depot.position.z : r + 0.5, zoom: 1.35, dur: 1.5, t: 0, dolly: true };
     }
+    // Plan item 613: a win settles the camera on the farmhouse she kept, and holds there while the result shows.
+    if (game.phase === "won" && this.lastPhase !== "won" && this.directs && !this.zoomed && this.ground) {
+      const house = this.ground.farmhouse.position;
+      this.shot = { x: house.x, z: house.z, zoom: 1.3, dur: 1.4, t: 0, dolly: false, hold: true };
+    } else if (game.phase !== "won" && this.shot?.hold) this.shot = null;
     this.lastPhase = game.phase;
     if (this.shot) {
       this.shot.t += dt;
-      if (this.shot.t >= this.shot.dur) this.shot = null;
+      if (this.shot.t >= this.shot.dur && !this.shot.hold) this.shot = null;
     }
   }
   /** Plan item 479: hold the camera on the last knockout for `ms` (wall clock): it leans in over about 0.2 s and
@@ -1920,6 +1925,7 @@ export class Renderer3D {
     const s = this.shot;
     if (!s) return 0;
     const k = Math.min(1, s.t / s.dur);
+    if (s.hold) return k * k * (3 - 2 * k);
     if (s.dolly) return 1 - k * k * (3 - 2 * k);
     return s.t < 0.3 ? s.t / 0.3 : s.t > s.dur - 0.6 ? Math.max(0, (s.dur - s.t) / 0.6) : 1;
   }
