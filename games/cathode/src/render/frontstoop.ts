@@ -268,7 +268,12 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
   halo.position.set(BX, BY, z0 + 0.36);
   // Plan item 574: the wall's wash at half (it was 1.0): beside her head it matched her face, so the set read as one
   // even haze; now the bulb is the bright thing and the brick falls off from it.
-  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), tint(additive(washTex, BULB, 0.5))));
+  const washMat = tint(additive(washTex, BULB, 0.5));
+  const wash = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.6, 3.4)), washMat));
+  // Plan item 574, slice 3: the Gunslinger's set is a lit saloon wall already (its painted back bar and the stoop's
+  // planks take the gold key), so her wash is under half: with it at full the wall right of her face read 23.6
+  // against her face's 35 (1.48x, measured with her hidden), 8.7 without it.
+  const WASH_CLASS: Partial<Record<string, number>> = { gunslinger: 0.4 };
   wash.position.set(BX - 0.3, BY - 0.2, z0 + 0.25);
   const pool = add(new THREE.Mesh(geo(new THREE.PlaneGeometry(3.0, 2.4)), tint(additive(washTex, BULB, 0.85))));
   pool.rotation.x = -Math.PI / 2;
@@ -647,6 +652,7 @@ export function buildFrontStoop(feet: THREE.Vector3, yaw: number, groundY: numbe
           keyC.multiplyScalar(Math.max(t.base.r, t.base.g, t.base.b) / Math.max(keyC.r, keyC.g, keyC.b, 1e-3));
           keyC.multiplyScalar(Math.min(1, lum(t.base) / Math.max(lum(keyC), 1e-3)));
           t.mat.color.lerp(keyC, 0.75);
+          if (t.mat === washMat) t.mat.color.multiplyScalar(WASH_CLASS[cls ?? ""] ?? 1);
         }
       }
       const k = Math.max(0, Math.min(1, (w - 0.05) / 0.9));

@@ -192,8 +192,9 @@ function gunslinger(k: Kit): string[] {
   k.cyl(0.035, 0.04, 0.2, 0x6a3a10, [tx - 0.25, 0.88, tz - 0.12]);
   k.cyl(0.012, 0.02, 0.07, 0x6a3a10, [tx - 0.25, 1.0, tz - 0.12]);
   k.begin("bentwood-chair");
-  // A bentwood chair at her left, turned toward the table.
-  const cx = -0.85;
+  // A bentwood chair at her left, turned toward the table. Plan item 574: a step further out (it was at -0.85),
+  // so its lamp's glow sits clear of the wall beside her face at D (the band left of her head read 25.6, 13.4 unlit).
+  const cx = -1.3;
   const cz = -1.3;
   k.cyl(0.21, 0.21, 0.04, 0x5a3418, [cx, 0.46, cz], [0, 0, 0], 16);
   for (const [dx, dz] of [
