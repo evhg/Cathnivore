@@ -2404,10 +2404,19 @@ function fieldIntel(g: Game): HTMLElement {
       const soon = ahead[at] ?? gaps[0]!;
       // Plan item 460: in plain words, when and what: 'Round 12 · Airborne needs a Scarecrow' (it read 'Unanswered
       // Airborne · Scarecrow', a code to learn).
-      if (at >= 0) lab.textContent = `Round ${waveNo(g, g.wave + 2 + at)}`;
-      const answer = (lock: Lock) => {
+      // Plan item 599 slice 2: the round as a number flag ('18'); the chip below reads as pictures (the trait's icon, an
+      // arrow, the answering tower's icon and name), its words kept for the hover and a reader.
+      if (at >= 0) {
+        lab.textContent = String(waveNo(g, g.wave + 2 + at));
+        lab.dataset.flag = "";
+        lab.setAttribute("aria-label", `Round ${waveNo(g, g.wave + 2 + at)}`);
+      }
+      const answerKind = (lock: Lock) => {
         const keys = g.level.towers.filter((k) => towerBadges({ kind: k, tier: 1, spec: null }).find((b) => b.prop === lock)?.ok);
-        const k = [...keys].sort((a, b) => towerCost(g, a) - towerCost(g, b))[0];
+        return [...keys].sort((a, b) => towerCost(g, a) - towerCost(g, b))[0] ?? null;
+      };
+      const answer = (lock: Lock) => {
+        const k = answerKind(lock);
         return k ? TOWERS[k].name : null;
       };
       const say = (lock: Lock) => `${PROPERTIES[lock].name} · ${answer(lock) ?? "no answer in this kit"}`;
@@ -2417,7 +2426,16 @@ function fieldIntel(g: Game): HTMLElement {
       chip.title = `${say(soon)}: ${PROPERTIES[soon].lock}`;
       // thin spaces round the dot: at 1440 the column's row is two pixels short of the full answer
       const fix = answer(soon);
-      chip.append(img(propIcon(soon), "prop-icon"), fix ? `${PROPERTIES[soon].name} needs ${/^[AEIOU]/.test(fix) ? "an" : "a"} ${fix}` : `${PROPERTIES[soon].name}: no answer here`);
+      const fixKind = answerKind(soon);
+      chip.setAttribute("aria-label", fix ? `${PROPERTIES[soon].name} needs ${/^[AEIOU]/.test(fix) ? "an" : "a"} ${fix}` : `${PROPERTIES[soon].name}: no answer here`);
+      if (fix && fixKind) {
+        const arrow = document.createElement("span");
+        arrow.className = "lock-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = "→";
+        chip.dataset.pictures = "";
+        chip.append(img(propIcon(soon), "prop-icon"), arrow, img(towerIcon(fixKind), "lock-tower"), fix);
+      } else chip.append(img(propIcon(soon), "prop-icon"), `${PROPERTIES[soon].name}: no answer here`);
       row.append(chip);
       const rest = gaps.filter((x) => x !== soon);
       if (rest.length) {
@@ -2502,7 +2520,9 @@ function fieldIntel(g: Game): HTMLElement {
       }
       const no = document.createElement("span");
       no.className = "round-no";
-      no.textContent = `${Word(g)} ${n}`;
+      // Plan item 599 slice 2: the round's number as a flag ('18'), not the words 'Round 18' (the chip's label says it)
+      no.textContent = String(n);
+      no.dataset.flag = "";
       // Plan item 599: the round as a little convoy, its lead in front at full size and the next kinds behind it
       // (the lead again when the round has fewer kinds), so each round ahead reads as pictures, not a table of figures.
       const convoy = document.createElement("span");

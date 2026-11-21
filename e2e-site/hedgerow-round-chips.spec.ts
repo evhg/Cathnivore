@@ -25,7 +25,9 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
   await expect(chips).toHaveCount(3)
   for (const c of await chips.all()) {
     await expect(c).toBeVisible()
-    await expect(c.locator('.round-no')).toHaveText(/^Round \d+$/i)
+    // Plan item 599 slice 2: the round as a number flag ('18'); its button's label still says 'Round 18'
+    await expect(c.locator('.round-no')).toHaveText(/^\d+$/)
+    await expect(c.locator('.round-chip-btn')).toHaveAttribute('aria-label', /^Round \d+/)
     await expect(c.locator('.round-count')).toHaveText(/^\d+ vehicles?$/)
     // Plan item 599: each round a convoy of 3+ vehicles, each 20 px or more; its count no smaller than 14 px
     const cars = await c.locator('.round-convoy img').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))
@@ -57,7 +59,8 @@ test('the rounds ahead are chips with their mix, the flood round bannered', asyn
   // names every lock with its answer for a reader.
   const lock = page.locator('.intel-locks .lock-chip')
   if (await lock.count()) {
-    await expect(lock).toHaveText(/^\S[^:]*( needs an? \S|: no answer)/)
+    // Plan item 599 slice 2: at D the chip is pictures and the answer's name; its label says it in words
+    await expect(lock).toHaveAttribute('aria-label', /^\S[^:]*( needs an? \S|: no answer)/)
     const l = await lock.evaluate((e) => ({ sw: e.scrollWidth, cw: e.clientWidth, fs: parseFloat(getComputedStyle(e).fontSize) }))
     expect(l.sw).toBeLessThanOrEqual(l.cw + 1)
     expect(l.fs).toBeGreaterThanOrEqual(13)

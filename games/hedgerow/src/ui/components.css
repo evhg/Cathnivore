@@ -5435,3 +5435,23 @@ body:has(#dlg-pause[open]) .paused-note {
     box-shadow: none;
   }
 }
+
+/* Plan item 599 slice 2: the bench reads as pictures. A round is a number on a little pennant ('18', was 'ROUND 18'),
+   and the soonest uncovered trait is its icon, an arrow and the tower that answers it (was 'Airborne needs a
+   Scarecrow'): the words stay in the chip's title and label. */
+.round-chip-btn .round-no[data-flag],
+.play .panel .intel-locks .intel-label[data-flag] {
+  justify-self: center;
+  display: inline-block;
+  min-width: 26px;
+  padding: 1px 10px 2px 6px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
+  background: color-mix(in srgb, var(--brass) 80%, var(--paper-hi));
+  color: var(--ink);
+  font: 800 var(--fs-rack) / 1.15 var(--font-num, var(--font-ui));
+  letter-spacing: 0;
+  text-align: left;
+}
+.play .panel .intel-locks .lock-chip[data-pictures] .prop-icon { display: inline-block; width: 20px; height: 20px; }
+.play .panel .intel-locks .lock-chip .lock-arrow { flex: none; color: var(--ink-3, var(--ink)); font-weight: 800; }
+.play .panel .intel-locks .lock-chip .lock-tower { flex: none; width: 22px; height: 22px; }
