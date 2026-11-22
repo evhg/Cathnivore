@@ -3207,7 +3207,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const lt = !quiet && ltKnown && lieutenant?.alive ? tapeTick(heading, player.pos, lieutenant.position) : null;
     return { heading, tick: t ? tapeTick(heading, player.pos, t) : null, lt };
   }
-  function waypoint(): { x: number; y: number; dist: number; behind: boolean } | null {
+  function waypoint(): { x: number; y: number; dist: number; behind: boolean; name?: string } | null {
     const t = objectiveAt();
     if (!t || dead || stageQuiet) return null;
     // The diamond floats 1.2 m over the objective; over the first gun's case it rides above the beacon's shaft, so
@@ -3215,7 +3215,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const lift = job?.case && t === job.case.gunAt ? job.case.markLift : 1.2;
     const p = wpScratch.copy(t).setY(t.y + lift).project(world.camera);
     const behind = p.z > 1;
-    return { x: (behind ? -p.x : p.x) * 0.5 + 0.5, y: -p.y * 0.5 + 0.5, dist: player.pos.distanceTo(t), behind };
+    const name = job?.target === t ? job.targetName : null;
+    return { x: (behind ? -p.x : p.x) * 0.5 + 0.5, y: -p.y * 0.5 + 0.5, dist: player.pos.distanceTo(t), behind, ...(name ? { name } : {}) };
   }
 
   /**

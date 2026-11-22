@@ -60,7 +60,7 @@ export interface HudState {
   /** Armour and resistances, one short line (empty when she has none). */
   defence?: string;
   /** Where the objective is on screen (0..1 each way), metres away, and whether it's behind her. */
-  waypoint?: { x: number; y: number; dist: number; behind: boolean } | null;
+  waypoint?: { x: number; y: number; dist: number; behind: boolean; name?: string } | null;
   /** Plan item 29: her heading (radians clockwise from north) and the objective's place on the compass tape. */
   compass?: { heading: number; tick: { x: number; off: boolean } | null; lt?: { x: number; off: boolean } | null } | null;
   /** Aiming down the sights (the objective marker steps back, S7.2). */
@@ -569,9 +569,13 @@ export class Hud {
       this.wp.classList.toggle("on-cross", onCross);
       // The distance plate goes on the side away from the centre: below when the marker is under the reticle's
       // line, above when it's over it.
-      this.wp.classList.toggle("lbl-up", !off && py < H / 2 && rc < Math.max(160, 180 * u));
+      // Plan item 658: a named place (stage 0's 'Under the lamp') keeps its plate over the reticle, above it: on
+      // the first frame the goal is dead ahead, and the bare street said nothing about where to walk.
+      const named = !!w.name && !off;
+      this.wp.classList.toggle("named", named);
+      this.wp.classList.toggle("lbl-up", !off && (named ? onCross || py < H / 2 : py < H / 2 && rc < Math.max(160, 180 * u)));
       this.wp.classList.toggle("pulse", this.wpPulse > 0);
-      this.text(this.wpDist!, `${Math.round(w.dist)} m`);
+      this.text(this.wpDist!, w.name ? `${w.name.toUpperCase()} \u00b7 ${Math.round(w.dist)} m` : `${Math.round(w.dist)} m`);
     }
     // The world prompt on a weapon in reach (S7.1 layer 5).
     this.updatePickup(s.pickup ?? null);

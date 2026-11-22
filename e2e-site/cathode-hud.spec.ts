@@ -62,6 +62,26 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     }
   })
 
+  // Plan item 658: the first frame says where to walk: stage 0's objective is dead ahead under the crosshair, where an
+  // unnamed marker steps back; its named plate stays, above the reticle, legible (12 px+) and on a dark plate.
+  test('the first street frame names where to walk, clear of the crosshair', async ({ page, hasTouch }) => {
+    test.setTimeout(400_000)
+    await boot(page, hasTouch ? { width: 844, height: 390 } : { width: 1440, height: 900 })
+    await page.waitForFunction(() => /UNDER THE LAMP/.test(document.querySelector('.hud-wp-dist')?.textContent ?? ''), null, { timeout: 60_000 })
+    const r = await page.evaluate(() => {
+      const wp = document.querySelector<HTMLElement>('.hud-wp')!
+      const plate = document.querySelector<HTMLElement>('.hud-wp-dist')!
+      const b = plate.getBoundingClientRect()
+      const cs = getComputedStyle(plate)
+      const cx = innerWidth / 2, cy = innerHeight / 2
+      return { text: plate.textContent, visible: cs.visibility !== 'hidden' && b.width > 0 && !wp.hidden, size: parseFloat(cs.fontSize), overCross: b.left < cx + 12 && b.right > cx - 12 && b.top < cy + 12 && b.bottom > cy - 12 }
+    })
+    expect(r.text).toMatch(/^UNDER THE LAMP \u00b7 \d+ m$/)
+    expect(r.visible).toBe(true)
+    expect(r.size).toBeGreaterThanOrEqual(12)
+    expect(r.overCross).toBe(false)
+  })
+
   test('the round count drops when she fires', async ({ page, hasTouch }) => {
     test.skip(hasTouch, 'one layout is enough')
     test.setTimeout(400_000)

@@ -1334,6 +1334,11 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
    itself the distance goes entirely, so the crosshair stands alone. */
 .hud-wp.on-cross .hud-wp-dist { visibility: hidden; }
 .hud-wp.near .hud-wp-dist { transform: translate(-50%, calc(var(--d) * -.3)); }
+/* Plan item 658: a named objective's plate stays over the reticle (above it, clear of the crosshair), a step larger
+   and on a near-opaque shade so the lamp-lit street behind can't wash it out. */
+.hud-wp.named.on-cross .hud-wp-dist { visibility: visible; }
+.hud-wp.named .hud-wp-dist { font-size: var(--fs-2); letter-spacing: .06em; background: rgb(var(--shade-rgb) / .82); }
+.hud-wp.named.on-cross .hud-wp-dist { bottom: max(44px, calc(var(--u) * 44)); }
 /* Over the reticle's line, the plate goes above the diamond, away from the crosshair. */
 .hud-wp.lbl-up .hud-wp-dist { top: auto; bottom: max(30px, calc(var(--d) * .78 + var(--u) * 16)); }
 .hud-wp.lbl-up.near .hud-wp-dist { transform: translateX(-50%); }

@@ -347,6 +347,8 @@ export class FirstJob {
   done = false;
   /** Where the objective is, for the waypoint marker (null when there's nothing to point at). */
   target: THREE.Vector3 | null = null;
+  /** Plan item 658: the objective's name on the marker's plate ('Under the lamp · 14 m'), null for a bare distance. */
+  targetName: string | null = null;
   private wave: Enemy[] = [];
   private pickup: Case | null = null;
   private spent: Case[] = [];
@@ -432,10 +434,12 @@ export class FirstJob {
     else this.pickup?.remove();
     this.pickup = null;
     const h = this.h;
+    this.targetName = null;
     switch (stage) {
       case 0:
         this.objective = "Walk down the street.";
         this.target = this.P(-2, FIRST_GUARD.z + FIRST_CONTACT_M);
+        this.targetName = "Under the lamp";
         this.lesson("move");
         // Plan item 639: the street's end is lit from the first frame (the lamp he will stand under is already on)
         // and the mark stands in the street, so the arrival has somewhere to look.
