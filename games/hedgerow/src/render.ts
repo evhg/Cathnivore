@@ -2109,10 +2109,12 @@ export class Renderer {
     ctx.restore();
     return { x: cx, y: cy, w, h };
   }
-  convoyStats(): { drawn: number; column: number; marks: number; shards: number } {
+  convoyStats(): { drawn: number; column: number; marks: number; shards: number; cols: Array<{ dist: number; count: number; lane: number }> } {
     let marks = 0;
     for (const m of this.towerMarks.values()) marks = Math.max(marks, m.n);
-    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks, shards: this.shardBursts };
+    // Plan item 657: where each column stands, for the spec that keeps an ambush's overflow at the ambush.
+    const cols = this.lay.columns.map((c) => ({ dist: c.dist, count: c.count, lane: c.lane ?? 0 }));
+    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks, shards: this.shardBursts, cols };
   }
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
   private lay: Convoy = noConvoy();
