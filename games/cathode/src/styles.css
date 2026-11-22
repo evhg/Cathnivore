@@ -176,7 +176,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .ld-file {
   left: var(--ld-x);
   bottom: var(--ld-y);
-  width: min(40vw, calc(var(--u) * 760));
+  width: min(34vw, calc(var(--u) * 760));
 }
 .ld-place {
   margin: 0 0 calc(var(--u) * 14);
@@ -322,11 +322,76 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 :root.reduce-motion :is(.ld-img, .ld-grain, .ld-trace::before, .ld-ready, .ld-corner) { animation: none; }
 :root.reduce-motion .ld-list li.is-fresh::after { transition-duration: 1ms; }
+/* Plan item 629: the briefing pinned over the frame: the next name's surveillance still (top left), the district's
+   survey sheet with the route ringed (centre), Cath's photograph from the title's street (right), and a red string
+   pinned through them that draws itself as the load runs. Prints are paper with a drop shadow and a slight tilt. */
+.ld-board { position: absolute; inset: 0; z-index: var(--z-lift); pointer-events: none; }
+.ld-still, .ld-print, .ld-map {
+  position: absolute;
+  margin: 0;
+  padding: calc(var(--u) * 10) calc(var(--u) * 10) 0;
+  background: var(--print-paper);
+  box-shadow: 0 calc(var(--u) * 14) calc(var(--u) * 30) rgb(var(--black-rgb) / .6);
+  transform: rotate(var(--tilt, 0deg));
+}
+.ld-still figcaption, .ld-print figcaption {
+  padding: calc(var(--u) * 8) 0 calc(var(--u) * 12);
+  font: 700 var(--fs-1)/1.2 var(--font-ui);
+  font-stretch: var(--wdth-label);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--card-ink);
+}
+.ld-still { left: var(--ld-x); top: calc(var(--safe-y) + 9vh); width: 15vw; --tilt: -2.5deg; }
+.ld-still svg { display: block; width: 100%; height: auto; }
+/* The sheet: the map's own plan (districtmap.ts), sized by its height; it fades in once the chunk is there. */
+.ld-map { left: 41vw; top: calc(var(--safe-y) + 12vh); padding-bottom: calc(var(--u) * 10); --tilt: -1.5deg; opacity: 0; transition: opacity 400ms ease; }
+.loading.has-map .ld-map { opacity: 1; }
+.ld-map svg { display: block; height: 56vh; width: auto; }
+.ld-map .dmap-halo { animation: none; }
+/* Her photograph: the title poster's 3D frame cropped to her under the umbrella (x 540-830, y 120-600 of 960). */
+.ld-print { right: calc(var(--ld-x) + 3vw); top: calc(var(--safe-y) + 8vh); width: 21vw; --tilt: 2.5deg; }
+.ld-photo {
+  aspect-ratio: 290 / 480;
+  background: var(--night) url("/front-poster-1440.webp") 80.6% 100% / 331% auto no-repeat;
+  filter: contrast(1.08) saturate(.85);
+}
+.ld-pin {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * -4);
+  width: max(8px, calc(var(--u) * 14)); /* px-ok: a pin head stays visible */
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 35% 30%, var(--blood-hot), var(--blood) 60%);
+  box-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 4) rgb(var(--black-rgb) / .6);
+  z-index: var(--z-lift-2);
+}
+.ld-string { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: var(--z-lift-3); }
+.ld-string path { fill: none; stroke-linecap: round; }
+.ld-string-shade { stroke: rgb(var(--black-rgb) / .45); stroke-width: max(2px, calc(var(--u) * 4)); transform: translate(0, calc(var(--u) * 4)); } /* px-ok */
+.ld-string-red { stroke: var(--blood); stroke-width: max(1.5px, calc(var(--u) * 2.6)); stroke-dasharray: 1; stroke-dashoffset: var(--ld-left, 1); } /* px-ok */
+.ld-string-shade { stroke-dasharray: 1; stroke-dashoffset: var(--ld-left, 1); opacity: .5; }
+/* A phone upright: the still and her photograph across the top, the string between them; The List under the still;
+   the name and lore the full width below. The sheet stays on the map screen (M). */
+@media (max-width: 640px) and (orientation: portrait) {
+  .ld-map { display: none; }
+  .ld-still { top: calc(var(--safe-y) + 5vh); width: 34vw; }
+  .ld-print { right: var(--ld-x); top: calc(var(--safe-y) + 3vh); width: 42vw; }
+  .ld-file { width: auto; right: var(--ld-x); }
+  .ld-corner { right: auto; left: var(--ld-x); bottom: auto; top: calc(var(--safe-y) + 5vh + 34vw * 1.2 + var(--u) * 80); text-align: left; }
+  .ld-list { justify-items: start; }
+}
 /* A phone held sideways: the name and lore keep the left half, The List the right corner. */
 @media (max-height: 430px) and (orientation: landscape) {
   .loading { --ld-y: max(14px, var(--safe-y)); } /* px-ok */
   .ld-file { width: 50vw; }
   .ld-meter { margin: calc(var(--u) * 20) 0 calc(var(--u) * 18); }
+  .ld-map { display: none; }
+  .ld-print { top: max(14px, var(--safe-y)); right: var(--ld-x); width: 13vw; } /* px-ok */
+  .ld-still { left: auto; right: calc(var(--ld-x) + 13vw + 5vw); top: calc(max(14px, var(--safe-y)) + 4vh); width: 11vw; } /* px-ok */
 }
 
 /* ---- pause (C14, S9.7): the frozen frame graded down (uPause), the menu in the left column, the case note in
@@ -2626,9 +2691,6 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
 .hud-pm-page .hud-pm-h, .hud-pm-page .hud-settings, .hud-pm-page .hud-keys, .hud-pm-page .hud-set-head { margin-left: 0; }
 
 /* N23: Cath's plate on the loading file, in her chosen outfit. */
-.ld-cath { width: clamp(72px, 9vmin, 150px); margin-top: 1.2em; opacity: 0.92; filter: grayscale(0.35) contrast(1.05); }
-.ld-cath svg { display: block; width: 100%; height: auto; }
-.is-still .ld-cath * { animation: none; }
 
 /* Plan item 14: the talk. His plate on the left under a hard key light, her choices on the right; one red
    rule, no boxes around the choices, the same type scale as the rest of the chrome. */

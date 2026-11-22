@@ -1000,3 +1000,46 @@ test('upright, the open case is a pinned card and the List names each print', as
     }
   }
 })
+
+// Plan item 629: the case loader as a staged briefing: Cath's photograph 280 px+ tall at D, the next name's still
+// pinned, the survey sheet at D, the red string, and nothing overlapping at P, D and L.
+test('the case loader pins the still, the sheet and her photograph with nothing overlapping', async ({ page }, info) => {
+  // It walks P, D and L itself: one project is enough.
+  test.skip(info.project.name !== 'site-desktop')
+  test.setTimeout(240_000)
+  await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  for (const [w, h] of [[1440, 900], [390, 844], [844, 390]] as const) {
+    await page.setViewportSize({ width: w, height: h })
+    await page.goto('/nightshift/?front=loading-travel&shot')
+    await expect(page.locator('#loading:not([hidden]) .ld-name')).toHaveText('Dr Octavia Vane', { timeout: 120_000 })
+    await expect(page.locator('#loading .ld-still svg.mugshot-vane')).toHaveCount(1)
+    if (w === 1440) await expect(page.locator('#loading.has-map .ld-map svg')).toHaveCount(1, { timeout: 30_000 })
+    const box = async (sel: string) => {
+      const l = page.locator(`#loading ${sel}`)
+      if (!(await l.count()) || !(await l.isVisible())) return null
+      return (await l.boundingBox())!
+    }
+    const photo = (await box('.ld-photo'))!
+    if (w === 1440) expect(photo.height, 'her photograph at D').toBeGreaterThanOrEqual(280)
+    const parts = ['.ld-place', '.ld-name', '.ld-meter', '.ld-lore', '.ld-corner', '.ld-still', '.ld-map', '.ld-print']
+    const boxes: Array<[string, { x: number; y: number; width: number; height: number }]> = []
+    for (const s of parts) {
+      const b = await box(s)
+      if (!b) continue
+      expect(b.x >= -2 && b.y >= -2 && b.x + b.width <= w + 2 && b.y + b.height <= h + 2, `${w} ${s} inside`).toBe(true)
+      boxes.push([s, b])
+    }
+    const file = new Set(['.ld-place', '.ld-name', '.ld-meter', '.ld-lore'])
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const [sa, a] = boxes[i]!
+        const [sb, b] = boxes[j]!
+        if (file.has(sa) && file.has(sb)) continue
+        const hit = a.x < b.x + b.width - 1 && b.x < a.x + a.width - 1 && a.y < b.y + b.height - 1 && b.y < a.y + a.height - 1
+        expect(hit, `${w}x${h}: ${sa} over ${sb}`).toBe(false)
+      }
+    // The string is drawn to the held share (62%).
+    const off = await page.locator('#loading .ld-string-red').evaluate((e) => Number(getComputedStyle(e).strokeDashoffset.replace('px', '')))
+    expect(off).toBeCloseTo(0.38, 2)
+  }
+})
