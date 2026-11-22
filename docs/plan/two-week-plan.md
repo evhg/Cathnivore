@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-22T20:48Z
 
 
 
@@ -6322,3 +6321,40 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - *(lane A 17:30, four of six fixed: Hedgerow D chips wrap to a second row at 900 px+ (no fade, nothing cut; critique79/convoy/tray pass); /games/ P hooks: a short one-line hook per poster ('Co-op farm strategy.'), the long one at D; NIGHT SHIFT title P case lines get a dark text halo off the LUNA neon. Open: Hedgerow l34 D toast and l34 P banner; Runnel solved P bed: lowering it 10 px clears the hex points but the garden then meets the result strip and the foot (runnel-win's two phone specs, 0-10 px slack), so it waits for item 660's garden rework. Handed back.)*
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
+
+## 662. [ ] Hedgerow: a new vehicle is introduced on the lane, not by a page over the board
+*(planned 2026-11-22 21:05, lane A, plan1122f critique)*
+- **Why:** `plan1122f/hedge-l21-2d-D` and `hedge-l34-2d-D`: the field guide's 'New on the lane' card covers the field (200-825 x 228-738 at D; 0-390 x 55-690 at P), so mid-round the board, the hero (VISION 3, 'menus and panels support the table and never compete with it'), is hidden.
+- **Build:** the camera (3D) or a spotlight ring (2D) goes to the new vehicle on its lane, the round pauses, and a compact card docks at the side (D) or as a bottom sheet (P) with its picture, line and the towers that reach it; tap or Got it resumes. 600-1000 ms in, fade only under reduced motion. Also seed the plan shots so the 2D board is judged without it.
+- **Accept:** e2e on l34: card under 30% of the board's area at D and under 40% of the viewport at P; the vehicle visible and ringed; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 663. [ ] Hedgerow act map: a painted coast with Cath's token on it
+*(planned 2026-11-22 21:05, lane A, plan1122f critique)*
+- **Why:** `plan1122f/hedge-menu-D`: wavy hatching over the whole field (0-1120 x 60-900), a dead band at 400-1100 x 470-700, locked stops all the same grey glass bubble, Cath a 25x110 px stick (165-195 x 300-425; 18x70 at P), the cloud a grey smudge (460-745 x 95-205). A tier below Cathnivore's campaign map (VISION 'every screen is designed', 'if a screen has room for a character, it's Cath').
+- **Build:** terrain layers with a vignette and quieter hatching; locked, open and starred stops drawn differently with 0-3 stars under each played one; Cath as a token with her portrait, walking to a newly opened stop.
+- **Accept:** hatching under 1.3:1 against its base; Cath's token 120 px+ tall at D, 72+ at P (e2e); played stops show their stars in the DOM; shots P and D.
+- **Size:** 2
+
+## 664. [ ] Cathnivore at D: the hand folds to a tray so the table is the hero
+*(planned 2026-11-22 21:05, lane A, plan1122f critique)*
+- **Why:** `plan1122f/cath-game-D`: the hand shelf takes 335-1410 x 598-885 (about a third of the screen) as 11 flat tiles in 3 rows, art about 80 px and repeated; the board (595-1190 x 40-590) is smaller than the panels round it (VISION 3).
+- **Build:** at D the hand rests as a tray of fanned cards (120 px or less tall) and rises on hover/focus or when an action needs a card; each card face keeps its own art.
+- **Accept:** board 50%+ of the viewport's area at 1440x900 with the tray down; tray 120 px or less; keyboard reaches every card (e2e); shots D and 1280.
+- **Size:** 2
+
+## 665. [ ] NIGHT SHIFT: the gun in her hands on the sideways phone
+*(planned 2026-11-22 21:05, lane A, plan1122f critique; check first whether the viewmodel is only hidden in the plan shot's state)*
+- **Why:** `plan1122f/ns-street-P` (1688x780): the HUD names THE PIN (1550-1640 x 300-325) but nothing is in hand in 0-1688 x 380-780; the left HUD is a dark slab (0-460 x 0-330). VISION 'everything responds'.
+- **Build:** the viewmodel (gloved hands and the equipped gun, sway, recoil) on the phone preset, within its draw-call budget; the slab becomes a clean plate.
+- **Accept:** viewmodel 10%+ of the frame lower right at sideways P; its gun id matches the loadout (e2e); recoil within 2 frames of `forced={fire:true}`; `cathode-perf` phone in budget.
+- **Size:** 2
+
+## 666. [ ] The bugs from the 2026-11-22 21:05 critique, fixed as one batch
+*(planned 2026-11-22 21:05, lane A, plan1122f critique)*
+- Cathnivore game D: the 'Hollowell quarterly plan' header (1140-1340 x 236-250) clipped by Tomas's bubble (1190-1372 x 248-345); Rivermead's label (1030-1130 x 213-238) under the Squeeze/Expand panel; the Dry Spell card (345-485 x 90-170) over Cath's note.
+- Cathnivore campaign D: the chapter-1 ticket (290-542 x 508-662) hides Oakvale's and Shingle Bay's labels and half stop 1's pin; P: the first chapter badge clipped at the left edge (14-48 x 556-595).
+- NIGHT SHIFT title P (2x): the LUNA neon (30-330 x 1015-1130) over the Ledger tab's 'A DEBT TAG' (30-165 x 1022-1050).
+- Runnel: the plan shot 'runnel' is the first-run climb, not the daily: seed it seen; dry channels 3:1+ against the tile (D 565-1230 x 110-750).
+- **Accept:** each fixed with a spec or measured in shots P and D.
+- **Size:** 1-2
