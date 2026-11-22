@@ -130,6 +130,8 @@ export class RungInstances {
    * every vehicle keeps its own silhouette instead of melting into the next. One draw call per kind on the lane.
    */
   private outlines = new Map<EnemyKind, THREE.InstancedMesh>();
+  /** Each kind's model length (its x extent at scale 1). */
+  private lengths = new Map<EnemyKind, number>();
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   private s = new THREE.Vector3();
@@ -149,6 +151,8 @@ export class RungInstances {
       const model = buildRung(kind) ?? (buildEnemy(kind).userData.inner as THREE.Group);
       model.scale.setScalar(1);
       const geo = bakeModel(model);
+      geo.computeBoundingBox();
+      this.lengths.set(kind, geo.boundingBox ? geo.boundingBox.max.x - geo.boundingBox.min.x : 0.55);
       const mesh = new THREE.InstancedMesh(geo, mat, CAPACITY);
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.count = 0;
@@ -222,6 +226,16 @@ export class RungInstances {
   tilt = 0;
   private readonly tiltQ = new THREE.Quaternion();
   private readonly xAxis = new THREE.Vector3(1, 0, 0);
+
+  /**
+   * Plan item 657: a kind's drawn length along the lane in cells (at `add`'s scale), or undefined when it isn't
+   * instanced. The convoy spaces the 3D queue by it: on SLOT_LEN slots a lorry (1.31 cells long) overlapped the next by
+   * nearly half and a packed queue read as one dark slab.
+   */
+  drawnLength(kind: EnemyKind): number | undefined {
+    const l = this.lengths.get(kind);
+    return l === undefined ? undefined : l * enemyScale(kind) * 1.3;
+  }
 
   add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0, livery: THREE.Color = WHITE): void {
     const mesh = (ghost ? this.ghosts : this.meshes).get(kind);

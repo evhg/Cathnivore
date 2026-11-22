@@ -105,6 +105,8 @@ function queueShadowMat(): THREE.MeshBasicMaterial {
   shadowMat = Object.assign(new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }), { shared: true });
   return shadowMat;
 }
+/** Plan item 657: a vehicle's 3D slot along the lane, as a share of its model's length (a sliver of road between). */
+const GAP_3D = 1.08;
 const RISE = 0.24;
 const RISE_SPREAD = 0.22;
 /** How long the plinth takes to settle (parts start rising once it's down, unless it's an upgrade). */
@@ -2312,7 +2314,16 @@ export class Renderer3D {
       this.gold.age = 0;
     }
     // Plan item 45: the queue laid out as a convoy (convoy.ts); the overflow stacks up as a column at its tail.
-    const lay = (this.lay = layOutField(game.enemies, (k) => SLOT_LEN * enemyScale(k as Enemy["kind"]), SWARM_MIN));
+    // Plan item 657: spaced by each model's own length plus a sliver of road, so every vehicle keeps its silhouette.
+    const rungs = fleet ? this.rungs : null;
+    const lay = (this.lay = layOutField(
+      game.enemies,
+      (k) => {
+        const l = rungs?.drawnLength(k as Enemy["kind"]);
+        return l === undefined ? SLOT_LEN * enemyScale(k as Enemy["kind"]) : l * GAP_3D;
+      },
+      SWARM_MIN,
+    ));
     // Plan item 439: on a steep view (an upright phone) the vehicles lean back from the lens like item 98's Cath,
     // so their near side, cab and wheels turn up to it instead of reading as roofs (stacked boxes).
     const tilt = this.steepTilt();
