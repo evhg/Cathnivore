@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-// Plan item 530: on a phone the four games are a swiped shelf of full-width posters: each 340 px+ across, the first
-// one's Play whole on the first screen, a different Cath pose on each, hooks two lines at most, and the arrow keys and
-// a swipe both move the shelf with the pager dots following.
+// Plan item 655 (was item 530's swiped shelf): on a phone the four games are a 2x2 shelf, all four in view within a
+// screen and a half, each 160 px+ across with its whole art, a different Cath pose on each, hooks one line, the first
+// row's Play on the first screen, nothing scrolling sideways; the arrow keys still step from poster to poster.
 test('the phone games shelf', async ({ page }) => {
   test.setTimeout(60_000)
   await page.setViewportSize({ width: 390, height: 844 })
@@ -15,10 +15,12 @@ test('the phone games shelf', async ({ page }) => {
     hooks: [...document.querySelectorAll('.hero-game-hook')].map((e) => Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight))),
     scroll: document.documentElement.scrollWidth - innerWidth,
   }))
-  for (const w of m.widths) expect(w).toBeGreaterThanOrEqual(340)
+  for (const w of m.widths) expect(w).toBeGreaterThanOrEqual(160)
+  const bottoms = await page.evaluate(() => [...document.querySelectorAll('.hero-game')].map((e) => e.getBoundingClientRect().bottom + scrollY))
+  for (const b of bottoms) expect(b).toBeLessThanOrEqual(844 * 1.5)
   expect(m.play).toBeLessThanOrEqual(844)
   expect(new Set(m.poses).size).toBe(m.poses.length)
-  for (const n of m.hooks) expect(n).toBeLessThanOrEqual(2)
+  for (const n of m.hooks) expect(n).toBeLessThanOrEqual(1)
   expect(m.scroll).toBeLessThanOrEqual(0)
 
   // Cath's line rotates by calendar day (seven lines): a line wrapping to a third row pushed Play to 862 px on
@@ -33,16 +35,11 @@ test('the phone games shelf', async ({ page }) => {
   await page.goto('/games/')
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity))
 
-  const dots = page.locator('#hero-dots i')
-  await expect(dots).toHaveCount(4)
-  await expect(dots.nth(0)).toHaveAttribute('data-on', '')
+  // no pager on a shelf that holds all four; the arrow keys still step along it
+  await expect(page.locator('#hero-dots')).toBeHidden()
   await page.locator('.hero-game').first().focus()
   await page.keyboard.press('ArrowRight')
   await expect(page.locator('.hero-game').nth(1)).toBeFocused()
-  await expect(dots.nth(1)).toHaveAttribute('data-on', '')
-  // a swipe: the shelf scrolled by hand to the last poster
-  await page.locator('.hero-games').evaluate((el) => el.scrollTo({ left: el.scrollWidth, behavior: 'instant' }))
-  await expect(dots.nth(3)).toHaveAttribute('data-on', '')
   await page.keyboard.press('ArrowLeft')
   await expect(page.locator('.hero-game').nth(0)).toBeFocused()
 })

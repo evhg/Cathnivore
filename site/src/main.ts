@@ -103,8 +103,11 @@ if (miniCath) {
   // The poster in view is the one nearest a line 45% down the screen (both of a row tie, and the first wins); a
   // poster focused or under the pointer outranks it.
   let frame = 0
+  // (plan item 655: a poster focused or under the pointer holds her outfit; the scroll its focus causes doesn't undo it)
+  let held: HTMLElement | null = null
   const inView = () => {
     frame = 0
+    if (held) return dress(held)
     const line = innerHeight * 0.45
     const dist = (p: HTMLElement) => {
       const r = p.getBoundingClientRect()
@@ -121,8 +124,10 @@ if (miniCath) {
     addEventListener('scroll', () => (frame ||= requestAnimationFrame(inView)), { passive: true })
     posters[0]!.parentElement?.addEventListener('scroll', () => (frame ||= requestAnimationFrame(inView)), { passive: true })
     for (const p of posters) {
-      p.addEventListener('focus', () => dress(p))
-      p.addEventListener('pointerenter', () => dress(p))
+      p.addEventListener('focus', () => dress((held = p)))
+      p.addEventListener('pointerenter', () => dress((held = p)))
+      p.addEventListener('blur', () => { if (held === p) held = null })
+      p.addEventListener('pointerleave', () => { if (held === p && document.activeElement !== p) held = null })
     }
   }
 }

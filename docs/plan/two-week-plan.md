@@ -6263,7 +6263,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each such piece has an accessible name saying what it is; the peek opens on tap and on keyboard focus (e2e); piece-looks test covers it; board specs pass; shot P and D, light and dark.
 - **Size:** 1
 
-## 655. [ ] /games/ phone: all four games in view *(lane B, in progress)*
+## 655. [x] /games/ phone: all four games in view *(done 2026-11-22 13:55, lane B, reworking item 530's swiped shelf: at P the four games are a 2x2 shelf, each 170 px wide with its whole 16:10 art (not the thumbnail crop item 530 had replaced), its name, Cath in role, a one-line hook at 14 px and a full-width Play; at 390x844 all four end by 987 px (1.5 screens is 1266), no sideways scroll, the pager gone; the waving Cath now dresses for a focused or hovered poster and keeps it through the scroll its focus causes (site/src/main.ts `held`). games-shelf and games-hero-cath rewritten for the grid; /games/ and site specs 56 passed P and D; D unchanged. Shot scratchpad r623/g655-full-P)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique)*
 - **Why:** `plan1122d/games-P` 0-390 x 580-844: under the stall the games are a sideways carousel, Cathnivore's card alone in view, the rest a 10 px peek and dots (175-240 x 835). VISION 1.
 - **Build:** `site/src/` at P: a 2x2 shelf of four framed wares (art, name, a one-line hook, Play; NIGHT SHIFT's 18+ tag), all four inside the first screen and a half.

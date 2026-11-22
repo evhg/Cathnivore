@@ -2336,3 +2336,31 @@ body {
 @media (min-width: 1100px) and (min-aspect-ratio: 1/1) {
   .hero[data-booth] .hero-text .title.title-long { font-size: clamp(2.3rem, 2.95vw, 2.9rem); }
 }
+
+/* Plan item 655 (reworks item 530's swiped shelf): on a phone all four games show at once, a 2x2 shelf of framed
+   wares, each its whole 16:10 art (not item 530's earlier thumbnail crop), its name, a one-line hook and Play; the
+   pager dots go, nothing scrolls sideways. */
+@media (max-width: 599.98px) {
+  .hero-games {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: auto;
+    max-width: none;
+    margin: 8px 0 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .hero-game {
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: stretch;
+  }
+  .hero-game-art { grid-column: 1; aspect-ratio: 16 / 10; }
+  .hero-game-text { padding: 6px 8px 2px; }
+  .hero-game-hook { -webkit-line-clamp: 1; line-clamp: 1; }
+  .hero-game-play { justify-self: stretch; margin: 4px 8px 8px; padding: 9px 10px; text-align: center; }
+  .hero-dots { display: none; }
+}
