@@ -6693,7 +6693,11 @@ html.no-animations .table-cath-figure { animation: none; }
 .goal-feature-pic .card-vignette > circle:first-of-type { fill: var(--wheat); opacity: 1; }
 .goal-feature-pic .card-vignette[data-vignette='science'] > path:first-of-type,
 .goal-feature-pic .card-vignette[data-vignette='rift'] > path:first-of-type,
-.goal-feature-pic .card-vignette[data-vignette='plan'] > path:first-of-type { fill: color-mix(in srgb, var(--pasture) 60%, var(--paper)); }
+.goal-feature-pic .card-vignette[data-vignette='plan'] > path:first-of-type,
+.goal-feature-pic .card-vignette[data-vignette='media'] > path:first-of-type,
+.goal-feature-pic .card-vignette[data-vignette='community'] > path:first-of-type { fill: color-mix(in srgb, var(--pasture) 60%, var(--paper)); }
+/* Plan item 644: Cath's suggested pick stays ghosted by its opacity alone; the extra desaturation greyed its sky. */
+.actions-sheet .goal-feature[data-suggested] .goal-feature-pic { filter: none; }
 
 /* Plan item 632 slice 2: at D the cloth is lit: a warm pool of light under the board, falling off to the rails, so
    the board stands in the table's light rather than on a flat beige sheet (the phone's table is unchanged). */
