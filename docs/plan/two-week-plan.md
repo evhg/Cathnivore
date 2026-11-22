@@ -6086,7 +6086,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the counter covers her lower body at P and D; each ware is a link to its game (e2e:site); key art re-shot; site specs pass; shot P and D.
 - **Size:** 1
 
-## 632. [ ] Cathnivore desktop table: the board as the hero *(lane B, in progress)*
+## 632. [ ] Cathnivore desktop table: the board as the hero *(handed back 2026-11-22 00:50 by lane B after slice 1: the Saving-for picture in colour: in the goal card the vignette's sky is blue (sea 48%), its sun gold, and a science/rift/plan card's grey ground a green field (CSS only, `table.css` end); saving-goal spec 12 passed P and D; shots light and dark `scripts/cathnivore-632-shots.mjs`, scratchpad r623/c-*. **Left:** the board 760 px+ (it is 640 between Cath's column 340-530 and Tomas and Mara 1180-1405; the producers must tuck to the board's corners or share a rail) and the lit cloth)*
 *(planned 2026-11-21 23:25, lane A, plan1121m critique; check item 614/618 layouts first)*
 - **Why:** `plan1121m/cath-game-D` 570-1210 x 95-720: the board is ~640 px wide (44% of 1440) between Cath's column (340-530) and Tomas and Mara (1180-1405), on a plain beige cloth with no light; the Saving-for card (35-300 x 385-660) is a grey pencil sketch beside full-colour cards. VISION 2, 1.
 - **Build:** `src/ui/Game.tsx`, `TableProps.tsx`, `tableLight.ts`, table css: the cloth lit (a warm pool under the board, falloff to the rails), the board grown into the freed width (the producers tuck to the board's corners or a shared rail), the Saving-for goal drawn in colour like the hand cards.
