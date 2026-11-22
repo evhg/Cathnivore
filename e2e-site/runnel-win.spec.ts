@@ -103,12 +103,20 @@ test('the phone daily shows the spring house and Bea\'s garden around the board'
   expect(m).toEqual({ house: true, garden: true, clearOfBar: true, scroll: 0 })
 })
 
-// Plan item 68: at D the rail ends on Bea's garden, and the page still doesn't scroll.
+// Plan item 68: at D the rail ends on Bea's garden, and the page still doesn't scroll. Plan item 642: at rest the rail
+// is today's page only (the garden behind its 'The month' fold, half the rail's old height); opened by keyboard, the
+// garden shows and the page still doesn't scroll.
 test('the desktop rail ends on Bea\'s garden with no page scroll', async ({ page }) => {
   const vp = page.viewportSize()!
   test.skip(vp.width < 1100 || vp.height < 900, 'the desktop rail with room for the garden')
   await page.goto('/runnel/?nohelp')
+  await expect(page.locator('#rail-figures > div')).toHaveCount(3)
+  await expect(page.locator('.rail-garden')).toBeHidden()
+  const rest = (await page.locator('#rail').boundingBox())!.height
+  await page.locator('#rail-more > summary').focus()
+  await page.keyboard.press('Enter')
   await expect(page.locator('.rail-garden')).toBeVisible()
+  expect(rest).toBeLessThanOrEqual((await page.locator('#rail').boundingBox())!.height * 0.75)
   await expect(page.locator('#rail-plots .plot')).toHaveCount(7)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
@@ -167,9 +175,13 @@ test("the solve's result docks clear of Bea's garden and its new plant", async (
     const s = document.getElementById('win-strip')!.getBoundingClientRect()
     const p = document.querySelector('.bea-crops .is-today svg')?.getBoundingClientRect()
     const meet = g.width > 0 && s.left < g.right && s.right > g.left && s.top < g.bottom && s.bottom > g.top
-    return { meet, plant: p ? Math.min(p.width, p.height) : 0, garden: g.width }
+    // Plan item 642: at D the result docks in the rail's column, off the board too
+    const cells = [...document.querySelectorAll('.tiles > g.cell')].map((c) => c.getBoundingClientRect())
+    const onBoard = innerWidth >= 1100 && cells.some((c) => s.left < c.right && s.right > c.left && s.top < c.bottom && s.bottom > c.top)
+    return { meet, onBoard, plant: p ? Math.min(p.width, p.height) : 0, garden: g.width }
   })
   test.skip(m.garden === 0, 'no valley garden at this size')
   expect(m.meet).toBe(false)
+  expect(m.onBoard).toBe(false)
   expect(m.plant).toBeGreaterThanOrEqual(40)
 })

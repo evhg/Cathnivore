@@ -1456,7 +1456,16 @@ function placeStrip(): void {
   // Plan item 630: at D the result docks clear of Bea's garden (the place the solve planted), between the board's
   // left edge and the garden's, so the garden's new plant stays in view beside it.
   const garden = document.querySelector<HTMLElement>('.bea-garden')?.getBoundingClientRect()
-  if (r.width && garden?.width && matchMedia('(min-width: 1100px) and (min-height: 640px)').matches && garden.left > left + 320) {
+  // Plan item 642: at D the folded rail leaves its column's foot free, so the result docks there, off the board and
+  // the garden, and the solve's last channel into Bea's garden stays in view.
+  const rail = document.getElementById('rail')
+  const railBox = rail && rail.offsetParent ? rail.getBoundingClientRect() : null
+  const desk = matchMedia('(min-width: 1100px) and (min-height: 640px)').matches
+  strip.root.toggleAttribute('data-dock-rail', !!(desk && railBox && railBox.width >= 260))
+  if (desk && railBox && railBox.width >= 260) {
+    left = railBox.left
+    right = railBox.right
+  } else if (r.width && garden?.width && desk && garden.left > left + 320) {
     right = Math.min(right, garden.left - 14)
     // (as wide as its four buttons need, so it stays off Cath at the board's left foot)
     left = Math.max(left, right - 700)

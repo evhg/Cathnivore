@@ -17,6 +17,8 @@ test.describe('Runnel board and stats sheet (plan item 30)', () => {
     await expect(page.locator('#rail')).toBeVisible()
     await expect(page.locator('#rail-figures > div')).toHaveCount(3)
     await expect(page.locator('#rail-cal > i')).toHaveCount(28)
+    // Plan item 642: the stats button sits in the rail's fold ('The month'), opened from its tab
+    await page.locator('#rail-more > summary').click()
     await page.locator('#btn-rail-stats').click()
     await expect(page.locator('#dlg-stats')).toBeVisible()
   })

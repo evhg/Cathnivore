@@ -5360,3 +5360,35 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .win-strip:has(#strip-watch:not([hidden])) { grid-template-columns: auto minmax(0, 1fr); row-gap: 8px; }
   .win-strip:has(#strip-watch:not([hidden])) .strip-actions { grid-column: 2; }
 }
+
+/* Plan item 642: the rail's fold. Closed, a tab under the streak names what it holds; open, the almanac as before. */
+.rail-more { display: grid; gap: inherit; }
+.rail-more:not([open]) { gap: 0; }
+.rail-more-tab {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--soil) 8%, var(--paper));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--soil) 22%, transparent);
+  font: 700 var(--fs-small) / 1.2 var(--font-display, inherit);
+  color: var(--soil);
+  cursor: pointer;
+  list-style: none;
+}
+.rail-more-tab::-webkit-details-marker { display: none; }
+.rail-more-tab::after { content: "\25BE"; margin-left: auto; color: var(--ink-muted); }
+.rail-more[open] > .rail-more-tab::after { content: "\25B4"; }
+.rail-more-hint { font: 400 var(--fs-label) / 1.2 var(--font-ui, inherit); color: var(--ink-muted); }
+.rail-more-tab:focus-visible { outline: 3px solid var(--focus, var(--water)); outline-offset: 2px; }
+.rail-more[open] > :not(summary) + :not(summary) { margin-top: 6px; }
+/* Plan item 642: docked in the rail's column the result is a narrow card: the figures beside her portrait, the
+   buttons two by two under them. */
+.win-strip[data-dock-rail] { grid-template-columns: auto minmax(0, 1fr); padding: 10px 12px; }
+.win-strip[data-dock-rail] .strip-actions { grid-column: 1 / -1; flex-wrap: wrap; }
+.win-strip[data-dock-rail] .strip-actions .btn { flex: 1 1 calc(50% - 4px); min-width: 0; padding-inline: 8px; }
+.win-strip[data-dock-rail] .strip-toast { grid-column: 1 / -1; }
+/* (opened, the month turns the page: today's sky and Bea's note step aside, so the rail still ends above the fold) */
+.rail:has(.rail-more[open]) :is(.al-sky, .al-note) { display: none; }
