@@ -6336,7 +6336,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** hatching under 1.3:1 against its base; Cath's token 120 px+ tall at D, 72+ at P (e2e); played stops show their stars in the DOM; shots P and D.
 - **Size:** 2
 
-## 664. [ ] Cathnivore at D: the hand folds to a tray so the table is the hero
+## 664. [ ] Cathnivore at D: the hand folds to a tray so the table is the hero *(lane A, in progress)*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique)*
 - **Why:** `plan1122f/cath-game-D`: the hand shelf takes 335-1410 x 598-885 (about a third of the screen) as 11 flat tiles in 3 rows, art about 80 px and repeated; the board (595-1190 x 40-590) is smaller than the panels round it (VISION 3).
 - **Build:** at D the hand rests as a tray of fanned cards (120 px or less tall) and rises on hover/focus or when an action needs a card; each card face keeps its own art.
