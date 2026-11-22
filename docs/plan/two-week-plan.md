@@ -6309,7 +6309,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the new crop 40 px+ at D, 28+ at P, in a slot empty before the solve (e2e before/after); Bea 48 px+ tall at D; reduced motion ends on the same frame, still; the Runnel specs pass; shots P and D, solved and unsolved.
 - **Size:** 1-2
 
-## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch *(lane A, in progress)*
+## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; check each on today's build first)*
 - Hedgerow D (`hedge-l21-2d-D` 1365-1400 x 425-457, `hedge-l21-3d-D` 1375-1400): the Next card's fifth type chip cut at the panel's edge: wrap it or '+1'. (lane B 17:00: the row `.preview-row.ticket-chips` is a horizontal scroller with a 22 px fade mask at its right end (components.css ~2422), so the cut is its designed 'more' cue; decide wrap or '+N' at D)
 - Hedgerow l34 D (`hedge-l34-2d-D` 22-485 x 787-880): Cath's toast over the lower depot (158-290 x 725-785) and its van door.
@@ -6317,5 +6317,6 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - NIGHT SHIFT title P (`ns-title-P` 2x, 30-200 x 955-1050): the case lines printed over the LUNA neon with no scrim.
 - /games/ P (`games-P` 28-185 and 208-370 x 705-725): the card hooks cut mid-sentence ('Co-op strategy: push…'): a hook that fits, or two lines.
 - Runnel solved P (`runnel-solved-P` 235-300 x 575-610): the board's lower-right hexes over Bea's bed and fence.
+- *(lane A 17:30, four of six fixed: Hedgerow D chips wrap to a second row at 900 px+ (no fade, nothing cut; critique79/convoy/tray pass); /games/ P hooks: a short one-line hook per poster ('Co-op farm strategy.'), the long one at D; NIGHT SHIFT title P case lines get a dark text halo off the LUNA neon. Open: Hedgerow l34 D toast and l34 P banner; Runnel solved P bed: lowering it 10 px clears the hex points but the garden then meets the result strip and the foot (runnel-win's two phone specs, 0-10 px slack), so it waits for item 660's garden rework. Handed back.)*
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
