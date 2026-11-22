@@ -6224,7 +6224,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** HUD boxes cover 12% or less of the frame at 844x390 (e2e); nothing under 13 px (`var(--u)` sizes); cathode HUD and type specs pass; shot sideways P and D (D unchanged).
 - **Size:** 1
 
-## 650. [ ] The bugs from the 2026-11-22 07:40 critique, fixed as one batch
+## 650. [ ] The bugs from the 2026-11-22 07:40 critique, fixed as one batch *(lane B, in progress)*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique; check each on today's build first)*
 - Plan shots: Hedgerow's mid-level shots (`hedge-l34-2d-D` round 17, l21 round 11) show a bare sandbox field and Cath still saying 'Build a Scarecrow... Tap a plot': stage a real mid-battle in `scripts/plan-shots.mjs` (towers placed via `window.hedgerow.place`, a wave running), and stop that opening hint once past the opening rounds if it is the game's, not the hook's.
 - Hedgerow shop D (`hedge-l34-2d-D` 1180-1320 x 118-135, 1085-1320 x 215-230): the 'For' tags over the tower art after item 628's 56 px towers.
