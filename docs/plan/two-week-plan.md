@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-22T16:36Z
 
 
 
@@ -6279,5 +6278,44 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - NIGHT SHIFT class pick D (`ns-play-D` 998-1240 x 415-455): two of the four stat changes show (P shows all four).
 - Cathnivore title P (`cath-title-P` 95-375 x 325-600): the board has no region names, and its top edge cuts Cath at the chest.
 - Hedgerow P field guide (`hedge-l34-2d-P` 40-280 x 410-610): towers that can't reach a vehicle are struck through, reading as sold out.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 657. [ ] Hedgerow: the fleet you're fighting reads mid-round, in 2D and 3D
+*(planned 2026-11-22 16:50, lane B, plan1122e critique; check first: the plan shot is 1.5 s after the third vehicle appears, so part of the 'piled at the depot' read may be the send's first seconds)*
+- **Why:** `plan1122e/hedge-l21-2d-D` round 11 running: the only enemies are pink capsules stacked at the depot (405-445 x 375-475), the 13 lane cells (400-900 x 170-870) empty, the towers (Scarecrow 780-840 x 470-555, Windmill 830-910 x 640-750) 3-4x any vehicle; `hedge-l21-3d-D` one pink van (235-275 x 350-405) on an empty loop. The farm, not the fight, is the focal point (VISION 3, 4).
+- **Build:** 2D and 3D vehicles drawn at a fixed share of a lane cell as clear silhouettes in Hollowell's livery (item 647's marks); a queued round leaves the depot as a spaced convoy, never piled on the pier; a pop shows a break (a panel flies, a Mark coin arcs to the purse).
+- **Accept:** at D a 2D vehicle 28 px+ long, a 3D one 40 px+ on screen; 3 s after a send (sandbox l21) 6+ vehicles on lane cells (e2e from `window.hedgerow.game()`); no two queued vehicles overlap more than 30% at the depot; a pop spawns its coin (e2e); shots P and D, l21 2D/3D and l34 at 3 s and 8 s.
+- **Size:** 2-3
+
+## 658. [ ] NIGHT SHIFT: a crisp first frame with one goal you can see
+*(planned 2026-11-22 16:50, lane B, plan1122e critique; item 639 lifted the luminance, this is focus and the goal)*
+- **Why:** `plan1122e/ns-street-D`: bloom and depth haze soften the whole frame, no hard edge on the shop signs (330-560 x 140-360), the stall (1100-1440 x 330-560) or the figure (405-465 x 420-640); the goal is a 40 px smudge on the crosshair (690-750 x 425-475) and nothing says 'walk there'; `ns-street-P` 700-1000 is mush. VISION 1 (a clear focal point).
+- **Build:** depth haze and any defocus only past about 30 m; bloom held to emissive surfaces; the stage-0 target a named figure at the first stall, rim-lit, with a 12 px+ label and distance ('TOMAS REED · 14 m'); the arrival mark on the road in front of him.
+- **Accept:** the frame's middle third 2x today's Laplacian variance (a script beside `scripts/luma-mid.mjs`); the target 120 px+ tall at D, 60+ sideways P; label 4.5:1 on its scrim; `cathode-perf` in budget; shots D and sideways P at 4 s.
+- **Size:** 2
+
+## 659. [ ] Cathnivore campaign at D: one scene, the chapter pinned to its place on the map
+*(planned 2026-11-22 16:50, lane B, plan1122e critique)*
+- **Why:** `plan1122e/cath-campaign-D`: the map (45-745 x 185-830) and the chapter list (1030-1375) sit apart over 290 px of bare paper (745-1030) with Cath standing in the gap (785-880 x 485-880), her bubble 60 px over her head (728-928 x 335-440); the 1-6 bunting (360-720 x 40-95) ties to nothing; chapter 1's card is at the far edge and the map's '1' pin (180-240 x 525-600) is unlabelled.
+- **Build:** the map about 60% of the width; the selected chapter's card a pinned ticket on the map with a leader line to its numbered pin (title, goal, Start); the list a compact chapter rail; Cath at the map's lower-right pointing at the pin; the bunting becomes the rail or goes.
+- **Accept:** at 1440x900 no bare paper span over 80 px between the map and the UI; map 820 px+ wide; Start within 200 px of the selected pin; choosing chapter 3 moves the ticket to pin 3 (e2e); her bubble's tail within 20 px of her head; P unchanged; campaign specs pass; shots P and D.
+- **Size:** 2
+
+## 660. [ ] Runnel: the solve plants something you can see, and Bea tends it
+*(planned 2026-11-22 16:50, lane B, plan1122e critique; check item 623's week bed first)*
+- **Why:** `plan1122e/runnel-solved-D`: the result says 'Planted in Bea's garden: a potato' (95-290 x 740-775) but the garden (1195-1400 x 705-835) shows the same sunflowers; Bea is about 15 px (1340-1360 x 795-815); nothing new grows where the water ends (VISION 4 payoff, 5 Bea).
+- **Build:** on a solve the day's crop sprouts in a new bed slot with a 600-900 ms grow (no motion under reduced motion); Bea at a readable size goes to it with her watering can; the result card's crop icon points at that bed.
+- **Accept:** the new crop 40 px+ at D, 28+ at P, in a slot empty before the solve (e2e before/after); Bea 48 px+ tall at D; reduced motion ends on the same frame, still; the Runnel specs pass; shots P and D, solved and unsolved.
+- **Size:** 1-2
+
+## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch
+*(planned 2026-11-22 16:50, lane B, plan1122e critique; check each on today's build first)*
+- Hedgerow D (`hedge-l21-2d-D` 1365-1400 x 425-457, `hedge-l21-3d-D` 1375-1400): the Next card's fifth type chip cut at the panel's edge: wrap it or '+1'.
+- Hedgerow l34 D (`hedge-l34-2d-D` 22-485 x 787-880): Cath's toast over the lower depot (158-290 x 725-785) and its van door.
+- Hedgerow l34 P (`hedge-l34-2d-P` 25-365 x 62-135): the 'Round 17: The wall' banner over the top depot and half its '14' chip.
+- NIGHT SHIFT title P (`ns-title-P` 2x, 30-200 x 955-1050): the case lines printed over the LUNA neon with no scrim.
+- /games/ P (`games-P` 28-185 and 208-370 x 705-725): the card hooks cut mid-sentence ('Co-op strategy: push…'): a hook that fits, or two lines.
+- Runnel solved P (`runnel-solved-P` 235-300 x 575-610): the board's lower-right hexes over Bea's bed and fence.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
