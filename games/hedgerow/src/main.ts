@@ -1375,6 +1375,7 @@ function tip(id: string, text: string, expression: CathExpression = "smirk", for
   ui.bubbleFace.innerHTML = cath(expression);
   ui.bubbleText.textContent = text;
   ui.bubble.hidden = false;
+  clearOfDepots(ui.bubble, "along");
   ui.bubble.classList.remove("pop");
   void ui.bubble.offsetWidth;
   ui.bubble.classList.add("pop");
@@ -4166,8 +4167,69 @@ function banner(text: string, sub = "", boss = false, cls = ""): void {
     ui.banner.append(s);
   }
   ui.banner.className = `banner show${boss ? " boss" : ""}${cls ? ` ${cls}` : ""}`;
+  if (cls === "round" || cls === "small") clearOfDepots(ui.banner, cls === "round" ? "down" : "up");
+  else for (const k of ["top", "bottom"]) ui.banner.style.removeProperty(k);
   clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => ui.banner.classList.remove("show"), boss ? 2600 : 1700);
+}
+
+/** Hollowell's depots on the field (2D DOM boards or the 3D ones' screen boxes), in `host`'s box. */
+function depotBoxesIn(host: HTMLElement): Box[] {
+  const hb = host.getBoundingClientRect();
+  const depots: Box[] = [];
+  for (const d of document.querySelectorAll<HTMLElement>(".depot")) {
+    const r = d.getBoundingClientRect();
+    if (r.width) depots.push({ x: r.left - hb.left, y: r.top - hb.top, w: r.width, h: r.height });
+  }
+  if (renderer && is3D(renderer)) {
+    const c = ui.canvas.getBoundingClientRect();
+    for (const r of renderer.depotRects()) depots.push({ x: r.x + c.left - hb.left, y: r.y + c.top - hb.top, w: r.w, h: r.h });
+  }
+  return depots;
+}
+
+/**
+ * Plan item 661: what lays itself over the field's edge keeps off Hollowell's depots, the vans' source: a round's
+ * banner (at the field's top) slides down, a toast (at its foot) up, and Cath's tip bubble (bottom left) slides
+ * along the foot first, then up. On level 34 'Round 17: The wall' sat over a phone's top depot and her tip over the
+ * lower one at D. Measured from the layout box (the show transitions move it a few px).
+ */
+function clearOfDepots(el: HTMLElement, way: "down" | "up" | "along"): void {
+  el.style.removeProperty("top");
+  el.style.removeProperty("bottom");
+  el.style.removeProperty("left");
+  el.style.removeProperty("right");
+  el.style.removeProperty("width");
+  const host = el.offsetParent as HTMLElement | null;
+  if (!host || el.hidden) return;
+  const depots = depotBoxesIn(host);
+  if (!depots.length) return;
+  const w = el.offsetWidth;
+  const h = el.offsetHeight;
+  // (a banner is centred with translate(-50%): its layout box starts half its width left of where it paints)
+  const dx = el === ui.banner ? -w / 2 : 0;
+  const meets = (x: number, y: number) => depots.some((d) => d.x < x + w + 4 && x - 4 < d.x + d.w && d.y < y + h + 4 && y - 4 < d.y + d.h);
+  const x0 = el.offsetLeft + dx;
+  const y0 = el.offsetTop;
+  if (!meets(x0, y0)) return;
+  const room = { w: host.clientWidth, h: host.clientHeight };
+  if (way === "along")
+    for (let x = x0 + 6; x + w <= room.w - 10; x += 6)
+      if (!meets(x, y0)) {
+        el.style.width = `${w}px`;
+        el.style.left = `${x}px`;
+        el.style.right = "auto";
+        return;
+      }
+  for (let k = 1; k * 6 < room.h; k++) {
+    const y = way === "down" ? y0 + k * 6 : y0 - k * 6;
+    if (y < 0 || y + h > room.h) break;
+    if (!meets(x0, y)) {
+      el.style.top = `${y}px`;
+      el.style.bottom = "auto";
+      return;
+    }
+  }
 }
 
 function describeEnemy(kind: EnemyKind): string {
