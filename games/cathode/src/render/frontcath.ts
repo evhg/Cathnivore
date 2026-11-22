@@ -229,6 +229,8 @@ const RELIEF_CAVITY = 2.2;
  */
 const NOSE_KEY_X = 0.088 / 0.072;
 const NOSE_SHADE = 0.5;
+/** Plan item 319 slice 100: the nose ridge's reach above its centre (skull units; was 0.26, up to the brows). */
+const NOSE_UP = 0.17;
 const NOSE_LIGHT = 0.12;
 /** The nose's cast shadow: its depth, and the key's climb (height per unit across the skull) it is marched along. */
 const NOSE_CAST = 0.24;
@@ -1432,7 +1434,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Plan item 319 slice 19: a rounded profile ((1 - r^2)^2.6, flat-topped with soft sides), not a cone: the cone's
       // sharp apex lit one flank and shaded the other as a hard-edged wedge once the face's key went smooth.
       // Below the tip it falls gently (0.34, not 0.26), so the underside doesn't turn from the key into a dark dot at P.
-      const nr = Math.hypot(x / 0.12, (y + 0.2) / (y < -0.2 ? 0.34 : 0.26));
+      // Plan item 319 slice 100: the ridge rises only to mid-eye (0.26 -> 0.17), a small nose with no long bridge
+      // (the 11-22 critique: a seam from the brows to the tip); `noseH` in the shader matches.
+      const nr = Math.hypot(x / 0.12, (y + 0.2) / (y < -0.2 ? 0.34 : NOSE_UP));
       const nose = nr < 1 ? Math.pow(1 - nr * nr, 2.6) * front : 0;
       z += nose * 0.13;
       p.setXYZ(i, x, y, z);
@@ -1449,7 +1453,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   // lower on the skull, not a skull-cap above a tall, bare brow.
   const capReach = (az: number) => {
     const f = Math.max(0, Math.cos(az));
-    const peak = Math.exp(-(az * az) / 0.02) * 0.025;
+    const peak = Math.exp(-(az * az) / 0.04) * 0.045;
     return Math.PI * (0.8 - 0.415 * Math.pow(f, 2.2)) + peak * Math.PI;
   };
   const capShape = (v: number, az: number, out = 0) => {
@@ -1544,7 +1548,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         blob(0.046 * sx, 0.0, 0.012, 0.006, "rgba(255,234,218,A)", 0.38); // the cheekbone's ridge, toward the temple
         blob(0.044 * sx, -0.025, 0.018, 0.008, "rgba(140,76,66,A)", 0.3); // the hollow under it
       }
-      blob(0, 0.0, 0.004, 0.02, "rgba(255,232,218,A)", 0.4); // the bridge of the nose
+      // Plan item 319 slice 100: the lit bridge and its shadow stroke only on the nose's lower half (the bridge was
+      // 0.0 +- 0.02 and the stroke began at the brows): side by side they drew one long seam from the brows to the tip,
+      // splitting the face into two planes (the 11-22 critique); the bible's nose is small, a soft tip and no bridge line.
+      blob(0, -0.01, 0.0042, 0.01, "rgba(255,232,218,A)", 0.3); // the bridge of the nose
       blob(0, 0.05, 0.02, 0.016, "rgba(255,230,214,A)", 0.22); // the forehead
       blob(0, -0.074, 0.01, 0.006, "rgba(255,228,212,A)", 0.3); // the chin
       // Plan item 260: the underside of the jaw in shadow, so the chin ends in a turned edge, not a pale flat.
@@ -1558,7 +1565,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       // Plan item 275: the shadow side of the bridge darker and wider, and a shadow under the tip, so the nose holds.
       // Plan item 319 slice 64: on a phone the shadow side is softer and wider (0.45 -> 0.28) and its stroke starts
       // below the eyes' line at two-thirds strength: at a 57 px face both read as one dark slash between the eyes.
-      blob(-0.0062, phone ? -0.011 : -0.008, phone ? 0.0045 : 0.0035, phone ? 0.011 : 0.014, "rgba(132,74,62,A)", phone ? 0.28 : 0.45);
+      blob(-0.0062, -0.014, phone ? 0.0045 : 0.004, phone ? 0.009 : 0.01, "rgba(132,74,62,A)", phone ? 0.26 : 0.36);
       // Plan item 319 slice 19: the tip's shadow and the nostrils lighter (0.5/0.7 -> 0.32/0.42): at P they merged into
       // one dark dot under a nose the rounded ridge now models.
       blob(0, -0.0225, 0.0085, 0.0032, "rgba(104,56,48,A)", 0.32);
@@ -1566,7 +1573,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.lineCap = "round";
       g.lineWidth = 0.0022;
       g.beginPath();
-      g.moveTo(-0.0055, phone ? -0.006 : 0.004);
+      g.moveTo(-0.0058, -0.01);
       g.quadraticCurveTo(-0.0075, -0.012, -0.0068, -0.02);
       g.stroke();
       // Plan item 319 slice 48: the shadow line turns under the tip into the nostril's wing, an illustrator's nose
@@ -1945,7 +1952,7 @@ float noseH( vec2 p ) {
     q.x *= 1.0 - 0.56 * ( 1.25 * pow( k, 1.1 ) - 0.25 * k * k * k );
     q.y = -k + 0.2 * ks;
   }
-  float nr2 = dot( vec2( q.x / 0.12, ( q.y + 0.2 ) / ( q.y < -0.2 ? 0.34 : 0.26 ) ), vec2( q.x / 0.12, ( q.y + 0.2 ) / ( q.y < -0.2 ? 0.34 : 0.26 ) ) );
+  float nr2 = dot( vec2( q.x / 0.12, ( q.y + 0.2 ) / ( q.y < -0.2 ? 0.34 : ${f(NOSE_UP)} ) ), vec2( q.x / 0.12, ( q.y + 0.2 ) / ( q.y < -0.2 ? 0.34 : ${f(NOSE_UP)} ) ) );
   return nr2 < 1.0 ? 0.13 * pow( 1.0 - nr2, 2.6 ) : 0.0;
 }
 float reliefShade( vec2 uv ) {
