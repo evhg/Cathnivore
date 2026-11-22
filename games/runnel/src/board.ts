@@ -567,6 +567,10 @@ export class Board {
     const g = el('g', { class: 'field-plot' }, root)
     el('ellipse', { cx: 0, cy: 6, rx: S * 0.42, ry: S * 0.3, class: 'mound' }, g)
     for (const dx of [-11, 0, 11]) el('line', { x1: dx - 3, y1: -2, x2: dx + 3, y2: 14, class: 'furrow' }, g)
+    // Plan item 636: dry, the plot holds a wilted seedling drooping in the dust; water lifts it into its crop.
+    el('path', { class: 'wilt', d: 'M0 9 Q-1 1 2 -4 Q5 -8 9 -5 M2 -1 Q-4 -3 -6 1' }, g)
+    // ...and a splash ring spreads from the plot as the water arrives.
+    el('ellipse', { class: 'splash', cx: 0, cy: 6, rx: S * 0.36, ry: S * 0.25 }, g)
     const plant = el('g', { class: `crop crop-${crop}` }, g)
     // Water-arrival sparkle: droplets that burst out of the plot when it turns wet (CSS-driven).
     const spark = el('g', { class: 'spark' }, g)

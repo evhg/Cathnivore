@@ -1709,7 +1709,8 @@ body {
 
 @keyframes crop-hop {
   40% {
-    transform: translateY(-7px) scale(1.18);
+    /* (plan item 636: a hop above the crop's own grown size, which the old 1.18 sank below) */
+    transform: translateY(-7px) scale(calc(var(--grown, 1.25) * 1.12));
   }
 }
 
@@ -5314,3 +5315,38 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 /* (on a phone the crop's line keeps one line, 'Bea's garden: a potato', so the sheet stays below the garden) */
 @media (max-width: 600px) { .sp-verb { display: none; } }
 @media (max-width: 600px) { .win-strip { row-gap: 2px; padding-top: 4px; } .strip-plant:not([hidden]) { margin-top: 0; } }
+
+/* Plan item 636: a field's crop is the tile's subject: 40%+ of its width once watered (was ~34%); dry, a wilted
+   seedling droops in the cracked plot; the water's arrival throws a splash ring; the solve's bloom runs outward from
+   the spring and is done in 1.2 s on any board; under reduced motion the crop fades in (300 ms). */
+.field-plot .crop { --grown: 1.6; }
+.wilt {
+  fill: none;
+  stroke: color-mix(in srgb, var(--soil) 55%, var(--wheat));
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  transition: opacity 200ms ease;
+}
+.wet .wilt { opacity: 0; }
+.splash {
+  fill: none;
+  stroke: var(--water);
+  stroke-width: 2.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+}
+.wet:not(.instant) .splash { animation: splash-ring 650ms ease-out both calc(var(--delay, 0ms) + 120ms); }
+@keyframes splash-ring {
+  0% { opacity: 0.9; transform: scale(0.35); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+.won .crop { animation-delay: calc(min(var(--ring, 0) * 80ms, 400ms) + 120ms); animation-duration: 640ms; }
+.won .wet .water,
+.won .wet .hub-water { animation-delay: calc(min(var(--ring, 0) * 80ms, 400ms)); }
+@media (prefers-reduced-motion: reduce) {
+  .crop { transform: scale(var(--grown)); opacity: 0; transition: opacity 300ms ease; }
+  .wet .crop { transform: scale(var(--grown)); opacity: 1; transition: opacity 300ms ease; }
+  .wet .splash { animation: none; }
+}
