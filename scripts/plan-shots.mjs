@@ -37,6 +37,10 @@ const jobs = {
     } catch (e) { console.log('campaign', s, String(e).split('\n')[0]) }
   },
   async runnel(p, s) {
+    // Plan item 666: a fresh visitor opens the first-week climb (item 653), not the daily: shoot the daily a returning
+    // player sees (the climb done, the help seen).
+    await p.goto(`${base}/runnel/`)
+    await p.evaluate(() => localStorage.setItem('runnel:v1', JSON.stringify({ ...JSON.parse(localStorage.getItem('runnel:v1') ?? '{}'), version: 1, climbDone: true, seenHelp: true })))
     await p.goto(`${base}/runnel/`); await p.waitForTimeout(2000); await p.screenshot({ path: `${out}/runnel-${s}.png` })
     // Plan item 615: the solved daily's result strip (the critiques never saw a win)
     await p.goto(`${base}/runnel/?shotwin&nohelp`); await p.waitForTimeout(5000); await p.screenshot({ path: `${out}/runnel-solved-${s}.png` })

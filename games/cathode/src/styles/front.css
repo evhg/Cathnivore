@@ -864,6 +864,12 @@
   /* Plan item 661: the case lines hang just over the LUNA neon on the wall; a soft dark halo under the letters (no
      box) keeps them off the glow. */
   .menu-hint { text-shadow: 0 0 calc(var(--u) * 4) rgb(var(--black-rgb) / .95), 0 0 calc(var(--u) * 12) rgb(var(--black-rgb) / .85), 0 0 calc(var(--u) * 24) rgb(var(--black-rgb) / .7); }
+  /* Plan item 666: even haloed, the case lines' last ('A DEBT TAG') ran onto the LUNA neon's frame. They go up under
+     the menu card and the Ledger tab follows them: paper pinned over the neon reads, letters on it don't. */
+  .title-col { display: flex; flex-direction: column; }
+  .title-col > .menu-hint { order: 1; align-self: flex-start; margin-top: calc(var(--u) * 6); }
+  .title-col > .ledger-tab { order: 2; align-self: flex-start; margin-top: calc(var(--u) * 10); }
+  .title-col > .dossier { order: 3; }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
   /* Plan item 159: upright, the plate is as narrow as its words, so it ends left of her coat; the reason a slot is
      shut sits under its name. Plan item 177: flush with the screen's edge it read as bleeding off it, with the neon
