@@ -6295,7 +6295,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the frame's middle third 2x today's Laplacian variance (a script beside `scripts/luma-mid.mjs`); the target 120 px+ tall at D, 60+ sideways P; label 4.5:1 on its scrim; `cathode-perf` in budget; shots D and sideways P at 4 s.
 - **Size:** 2
 
-## 659. [ ] Cathnivore campaign at D: one scene, the chapter pinned to its place on the map
+## 659. [ ] Cathnivore campaign at D: one scene, the chapter pinned to its place on the map *(lane A, in progress)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique)*
 - **Why:** `plan1122e/cath-campaign-D`: the map (45-745 x 185-830) and the chapter list (1030-1375) sit apart over 290 px of bare paper (745-1030) with Cath standing in the gap (785-880 x 485-880), her bubble 60 px over her head (728-928 x 335-440); the 1-6 bunting (360-720 x 40-95) ties to nothing; chapter 1's card is at the far edge and the map's '1' pin (180-240 x 525-600) is unlabelled.
 - **Build:** the map about 60% of the width; the selected chapter's card a pinned ticket on the map with a leader line to its numbered pin (title, goal, Start); the list a compact chapter rail; Cath at the map's lower-right pointing at the pin; the bunting becomes the rail or goes.
