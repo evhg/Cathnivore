@@ -185,3 +185,23 @@ test("the solve's result docks clear of Bea's garden and its new plant", async (
   expect(m.onBoard).toBe(false)
   expect(m.plant).toBeGreaterThanOrEqual(40)
 })
+
+// Plan item 660: the solve is Bea's moment: she stands beside today's new plant at a readable size (48 px tall at D,
+// 28 on a phone; at the valley's grain she was 19 and 11), never over her garden's sign.
+test('after a solve Bea stands by the new plant, large enough to read', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/runnel/?shotwin&nohelp')
+  await page.locator('#win-strip').waitFor({ state: 'visible', timeout: 20_000 })
+  await page.waitForTimeout(400)
+  const m = await page.evaluate(() => {
+    const r = (q: string) => document.querySelector(q)?.getBoundingClientRect() ?? null
+    const bea = r('.bea-runner'), plant = r('.bea-crops .is-today svg'), sign = r('.bea-garden .farm-sign'), g = r('.bea-garden')
+    const meet = (a: DOMRect | null, b: DOMRect | null) => !!a && !!b && b.width > 0 && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+    return { garden: g?.width ?? 0, h: bea?.height ?? 0, gap: bea && plant ? plant.left - bea.right : 999, onSign: meet(bea, sign) }
+  })
+  test.skip(m.garden === 0, 'no valley garden at this size')
+  expect(m.h).toBeGreaterThanOrEqual(innerWidthOf(page) >= 1100 ? 48 : 28)
+  expect(m.gap).toBeLessThanOrEqual(24)
+  expect(m.onSign).toBe(false)
+})
+const innerWidthOf = (page: import('@playwright/test').Page) => page.viewportSize()!.width

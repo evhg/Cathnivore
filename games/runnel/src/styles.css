@@ -5010,6 +5010,13 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 [data-tile-e] .valley-folk-one[data-valley-folk="sheep"] { --fw: calc(var(--tile-e) * .3); }
 [data-tile-e] .valley-folk-one[data-valley-folk="cart"] { --fw: calc(var(--tile-e) * .44); }
 [data-tile-e] :is(.bea-waiting, .bea-runner) { width: calc(var(--tile-e) * .44); height: calc(var(--tile-e) * .38); }
+/* Plan item 660: the solve is her moment: she runs out to the front of her garden and stands beside today's new
+   plant at a size you can read (48 px tall at D, 30 on a phone; at the grain she was 19 px and 11), the plant's bed
+   at the garden's right end; waiting at the gate she keeps the valley's grain. */
+[data-tile-e] .bea-garden .bea-runner { --bea-h: 48px; height: var(--bea-h); width: calc(var(--bea-h) * 1.15); left: auto; right: 46px; bottom: 6px; }
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  [data-tile-e] .bea-garden .bea-runner { --bea-h: 30px; right: 40px; bottom: 30px; }
+}
 .stage[data-tile-e] { --sh: clamp(40px, calc(var(--tile-e) * 1.2), 116px); }
 .stage[data-tile-e] .spring-house { width: var(--sh); left: calc(134px - var(--sh)); top: calc(106.8px - var(--sh) * .8); }
 [data-tile-e] .valley-feature { width: calc(var(--tile-e) * .8); height: calc(var(--tile-e) * .8); }
