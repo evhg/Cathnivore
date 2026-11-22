@@ -19,6 +19,8 @@ test('landmarks stand at the campaign scale in full ink', async ({ page }, info)
     .poll(
       () =>
         page.evaluate(() =>
+          // (Plan item 634: and a Squeeze's flash and stamp, held opaque with animations off, cover the whole hex.)
+          !document.querySelector('.map-wrap .sq-flash') &&
           Array.from(document.querySelectorAll('.map-wrap .board-landmark')).every((g) => {
             const r = g.getBoundingClientRect()
             return !!document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest('.map-wrap')
