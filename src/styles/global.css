@@ -5156,6 +5156,24 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
 @media (min-width: 1280px) {
   .setup[data-steps] .setup-cath-stand .cath-art { transform: translateX(30px); }
 }
+/* Plan item 643 slice 1: one built stall, awning to counter. Two wooden posts carry the awning down to the counter (the
+   awning and its board floated over the column), and she stands a size up between them, so her bubble rises to meet
+   the board: no empty cream band under it (it was ~120 px at 1440x900 and 1280x800). */
+@media (min-width: 1100px) {
+  /* (one column the stand's width: her grown art overflows it, so her bubble doesn't widen past the posts) */
+  .setup[data-steps] .setup-cath-stand {
+    grid-template-columns: minmax(0, 1fr);
+    background:
+      linear-gradient(90deg, var(--wood-lo) 0 2px, var(--wood) 2px 10px, color-mix(in srgb, var(--wood) 70%, var(--wood-lo)) 10px 12px, var(--wood-lo) 12px 14px) 0 0 / 14px 100% no-repeat,
+      linear-gradient(90deg, var(--wood-lo) 0 2px, color-mix(in srgb, var(--wood) 70%, var(--wood-lo)) 2px 4px, var(--wood) 4px 12px, var(--wood-lo) 12px 14px) 100% 0 / 14px 100% no-repeat;
+  }
+}
+@media (min-width: 1280px) and (min-height: 861px) {
+  .setup[data-steps] .setup-cath-stand .cath-art { width: 314px; transform: translateX(12px); }
+}
+@media (min-width: 1280px) and (max-height: 860px) {
+  .setup[data-steps] .setup-cath-stand .cath-art { width: 262px; transform: translateX(18px); }
+}
 /* Plan item 614 at D: the final table is the hero. Three columns: the story on the left, the real board at hero size
    in the middle (on the table, not a framed thumbnail), and a narrow rail with the chart folded into a small ledger
    page over the stats. */

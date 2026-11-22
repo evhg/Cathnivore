@@ -6172,7 +6172,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 the result's box meets neither the board's nor the garden's (e2e); the rail at rest 50% shorter; the almanac opens by keyboard; runnel win/garden/almanac specs pass; shot D and P (P unchanged).
 - **Size:** 2
 
-## 643. [ ] Cathnivore Quick Game desktop: one built stall for the setup *(lane A, in progress)*
+## 643. [ ] Cathnivore Quick Game desktop: one built stall for the setup *(handed back 2026-11-22 06:42 by lane A after slice 1: two wooden posts carry the awning down to the counter (the stand's background, 14 px at its edges), and Cath stands a size up between them (314 px at 1280x861+, 262 at 1280x800; one column the stand's width so her bubble stays inside the posts): the band under the board is ~46 px at 1440x900 (bubble 196, was 271) and ~43 at 1280x800 (193, was 265). setup-* and critique177 (30) passed at D; shots scratchpad su-b0/su-a3. **Left:** the week card still covers her near arm (995-1144 x 566-776): pin it to the left post clear of her figure with an e2e that it meets no part of her, and Start as the counter's till)*
 *(planned 2026-11-22 05:45, lane B, plan1122b critique; item 619 closed the card overlap by decision, the shot argues it again)*
 - **Why:** `plan1122b/cath-setup-D` 1050-1372 x 55-890: an awning and 'Cath's stall' sign float over ~120 px of empty cream (150-270), and the 'This week at the market' card covers Cath's arm and chest (1000-1140 x 570-775). VISION 1, 5.
 - **Build:** `src/ui/` setup (SetupScreen and its css): one stall built from the awning down: posts to a counter, Cath behind it from the waist, the week's card pinned to a post beside her, Start as the counter's till.
