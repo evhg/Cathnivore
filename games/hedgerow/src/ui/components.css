@@ -5683,3 +5683,19 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .build-cost::before { width: 8px; height: 8px; margin-right: 1px; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-answers { gap: 1px; padding: 0 3px 0 4px; }
 }
+/* Plan item 637: at D Coming up's counts say what they count: '433 vehicles', the unit in small type after the figure
+   (it was a bare '433'; item 599 kept the word for readers only). */
+@media (min-width: 900px) and (min-height: 521px) {
+  .round-chip-btn .round-count .round-unit.sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: nowrap;
+    font: 700 var(--fs-label) / 1 var(--font-ui);
+    color: var(--ink-2);
+  }
+}
