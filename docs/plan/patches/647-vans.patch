@@ -1,0 +1,26 @@
+diff --git a/games/hedgerow/src/render3d/models.ts b/games/hedgerow/src/render3d/models.ts
+index ce98df08..92d48f0a 100644
+--- a/games/hedgerow/src/render3d/models.ts
++++ b/games/hedgerow/src/render3d/models.ts
+@@ -1396,6 +1396,21 @@ function vehicle(o: VehicleOpts): THREE.Group {
+   g.add(box(0.008, o.h * 0.16, w * 0.4, chrome(), o.len * 0.5 + 0.003, wr + o.h * 0.08, 0));
+   g.add(box(0.03, 0.035, w * 1.02, metal("#3a3d42", 0.5), o.len * 0.5, wr - 0.02, 0), box(0.03, 0.035, w * 1.02, metal("#3a3d42", 0.5), -o.len * 0.5, wr - 0.02, 0));
+   const logo = o.logo === undefined ? o.stripe : o.logo;
++  // Plan item 647: Hollowell's branded side: a pale panel above the stripe with the company's ring mark on it, so a
++  // van reads as the fleet's, not a plain box. Each part runs through the body and shows on both flanks (three
++  // meshes, not six: classic levels clone a van per enemy). `cyl` stands on y, so the discs drop half their length.
++  if (logo) {
++    const px = -o.len * 0.2;
++    const py = wr + o.h * 0.68;
++    const r = o.h * 0.2;
++    g.add(box(o.len * 0.46, o.h * 0.42, w + 0.008, matte("#fbf7ee", 0.45), px, py - o.h * 0.21, 0));
++    g.add(rot(cyl(r, r, w + 0.014, glow(logo, 2), px - o.len * 0.1, py - (w + 0.014) / 2, 0, 14), Math.PI / 2));
++    g.add(rot(cyl(r * 0.55, r * 0.55, w + 0.018, matte("#fbf7ee", 0.45), px - o.len * 0.1, py - (w + 0.018) / 2, 0, 12), Math.PI / 2));
++    // The same mark on the back doors, which the field camera sees in the gate's queue. Lit (glow 2): the doors face
++    // away from the sun, and the fleet's instanced rungs bake a glow as 0.4 x its intensity of the way from black,
++    // so plain paint or a dim glow read as a hole.
++    g.add(rot(cyl(r * 0.9, r * 0.9, 0.006, glow(logo, 2), -o.len * 0.5 - 0.003, wr + o.h * 0.62 - 0.003, 0, 14), 0, 0, Math.PI / 2));
++  }
+   if (logo) g.add(cyl(0.05, 0.05, 0.012, glow(logo, 1.4), -o.len * 0.14, wr + o.h, 0, 10), cyl(0.056, 0.056, 0.008, chrome(), -o.len * 0.14, wr + o.h, 0, 10));
+   const n = o.wheels ?? 2;
+   const wheels: THREE.Object3D[] = [];
