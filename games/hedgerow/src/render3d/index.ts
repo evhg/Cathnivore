@@ -1919,7 +1919,7 @@ export class Renderer3D {
 
   // ---- the director (plan item 191): a dolly from the depot along the lane on Go, and at most one close-up a
   // round (a megastructure's merge, or the house at a leak). Reduced motion and phones get no moves at all.
-  private shot: { x: number; z: number; zoom: number; dur: number; t: number; dolly: boolean; hold?: boolean } | null = null;
+  private shot: { x: number; z: number; zoom: number; dur: number; t: number; dolly: boolean; hold?: boolean; started?: boolean } | null = null;
   private shotRound = -1;
   private lastPhase = "";
   private get directs(): boolean {
@@ -1937,10 +1937,12 @@ export class Renderer3D {
       this.shot = { x: house.x, z: house.z, zoom: 1.3, dur: 1.4, t: 0, dolly: false, hold: true };
     } else if (game.phase !== "won" && this.shot?.hold) this.shot = null;
     this.lastPhase = game.phase;
-    if (this.shot) {
+    // (a shot starts at its opening frame: the send's own stall step, up to 1 s, would otherwise skip most of the
+    // 1.5 s dolly before it was ever drawn; E2E red on 2e30b8ca, camera3d)
+    if (this.shot && this.shot.started) {
       this.shot.t += dt;
       if (this.shot.t >= this.shot.dur && !this.shot.hold) this.shot = null;
-    }
+    } else if (this.shot) this.shot.started = true;
   }
   /** Plan item 479: hold the camera on the last knockout for `ms` (wall clock): it leans in over about 0.2 s and
    *  eases back after. Any directed shot gives way to it. Not under reduced motion (main.ts doesn't call it then). */
@@ -2068,10 +2070,10 @@ export class Renderer3D {
     this.gateHold = Math.max(0, this.gateHold - camDt);
     this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * ease(1.6);
     if (this.gateEase > 0.001) look.lerp(this.v2.set(this.gateAt.x, this.camTarget.y, this.gateAt.y), this.gateEase * 0.38);
-    // Plan item 651: the director's moves run on the same wall clock (at a few fps the 1.5 s depot dolly held for 20 s),
-    // a frame's step capped at 0.25 s so a slow frame (the send's own stall) can't skip the whole move in one or two
-    // frames (E2E: camera3d saw the round's next shot, the dolly already over)
-    this.direct(game, Math.min(camDt, 0.25));
+    // Plan item 651: the director's moves run on the same wall clock (at a few fps the 1.5 s depot dolly held for 20 s).
+    // (A 0.25 s cap per frame, tried for camera3d, held the dolly 5 s+ at CI's frame rate: closeframe red on 04a93c01;
+    // a shot now holds its opening frame instead, below.)
+    this.direct(game, camDt);
     const sw = this.shotWeight();
     if (sw > 0 && this.shot) look.lerp(this.v2.set(this.shot.x, this.camTarget.y, this.shot.z), sw * (this.shot.dolly ? 0.85 : 0.6));
     const shotZoom = this.shot ? 1 + (this.shot.zoom - 1) * sw : 1;
