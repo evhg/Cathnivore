@@ -1,0 +1,26 @@
+--- a/games/cathode/src/render/frontcath.ts
++++ b/games/cathode/src/render/frontcath.ts
+@@ -1723,7 +1723,9 @@
+         almond();
+         g.restore();
+         // Plan item 260: a warmer white (a pure white read as a doll's stare under the toon key).
+-        g.fillStyle = "#e4d4cb";
++        // Plan item 319 slice 101: a step brighter (#e4d4cb -> #ece0d6; still under the catch-light key's 0.86 floor):
++        // the 11-22 critique read the whites as grey at the title.
++        g.fillStyle = "#ece0d6";
+         g.fill();
+         g.clip();
+         const ix = ex - 0.0005 * E * sx;
+@@ -1777,8 +1779,10 @@
+         // Plan item 205: a heavier upper line and a longer wing (the liner is what reads at title distance).
+         // Plan item 319 slice 10: a slim line that thickens outward to a sharp, lifted wing (the critique: a heavy band
+         // over the lid, no visible wing). The line is about two-thirds of item 205's depth; the wing runs further out and up.
+-        g.lineTo(ox + 0.0118 * E * sx, ey + hh * 2.45);
+-        g.lineTo(ox - 0.0004 * E * sx, ey + hh * 1.0);
++        // Plan item 319 slice 101: the wing longer and fuller at its root (0.0118 -> 0.0136 out, 2.45 -> 2.6 up, its
++        // underside from 1.0 -> 1.2): the 11-22 critique read the liner as barely there at the title.
++        g.lineTo(ox + 0.0136 * E * sx, ey + hh * 2.6);
++        g.lineTo(ox - 0.001 * E * sx, ey + hh * 1.2);
+         g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 3.0, ex - hw * 0.5 * sx, ey + hh * 2.2, ex - hw * sx * 1.02, ey - 0.0002);
+         g.closePath();
+         g.fill();

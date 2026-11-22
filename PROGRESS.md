@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (09:52 11-22): E2E red on 64cc74cd fixed (hedgerow-depart: the 2D field's bake, 3.3 s since item 641, now 4-5x faster, pixels unchanged). 647 handed back with a parked patch (vans' Hollowell mark read as a dark hole). Open: 319, 543, 639, 647. **Next 19:51 session: release** (main untouched at 67ef937d).
+- Lane A (10:51 11-22): 319 slice 100 (fresh critique FAILED: jaw, nose seam, hairline wedge, ribbon hair, liner/mouth; the hairline and the nose fixed), slice 101 (eye whites, wing) parked as a patch. Open: 319, 543, 639, 647. **Next 19:51 session: release** (main untouched at 67ef937d).
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
@@ -38,6 +38,7 @@ None (Vercel deployed 9aee11e on 2026-10-12). (The App Store launch is postponed
 
 ## Session log (newest first, last 15)
 - 2026-11-22 11:21 lane B: 647 van slice (1 code commit); hedgerow unit tests (761), 3dframe/shadow3d/grade (21, P and D), keyart-fresh, tsc, eslint; --retries=0. Shots scratchpad h647/ (turntable b-tt-*, l34 3D).
+- **2026-11-22 10:51 lane A:** 319 slice 100 (1 code commit) + subagent critique; cathode classpick/classpose/front (49 passed, 0 failed, 16 skipped by design; the 25 min cap cut the rest of the desktop front specs), carried-guns/classposes/silhouettes/keyart-fresh unit, eslint, tsc; --retries=0. Posters and key art re-rendered. No full check. Shots scratchpad f319. Lock released.
 - 2026-11-22 10:21 lane B: 650 closed, 639 measured (no code kept: a band-tag try and an arrival-lights try both reverted); cathode-perf (in budget), luma-mid, css lint. Shots scratchpad h628b/h650*, c43, n639b.
 - **2026-11-22 09:52 lane A:** E2E fix (1 code commit), 647 slice parked as a patch. hedgerow-depart x3 (was 3/3 red, now green), hedgerow field/margins/silhouettes/water (18, P and D), hedgerow-margins/keyart-fresh/fleet-models/livery/fleetfaces/gatequeue unit; bake timed and pixel-diffed over 6 levels P and D; tsc, eslint; --retries=0. No full check. Shots scratchpad bg-before/-after, v647-*. Lock released.
 - 2026-11-22 09:21 lane B: 649 + type-system fix + plan-shot staging (3 code commits); cathode-hud and cathode-type-system (P, D), css lint, cathode-type, keyart-fresh, tsc, eslint; --retries=0. Shots scratchpad ns649-*, ps650/.
