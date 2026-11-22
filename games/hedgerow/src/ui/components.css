@@ -5683,19 +5683,41 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .build-cost::before { width: 8px; height: 8px; margin-right: 1px; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-answers { gap: 1px; padding: 0 3px 0 4px; }
 }
-/* Plan item 637: at D Coming up's counts say what they count: '433 vehicles', the unit in small type after the figure
-   (it was a bare '433'; item 599 kept the word for readers only). */
-@media (min-width: 900px) and (min-height: 521px) {
-  .round-chip-btn .round-count .round-unit.sr-only {
-    position: static;
-    width: auto;
-    height: auto;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    clip-path: none;
-    white-space: nowrap;
-    font: 700 var(--fs-label) / 1 var(--font-ui);
-    color: var(--ink-2);
+/* Plan item 637: on an upright phone the tray and the controls read as one dock under the field: the play grid's
+   gaps close to 4 px, the controls plank's padding to 3 px and its medallions step down to 42 px (their names kept
+   at 12 px), so the chrome under the field is under 150 px of 844 (was 160) and the field takes the rest. */
+@media (max-width: 520px) and (orientation: portrait) {
+  .play:not([hidden]) {
+    row-gap: 4px;
+  }
+  .play .controls,
+  .play .controls:has(#btn-rally:not([hidden])) {
+    padding: 3px 6px;
+  }
+  .play .controls .ability,
+  .play .controls:has(#btn-rally:not([hidden])) .ability {
+    grid-template-rows: 42px auto;
+    gap: 1px;
+  }
+  .play .controls :is(.ability-face, .ability .pie-icon, .crown-ability .crown-glyph) {
+    width: 42px;
+    height: 42px;
+    border-width: 2px;
+  }
+  .play .controls .ability .pie-icon {
+    padding: 5px;
+  }
+  .play .controls .ability-ring {
+    width: 46px;
+    height: 46px;
+  }
+  .play .controls .ability-hp {
+    --ring: 50px;
+  }
+  .play .controls .btn.send {
+    min-height: 50px;
+  }
+  .play .controls .auto-btn {
+    grid-template-rows: 30px auto;
   }
 }
