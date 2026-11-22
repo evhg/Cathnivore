@@ -6263,7 +6263,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each such piece has an accessible name saying what it is; the peek opens on tap and on keyboard focus (e2e); piece-looks test covers it; board specs pass; shot P and D, light and dark.
 - **Size:** 1
 
-## 655. [ ] /games/ phone: all four games in view
+## 655. [ ] /games/ phone: all four games in view *(lane B, in progress)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique)*
 - **Why:** `plan1122d/games-P` 0-390 x 580-844: under the stall the games are a sideways carousel, Cathnivore's card alone in view, the rest a 10 px peek and dots (175-240 x 835). VISION 1.
 - **Build:** `site/src/` at P: a 2x2 shelf of four framed wares (art, name, a one-line hook, Play; NIGHT SHIFT's 18+ tag), all four inside the first screen and a half.
