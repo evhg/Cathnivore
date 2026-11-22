@@ -84,15 +84,58 @@ test('an upright phone opens on the whole field, and Closer pushes in on the lan
   await expect(fit).toHaveText(/Closer/i)
 })
 
-test('a desktop and ?2d keep the whole field with no button', async ({ page }) => {
+test('?2d keeps the whole field with no button', async ({ page }) => {
   test.setTimeout(180_000)
-  const phone = (page.viewportSize()?.width ?? 0) < 600
-  if (!phone) {
-    await open(page, '')
-    await page.waitForTimeout(1500)
-    await expect(page.locator('#btn-field-fit')).toBeHidden()
-  }
   await open(page, '&2d')
   await page.waitForTimeout(1500)
   await expect(page.locator('#btn-field-fit')).toBeHidden()
+})
+
+// Plan item 651: a desktop's 3D field frames the whole lane while a round runs (the depot dolly at a send runs on the
+// wall clock: at a few fps it held the close depot view for 20 s), and its Closer key pushes in and follows the lead
+// vehicle, then comes back.
+type HGF = Omit<HG, 'game'> & { cellPx3d(c: number, r: number): { x: number; y: number } | null; game(): { level: { path: number[][]; path2?: number[][] }; enemies: unknown[] } }
+type R3F = { followView(): { on: boolean; x: number; z: number } }
+test('a desktop frames the whole lane through a round, and Closer follows the lead vehicle', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) < 900, 'desktop only')
+  test.setTimeout(240_000)
+  await open(page, '')
+  const fit = page.locator('#btn-field-fit')
+  await expect(fit).toBeVisible({ timeout: 30_000 })
+  await expect(fit).toHaveText(/Closer/i)
+  await page.waitForTimeout(3000)
+  await page.evaluate(() => {
+    const h = (window as unknown as { hedgerow: HGF }).hedgerow
+    h.sendWave(h.game())
+  })
+  await page.waitForTimeout(5000)
+  const seen = await page.evaluate(() => {
+    const h = (window as unknown as { hedgerow: HGF }).hedgerow
+    const c = document.getElementById('canvas')!.getBoundingClientRect()
+    const g = h.game()
+    const cells = [...g.level.path, ...(g.level.path2 ?? [])]
+    const out = cells.map(([x, y]) => h.cellPx3d(x!, y!)).filter((p) => !p || p.x < 0 || p.y < 0 || p.x > c.width || p.y > c.height).length
+    const cath = h.cathBox()
+    return { out, cath: !!cath && cath.x >= c.left && cath.y >= c.top && cath.x + cath.w <= c.right && cath.y + cath.h <= c.bottom }
+  })
+  expect(seen.out).toBe(0)
+  expect(seen.cath).toBe(true)
+  await fit.click()
+  await expect(fit).toHaveText(/Whole field/i)
+  const follow = () => page.evaluate(() => (window as unknown as { hedgerow3d: R3F }).hedgerow3d.followView())
+  expect((await follow()).on).toBe(true)
+  const a = await follow()
+  // The view drifts with the lead vehicle as it goes down the lane (headless game time crawls, so the test moves it
+  // 60% of the way along).
+  await page.evaluate(() => {
+    const g = (window as unknown as { hedgerow: { game(): { level: { path: number[][] }; enemies: Array<{ dist: number; lane?: number }> } } }).hedgerow.game()
+    const lead = g.enemies.find((e) => e.lane !== 1)
+    let len = 0
+    for (let i = 1; i < g.level.path.length; i++) len += Math.abs(g.level.path[i]![0]! - g.level.path[i - 1]![0]!) + Math.abs(g.level.path[i]![1]! - g.level.path[i - 1]![1]!)
+    if (lead) lead.dist = Math.round(len * 0.6)
+  })
+  await expect.poll(async () => { const b = await follow(); return Math.hypot(b.x - a.x, b.z - a.z) }, { timeout: 30_000 }).toBeGreaterThan(0.5)
+  await fit.click()
+  await expect(fit).toHaveText(/Closer/i)
+  expect((await follow()).on).toBe(false)
 })

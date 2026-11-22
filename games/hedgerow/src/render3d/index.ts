@@ -30,6 +30,7 @@ import {
   isRevealed,
   landmarks,
   oakAt,
+  pointAt,
   maxHpOf,
   postMarker,
   towerAt,
@@ -944,11 +945,44 @@ export class Renderer3D {
   }
   /** Plan item 215: whether this view opens closer than the whole field (an upright phone). */
   get hasCloseFrame(): boolean {
-    return !!this.openFrame;
+    return !!this.openFrame || this.wideClose;
+  }
+  /** Plan item 651: a desktop opens on the whole field (the whole lane, depot to farmhouse, while a round runs) and
+   *  has a Closer key too: it pushes in 1.45x and, while a round runs, drifts with the lead vehicle. */
+  private get wideClose(): boolean {
+    return this.w >= 900 && this.w > this.h;
+  }
+  private follow = false;
+  /** Tests: whether the Closer view is following the lead vehicle, and where it looks (world cells). */
+  followView(): { on: boolean; x: number; z: number } {
+    return { on: this.follow && this.zoomed, x: this.camTarget.x + this.pan.x, z: this.camTarget.z + this.pan.y };
+  }
+  /** Plan item 651: the Closer view's look eases towards the lead vehicle on the lane (the one furthest along), or
+   *  towards the gate's side of the field between rounds; clamped so the frame stays on the field. */
+  private followLead(game: Game, camDt: number): void {
+    if (!this.follow || !this.zoomed) return;
+    let lead: Enemy | null = null;
+    for (const e of game.enemies) if (!lead || e.dist > lead.dist) lead = e;
+    let at: { x: number; y: number };
+    if (lead) at = pointAt(lead.lane === 1 && game.level.path2 ? game.level.path2 : game.level.path, Math.max(0, lead.dist));
+    else {
+      const gate = game.level.path[0] ?? [0, 0];
+      const g = this.gateLook(gate[0] + 0.5, gate[1] + 0.5, this.fieldSize.x, this.fieldSize.y, this.zoom);
+      at = { x: g.x, y: g.z };
+    }
+    const k = this.reducedMotion ? 1 : Math.min(1, camDt * 1.4);
+    this.pan.x += (at.x - this.camTarget.x - this.pan.x) * k;
+    this.pan.y += (at.y - this.camTarget.z - this.pan.y) * k;
+    this.clampPan();
   }
   /** Plan item 215: back to the opening close frame (no-op where the view opens on the whole field). */
   frameClose(): void {
     const f = this.openFrame;
+    if (!f && this.wideClose) {
+      this.zoom = 1.45;
+      this.follow = true;
+      return;
+    }
     if (!f) return;
     this.zoom = f.zoom;
     // Not clamped to the field: the frame may lean past its edge to keep the gate's depot in view.
@@ -1857,6 +1891,7 @@ export class Renderer3D {
 
   /** Drags the view by a screen distance in pixels. */
   panBy(dx: number, dy: number): void {
+    this.follow = false;
     const d = this.camBase.distanceTo(this.camTarget) / this.zoom;
     const perPx = (2 * d * Math.tan((this.camera.fov * Math.PI) / 360)) / Math.max(1, this.h);
     this.pan.x -= dx * perPx;
@@ -1866,6 +1901,7 @@ export class Renderer3D {
 
   resetView(): void {
     this.zoom = 1;
+    this.follow = false;
     this.pan.set(this.homePanX, 0);
   }
   /** Plan item 486: on an upright phone the whole-field view leans sideways toward the first gate's depot, by no more
@@ -1875,6 +1911,7 @@ export class Renderer3D {
   /** Plan item 191: a double-tap pushes in on the plot under it (a second double-tap, resetView, comes back). */
   pushTo(clientX: number, clientY: number): void {
     const w = this.worldAt(clientX, clientY);
+    this.follow = false;
     this.zoom = 2;
     this.pan.set(w.x - this.camTarget.x, w.y - this.camTarget.z);
     this.clampPan();
@@ -2025,12 +2062,14 @@ export class Renderer3D {
     const camDt = dt > 0 ? Math.min(1, Math.max(dt, (wall - this.camWall) / 1000)) : 0;
     this.camWall = wall;
     const ease = (k: number) => (this.reducedMotion ? 1 : Math.min(1, camDt * k));
+    this.followLead(game, camDt);
     this.bossEase += (this.bossPush - this.bossEase) * ease(1.2);
     // Plan item 72: a boss round's queue draws the eye to the gate for a few seconds, then lets it go.
     this.gateHold = Math.max(0, this.gateHold - camDt);
     this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * ease(1.6);
     if (this.gateEase > 0.001) look.lerp(this.v2.set(this.gateAt.x, this.camTarget.y, this.gateAt.y), this.gateEase * 0.38);
-    this.direct(game, dt);
+    // Plan item 651: the director's moves run on the same wall clock (at a few fps the 1.5 s depot dolly held for 20 s).
+    this.direct(game, camDt);
     const sw = this.shotWeight();
     if (sw > 0 && this.shot) look.lerp(this.v2.set(this.shot.x, this.camTarget.y, this.shot.z), sw * (this.shot.dolly ? 0.85 : 0.6));
     const shotZoom = this.shot ? 1 + (this.shot.zoom - 1) * sw : 1;
