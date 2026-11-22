@@ -6235,7 +6235,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 651. [ ] Hedgerow 3D desktop: the battle framed while a round runs
+## 651. [ ] Hedgerow 3D desktop: the battle framed while a round runs *(lane A, in progress)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique; check first: the shot is 4.5 s after a forced send, so it may be a passing camera move)*
 - **Why:** `plan1122d/hedge-l21-3d-D` round 11: the camera sits close on the depot (its board and roof 160-445 x 190-480), the field cut off at the right (1080) and the foot, no van and hardly a tower in view, Cath's head cropped at the bottom (400-520 x 780-890); the 3D phone frames the whole lane (item 591). VISION 2, 3.
 - **Build:** `games/hedgerow/src/render3d/` camera: while a round runs at D the view frames the lane depot to farmhouse inside the canvas left of the panel, drifting with the lead vehicles; towers and Cath kept whole; a 'Whole field / Closer' key in the HUD.
