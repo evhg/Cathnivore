@@ -6072,7 +6072,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath's art 280 px+ tall at 1440x900; the target's still present; no empty region over 40% of the frame; at 390x844 and 844x390 nothing overlaps (e2e); cathode loader specs pass; shot P, D, L.
 - **Size:** 2
 
-## 630. [ ] Runnel: the solve's payoff in view, the result beside it
+## 630. [ ] Runnel: the solve's payoff in view, the result beside it *(lane B, in progress)*
 *(planned 2026-11-21 23:25, lane A, plan1121m critique; item 620 runs the water already: this is the layout and the garden beat)*
 - **Why:** `plan1121m/runnel-solved-P` 0-390 x 625-840: the result card covers Bea's garden, the place the solve plants ('Planted in Bea's garden: a tomato'); `runnel-solved-D` 500-1300 x 758-890: the strip cuts the board's bottom row and the garden. VISION 4.
 - **Build:** `games/runnel/src/main.ts` (result strip), garden: after the water reaches the garden, the new plant grows in at hero size with Bea's reaction; then the result docks clear of the garden (beside the board at D, a sheet that can be swiped down on the phone). Reduced motion: fades only.
