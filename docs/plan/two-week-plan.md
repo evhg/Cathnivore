@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-22T03:13Z
 
 
 
@@ -6103,5 +6102,44 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - /games/ P (220-380 x 512-558): 'Browse the games' brown italic on brown: check AA, make it read as a button.
 - NIGHT SHIFT play P (184-600 x 750-810) and D (80-290 x 715-740): a line fading to grey and clipped mid-sentence ('Somebody reads about'); if it's the typewriter, `?shot` should freeze its end.
 - Hedgerow act map P (130-240 x 640-765): 'The Unboxing' and 'Sea Fret' cut under the briefing card with no edge treatment.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 634. [ ] Cathnivore: the regions as hand-built dioramas
+*(planned 2026-11-22 03:25, lane A, plan1122a critique)*
+- **Why:** `plan1122a/cath-game-D` 570-1250 x 60-740 (and `cath-game-P` 15-380 x 130-470): the board reads as an icon sheet: each region a tint plus one small landmark, the pieces the same orange stall glyph and the same blue '?' bubbles. VISION 2 (the table is the hero), 6.
+- **Build:** `src/ui/Map.tsx`, region art (`src/ui/regionArt*`/landmarks), board css: each region one signature diorama at hero size, layered with ink outline and paper grain (Highmoor sheepfold, Saltmarsh lighthouse and pans, Kingsmarket clock square, Rivermead mill wheel, Shingle Bay pier, Oakvale orchard, Brindle Hills barn); the scout '?' bubbles as face-down chits; pieces keep item 618's plastic/wood split and gain a cast shadow.
+- **Accept:** each region's landmark 25%+ of its hex's width at D and P, no two sharing a silhouette; pieces and labels never overlap the landmark or each other (board-landmarks, board-pieces specs); scout chits 28 px+ at P; shot P and D, light and dark.
+- **Size:** 3
+
+## 635. [ ] Cathnivore phone: the hand as a fanned deck you can read
+*(planned 2026-11-22 03:25, lane A, plan1122a critique)*
+- **Why:** `plan1122a/cath-game-P` 0-390 x 610-780: eight cards overlap so seven are slivers with no readable title, a separate '8 more' pill sits above; the lifted card hides its neighbours. VISION 1, 3.
+- **Build:** `src/ui/Game.tsx` phone hand, table css: an arcing fan where every card keeps a title-and-cost strip; a swipe scrubs the lift; the 'more' pill becomes the drawn deck stack it opens.
+- **Accept:** every card shows a 44 px+ tappable strip with its title at 12 px+ unclipped (e2e); no title covered by another card; the lift eases in 180 ms (none under reduced motion); phone hand specs pass; shot P (and D unchanged).
+- **Size:** 2
+
+## 636. [ ] Runnel: dry fields that bloom when the water reaches them
+*(planned 2026-11-22 03:25, lane A, plan1122a critique)*
+- **Why:** `plan1122a/runnel-solved-D` 470-1330 x 40-750: every tile is the same pale green with the same tufts, the crops no bigger than the decoration, and a solved board looks like an unsolved one (`runnel-D`). VISION 4, 2.
+- **Build:** `games/runnel/src/` tile art and solve choreography: fields drawn dry (cracked ochre, a wilted sprout) until watered; watered, the crop grows in (400-900 ms) with a splash ring; at the solve a staggered bloom runs from the spring outward. Reduced motion: fades only.
+- **Accept:** dry and watered fields differ by ΔE 20+ (e2e pixel sample); the crop 40%+ of the tile width; the solve's bloom done in 1.2 s; reduced motion 400 ms or less; runnel solve/win/garden specs pass; shot P and D unsolved and solved.
+- **Size:** 2
+
+## 637. [ ] Hedgerow phone: the field clear, one dock below it
+*(planned 2026-11-22 03:25, lane A, plan1122a critique)*
+- **Why:** `plan1122a/hedge-l21-2d-P` 0-390 x 585-844: Cath's line, the packet tray and the action bar stack 260 px of chrome, and the line's bubble covers the lower path (also `hedge-l34-2d-P` 8-382 x 600-665); at D Coming up's numbers (`hedge-l21-2d-D` 905-1275 x 585-690) carry no units. VISION 1, 2, 3.
+- **Build:** `games/hedgerow/src/main.ts`, ui css: the tray and actions one dock (120 px or less) with Cath's portrait in it; her line a toast from the dock's top edge that never sits on the path and leaves after its read time; Coming up's numbers worded ('433 HP') with 24 px+ vehicle icons.
+- **Accept:** chrome under the field 150 px or less of 844 at P; her line's box meets no path tile (e2e, `?2d`, levels 21 and 34); Coming up's numbers carry a unit; hedgerow tray/bubble/dock specs pass; shot P, D and L.
+- **Size:** 2
+
+## 638. [ ] The bugs from the 2026-11-22 03:20 critique, fixed as one batch *(lane A, in progress)*
+*(planned 2026-11-22 03:25, lane A, plan1122a critique; check each on today's build first)*
+- Cathnivore P (`cath-game-P` 15-380 x 240-262): Brindle Hills, Kingsmarket and Rivermead's name pills touch, reading as one strip.
+- Cathnivore D (`cath-game-D` 1270-1335 x 88-104): 'STAGE I' overprints 'EXPAND Coast' in Hollowell's plan card.
+- Cathnivore setup D (`cath-setup-D` 715-815 x 183-201): the 'Second Opinion' tag clipped by its card's edge.
+- Runnel solved D (`runnel-solved-D` 480-1180 x 748-890): the result card still covers the bottom hex row; 'Solved. Next in 20h 45m.' (85-280 x 848-882) floats below the notebook panel.
+- NIGHT SHIFT street D (`ns-street-D` 595-860 x 175-620): the briefing map's labels ~7-8 px italic, unreadable.
+- NIGHT SHIFT street L (`ns-street-P` 20-460 x 120-290, 2x): the health/ARM HUD has no scrim (a shop sign shows through); the tutorial line bare on the scene. Also portfolio D 100-625 x 885-900: the 'Live: last shipped' line cut at the fold.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
