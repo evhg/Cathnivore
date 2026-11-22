@@ -6144,7 +6144,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 639. [ ] NIGHT SHIFT: the street's first frame staged as an arrival
+## 639. [ ] NIGHT SHIFT: the street's first frame staged as an arrival *(lane A, in progress)*
 *(planned 2026-11-22 05:45, lane B, plan1122b critique; Cath's own 3D face and wardrobe stay items 319 and 543, which the same critique ranked first: ns-title-D 930-1110 x 260-480)*
 - **Why:** `plan1122b/ns-street-D` 380-1000 x 300-700 (P 230-560 x 150-300 at 844x390): the Drowned Market's first playable frame is a blurred black corridor, one silhouette (410-470 x 420-640), no focal point; the baton fills the right third and the only instruction is a text chip. VISION 1, 4.
 - **Build:** `games/cathode/src/` the market district's opening set and session start: the first stretch lit and dressed (stalls with wares under awnings, steam, puddles catching the neon, a few figures under cover), the first mark lit at the street's end with a world-space objective marker, a 1.5-2 s dolly-in before control, the weapon lowered until the first input.
