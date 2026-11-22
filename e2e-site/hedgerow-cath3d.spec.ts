@@ -27,7 +27,9 @@ test('her face reads in 3D, lighter than her hair, and she worries at a leak', a
   const fig = await page.evaluate(() => (window as unknown as W).hedgerow!.figureBox()!)
   expect(fig.h).toBeGreaterThanOrEqual(hasTouch ? 55 : 110)
   expect(m.tone.face).toBeGreaterThan(m.tone.hair)
-  await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', /rest|plant/, { timeout: 30_000 })
+  // Calm before the leak: any pose but worried or cheer. Item 310's idle point and wave run on the render clock,
+  // which crawls under CI's few-fps WebGL, so waiting for 'rest' itself timed out (E2E 3c91f977); worry overrides them.
+  await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', /^(rest|plant|point|wave)$/, { timeout: 30_000 })
   await page.evaluate(() => (window as unknown as W).hedgerow!.game()!.events.push({ type: 'leak', x: 1, y: 1, lost: 1 }))
   await expect(page.locator('#stage')).toHaveAttribute('data-cath-pose', 'worried', { timeout: 30_000 })
 })
