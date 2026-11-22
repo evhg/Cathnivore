@@ -1611,6 +1611,13 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       g.add(rbox(0.62, 0.36, 0.34, 0.03, plastic("#24345e"), -0.1, 0.1, 0), ...tailLights(-0.41, 0.16, 0.34));
       g.add(truckCab(0.43, 0.2, 0.28, 0.32, gloss("#e9ecef")));
       for (const side of [-1, 1]) g.add(box(0.5, 0.05, 0.005, glow("#5ab0ff", 0.7), -0.1, 0.36, side * 0.172));
+      // Plan item 647: Hollowell's mark on the box, as on the vans: a pale panel with the lit ring through both flanks
+      // (one mesh each, through the box), and the mark on the back doors the gate's queue shows.
+      const cream = matte("#fbf7ee", 0.45);
+      g.add(box(0.3, 0.15, 0.35, cream, -0.12, 0.18, 0));
+      g.add(rot(cyl(0.05, 0.05, 0.356, glow("#5ab0ff", 2), -0.2, 0.255 - 0.178, 0, 14), Math.PI / 2));
+      g.add(rot(cyl(0.028, 0.028, 0.36, cream, -0.2, 0.255 - 0.18, 0, 12), Math.PI / 2));
+      g.add(box(0.008, 0.15, 0.16, cream, -0.414, 0.2, 0), box(0.012, 0.07, 0.07, glow("#5ab0ff", 2), -0.416, 0.24, 0));
       for (const x of [-0.3, -0.12, 0.33]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
       g.add(box(0.7, 0.04, 0.3, matte("#26282d", 0.6, false), 0.02, 0.04, 0));
       return g;
