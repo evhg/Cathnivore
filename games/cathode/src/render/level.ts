@@ -1053,6 +1053,29 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
   b.box("glowWhite", key.pos.x, key.pos.y + 0.2, key.pos.z + 0.02, 1.0, 0.6, 0.05);
   cones.push({ top: key.pos.clone().add(V(0, 0.2, 0.1)), dir: key.target.clone().sub(key.pos).normalize(), length: 60, radius: 14, color: C("#cfe3ff"), strength: 0.12 });
 
+  // Plan item 639: the arrival. The first stretch she sees (z 57 to 44) was a dark corridor with one lamp: a stall
+  // lit under its tarp at her right, warm bulbs strung across the road over her first steps, and a lit doorway on the
+  // west side, so the first frame has a lit street to walk into (built last, so the random dressing above is as was).
+  stall(49.6, false, 0.5);
+  for (const [za, zb, k0] of [
+    [54.5, 51.5, 0],
+    [47.5, 45, 1],
+  ] as const) {
+    const a = V(W + 0.3, 4.9, za);
+    const c = V(L.quayEdge - 0.2, 4.5, zb);
+    b.cable("cable", a, c, 0.9, 0.008);
+    for (let k = 1; k < 12; k++) {
+      const t = k / 12;
+      const p = new THREE.Vector3().lerpVectors(a, c, t);
+      p.y -= 0.9 * 4 * t * (1 - t) + 0.05;
+      b.shape((k + k0) % 4 ? "glowWarm" : "glowPink", new THREE.SphereGeometry(0.055, 6, 4), p);
+      if (k % 3 === 0) light(p.clone(), "#ffc27a", 4.5, 8.5, null, 0, k === 6);
+    }
+  }
+  light(V(W + 1.4, 2.4, 52.5), "#ffb066", 4.5, 7, V(1, 0, 0));
+  // ...and the first mark (stage 0's target, where the street opens to the first stall) under a warm work light
+  light(V(-2, 4.2, 45.5), "#ffc27a", 10, 11);
+  light(V(-1.5, 4.6, 39), "#ffb066", 7, 10, null, 0, false);
   const gh = (x: number, z: number) => groundHeight(x, z);
   const P = (x: number, z: number) => V(x, gh(x, z), z);
   const markers: Record<string, THREE.Vector3[]> = {

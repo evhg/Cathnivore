@@ -272,6 +272,43 @@ class Lamp {
   }
 }
 
+/**
+ * Plan item 639: the first mark as a thing in the street, not only a HUD diamond: an amber diamond turning over the
+ * spot where the street opens up (its glow blooms), and a soft ring on the wet road under it. It is up from the
+ * first frame (the HUD is held for the area title), and goes when she reaches it.
+ */
+export class ArrivalMark {
+  readonly group = new THREE.Group();
+  private readonly gem: THREE.Mesh;
+  private readonly ring: THREE.Mesh;
+  private t = 0;
+  constructor(at: THREE.Vector3, scene: THREE.Scene) {
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.28, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color(5, 3, 0.9), transparent: true, opacity: 0.95 }));
+    gem.scale.set(0.75, 1.3, 0.75);
+    gem.position.y = 1.55;
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.55, 0.85, 48),
+      new THREE.MeshBasicMaterial({ color: 0xe8b04a, map: poolTexture(), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.035;
+    this.gem = gem;
+    this.ring = ring;
+    this.group.add(gem, ring);
+    this.group.position.copy(at);
+    scene.add(this.group);
+  }
+  update(dt: number): void {
+    this.t += dt;
+    this.gem.rotation.y = this.t * 1.6;
+    this.gem.position.y = 1.55 + Math.sin(this.t * 2.2) * 0.07;
+    (this.ring.material as THREE.MeshBasicMaterial).opacity = 0.4 + 0.25 * (0.5 - 0.5 * Math.cos(this.t * Math.PI * 2));
+  }
+  remove(): void {
+    this.group.removeFromParent();
+  }
+}
+
 /** Where she stands after the first takedown (behind the guard under the lamp), facing down the street (-z). */
 export const TAKEDOWN_POSE = { x: -1.5, z: 37.7, yaw: 0 };
 /** The guard under the lamp. */
@@ -313,6 +350,8 @@ export class FirstJob {
   private pickup: Case | null = null;
   private spent: Case[] = [];
   private lamp: Lamp | null = null;
+  /** Plan item 639: the first mark, a diamond in the street over stage 0's target. */
+  mark: ArrivalMark | null = null;
   private wait = 0;
   private seen = false;
 
@@ -379,6 +418,8 @@ export class FirstJob {
     this.wave = [];
     this.lamp?.remove();
     this.lamp = null;
+    this.mark?.remove();
+    this.mark = null;
     this.wait = 0;
     this.goto(stage);
   }
@@ -395,13 +436,19 @@ export class FirstJob {
         this.objective = "Walk down the street.";
         this.target = this.P(-2, FIRST_GUARD.z + FIRST_CONTACT_M);
         this.lesson("move");
+        // Plan item 639: the street's end is lit from the first frame (the lamp he will stand under is already on)
+        // and the mark stands in the street, so the arrival has somewhere to look.
+        this.lamp ??= new Lamp(this.P(FIRST_GUARD.x, FIRST_GUARD.z), h.scene, h.light);
+        this.mark ??= new ArrivalMark(this.target, h.scene);
         break;
       case 1: {
         this.objective = "A Hollowell guard under the lamp ahead. Take him down quietly.";
         this.teachFeatures("crouch", "takedown");
         const g = h.spawn("rifle", [this.P(FIRST_GUARD.x, FIRST_GUARD.z)], { yaw: Math.PI, passive: true });
         this.wave = [g];
-        this.lamp = new Lamp(this.P(FIRST_GUARD.x, FIRST_GUARD.z), h.scene, h.light);
+        this.lamp ??= new Lamp(this.P(FIRST_GUARD.x, FIRST_GUARD.z), h.scene, h.light);
+        this.mark?.remove();
+        this.mark = null;
         // The marker sits on him, so he can be found in the rain (owner, iPhone: "I don't see anyone").
         this.target = g.position.clone().setY(g.position.y + 1.9);
         this.lesson("takedown");
@@ -484,6 +531,7 @@ export class FirstJob {
     const v = h.view?.();
     this.pickup?.update(dt, h.player.pos, v?.cam, v?.w, v?.h, v?.scale);
     for (const c of this.spent) c.update(dt);
+    this.mark?.update(dt);
     if (this.wait > 0) {
       this.wait -= dt;
       return;
