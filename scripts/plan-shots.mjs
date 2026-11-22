@@ -42,6 +42,26 @@ const jobs = {
     await p.goto(`${base}/runnel/?shotwin&nohelp`); await p.waitForTimeout(5000); await p.screenshot({ path: `${out}/runnel-solved-${s}.png` })
   },
   async hedgerow(p, s) {
+    // Plan item 650: the mid-level shots show a battle, not a bare sandbox field: up to eight of the level's towers on
+    // plots beside the lane, then its round under way.
+    const battle = async () => {
+      await p.evaluate(() => {
+        const hg = window.hedgerow, g = hg.game()
+        const path = [...(g.level.path ?? []), ...(g.level.path2 ?? [])]
+        const near = (c, r) => Math.min(...path.map(([pc, pr]) => Math.abs(pc - c) + Math.abs(pr - r)))
+        const spots = []
+        for (let r = 0; r < g.level.rows; r++) for (let c = 0; c < g.level.cols; c++) spots.push([near(c, r), c, r])
+        spots.sort((a, b) => a[0] - b[0] || ((a[1] * 7 + a[2] * 3) % 5) - ((b[1] * 7 + b[2] * 3) % 5))
+        const kinds = g.level.towers
+        let n = 0
+        for (const [, c, r] of spots) {
+          if (n >= 8) break
+          if (hg.place(g, kinds[n % kinds.length], c, r).ok) n++
+        }
+        hg.sendWave(g, true)
+      })
+      await p.waitForTimeout(4500)
+    }
     await p.goto(`${base}/hedgerow/?2d`)
     await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true }, tips: t })), [stars(20), tips])
     await p.goto(`${base}/hedgerow/`); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/hedge-menu-${s}.png` })
@@ -49,11 +69,12 @@ const jobs = {
       await p.goto(`${base}/hedgerow/?sandbox=1&level=21${mode === '2d' ? '&2d' : ''}`)
       await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
       await p.waitForTimeout(mode === '2d' ? 1000 : 5000)
+      await battle()
       await p.screenshot({ path: `${out}/hedge-l21-${mode}-${s}.png` })
     }
     await p.goto(`${base}/hedgerow/?sandbox=1&level=34&2d`)
     await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
-    await p.waitForTimeout(1000); await p.screenshot({ path: `${out}/hedge-l34-2d-${s}.png` })
+    await p.waitForTimeout(1000); await battle(); await p.screenshot({ path: `${out}/hedge-l34-2d-${s}.png` })
   },
   async nightshift(p, s) {
     await p.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
