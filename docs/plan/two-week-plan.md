@@ -6350,7 +6350,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** viewmodel 10%+ of the frame lower right at sideways P; its gun id matches the loadout (e2e); recoil within 2 frames of `forced={fire:true}`; `cathode-perf` phone in budget.
 - **Size:** 2
 
-## 666. [ ] The bugs from the 2026-11-22 21:05 critique, fixed as one batch
+## 666. [ ] The bugs from the 2026-11-22 21:05 critique, fixed as one batch *(lane B, in progress)*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique)*
 - Cathnivore game D: the 'Hollowell quarterly plan' header (1140-1340 x 236-250) clipped by Tomas's bubble (1190-1372 x 248-345); Rivermead's label (1030-1130 x 213-238) under the Squeeze/Expand panel; the Dry Spell card (345-485 x 90-170) over Cath's note.
 - Cathnivore campaign D: the chapter-1 ticket (290-542 x 508-662) hides Oakvale's and Shingle Bay's labels and half stop 1's pin; P: the first chapter badge clipped at the left edge (14-48 x 556-595).
