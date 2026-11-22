@@ -6746,6 +6746,11 @@ html.no-animations .table-cath-figure { animation: none; }
     left: 222px;
     margin: 0;
   }
+  /* plan item 656: at 120 px his medallion and plate clipped Highmoor's top-left corner (557-677 x 14-144 over the hex
+     from 640 px at 1440x900): 98 px (90 at 1400 px), butted to the Market Board's edge, the plate under him left of centre */
+  .game:has(.table-head.with-table-cath) .table-head .rival { --pell: clamp(90px, calc(90px + (100vw - 1400px) * .2), 98px); left: 206px; min-width: var(--pell); }
+  .game:has(.table-head.with-table-cath) .table-head .rival-frame { width: var(--pell); height: var(--pell); margin: 0; }
+  .game:has(.table-head.with-table-cath) .table-head .rival-plate { top: calc(var(--pell) - 10px); translate: calc(-50% - 20px) 0; }
   .game:has(.table-head.with-table-cath) .event-ticket { top: 82px; }
   .game-layout .game:has(.table-head.with-table-cath) .map-wrap > .map-key { top: 300px; }
   /* the plaque's tab names the plan under the stack, inside its width */
