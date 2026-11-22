@@ -4300,3 +4300,4 @@ want reminded of mid-game without leaving the Farm sheet. Full detail in DECISIO
 - 2026-11-21 13:21 lane B: E2E spec fix, 611 done, 613-617 planned, 617 mostly closed (3 code commits); hedgerow-map 608 (P), hedgerow dock and tray specs (P, D, 42), ui-css-lint; --retries=0.
 - 2026-11-21 15:21 lane B: 615 slice 2, 599 slice 4 (2 code commits); runnel solve specs (P, D, 63), hedgerow panel specs (P, D, 95), ui-css-lint; --retries=0.
 - **2026-11-21 14:51 lane A:** E2E fix, 613 slices 3-6 (done), 614 slice 1 (7 code commits). hedgerow-payout (new P checks), -critique, -growth, -cath2d, -intro, -3d, -3dframe (new win camera spec), -fieldkit, site tray-drag and plan item 10; end-moment, quick-game, screenshots (P, D); all --retries=0; tsc, eslint, css lint. No full check. Shots scratchpad s613p. Lock released.
+- 2026-11-21 16:21 lane B: 599 done, 615 slice 3 (2 code commits); hedgerow panel specs (P, D, 75), runnel solve specs (P, D, 62), ui-css-lint; --retries=0.
