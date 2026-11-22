@@ -137,5 +137,5 @@ async function studio(host: HTMLElement | null): Promise<void> {
   if (!host) return
   const log = await loadStudio()
   if (!log) return
-  renderStudio(host, log, { reduced, stats: document.querySelector<HTMLElement>('.hero .stats'), desk: matchMedia('(min-width: 1100px)') })
+  renderStudio(host, log, { reduced, stats: document.querySelector<HTMLElement>('.hero .stats'), shipped: document.querySelector<HTMLElement>('.hero .shipped'), desk: matchMedia('(min-width: 1100px)') })
 }

@@ -49,6 +49,14 @@ test('the stats end on a live last-shipped line', async ({ page }) => {
     const first = (await page.locator('.show-a').boundingBox())!
     expect(line.y + line.height).toBeLessThanOrEqual(first.y)
     expect(line.y + line.height).toBeLessThanOrEqual(page.viewportSize()!.height)
+  } else if (page.viewportSize()!.width >= 1280 && (await page.locator('.studio-foot #shipped').count())) {
+    // Plan item 638: with the studio band it rides in the numbers' row, between the pairs, above the fold (after its rise)
+    await page.waitForTimeout(2300)
+    const settled = (await page.locator('#shipped').boundingBox())!
+    const row = (await page.locator('.hero .stats').boundingBox())!
+    expect(settled.y + settled.height).toBeLessThanOrEqual(row.y + row.height + 1)
+    expect(settled.y + settled.height).toBeLessThanOrEqual(page.viewportSize()!.height)
+    expect(box.width).toBeGreaterThan(0)
   } else expect(box.y).toBeGreaterThanOrEqual(stats.y + stats.height - 1)
 })
 

@@ -87,7 +87,7 @@ function card(s: StudioSession, i: number): HTMLElement {
   return c
 }
 
-export function renderStudio(host: HTMLElement, log: StudioLog, opts: { reduced: boolean; stats?: HTMLElement | null; desk: MediaQueryList }): boolean {
+export function renderStudio(host: HTMLElement, log: StudioLog, opts: { reduced: boolean; stats?: HTMLElement | null; shipped?: HTMLElement | null; desk: MediaQueryList }): boolean {
   const sessions = log.sessions.filter((s) => s.subjects.length > 0)
   if (sessions.length === 0) return false
   const now = log.generated
@@ -160,6 +160,20 @@ export function renderStudio(host: HTMLElement, log: StudioLog, opts: { reduced:
   stage.append(track, cards)
   const foot = el('div', 'studio-foot')
   if (opts.stats) foot.append(opts.stats)
+  // Plan item 638: the 'Live: last shipped' line rides in the numbers' row (between its two pairs at D), so it ends
+  // above a 900 px fold instead of under it.
+  if (opts.shipped) {
+    const shipped = opts.shipped
+    const home = shipped.parentElement
+    const anchor = shipped.nextSibling
+    const wide = matchMedia('(min-width: 1280px)')
+    const place = () => {
+      if (wide.matches) foot.append(shipped)
+      else if (home && shipped.parentElement !== home) home.insertBefore(shipped, anchor && anchor.parentNode === home ? anchor : null)
+    }
+    place()
+    wide.addEventListener('change', place)
+  }
   host.append(head, stage, foot)
   host.hidden = false
   host.closest('.hero')?.classList.add('has-studio')

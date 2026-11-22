@@ -2351,3 +2351,21 @@ h1 {
   }
   .show-strip { gap: var(--sp-4); }
 }
+
+/* Plan item 638: in the studio's numbers row the live line sits between the two pairs from 1280 px (it hung under
+   the row, cut by a 900 px fold); narrower, it follows the numbers. */
+.studio-foot { position: relative; }
+.has-studio .studio-foot > .shipped { margin-top: var(--sp-2); }
+@media (min-width: 1280px) {
+  .has-studio .studio-foot > .shipped {
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: max-content;
+    max-width: calc(100% - 700px);
+    text-wrap: balance;
+    margin: 0;
+    translate: -50% 0;
+    text-align: center;
+  }
+}
