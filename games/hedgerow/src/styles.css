@@ -5843,7 +5843,7 @@ img.act-scene {
     /* Plan item 624: Cath briefs at half length (164 px), cropped at the card's left edge, her line a tailed bubble
        beside her; the plate is a little shorter to make the room (the card still ends above a 900 px fold).
        From 860 px tall and from act 2 (act 1's card sits under Cath's own header line, with no room): under that the card keeps item 372's list, which fits an 800 px screen. */
-    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-thumb svg.lcard-plate-wide { max-height: 112px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-thumb svg.lcard-plate-wide { max-height: 156px; }
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath { align-items: center; gap: 4px; min-height: 164px; margin-left: -14px; padding-top: 0; overflow: hidden; }
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath-face { display: none; }
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-cath-fig { display: block; flex: none; align-self: end; width: 104px; height: 164px; overflow: hidden; }
