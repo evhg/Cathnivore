@@ -64,8 +64,12 @@ test('a solve leaves the board in view under a slim result strip', async ({ page
       inView: st.top >= 0 && st.bottom <= innerHeight + 1 && st.left >= -1 && st.right <= innerWidth + 1,
       minFont: Math.min(...sizes),
       cath: document.getElementById('strip-cath')!.getBoundingClientRect().height,
+      // Plan item 638: at D the board draws whole above the open strip (its bottom row sat under it)
+      desk: matchMedia('(min-width: 1100px) and (min-height: 640px)').matches,
+      clearBelow: st.top - Math.max(...[...document.querySelectorAll('#board polygon')].map((c) => c.getBoundingClientRect().bottom)),
     }
   })
+  if (m.desk) expect(m.clearBelow, 'the board whole above the strip').toBeGreaterThanOrEqual(0)
   // Plan item 615: on a phone Cath stands at half length on the result card, 160 px tall
   if (test.info().project.name.includes('phone')) expect(m.cath).toBeGreaterThanOrEqual(160)
   expect(m.visible).toBeGreaterThanOrEqual(0.8)

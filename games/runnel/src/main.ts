@@ -1463,6 +1463,8 @@ function placeStrip(): void {
   }
   strip.root.style.setProperty('--strip-x', r.width ? `${Math.round((left + right) / 2)}px` : '')
   strip.root.style.setProperty('--strip-max', r.width ? `${Math.round(right - left)}px` : '')
+  // Plan item 638: at D the stage keeps the strip's own height clear, so the solved board draws whole above it
+  document.body.style.setProperty('--strip-h', `${Math.round(strip.root.offsetHeight)}px`)
 }
 window.addEventListener('resize', placeStrip)
 
