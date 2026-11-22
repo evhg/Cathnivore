@@ -262,3 +262,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-22 22:20 lane A: no release this session: the 19:51 rule's 20:51 retry was the one allowed, and lane A's 20:51 run never started (lock); the fix ships in the 11-23 19:51 release.
 - 2026-11-22 22:45 lane B: Runnel's hero plant takes a floor from the measured bed size (--hero-min) instead of one scale per layout: a daily's beds vary (20-28 px) with the board's grain and the garden's tight strip.
 - 2026-11-22 22:45 lane B (666): Runnel's dry channels stay item 421's pale sand bed; their 3:1 against the tile is the cut edge's (tests/runnel-contrast.test.ts), not the bed's.
+- 2026-11-22 23:35 lane B (662): the field guide's page docks at the board's right edge (D) or as a foot sheet (P) over a light dim, not a scrim; the round still holds until Got it, so nothing about play changes, only what stays in view.
