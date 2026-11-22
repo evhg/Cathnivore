@@ -1380,24 +1380,67 @@ function paintMarginPiece(ctx: CanvasRenderingContext2D, p: Placed, s: number, r
     ctx.fillRect(p.x - p.w, foot - p.w, p.w * 2.4, p.w * 2);
     ctx.restore();
   }
-  varied(ctx, p.x, p.y + p.h / 2, p.look ?? pieceLook(p.kind, rand), () => {
+  varied(ctx, p.x, p.y + p.h / 2, p.look ?? pieceLook(p.kind, rand), Math.max(p.w, p.h, s), (c) => {
     // Plan item 224: a billboard's piece is its panel's width (about 2.3 of its scale), its foot at the piece's base.
-    if (p.kind === "billboard") drawDecor(ctx, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
-    else if (DECOR_PIECES.has(p.kind)) drawDecor(ctx, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
-    else paintPiece(ctx, p, s, rand);
+    if (p.kind === "billboard") drawDecor(c, "billboard", p.x, p.y + p.h / 2, p.w / 2.3, rand);
+    else if (DECOR_PIECES.has(p.kind)) drawDecor(c, p.kind as Decor, p.x, p.y + p.h / 2, Math.min(p.w, p.h * 1.2), rand);
+    else paintPiece(c, p, s, rand);
   });
 }
 
-/** Plan item 388: draws a piece with its look (flip, lean, tint) about its foot (x, footY). */
-function varied(ctx: CanvasRenderingContext2D, x: number, footY: number, look: Look, draw: () => void): void {
+/** A scratch canvas each tinted piece is drawn into before its one filtered blit (see `varied`). */
+let pieceScratch: HTMLCanvasElement | null = null;
+const STATE = ["fillStyle", "strokeStyle", "lineWidth", "lineCap", "lineJoin", "globalAlpha", "font", "textAlign", "textBaseline"] as const;
+
+/**
+ * Plan item 388: draws a piece with its look (flip, lean, tint) about its foot (x, footY). `reach` is the piece's
+ * size: it stands within 3 of it either side, 4 above its foot and 1.5 below.
+ *
+ * The tint is a canvas filter. Set on the field's context, every fill and stroke of the piece was filtered on its
+ * own, and a software canvas runs each through a layer the size of the whole field: with item 641's full-width
+ * stage the bake took 3.3 s at 1440x900 (2D, headless), blocking the departure from the map. So a tinted piece is
+ * drawn untinted into a scratch canvas its own size and laid on the field in one filtered draw.
+ */
+function varied(ctx: CanvasRenderingContext2D, x: number, footY: number, look: Look, reach: number, draw: (c: CanvasRenderingContext2D) => void): void {
   const { flip, lean, light, sat } = look;
   ctx.save();
   ctx.translate(x, footY);
   if (lean) ctx.rotate(lean);
   if (flip < 0) ctx.scale(-1, 1);
   ctx.translate(-x, -footY);
-  if ("filter" in ctx) ctx.filter = `brightness(${light.toFixed(2)}) saturate(${sat.toFixed(2)})`;
-  draw();
+  const tinted = "filter" in ctx && (Math.abs(light - 1) > 0.004 || Math.abs(sat - 1) > 0.004);
+  const sc = tinted && typeof document !== "undefined" ? (pieceScratch ??= document.createElement("canvas")) : null;
+  const m = ctx.getTransform();
+  const r = Math.max(reach, 8);
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [px, py] of [[x - r * 3, footY - r * 4], [x + r * 3, footY - r * 4], [x - r * 3, footY + r * 1.5], [x + r * 3, footY + r * 1.5]] as const) {
+    const q = m.transformPoint({ x: px, y: py });
+    x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y);
+  }
+  x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0));
+  x1 = Math.min(ctx.canvas.width, Math.ceil(x1)); y1 = Math.min(ctx.canvas.height, Math.ceil(y1));
+  const sctx = sc && x1 > x0 && y1 > y0 ? sc.getContext("2d") : null;
+  if (!sc || !sctx) {
+    // Untinted, or nowhere on the canvas: drawn as it is (the piece still takes its random draws).
+    if (tinted) ctx.filter = `brightness(${light.toFixed(2)}) saturate(${sat.toFixed(2)})`;
+    draw(ctx);
+    ctx.restore();
+    return;
+  }
+  const w = x1 - x0, h = y1 - y0;
+  if (sc.width < w || sc.height < h) {
+    sc.width = Math.max(sc.width, w);
+    sc.height = Math.max(sc.height, h);
+  }
+  sctx.setTransform(1, 0, 0, 1, 0, 0);
+  sctx.clearRect(0, 0, w, h);
+  for (const k of STATE) (sctx as unknown as Record<string, unknown>)[k] = ctx[k];
+  sctx.setTransform(m.a, m.b, m.c, m.d, m.e - x0, m.f - y0);
+  draw(sctx);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.filter = `brightness(${light.toFixed(2)}) saturate(${sat.toFixed(2)})`;
+  ctx.drawImage(sc, 0, 0, w, h, x0, y0, w, h);
   ctx.restore();
 }
 
@@ -1574,7 +1617,7 @@ function paintDecor(
       ctx.ellipse(it.x + s * it.k * 0.06, it.y + s * it.k * 0.04, s * it.k * 0.42, s * it.k * 0.11, 0, 0, Math.PI * 2);
       ctx.fill();
     }
-    varied(ctx, it.x, it.y, pieceLook(it.kind, rand), () => drawDecor(ctx, it.kind, it.x, it.y, s * it.k, rand));
+    varied(ctx, it.x, it.y, pieceLook(it.kind, rand), s * it.k, (c) => drawDecor(c, it.kind, it.x, it.y, s * it.k, rand));
   }
 }
 
