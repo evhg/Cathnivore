@@ -6,7 +6,8 @@ test('Cath suggests exactly one move in round 1, and the Settings toggle hides i
   await page.getByText('Quick Game').click()
   await page.getByRole('button', { name: 'Start' }).click()
   await expect(page.locator('.game')).toBeVisible()
-  await expect(page.locator(':is(.actions, .table-hand) [data-suggested]')).toHaveCount(1, { timeout: 10_000 })
+  // the Saving-for card marks Cath's pick with data-suggested too (.goal-feature); this counts suggested moves
+  await expect(page.locator(':is(.actions, .table-hand) [data-suggested]:not(.goal-feature)')).toHaveCount(1, { timeout: 10_000 })
   await expect(page.locator(':is(.actions, .table-hand) [data-suggested] .suggest-leaf')).toHaveCount(1)
   await expect(page.getByTestId('suggest-line')).toContainText('Cath:')
   if (testInfo.project.name === 'phone') {
@@ -35,8 +36,8 @@ test('Cath suggests exactly one move in round 1, and the Settings toggle hides i
   const resume = page.getByRole('button', { name: /Continue|Resume/ })
   if (await resume.first().isVisible().catch(() => false)) await resume.first().click()
   await expect(page.locator('.game')).toBeVisible()
-  await expect(page.locator(':is(.actions, .table-hand) .action-item').first()).toBeVisible()
-  await expect(page.locator(':is(.actions, .table-hand) [data-suggested]')).toHaveCount(0)
+  await expect(page.locator(':is(.actions, .table-hand) .action-item').filter({ visible: true }).first()).toBeVisible()
+  await expect(page.locator(':is(.actions, .table-hand) [data-suggested]:not(.goal-feature)')).toHaveCount(0)
   await expect(page.getByTestId('suggest-line')).toHaveCount(0)
 })
 

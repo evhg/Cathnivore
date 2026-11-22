@@ -1,0 +1,227 @@
+diff --git a/e2e/board-scale.spec.ts b/e2e/board-scale.spec.ts
+index 2144fdb0..e0ac4974 100644
+--- a/e2e/board-scale.spec.ts
++++ b/e2e/board-scale.spec.ts
+@@ -39,8 +39,15 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
+     // its target line), so the head is one row of 78 px or less instead of two rows (about 133 px).
+     // Plan item 495 slice 2: from 1240 px the fold is the same one row, so the board takes the status bar's row back
+     // at 1280x800 too (hexes 16% -> 22% of the window).
+-    expect(r.head, at).toBeLessThanOrEqual(78)
+-    expect(Math.abs(r.boardTop - r.headTop), `${at} readings beside the papers`).toBeLessThan(12)
++    // Plan item 632: at 1440x900 the papers stand as a stack in the cloth's top-right corner and the map runs from the
++    // table's top edge (the hexes 760 px+ wide, below), so the head row is only the readings and Pell.
++    if (width < 1400) {
++      expect(r.head, at).toBeLessThanOrEqual(78)
++      expect(Math.abs(r.boardTop - r.headTop), `${at} readings beside the papers`).toBeLessThan(12)
++    } else {
++      expect(r.r - r.l, `${at} the board's width`).toBeGreaterThanOrEqual(718)
++      expect(r.table.y, `${at} the cloth from the table's top`).toBeLessThan(20)
++    }
+     expect(((r.r - r.l) * (r.b - r.t)) / (width * height), `${at} hex board's share of the window`).toBeGreaterThanOrEqual(width >= 1440 ? 0.24 : 0.21)
+     expect(r.w, at).toBeGreaterThanOrEqual(minW)
+     expect(r.h, at).toBeGreaterThanOrEqual(0.9)
+diff --git a/e2e/rival.spec.ts b/e2e/rival.spec.ts
+index 9ed42627..5c445568 100644
+--- a/e2e/rival.spec.ts
++++ b/e2e/rival.spec.ts
+@@ -19,9 +19,18 @@ test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testIn
+     const cath = (await page.locator('.table-cath').boundingBox())!
+     const papers = (await page.locator('.plan-strip').boundingBox())!
+     // Opposite Cath: right of the papers, and she is at the row's other end (plan item 118: at the table's left edge).
+-    expect(papers.x + papers.width).toBeLessThanOrEqual(r.x + 1)
+-    expect(cath.x + cath.width).toBeLessThan(papers.x + papers.width / 2)
+-    expect(Math.abs(r.y + r.height / 2 - (papers.y + papers.height / 2))).toBeLessThan(40)
++    if (width < 1400) {
++      expect(papers.x + papers.width).toBeLessThanOrEqual(r.x + 1)
++      expect(cath.x + cath.width).toBeLessThan(papers.x + papers.width / 2)
++      expect(Math.abs(r.y + r.height / 2 - (papers.y + papers.height / 2))).toBeLessThan(40)
++    } else {
++      // Plan item 632: at 1440x900 he sits in the cloth's top-left corner beside the readings, over Cath's head; the
++      // papers stand as a stack in the top-right corner.
++      const board = (await page.locator('.market-board').boundingBox())!
++      expect(r.x).toBeGreaterThanOrEqual(board.x + board.width)
++      expect(r.y + r.height).toBeLessThanOrEqual(cath.y + 1)
++      expect(papers.x).toBeGreaterThan(r.x + r.width + 300)
++    }
+     expect(r.x + r.width).toBeLessThanOrEqual(width)
+     expect(['smug', 'gloat', 'rattled']).toContain(await rival.getAttribute('data-mood'))
+     await expect(rival.getByRole('img', { name: /Graham Pell/ })).toBeVisible()
+diff --git a/e2e/suggest-move.spec.ts b/e2e/suggest-move.spec.ts
+index aac81cd5..20c9f637 100644
+--- a/e2e/suggest-move.spec.ts
++++ b/e2e/suggest-move.spec.ts
+@@ -81,7 +81,9 @@ test('desktop: one Cath voice, from her table bubble', async ({ page }, testInfo
+     await expect(page.locator('.table-cath [data-testid=suggest-line]')).toHaveCount(1)
+     await expect(page.locator('.actions-sheet .frame-title')).toHaveCount(0)
+     const [bubble, strip] = await Promise.all([page.locator('.table-cath-line').boundingBox(), page.locator('.plan-strip').first().boundingBox()])
+-    expect(bubble && strip && bubble.y >= strip.y + strip.height - 1, `${width}x${height}: bubble below the plan strip`).toBe(true)
++    // Plan item 632: from 1400x860 the papers stand in the cloth's top-right corner, across the board from her bubble.
++    if (width >= 1400 && height >= 860) expect(bubble && strip && bubble.x + bubble.width < strip.x - 300, `${width}x${height}: bubble clear of the papers`).toBe(true)
++    else expect(bubble && strip && bubble.y >= strip.y + strip.height - 1, `${width}x${height}: bubble below the plan strip`).toBe(true)
+     await page.evaluate(() => localStorage.clear())
+   }
+ })
+diff --git a/src/styles/table.css b/src/styles/table.css
+index 25c26c63..3e864e8d 100644
+--- a/src/styles/table.css
++++ b/src/styles/table.css
+@@ -3438,7 +3438,7 @@ html.no-animations .table-cath-line { animation: none; }
+   /* One row: the picture is the top 60% of the face, edge to edge (the card's own corners clip it). */
+   .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 72px; }
+   /* a name that wouldn't fit under the 60% window (measured in Game.tsx) gives it back 4 px */
+-  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 64px; }
++  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 58px; }
+   .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
+   .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-card-draggable { position: relative; padding-top: 0; padding-bottom: 5px; gap: 3px; border-width: 3px; }
+   /* the picture already says what is sold: the band names the count alone (the accessible name keeps the word) */
+@@ -3469,7 +3469,7 @@ html.no-animations .table-cath-line { animation: none; }
+ }
+ @media (min-width: 1240px) and (min-height: 861px) {
+   .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 80px; }
+-  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 72px; }
++  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 64px; }
+ }
+ @media (min-width: 1240px) and (min-height: 760px) {
+   /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
+@@ -6709,3 +6709,45 @@ html.no-animations .table-cath-figure { animation: none; }
+       0 0 0 4px var(--wood), 0 0 0 6px var(--wood-lo), 0 8px 18px rgb(var(--shadow-ink) / .22);
+   }
+ }
++
++/* Plan item 632: on a big desktop the board is the hero. Tomorrow's papers stand as a stack in the cloth's top-right
++   corner (beside Saltmarsh, over Rivermead's shoulder) and Pell beside the Market Board in its top-left, so the map
++   runs from the table's top edge to the hand and the hexes (sized by height) grow into it. */
++@media (min-width: 1400px) and (min-height: 860px) {
++  .game:has(.table-head.with-table-cath) { position: relative; }
++  .game:has(.table-head.with-table-cath) .map-wrap { grid-row: 1 / 3; }
++  .game:has(.table-head.with-table-cath) .market-board { z-index: var(--z-raised); align-self: start; margin-top: 4px; }
++  .game:has(.table-head.with-table-cath) .table-head {
++    grid-row: 1 / 3;
++    align-self: start;
++    justify-self: end;
++    z-index: var(--z-raised);
++    display: block;
++    width: 206px;
++    margin: 8px 66px 0 0;
++    padding: 0;
++  }
++  .game:has(.table-head.with-table-cath) .table-head .plan-strip {
++    grid-template-columns: minmax(0, 1fr);
++    gap: 7px;
++    padding: 4px 3px 3px;
++  }
++  .game:has(.table-head.with-table-cath) .table-head .plan-strip-item { rotate: none; }
++  .game:has(.table-head.with-table-cath) .plan-strip[data-corp]::before { right: -6px; border-radius: 16px; }
++  .game:has(.table-head.with-table-cath) .table-head .rival {
++    position: absolute;
++    top: 6px;
++    left: 222px;
++    margin: 0;
++  }
++  .game:has(.table-head.with-table-cath) .event-ticket { top: 82px; }
++  .game-layout .game:has(.table-head.with-table-cath) .map-wrap > .map-key { top: 300px; }
++  /* the plaque's tab names the plan under the stack, inside its width */
++  .game:has(.table-head.with-table-cath) .table-head .plan-plaque-tab { max-width: 100%; gap: 5px; padding-inline: 4px; font-size: .8125rem; letter-spacing: .01em; overflow: hidden; }
++  .game:has(.table-head.with-table-cath) .table-head .plan-plaque-tab > * { letter-spacing: inherit; }
++  /* her bubble keeps clear of Brindle Hills' left edge */
++  .game:has(.table-head.with-table-cath) .table-cath-line { margin-right: 14px; }
++  /* she stands clear of Brindle Hills' left edge (the board's box reaches 533 px at 1440x900) */
++  .game:has(.table-head.with-table-cath) .table-cath { width: 192px; }
++  .game:has(.table-head.with-table-cath) .table-cath-figure :is(.cath-art, svg) { width: 212px; }
++}
+diff --git a/src/ui/Game.tsx b/src/ui/Game.tsx
+index 22d5062b..dd0b46d5 100644
+--- a/src/ui/Game.tsx
++++ b/src/ui/Game.tsx
+@@ -4290,44 +4290,54 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
+   const ref = useRef<HTMLSpanElement>(null)
+   useLayoutEffect(() => {
+     const el = ref.current
+-    const parent = el?.offsetParent
+-    if (!el || !parent) return
+-    const at = parent.getBoundingClientRect()
+-    const dockLine = el.closest('.cath-dock')?.querySelector('.cath-dock-line')
+-    if (el.closest('.counter-bench') && dockLine) {
+-      const t = dockLine.getBoundingClientRect()
+-      // Custom properties, read by table.css's [data-placed]: the CSP suite allows only those on a style attribute.
+-      el.style.setProperty('--pl-left', `${t.left - at.left}px`)
+-      el.style.setProperty('--pl-top', `${t.top - at.top}px`)
+-      el.style.setProperty('--pl-w', `${t.width}px`)
+-      el.style.setProperty('--pl-h', `${t.height}px`)
+-      el.dataset.placed = 'dock'
+-      // Item 586: the tail can only reach the nearest bust; when the far one speaks it goes, and their name and lit
+-      // bust say who it is (the tail pointed Tomas's line at Mara).
+-      const nearest = el.closest('.counter-bench')?.querySelector('[data-table-producer]')
+-      el.dataset.tail = nearest?.getAttribute('data-table-producer') === reply.producer ? 'near' : 'none'
+-      return
+-    }
+-    const map = el.closest('.map-wrap')?.getBoundingClientRect()
+-    const me = el.getBoundingClientRect()
+-    if (!map) return
+-    let clear = map.left + 8
+-    for (const hex of document.querySelectorAll('.region-hex polygon:first-of-type')) {
+-      const h = hex.getBoundingClientRect()
+-      if (h.width > 0 && h.top < me.bottom && me.top < h.bottom) clear = Math.max(clear, h.right + 8)
++    if (!el) return
++    // Plan item 632: placed again once its entrance (a scale) has settled: measured mid-entrance, a bubble beside a
++    // grown board could slide too little and land on Rivermead's edge.
++    const place = () => {
++      const parent = el.offsetParent
++      if (!parent) return
++      const at = parent.getBoundingClientRect()
++      const dockLine = el.closest('.cath-dock')?.querySelector('.cath-dock-line')
++      if (el.closest('.counter-bench') && dockLine) {
++        const t = dockLine.getBoundingClientRect()
++        // Custom properties, read by table.css's [data-placed]: the CSP suite allows only those on a style attribute.
++        el.style.setProperty('--pl-left', `${t.left - at.left}px`)
++        el.style.setProperty('--pl-top', `${t.top - at.top}px`)
++        el.style.setProperty('--pl-w', `${t.width}px`)
++        el.style.setProperty('--pl-h', `${t.height}px`)
++        el.dataset.placed = 'dock'
++        // Item 586: the tail can only reach the nearest bust; when the far one speaks it goes, and their name and lit
++        // bust say who it is (the tail pointed Tomas's line at Mara).
++        const nearest = el.closest('.counter-bench')?.querySelector('[data-table-producer]')
++        el.dataset.tail = nearest?.getAttribute('data-table-producer') === reply.producer ? 'near' : 'none'
++        return
++      }
++      const map = el.closest('.map-wrap')?.getBoundingClientRect()
++      const me = el.getBoundingClientRect()
++      if (!map) return
++      let clear = map.left + 8
++      for (const hex of document.querySelectorAll('.region-hex polygon')) {
++        const h = hex.getBoundingClientRect()
++        if (h.width > 0 && h.top < me.bottom && me.top < h.bottom) clear = Math.max(clear, h.right + 8)
++      }
++      const room = map.right - 8 - clear
++      // Plan item 632: the grown board leaves about 140 px right of Rivermead at 1440x900; a narrow bubble there beats one
++      // over the hexes.
++      if (room < 128) return
++      const width = Math.min(240, room)
++      // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
++      const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
++      el.style.setProperty('--pl-left', `${left - at.left}px`)
++      el.style.setProperty('--pl-w', `${width}px`)
++      // Item 553: the tail points down at whoever is speaking, wherever the slide left the bubble (it sat fixed at the
++      // bubble's right, so a slid bubble pointed at the other producer).
++      const seat = el.parentElement?.getBoundingClientRect()
++      if (seat) el.style.setProperty('--pl-tail', `${Math.min(Math.max(seat.left + seat.width / 2 - left - 7, 14), width - 28)}px`)
++      el.dataset.placed = 'map'
+     }
+-    const room = map.right - 8 - clear
+-    if (room < 150) return
+-    const width = Math.min(240, room)
+-    // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
+-    const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
+-    el.style.setProperty('--pl-left', `${left - at.left}px`)
+-    el.style.setProperty('--pl-w', `${width}px`)
+-    // Item 553: the tail points down at whoever is speaking, wherever the slide left the bubble (it sat fixed at the
+-    // bubble's right, so a slid bubble pointed at the other producer).
+-    const seat = el.parentElement?.getBoundingClientRect()
+-    if (seat) el.style.setProperty('--pl-tail', `${Math.min(Math.max(seat.left + seat.width / 2 - left - 7, 14), width - 28)}px`)
+-    el.dataset.placed = 'map'
++    place()
++    el.addEventListener('animationend', place)
++    return () => el.removeEventListener('animationend', place)
+   }, [reply])
+   return (
+     <span ref={ref} className={`producer-line pc-${reply.producer}`} data-producer-line={reply.producer} data-beat={reply.beat} aria-hidden="true">
