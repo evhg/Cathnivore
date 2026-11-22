@@ -6119,7 +6119,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** every card shows a 44 px+ tappable strip with its title at 12 px+ unclipped (e2e); no title covered by another card; the lift eases in 180 ms (none under reduced motion); phone hand specs pass; shot P (and D unchanged).
 - **Size:** 2
 
-## 636. [ ] Runnel: dry fields that bloom when the water reaches them
+## 636. [ ] Runnel: dry fields that bloom when the water reaches them *(lane B, in progress)*
 *(planned 2026-11-22 03:25, lane A, plan1122a critique)*
 - **Why:** `plan1122a/runnel-solved-D` 470-1330 x 40-750: every tile is the same pale green with the same tufts, the crops no bigger than the decoration, and a solved board looks like an unsolved one (`runnel-D`). VISION 4, 2.
 - **Build:** `games/runnel/src/` tile art and solve choreography: fields drawn dry (cracked ochre, a wilted sprout) until watered; watered, the crop grows in (400-900 ms) with a splash ring; at the solve a staggered bloom runs from the spring outward. Reduced motion: fades only.
