@@ -5655,3 +5655,31 @@ body:has(#dlg-pause[open]) .paused-note {
     box-shadow: 0 1px 1px var(--shade-a35);
   }
 }
+/* Plan item 628 (lane B): four to a row the tower is drawn at 56 px, anchored at the packet's left so the price keeps
+   the top-right corner and the 'For' tag the right foot beside it; the price row's padding above the picture goes
+   (the price hangs over the picture's corner), so the packet keeps its height. */
+@media (min-width: 900px) and (min-height: 861px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower { padding-top: 0; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img {
+    align-self: flex-start;
+    width: 56px;
+    height: 56px;
+    margin: -1px 0 -4px 1px;
+  }
+}
+/* (with the tower at 56 px the band holds one line, every name on it: item 211's two-line band was for names that
+   broke, and four to a row each fits at the band's width once the tower no longer needs the price row above it) */
+@media (min-width: 900px) and (min-height: 861px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
+    min-height: 0;
+    white-space: nowrap;
+    hyphens: manual;
+    letter-spacing: -0.015em;
+  }
+}
+/* (the price and 'For' tags narrower four to a row, so they stand beside the 56 px tower, not over it) */
+@media (min-width: 900px) and (min-height: 861px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .build-cost { top: 2px; right: 2px; gap: 1px; padding: 0 3px 0 4px; font-size: var(--fs-label); }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .build-cost::before { width: 8px; height: 8px; margin-right: 1px; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-answers { gap: 1px; padding: 0 3px 0 4px; }
+}
