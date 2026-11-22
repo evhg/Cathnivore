@@ -6249,14 +6249,14 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** her face's box centred between 30% and 55% of the height at 390x844 (e2e on the poster frame); no menu box over her face; every item still 44 px+ and keyboard-ordered; cathode front specs pass; posters re-rendered; shot P (D unchanged).
 - **Size:** 2
 
-## 653. [ ] Runnel: a new player's first week climbs to the daily
+## 653. [ ] Runnel: a new player's first week climbs to the daily *(lane A, in progress)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique)*
 - **Why:** `plan1122d/runnel-D` 55-330 x 685-815: after the three-tap lesson the 'Up next today' card sends a new player to Daily #57, marked 'Hardest' (a 37-tile board after a 4-tile lesson). VISION 3, 4.
 - **Build:** `games/runnel/src/` (lesson.ts, main.ts): after the lesson, three short boards that grow (about 7, 12, 19 tiles), each with Cath's one-line lesson and a small bloom on solving, then the daily unlocks with Cath's line on how hard today's is; a returning player (any result saved) skips it; it can be skipped.
 - **Accept:** a fresh save sees board 1 of the climb after the lesson, not the daily (e2e); a save with a result goes straight to the daily; each climb board solvable (unit test on the generator); runnel lesson/win specs pass; shot P and D.
 - **Size:** 2
 
-## 654. [ ] Cathnivore: the '?' on the board says what it is *(lane A, in progress)*
+## 654. [x] Cathnivore: the '?' on the board says what it is *(done 2026-11-22 14:15, lane A: the '?' is Candor's Doubt; it is now drawn as Candor's glossy 'study' leaflet on a chrome easel (dog-eared sheet, cyan masthead, a printed '?', fine print; mostly paper, so quieter than the stalls; its own outline, silhouette 'leaflet'). On the game board each Doubt is a control named '2 Doubt in Saltmarsh: Candor's leaflet...' and opens a one-line card (`PiecePeek`, the tooltip tag's look) on tap, hover or keyboard focus, saying what it costs (Public Trust each Squeeze) and that Rebut clears it; not while a card aims at its region (the tap picks the region) or in the tutorial. A phone tap on a Doubt opens its card, not the close-up. board-doubt (new), board-tokens, tooltip and 10 board specs P and D; piece-looks unit. Shots scratchpad q654a, light and dark)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique; check what the '?' means in the rules first)*
 - **Why:** `plan1122d/cath-game-D` (1025-1090 x 100-180 and three more; P too): four cyan '?' bubbles as loud as the stalls, with no label or key near them. VISION 2, 8.
 - **Build:** `src/ui/Map.tsx` piece art: the '?' drawn as the thing it is (a covered crate, or a sealed envelope stamped by Hollowell), and a tap or hover peeks a one-line card: what it hides and which action reveals it.
