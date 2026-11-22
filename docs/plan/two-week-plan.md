@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-22 07:28 UTC
-
 
 
 
@@ -6188,5 +6186,51 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Cathnivore D (`cath-game-D` 40-300 x 395-505): the Saving-for art (Wagon Wheel Press) still a grey line sketch after item 632 slice 1: check its vignette kind and the suggested card's filter.
 - Hedgerow act map D (`hedge-menu-D` 1145-1265 x 620-650, 735-770): vehicle names under the trait badges; 'Cargo quadcopter' edge to edge in its chip.
 - NIGHT SHIFT sideways (`ns-street-P` 515-650 x 12-40): 'THE PIN' and its bar against the compass's NE mark.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 645. [ ] Cathnivore: the players' own wooden pieces on the board
+*(planned 2026-11-22 07:45, lane B, plan1122c critique)*
+- **Why:** `plan1122c/cath-game-D` 520-1360 x 60-740 (also `cath-game-P` 0-390 x 130-470, `cath-setup-D`): every hex carries the same flat orange Hollowell outlet icon (nine on the board, often two a hex) and four identical blue '?' bubbles; the players show only as producer portraits in arches, so the table reads as an icon grid Hollowell owns. VISION 2 and the art direction's wood-and-paper versus glossy plastic.
+- **Build:** `src/ui/Map.tsx` and its piece art (`pieceArt`/landmark kits): the players' side drawn as wooden pieces on the plots they hold (a stall, crates, a producer's token) that grow as their engine does; Hollowell's outlets one glossy shape per stage (not the same icon twice in a hex); a scouted '?' a face-down card on its plot; a freed region swaps its plastic for wood at once (a short swap, a fade under reduced motion).
+- **Accept:** at the start of a quick game the players' pieces show on 2+ regions (e2e); no hex shows two identical outlet icons; each piece kind tested in `tests/piece-looks.test.ts`; board/piece specs pass; P and D shot, light and dark.
+- **Size:** 2
+
+## 646. [ ] Runnel: every tile reads as what it is from across the room
+*(planned 2026-11-22 07:45, lane B, plan1122c critique; item 636 grew the crops, this is the tiles and the water)*
+- **Why:** `plan1122c/runnel-solved-D` 590-1210 x 40-600 (P 0-390 x 240-600): ~37 near-identical pale hexes; the water is a thin blue dashed line that reads as rail track; channel tiles, fields and the spring barely differ. VISION 2, 6.
+- **Build:** `games/runnel/src/board.ts`, styles: water a ribbon about 3x today's width with banks and a slow glint that runs downstream (reduced motion: still); channel tiles edged in stone or timber, fields raised plots with a soil rim, the spring a small stone well; dry and wet keep item 636's contrast.
+- **Accept:** the water's stroke 3x+ today's at D; the three tile kinds differ by ΔE 15+ on their faces (e2e sample); the glint off under reduced motion; runnel board/water/tiles/bloom specs pass; key art re-shot; P and D unsolved and solved.
+- **Size:** 2
+
+## 647. [ ] Hedgerow 3D: Cath and the fleet at the field's quality
+*(planned 2026-11-22 07:45, lane B, plan1122c critique)*
+- **Why:** `plan1122c/hedge-l21-3d-D` 145-235 x 490-625: field Cath is a stiff low-poly doll (no jacket shape, no hair waves, no face) beside the panel's drawn Cath (1130-1200 x 375-540); the vans (230-300 x 210-400) are plain pink boxes. VISION 5, the Cath bible.
+- **Build:** `games/hedgerow/src/render3d/` Cath and vehicle meshes: Cath to the bible at field scale (olive jacket's shape and lapels, long centre-parted waved hair, the leaf clip, a face read from the camera) keeping item 310's poses; the fleet in Hollowell's glossy livery with a branded side, wheels and a bounce on the road.
+- **Accept:** Cath's silhouette has jacket, hair and arms read at 1440x900 (e2e frame sample vs today's); vehicles carry the logo panel; draw calls and triangles in budget; hedgerow-cath3d/3dframe specs pass; key art re-shot; P and D.
+- **Size:** 2
+
+## 648. [ ] /games/: the slate names the collection and today's pick, the stall's back dressed
+*(planned 2026-11-22 07:45, lane B, plan1122c critique)*
+- **Why:** `plan1122c/games-D` 895-1260 x 180-250: the slate's biggest word is 'Cathnivore', the same as the first card's title, while its quote and buttons pitch Runnel; above the counter 300-860 x 60-300 is empty dark awning but for Cath. VISION 1.
+- **Build:** `site/src/` hero: the slate's headline names the collection ('Games from Marrow', 'Cathnivore' as the brand line) and today's pick as its lede; the stall's back hung with the four games' wares or Bea's drawings, kept off Cath and the slate.
+- **Accept:** the slate's h1 is not any one game's name; no empty band over 200 px in the stall's back at 1440x900; site specs pass; key art re-shot if the frame changes; P and D.
+- **Size:** 1
+
+## 649. [ ] NIGHT SHIFT sideways phone: a compact noir HUD
+*(planned 2026-11-22 07:45, lane B, plan1122c critique)*
+- **Why:** `plan1122c/ns-street-P` (844x390) 0-232 x 0-230: the case note, vitals and tutorial line stack into a quarter of the street; 'THE PIN' (515-650 x 10-40) sits far from the weapon, against the compass. VISION 2, 6.
+- **Build:** `games/cathode/src/ui/` HUD at a sideways phone: vitals a slim bar by the move stick, the case line a 2 s title card that fades, the hint a short chip by the stick, the weapon's name by FIRE.
+- **Accept:** HUD boxes cover 12% or less of the frame at 844x390 (e2e); nothing under 13 px (`var(--u)` sizes); cathode HUD and type specs pass; shot sideways P and D (D unchanged).
+- **Size:** 1
+
+## 650. [ ] The bugs from the 2026-11-22 07:40 critique, fixed as one batch
+*(planned 2026-11-22 07:45, lane B, plan1122c critique; check each on today's build first)*
+- Plan shots: Hedgerow's mid-level shots (`hedge-l34-2d-D` round 17, l21 round 11) show a bare sandbox field and Cath still saying 'Build a Scarecrow... Tap a plot': stage a real mid-battle in `scripts/plan-shots.mjs` (towers placed via `window.hedgerow.place`, a wave running), and stop that opening hint once past the opening rounds if it is the game's, not the hook's.
+- Hedgerow shop D (`hedge-l34-2d-D` 1180-1320 x 118-135, 1085-1320 x 215-230): the 'For' tags over the tower art after item 628's 56 px towers.
+- Cathnivore phone hand (`cath-game-P` 350-390 x 615-775): the fourth card cut with no fade to say the row scrolls (item 635's swiped row).
+- Hedgerow 3D D (`hedge-l21-3d-D` 35-225 x 183-208): the depot's '216 NEXT' plate over its roof.
+- Runnel D (`runnel-solved-D` 740-1060 x 625-632): a stray green bar under the board; and 'The month' tab's label and summary misaligned (33-330 x 517-570).
+- Cathnivore setup D (`cath-setup-D` 105-365 x 660-745): 'Cath's pins 0 of 3' as three empty dashed circles reading as placeholders.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
