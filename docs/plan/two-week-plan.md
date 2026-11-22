@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-22 05:31 UTC
-
 
 
 
@@ -6143,5 +6141,50 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Runnel solved D (`runnel-solved-D` 480-1180 x 748-890): the result card still covers the bottom hex row; 'Solved. Next in 20h 45m.' (85-280 x 848-882) floats below the notebook panel.
 - NIGHT SHIFT street D (`ns-street-D` 595-860 x 175-620): the briefing map's labels ~7-8 px italic, unreadable.
 - NIGHT SHIFT street L (`ns-street-P` 20-460 x 120-290, 2x): the health/ARM HUD has no scrim (a shop sign shows through); the tutorial line bare on the scene. Also portfolio D 100-625 x 885-900: the 'Live: last shipped' line cut at the fold.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 639. [ ] NIGHT SHIFT: the street's first frame staged as an arrival
+*(planned 2026-11-22 05:45, lane B, plan1122b critique; Cath's own 3D face and wardrobe stay items 319 and 543, which the same critique ranked first: ns-title-D 930-1110 x 260-480)*
+- **Why:** `plan1122b/ns-street-D` 380-1000 x 300-700 (P 230-560 x 150-300 at 844x390): the Drowned Market's first playable frame is a blurred black corridor, one silhouette (410-470 x 420-640), no focal point; the baton fills the right third and the only instruction is a text chip. VISION 1, 4.
+- **Build:** `games/cathode/src/` the market district's opening set and session start: the first stretch lit and dressed (stalls with wares under awnings, steam, puddles catching the neon, a few figures under cover), the first mark lit at the street's end with a world-space objective marker, a 1.5-2 s dolly-in before control, the weapon lowered until the first input.
+- **Accept:** at 1440x900 the frame's mean luminance in its middle third 1.5x today's (scripts/cathode-perf-style sample), the objective marker on screen at start (e2e), the weapon under 20% of the frame until input; draw calls within `cathode-perf` budgets; cathode street/combat specs pass; shot P (sideways) and D.
+- **Size:** 2
+
+## 640. [ ] /games/: the stall's counter front is today's board
+*(planned 2026-11-22 05:45, lane B, plan1122b critique)*
+- **Why:** `plan1122b/games-D` 300-840 x 310-490: the counter front is bare planks with one 'FRESH · FREE' sign, and the wares on it (item 631, 548-842 x 245-310) are 75 px tiles repeating the cards below. VISION 1, 2.
+- **Build:** `site/src/` booth (booth.ts, the today-board module): the counter front a chalk slate of today's dailies: each game's daily in chalk (Cathnivore's daily, Runnel #N and par, Hedgerow's daily name, NIGHT SHIFT's next name), a pennant per day of the streak, a tick when done (localStorage, as the today board reads it); the wares grow to ~120 px boxed games she presents, or go if the slate says it better.
+- **Accept:** the slate's lines are links to each daily (e2e:site); text 14 px+ at AA on the slate; no bare plank stretch over 200 px at 1440x900; games-stall/todayboard specs pass; key art re-shot if the hero frame changes; shot P and D.
+- **Size:** 1
+
+## 641. [ ] Hedgerow 2D desktop: the field's scenery runs to the window's edges
+*(planned 2026-11-22 05:45, lane B, plan1122b critique)*
+- **Why:** `plan1122b/hedge-l21-2d-D`: the field fills only 150-875 of 1440, dark felt either side (0-150, 1290-1440), and the Hollowell depot hangs off the field's edge over the sea (170-320 x 410-550); the 3D view fills the width. VISION 2.
+- **Build:** `games/hedgerow/src/render.ts`, terrain: past the buildable grid the level's own scenery carries on to the canvas edges (sea and beach huts, marsh, lanes leaving, hedges), non-buildable and dimmer; each depot on a drawn pier or yard inside the scene.
+- **Accept:** no felt (the panel colour) in the canvas at 1440x900 or 1280x800 for levels 3, 21 and 34 (pixel sample); the depot's box inside drawn ground; plots and paths unchanged (hedgerow 2D specs pass); key art re-shot (`render.ts` is a keyart source); shot D and P.
+- **Size:** 2
+
+## 642. [ ] Runnel desktop: the rail folds to one page, the solve's payoff takes the room
+*(planned 2026-11-22 05:45, lane B, plan1122b critique)*
+- **Why:** `plan1122b/runnel-solved-D` 16-346 x 290-835: the rail is a dense stats sheet (almanac, three stat boxes, 28 mostly empty day squares, the week, the garden) beside the board, and after a solve the result strip still sits over the board's foot (480-1175 x 750-890). VISION 1, 2, 4.
+- **Build:** `games/runnel/src/main.ts`, styles: the rail at rest shows today's page only (the date, the sky, Bea's note, the streak), its stats and calendar folded behind an 'Almanac' tab that opens it; on a solve the result card takes the rail's column (not the board's foot) and the board stays whole with the water's run into Bea's garden in view.
+- **Accept:** at 1440x900 the result's box meets neither the board's nor the garden's (e2e); the rail at rest 50% shorter; the almanac opens by keyboard; runnel win/garden/almanac specs pass; shot D and P (P unchanged).
+- **Size:** 2
+
+## 643. [ ] Cathnivore Quick Game desktop: one built stall for the setup
+*(planned 2026-11-22 05:45, lane B, plan1122b critique; item 619 closed the card overlap by decision, the shot argues it again)*
+- **Why:** `plan1122b/cath-setup-D` 1050-1372 x 55-890: an awning and 'Cath's stall' sign float over ~120 px of empty cream (150-270), and the 'This week at the market' card covers Cath's arm and chest (1000-1140 x 570-775). VISION 1, 5.
+- **Build:** `src/ui/` setup (SetupScreen and its css): one stall built from the awning down: posts to a counter, Cath behind it from the waist, the week's card pinned to a post beside her, Start as the counter's till.
+- **Accept:** no empty band over 60 px inside the stall; the week card meets no part of Cath (e2e); Start 44 px+, keyboard order unchanged; setup specs pass; shot D (P unchanged).
+- **Size:** 1
+
+## 644. [ ] The bugs from the 2026-11-22 05:40 critique, fixed as one batch
+*(planned 2026-11-22 05:45, lane B, plan1122b critique; check each on today's build first)*
+- Cathnivore P (`cath-game-P` 85-255 x 480-552): Cath's line drawn over a second, translucent bubble (Tomas's), neither readable.
+- Hedgerow P (`hedge-l34-2d-P` 135-285 x 755-780): packet tops poke out between Cath's tip bubble and the dock.
+- Cathnivore D (`cath-game-D` 40-300 x 395-505): the Saving-for art (Wagon Wheel Press) still a grey line sketch after item 632 slice 1: check its vignette kind and the suggested card's filter.
+- Hedgerow act map D (`hedge-menu-D` 1145-1265 x 620-650, 735-770): vehicle names under the trait badges; 'Cargo quadcopter' edge to edge in its chip.
+- NIGHT SHIFT sideways (`ns-street-P` 515-650 x 12-40): 'THE PIN' and its bar against the compass's NE mark.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
