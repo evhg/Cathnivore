@@ -6151,7 +6151,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 the frame's mean luminance in its middle third 1.5x today's (scripts/cathode-perf-style sample), the objective marker on screen at start (e2e), the weapon under 20% of the frame until input; draw calls within `cathode-perf` budgets; cathode street/combat specs pass; shot P (sideways) and D.
 - **Size:** 2
 
-## 640. [ ] /games/: the stall's counter front is today's board
+## 640. [ ] /games/: the stall's counter front is today's board *(lane A, in progress)*
 *(planned 2026-11-22 05:45, lane B, plan1122b critique)*
 - **Why:** `plan1122b/games-D` 300-840 x 310-490: the counter front is bare planks with one 'FRESH · FREE' sign, and the wares on it (item 631, 548-842 x 245-310) are 75 px tiles repeating the cards below. VISION 1, 2.
 - **Build:** `site/src/` booth (booth.ts, the today-board module): the counter front a chalk slate of today's dailies: each game's daily in chalk (Cathnivore's daily, Runnel #N and par, Hedgerow's daily name, NIGHT SHIFT's next name), a pennant per day of the streak, a tick when done (localStorage, as the today board reads it); the wares grow to ~120 px boxed games she presents, or go if the slate says it better.
