@@ -2407,6 +2407,8 @@ function markLessonCard(step: number): void {
     next.dataset.filled = '1'
     // Plan item 326: the day on its own line under "Up next" (no dot: the column is too narrow for one line, and a wrap left the dot dangling).
     next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next <span class="lc-next-day">${upNextDay(today)}</span></small><b>${upNextTitle(ui.hudTitle.textContent ?? '')}</b><span>${escapeText(boardSky(puzzle.seed).label)}</span></span>`
+    // Plan item 653: on a first visit three small warm-up fields come before the daily.
+    if (climbAfterLesson()) next.innerHTML = `<span class="lc-next-sky">${(document.getElementById('hud-sky')?.innerHTML ?? '').replace(/sk-g/g, 'sk-g-next')}</span><span><small>Up next</small><b><span class="unt-head">First&nbsp;fields</span></b><span>Three small fields, then today's daily</span></span>`
   }
   // Plan item 590: the field notes: a pencil tally of the taps and Cath's margin note for where the water is.
   const taps = Math.max(0, Math.min(LESSON_STEPS.length, step))
@@ -2415,7 +2417,7 @@ function markLessonCard(step: number): void {
   const of = document.getElementById('lc-fn-of')
   if (of) of.textContent = `${taps} of ${LESSON_STEPS.length}`
   const line = document.getElementById('lc-fn-line')
-  if (line) line.textContent = FIELD_NOTES[Math.min(FIELD_NOTES.length - 1, taps)] ?? ''
+  if (line) line.textContent = taps >= LESSON_STEPS.length && climbAfterLesson() ? 'Watered. Three small fields next.' : (FIELD_NOTES[Math.min(FIELD_NOTES.length - 1, taps)] ?? '')
   card.querySelectorAll<HTMLLIElement>('.lc-steps li').forEach((li, i) => {
     const done = i < step || step >= LESSON_STEPS.length
     li.classList.toggle('done', done)
