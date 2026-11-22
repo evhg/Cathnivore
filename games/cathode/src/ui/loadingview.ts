@@ -100,7 +100,7 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
       if (!i) d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
       else {
         const [px, py] = pts[i - 1]!;
-        const sag = Math.hypot(x - px, y - py) * 0.07;
+        const sag = Math.hypot(x - px, y - py) * 0.1;
         d += ` Q${((px + x) / 2).toFixed(1)} ${((py + y) / 2 + sag).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
       }
     });
@@ -126,6 +126,8 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     });
   addEventListener("resize", restring);
   requestAnimationFrame(restring);
+  // The prints drop into place over about a second: the string follows their pins until they land.
+  for (const e of [still, print, sheet]) e.addEventListener("animationend", restring);
 
   const corner = el("div", "ld-corner", root);
   el("p", "ld-list-h", corner, "The List");
