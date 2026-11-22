@@ -104,3 +104,26 @@ test('at D each game is a ware on the counter that links to it', async ({ page }
   await wares.nth(1).click()
   await expect(page).toHaveURL(/\/runnel\//)
 })
+
+// Plan item 640: at D the counter's front is today's board: a chalk slate whose lines link to each game's daily, its
+// type 14 px or more, inside the counter and clear of the words' board.
+for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+  test(`the counter's slate lists today's dailies as links at ${width}x${height}`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'site-desktop', 'the desktop stall')
+    await page.setViewportSize({ width, height })
+    await page.goto('/games/')
+    const slate = page.locator('.stall-slate')
+    await expect(slate).toBeVisible()
+    await expect(slate.locator('a')).toHaveCount(4)
+    expect(await slate.locator('a').evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['/cathnivore/', '/runnel/', '/hedgerow/', '/nightshift/'])
+    const m = await slate.evaluate((s) => {
+      const sizes = [...s.querySelectorAll<HTMLElement>('a, a small, .slate-head')].filter((e) => e.getClientRects().length).map((e) => parseFloat(getComputedStyle(e).fontSize))
+      const b = s.getBoundingClientRect()
+      const words = document.querySelector('.hero-text')!.getBoundingClientRect()
+      return { min: Math.min(...sizes), overflow: s.scrollWidth - s.clientWidth, right: b.right, wordsLeft: words.left }
+    })
+    expect(m.min).toBeGreaterThanOrEqual(14)
+    expect(m.overflow).toBeLessThanOrEqual(1)
+    expect(m.right).toBeLessThanOrEqual(m.wordsLeft)
+  })
+}

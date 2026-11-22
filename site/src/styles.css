@@ -1939,6 +1939,65 @@ body {
   .stall-ware img { display: block; width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: cover; border-radius: 2px; }
   .stall-ware span { font: 700 0.75rem / 1.15 var(--font-ui); letter-spacing: -0.01em; white-space: nowrap; }
   .hero-game[data-ware-lit] { translate: 0 -6px; }
+  /* Plan item 640: today's board chalked on the counter's front (booth.ts placeSlate): each daily a link, a tick once
+     played, the run in pennants; it fades in with the wares */
+  .stall-slate {
+    position: absolute;
+    left: var(--slate-l);
+    top: var(--slate-t);
+    width: var(--slate-w);
+    max-height: var(--slate-h);
+    z-index: var(--z-booth-host);
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    justify-content: space-between;
+    gap: 1px 16px;
+    box-sizing: border-box;
+    padding: 7px 14px 8px;
+    border-radius: 5px;
+    background:
+      radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--chalk) 7%, transparent), transparent 70%),
+      var(--slate);
+    box-shadow: 0 0 0 3px var(--wood-lo), 0 6px 12px var(--shadow-art);
+    color: var(--chalk);
+    opacity: 0;
+    transition: opacity 900ms var(--ease-out) 700ms;
+  }
+  .ready .stall-slate { opacity: 1; }
+  .stall-slate[hidden] { display: none; }
+  .slate-head {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 3px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--chalk) 35%, transparent);
+    font: 700 0.875rem / 1.2 var(--font-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .slate-run { display: inline-flex; align-items: center; gap: 6px; font: 600 0.875rem / 1.2 var(--font-ui); letter-spacing: 0; text-transform: none; color: var(--gold-hi); }
+  .slate-pennants { display: inline-flex; gap: 2px; }
+  .slate-pennants i { width: 8px; height: 10px; background: var(--gold); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .stall-slate a {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-height: 24px;
+    padding-block: 2px;
+    color: var(--chalk);
+    font: 600 0.9375rem / 1.25 var(--font-ui);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .stall-slate a small { font-size: 0.875rem; font-weight: 500; color: var(--cream-muted); }
+  /* a narrower counter (1280 px) drops the 'to play' notes: the open ring says it */
+  .stall-slate { container-type: inline-size; }
+  @container (max-width: 400px) { .stall-slate a small[data-todo] { display: none; } }
+  .stall-slate a[data-done] .slate-tick { color: var(--gold); }
+  .stall-slate a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .stall-slate a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
   .hero-counter { z-index: var(--z-booth-counter); filter: drop-shadow(0 -2px 6px var(--shadow-art)); }
   .hero[data-booth] .hero-text,
   .hero[data-booth] .hero-games,
@@ -1954,6 +2013,7 @@ body {
   .hero-booth,
   .hero-counter,
   .stall-wares,
+  .stall-slate,
   .stall-ware { transition: none; }
 }
 

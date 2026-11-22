@@ -4,6 +4,8 @@
 // desktop width) as two SVG layers: the back (posts, roof, board) behind Cath and the words, the counter in front of
 // her. Phones keep their own hero (item 238), so this draws nothing under 1200 px or on a portrait screen.
 
+import { todayBoard, type TodayBoard } from './cards'
+
 const NS = 'http://www.w3.org/2000/svg'
 const r = (n: number): string => String(Math.round(n * 10) / 10)
 
@@ -160,8 +162,15 @@ export function drawBooth(): void {
   // the chalk price board hung on the counter's front, beside her
   const sx = cr - c.r > 170 ? (c.r + cr) / 2 : (x1 + cr) / 2
   const sy = top + (rail - top) * 0.52
-  f += `<rect x="${r(sx - 66)}" y="${r(sy - 17)}" width="132" height="34" rx="4" fill="#2b3330" stroke="#6b3f24" stroke-width="3"/>`
-  f += `<text x="${r(sx)}" y="${r(sy + 6)}" fill="#f4efe2" font-family="Georgia,serif" font-size="17" font-weight="700" text-anchor="middle">FRESH · FREE</text>`
+  // Plan item 640: the counter's front carries today's board, a chalk slate of each game's daily (an HTML layer, so
+  // each line is a link), in place of the 132 px 'FRESH · FREE' sign; that sign stays only where the slate can't fit.
+  // across the front below her (the counter hides her from the hips), past the crates stacked at its left foot
+  const slateL = x1 + 112
+  const slateR = cr - 10
+  if (!placeSlate(hero, slateL, slateR, top + 24, rail - 8)) {
+    f += `<rect x="${r(sx - 66)}" y="${r(sy - 17)}" width="132" height="34" rx="4" fill="#2b3330" stroke="#6b3f24" stroke-width="3"/>`
+    f += `<text x="${r(sx)}" y="${r(sy + 6)}" fill="#f4efe2" font-family="Georgia,serif" font-size="17" font-weight="700" text-anchor="middle">FRESH · FREE</text>`
+  }
   // Plan item 470: a string of pennants across the counter's foot, so its front isn't a bare brown panel
   // (a critique read the stall's left half as empty): it sags from post to post under the price board.
   {
@@ -233,6 +242,44 @@ function placeWares(hero: HTMLElement, l: number, rgt: number, foot: number): vo
   wares.style.setProperty('--ware-l', `${r(l)}px`)
   wares.style.setProperty('--ware-w', `${r(w)}px`)
   wares.style.setProperty('--ware-t', `${r(foot)}px`)
+}
+
+let slate: HTMLElement | null = null
+
+/** Plan item 640: today's dailies chalked on the counter's front, each line a link to its game (where the daily
+ *  waits), a tick once today's is played, and the run in pennants. Returns false (and hides) where it can't fit. */
+function placeSlate(hero: HTMLElement, l: number, rgt: number, t: number, b: number): boolean {
+  if (!slate) {
+    slate = document.createElement('nav')
+    slate.className = 'stall-slate'
+    slate.setAttribute('aria-label', "Today's dailies")
+    hero.append(slate)
+  }
+  let board: TodayBoard | null = null
+  try {
+    board = todayBoard(localStorage, new Date())
+  } catch {
+    board = null
+  }
+  const names: Record<string, string> = { cathnivore: 'Daily Market', runnel: "Today's Runnel", hedgerow: 'Hedgerow daily', nightshift: 'NIGHT SHIFT' }
+  const order = ['cathnivore', 'runnel', 'hedgerow', 'nightshift']
+  const tags = order.map((g) => board?.tags.find((x) => x.game === g) ?? { game: g, done: false, label: '' })
+  const note = (x: { game: string; done: boolean; label: string }): string =>
+    x.game === 'nightshift' ? (x.label ? x.label.replace(' of ', '/').replace(' names crossed off', ' names') : 'next name') : x.done ? x.label.replace('Daily: best', 'best') : 'to play'
+  const run = board && board.streak > 0 ? `<span class="slate-run"><span class="slate-pennants" aria-hidden="true">${'<i></i>'.repeat(Math.min(7, board.streak))}</span>${board.streak}-day run</span>` : ''
+  slate.innerHTML =
+    `<span class="slate-head">Today at the market${run}</span>` +
+    tags.map((x) => `<a href="/${x.game}/" data-game="${x.game}"${x.done ? ' data-done' : ''}><span class="slate-tick" aria-hidden="true">${x.done ? '✓' : '○'}</span>${names[x.game]} <small${!x.done && x.game !== 'nightshift' ? ' data-todo' : ''}>${note(x)}</small></a>`).join('')
+  const w = rgt - l
+  const h = b - t
+  const fits = w >= 300 && h >= 84
+  slate.dataset.size = `${Math.round(w)}x${Math.round(h)}`
+  slate.hidden = !fits
+  slate.style.setProperty('--slate-l', `${r(l)}px`)
+  slate.style.setProperty('--slate-t', `${r(t)}px`)
+  slate.style.setProperty('--slate-w', `${r(Math.min(w, 460))}px`)
+  slate.style.setProperty('--slate-h', `${r(h)}px`)
+  return fits
 }
 
 /** Where the parts the stall is drawn from stand now (page px), to tell when a drawn stall has gone stale. */
