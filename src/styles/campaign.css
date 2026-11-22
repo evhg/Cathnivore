@@ -2066,3 +2066,12 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
 .cmp-ticket-play:hover { filter: brightness(1.08); }
 .cmp-ticket-play:focus-visible { outline: 3px solid var(--wheat); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .cmp-ticket { transition: none; } }
+/* Plan item 659: a 1280 desktop gives the rail a little less (440 -> 400 px) so Cath stands at the sheet's corner,
+   not on the island, and her line keeps to the sea beside her. */
+@media (min-width: 1100px) and (max-width: 1399px) and (min-height: 640px) {
+  .campaign.campaign-screen { grid-template-columns: minmax(0, 2.6fr) minmax(400px, 1fr); }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { width: 176px; }
+}
+@media (min-width: 1100px) and (min-height: 640px) {
+  .campaign.campaign-screen > .cmp-map { margin: 0; }
+}
