@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane B, 2026-11-22 13:25 UTC
-
 
 
 
@@ -6234,5 +6232,51 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - Hedgerow 3D D (`hedge-l21-3d-D` 35-225 x 183-208): the depot's '216 NEXT' plate over its roof.
 - Runnel D (`runnel-solved-D` 740-1060 x 625-632): a stray green bar under the board; and 'The month' tab's label and summary misaligned (33-330 x 517-570).
 - Cathnivore setup D (`cath-setup-D` 105-365 x 660-745): 'Cath's pins 0 of 3' as three empty dashed circles reading as placeholders.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
+
+## 651. [ ] Hedgerow 3D desktop: the battle framed while a round runs
+*(planned 2026-11-22 13:40, lane B, plan1122d critique; check first: the shot is 4.5 s after a forced send, so it may be a passing camera move)*
+- **Why:** `plan1122d/hedge-l21-3d-D` round 11: the camera sits close on the depot (its board and roof 160-445 x 190-480), the field cut off at the right (1080) and the foot, no van and hardly a tower in view, Cath's head cropped at the bottom (400-520 x 780-890); the 3D phone frames the whole lane (item 591). VISION 2, 3.
+- **Build:** `games/hedgerow/src/render3d/` camera: while a round runs at D the view frames the lane depot to farmhouse inside the canvas left of the panel, drifting with the lead vehicles; towers and Cath kept whole; a 'Whole field / Closer' key in the HUD.
+- **Accept:** 5 s after a send at 1440x900 every path cell's centre and Cath's box inside the canvas (e2e via `depots3d`/cell projection); no vehicle off-frame for more than 2 s; hedgerow 3dframe/cath3d specs pass; shot D and P.
+- **Size:** 2
+
+## 652. [ ] NIGHT SHIFT phone title: composed as a poster around Cath
+*(planned 2026-11-22 13:40, lane B, plan1122d critique; lane A's 319 owns her face, this is the layout)*
+- **Why:** `plan1122d/ns-title-P` (390x844): the menu card (10-125 x 205-410), the Ledger (15-180 x 420-590) and The List (10-370 x 690-805) stack over the street; her face sits ~70% down (y 560-620), her body behind The List; the umbrella and a sign are the strongest shapes. VISION 1, Cath bible.
+- **Build:** `games/cathode/src/ui/` front page at an upright phone: Cath from the waist up with her face in the upper-middle third (the poster crop), the menu a slim strip down one side, the Ledger folded to a tap-to-open corner tab, The List one row along the foot.
+- **Accept:** her face's box centred between 30% and 55% of the height at 390x844 (e2e on the poster frame); no menu box over her face; every item still 44 px+ and keyboard-ordered; cathode front specs pass; posters re-rendered; shot P (D unchanged).
+- **Size:** 2
+
+## 653. [ ] Runnel: a new player's first week climbs to the daily
+*(planned 2026-11-22 13:40, lane B, plan1122d critique)*
+- **Why:** `plan1122d/runnel-D` 55-330 x 685-815: after the three-tap lesson the 'Up next today' card sends a new player to Daily #57, marked 'Hardest' (a 37-tile board after a 4-tile lesson). VISION 3, 4.
+- **Build:** `games/runnel/src/` (lesson.ts, main.ts): after the lesson, three short boards that grow (about 7, 12, 19 tiles), each with Cath's one-line lesson and a small bloom on solving, then the daily unlocks with Cath's line on how hard today's is; a returning player (any result saved) skips it; it can be skipped.
+- **Accept:** a fresh save sees board 1 of the climb after the lesson, not the daily (e2e); a save with a result goes straight to the daily; each climb board solvable (unit test on the generator); runnel lesson/win specs pass; shot P and D.
+- **Size:** 2
+
+## 654. [ ] Cathnivore: the '?' on the board says what it is
+*(planned 2026-11-22 13:40, lane B, plan1122d critique; check what the '?' means in the rules first)*
+- **Why:** `plan1122d/cath-game-D` (1025-1090 x 100-180 and three more; P too): four cyan '?' bubbles as loud as the stalls, with no label or key near them. VISION 2, 8.
+- **Build:** `src/ui/Map.tsx` piece art: the '?' drawn as the thing it is (a covered crate, or a sealed envelope stamped by Hollowell), and a tap or hover peeks a one-line card: what it hides and which action reveals it.
+- **Accept:** each such piece has an accessible name saying what it is; the peek opens on tap and on keyboard focus (e2e); piece-looks test covers it; board specs pass; shot P and D, light and dark.
+- **Size:** 1
+
+## 655. [ ] /games/ phone: all four games in view
+*(planned 2026-11-22 13:40, lane B, plan1122d critique)*
+- **Why:** `plan1122d/games-P` 0-390 x 580-844: under the stall the games are a sideways carousel, Cathnivore's card alone in view, the rest a 10 px peek and dots (175-240 x 835). VISION 1.
+- **Build:** `site/src/` at P: a 2x2 shelf of four framed wares (art, name, a one-line hook, Play; NIGHT SHIFT's 18+ tag), all four inside the first screen and a half.
+- **Accept:** at 390x844 all four games' boxes end above 1.5x the viewport height (e2e:site); each a link; no sideways scroll; games specs pass; shot P (D unchanged).
+- **Size:** 1
+
+## 656. [ ] The bugs from the 2026-11-22 13:35 critique, fixed as one batch
+*(planned 2026-11-22 13:40, lane B, plan1122d critique; check each on today's build first)*
+- Hedgerow 2D D (`hedge-l21-2d-D` 400-910 x 170-870): the staged battle reads still (no vans on the road, '0 NEXT'): `battle()` in plan-shots should wait for vehicles on the lane, or the 2D send needs a visible send-off.
+- NIGHT SHIFT sideways (`ns-street-P` ~515-650 x 198-232): 'THE PIN' and its bar float mid-street since item 649 moved the arms by FIRE; and 'DRAG TO AIM' (725-810 x 70-90) floats free.
+- Cathnivore D (`cath-game-D` 555-680 x 10-145): Hollowell's portrait badge over the tops of Highmoor and Saltmarsh.
+- NIGHT SHIFT class pick D (`ns-play-D` 998-1240 x 415-455): two of the four stat changes show (P shows all four).
+- Cathnivore title P (`cath-title-P` 95-375 x 325-600): the board has no region names, and its top edge cuts Cath at the chest.
+- Hedgerow P field guide (`hedge-l34-2d-P` 40-280 x 410-610): towers that can't reach a vehicle are struck through, reading as sold out.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
