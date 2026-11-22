@@ -60,7 +60,10 @@ const jobs = {
         }
         hg.sendWave(g, true)
       })
-      await p.waitForTimeout(4500)
+      // plan item 656: a fixed 4.5 s caught the 2D field before the first van rolled ('0 NEXT', an empty road): wait
+      // for three vehicles on the lane, then a beat for the towers to open up
+      await p.waitForFunction(() => (window.hedgerow.game().enemies?.length ?? 0) >= 3, null, { timeout: 45000 }).catch(() => console.log('battle: under 3 vehicles'))
+      await p.waitForTimeout(1500)
     }
     await p.goto(`${base}/hedgerow/?2d`)
     await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true }, tips: t })), [stars(20), tips])

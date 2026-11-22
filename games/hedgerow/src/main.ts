@@ -4283,9 +4283,19 @@ function showIntroPage(g: Game, k: EnemyKind): void {
   const reach = document.createElement("ul");
   reach.className = "intro-reach";
   const counters = countersFor(k, g.level.towers);
-  for (const t of g.level.towers) {
-    const li = document.createElement("li");
+  // plan item 656: the towers that reach it first, then the rest under a 'can't reach' label (struck through, mixed
+  // in among the lit ones, they read as sold out)
+  const kit = [...g.level.towers].sort((a, b) => Number(counters.includes(b)) - Number(counters.includes(a)));
+  for (const t of kit) {
     const lit = counters.includes(t);
+    if (!lit && counters.length && t === kit[counters.length]) {
+      const sep = document.createElement("li");
+      sep.className = "sep";
+      sep.setAttribute("aria-hidden", "true");
+      sep.textContent = "Can't reach it";
+      reach.append(sep);
+    }
+    const li = document.createElement("li");
     li.className = lit ? "lit" : "dim";
     li.append(img(towerIcon(t), "intro-tower"));
     const label = document.createElement("span");
