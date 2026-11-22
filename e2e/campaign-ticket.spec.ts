@@ -37,4 +37,11 @@ test('desktop campaign: the chapter ticket is pinned beside its stop and follows
   expect(b.ticket).toBeLessThanOrEqual(120)
   // a locked chapter's ticket has no Play
   await expect(page.locator('.cmp-ticket-play')).toHaveCount(0)
+  // the bunting is tied to the map: the ticket's flag is marked, and a flag under the pointer moves the ticket
+  await page.mouse.move(4, 896)
+  await expect(ticket).toHaveAttribute('data-chapter', 'word-of-mouth')
+  await expect(page.locator('.cmp-pennant.is-chosen')).toHaveAttribute('data-chapter', 'word-of-mouth')
+  await page.locator('.cmp-pennant').nth(3).hover()
+  await expect(ticket).toHaveAttribute('data-chapter', await page.locator('.cmp-pennant').nth(3).getAttribute('data-chapter') as string)
+  await expect(page.locator('.cmp-pennant.is-chosen')).toHaveCount(1)
 })

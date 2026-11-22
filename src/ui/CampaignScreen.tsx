@@ -343,7 +343,9 @@ const CHAPTER_SCENES: Record<string, ChapterScene> = {
 // Plan item 444: on a desktop the campaign's progress is a string of six pennants hung across the top band from the
 // signboard, one per chapter: a won chapter's flag is dyed, lifted and ticked (item 556), an unwon one is plain calico
 // with its number; the slate beside it labels the string ("Chapters won").
-function ProgressBunting({ chapters, completed }: { chapters: Chapter[]; completed: string[] }) {
+// Plan item 659: the string is tied to the map: the flag of the chapter on the ticket hangs lower and inked, and a
+// flag under the pointer moves the ticket to its chapter's stop (the rail and the stops do the same by keyboard).
+function ProgressBunting({ chapters, completed, chosen, onPoint }: { chapters: Chapter[]; completed: string[]; chosen?: string; onPoint?(id: string | null): void }) {
   const flags = buntingFlags(chapters, completed)
   const n = flags.length
   const W = 600
@@ -367,7 +369,15 @@ function ProgressBunting({ chapters, completed }: { chapters: Chapter[]; complet
         const x = t * W
         const y = sag(x)
         return (
-          <g key={f.id} className={f.won ? `cmp-pennant is-won is-${f.dye}` : 'cmp-pennant'} transform={`translate(${x} ${y})`} data-chapter={f.id} data-won={f.won ? 'true' : 'false'}>
+          <g
+            key={f.id}
+            className={(f.won ? `cmp-pennant is-won is-${f.dye}` : 'cmp-pennant') + (chosen === f.id ? ' is-chosen' : '')}
+            transform={`translate(${x} ${y})`}
+            data-chapter={f.id}
+            data-won={f.won ? 'true' : 'false'}
+            onPointerEnter={onPoint ? () => onPoint(f.id) : undefined}
+            onPointerLeave={onPoint ? () => onPoint(null) : undefined}
+          >
             <title>{f.label}</title>
             {/* item 556: a size up (the slate's third cell took some of the band's width) */}
             <path className="cmp-pennant-cloth" d="M-30 0 L30 0 L0 66 Z" />
@@ -718,7 +728,7 @@ export default function CampaignScreen({
           </p>
         </div>
         {!wide && host}
-        {wide && <ProgressBunting chapters={chapters} completed={completed} />}
+        {wide && <ProgressBunting chapters={chapters} completed={completed} chosen={departing ? undefined : ticketId} onPoint={point} />}
         {/* Plan item 257: on a desktop the campaign's tally is chalked on a slate; plan item 444: it hangs in the top
             band beside the pennants (the chapters won), Back to Title a small tag on its frame, so the map takes the
             column's full height. */}

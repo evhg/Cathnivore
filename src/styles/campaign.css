@@ -2075,3 +2075,11 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
 @media (min-width: 1100px) and (min-height: 640px) {
   .campaign.campaign-screen > .cmp-map { margin: 0; }
 }
+/* Plan item 659: the bunting points at the map: the ticket's chapter flag drops and takes an ink edge. */
+@media (min-width: 1100px) {
+  .cmp-pennant { cursor: pointer; }
+  .cmp-pennant > .cmp-pennant-cloth, .cmp-pennant > :is(.cmp-pennant-num, .cmp-pennant-tick) { transition: translate 220ms ease; }
+  .cmp-pennant.is-chosen > * { translate: 0 6px; }
+  .cmp-pennant.is-chosen > .cmp-pennant-cloth { stroke: var(--soil); stroke-width: 3; }
+}
+@media (prefers-reduced-motion: reduce) { .cmp-pennant > * { transition: none; } }
