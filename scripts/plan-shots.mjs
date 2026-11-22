@@ -60,15 +60,21 @@ const jobs = {
         }
         hg.sendWave(g, true)
       })
-      // plan item 656: a fixed 4.5 s caught the 2D field before the first van rolled ('0 NEXT', an empty road): wait
-      // for three vehicles on the lane, then a beat for the towers to open up
+      // plan item 656: a new vehicle's field-guide page holds the round until it's dismissed ('0 NEXT', an empty road
+      // under it): close each one, then wait for three vehicles on the lane and a beat for the towers to open up
+      for (let i = 0; i < 12; i++) {
+        await p.waitForTimeout(700)
+        const go = p.locator('.intro:not([hidden]) .intro-go')
+        if (await go.isVisible().catch(() => false)) await go.click().catch(() => {})
+        else if (await p.evaluate(() => window.hedgerow.game().enemies.length >= 3)) break
+      }
       await p.waitForFunction(() => (window.hedgerow.game().enemies?.length ?? 0) >= 3, null, { timeout: 45000 }).catch(() => console.log('battle: under 3 vehicles'))
       await p.waitForTimeout(1500)
     }
     await p.goto(`${base}/hedgerow/?2d`)
     await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true }, tips: t })), [stars(20), tips])
     await p.goto(`${base}/hedgerow/`); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/hedge-menu-${s}.png` })
-    for (const mode of ['2d', '3d']) {
+    for (const mode of (process.env.HG_MODES ?? '2d,3d').split(',')) {
       await p.goto(`${base}/hedgerow/?sandbox=1&level=21${mode === '2d' ? '&2d' : ''}`)
       await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
       await p.waitForTimeout(mode === '2d' ? 1000 : 5000)
