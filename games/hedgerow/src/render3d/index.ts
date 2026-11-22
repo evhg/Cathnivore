@@ -2068,8 +2068,10 @@ export class Renderer3D {
     this.gateHold = Math.max(0, this.gateHold - camDt);
     this.gateEase += ((this.gateHold > 0 ? 1 : 0) - this.gateEase) * ease(1.6);
     if (this.gateEase > 0.001) look.lerp(this.v2.set(this.gateAt.x, this.camTarget.y, this.gateAt.y), this.gateEase * 0.38);
-    // Plan item 651: the director's moves run on the same wall clock (at a few fps the 1.5 s depot dolly held for 20 s).
-    this.direct(game, camDt);
+    // Plan item 651: the director's moves run on the same wall clock (at a few fps the 1.5 s depot dolly held for 20 s),
+    // a frame's step capped at 0.25 s so a slow frame (the send's own stall) can't skip the whole move in one or two
+    // frames (E2E: camera3d saw the round's next shot, the dolly already over)
+    this.direct(game, Math.min(camDt, 0.25));
     const sw = this.shotWeight();
     if (sw > 0 && this.shot) look.lerp(this.v2.set(this.shot.x, this.camTarget.y, this.shot.z), sw * (this.shot.dolly ? 0.85 : 0.6));
     const shotZoom = this.shot ? 1 + (this.shot.zoom - 1) * sw : 1;
