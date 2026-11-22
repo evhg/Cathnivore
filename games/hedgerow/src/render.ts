@@ -46,7 +46,7 @@ import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins"
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
 import { swarms, SWARM_MIN, type Swarm } from "./swarm";
-import { layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
+import { columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
 import { gateQueue, type GateQueue } from "./gatequeue";
 import { FarmFolk, type Folk } from "./farmfolk";
 import { drawFolk } from "./folkart";
@@ -1310,7 +1310,9 @@ export class Renderer {
       const since = this.hitAt.get(e.id) ?? 9;
       this.hitAt.set(e.id, since + dt);
       const gy = p.y + 0.2;
-      const heading = runOf(level, e);
+      // Plan item 657: turned for the run it is drawn on (a vehicle the convoy holds back round a bend stood upright
+      // on a level run when this used its true place).
+      const heading = runOf(level, { dist: this.lay.slots.get(e.id)?.dist ?? e.dist, lane: e.lane ?? null });
       items.push({
         y: gy,
         draw: () => {
@@ -1555,7 +1557,7 @@ export class Renderer {
     const rode = this.badged;
     rode.clear();
     for (const sw of swarms(game.enemies)) {
-      const col = this.lay.columns.find((c) => (c.lane ?? undefined) === (sw.lane ?? undefined) && !rode.has(c));
+      const col = columnNear(this.lay, sw.lane, sw.dist, rode);
       if (col) {
         rode.add(col);
         const p = enemyPoint(level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
@@ -2113,11 +2115,11 @@ export class Renderer {
     return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks, shards: this.shardBursts };
   }
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
-  private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
+  private lay: Convoy = noConvoy();
   /** The columns a swarm badge rode last frame (their own +N chip stands down). */
   private badged = new Set<ConvoyColumn>();
   private layOut(game: Game): Convoy {
-    this.lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as EnemyKind), SWARM_MIN);
+    this.lay = layOutField(game.enemies, (k) => SLOT_LEN * enemyScale(k as EnemyKind), SWARM_MIN);
     return this.lay;
   }
   /** Where a vehicle is drawn (convoy.ts placeOnLane). */
@@ -2128,7 +2130,7 @@ export class Renderer {
   private drawColumns(game: Game, ctx: CanvasRenderingContext2D, X: (v: number) => number, Y: (v: number) => number, s: number, t: number, col: ConvoyColumn): void {
     {
       const tally = new Map<EnemyKind, number>();
-      for (const e of game.enemies) if (this.lay.inColumn.has(e.id) && (e.lane ?? undefined) === col.lane) tally.set(e.kind, (tally.get(e.kind) ?? 0) + 1);
+      for (const e of game.enemies) if (this.lay.columnOf.get(e.id) === col) tally.set(e.kind, (tally.get(e.kind) ?? 0) + 1);
       const kinds = [...tally].sort((a, b) => b[1] - a[1]).map(([k]) => k);
       const p = enemyPoint(game.level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
       const layers = Math.max(1, Math.min(8, Math.ceil(col.count / 6)));

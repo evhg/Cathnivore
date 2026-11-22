@@ -12,6 +12,12 @@ export const ABREAST = 0.2;
 
 import { enemyPoint, type Level } from "./engine";
 
+/**
+ * A vehicle's slot along the lane, as a share of its sprite scale (plan item 657: at 0.55 nose-to-tail lorries
+ * overlapped by a third and a packed queue read as one heap; at 0.62 they overlap a quarter at most).
+ */
+export const SLOT_LEN = 0.62;
+
 /** How many vehicles high a column stacks in 3D before the rest sit on its top. */
 export const COLUMN_TIERS = 8;
 
@@ -41,7 +47,24 @@ export interface Convoy {
   slots: Map<number, ConvoySlot>;
   /** Ids drawn as part of a column rather than one by one, with their place in it (0 at the bottom). */
   inColumn: Map<number, number>;
+  /** Plan item 657: which column each of those ids stands in (a lane can have one per queue). */
+  columnOf: Map<number, ConvoyColumn>;
   columns: ConvoyColumn[];
+}
+
+/** An empty layout (before the first frame). */
+export function noConvoy(): Convoy {
+  return { slots: new Map(), inColumn: new Map(), columnOf: new Map(), columns: [] };
+}
+
+/** The column on `lane` nearest `dist` that isn't in `skip`, or undefined. */
+export function columnNear(lay: Convoy, lane: 1 | undefined, dist: number, skip?: ReadonlySet<ConvoyColumn>): ConvoyColumn | undefined {
+  let best: ConvoyColumn | undefined;
+  for (const c of lay.columns) {
+    if ((c.lane ?? undefined) !== (lane ?? undefined) || skip?.has(c)) continue;
+    if (!best || Math.abs(c.dist - dist) < Math.abs(best.dist - dist)) best = c;
+  }
+  return best;
 }
 
 /**
@@ -51,6 +74,7 @@ export interface Convoy {
 export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined) => boolean = () => false): Convoy {
   const slots = new Map<number, ConvoySlot>();
   const inColumn = new Map<number, number>();
+  const columnOf = new Map<number, ConvoyColumn>();
   const columns: ConvoyColumn[] = [];
   for (const lane of [undefined, 1] as const) {
     const on = units.filter((u) => (u.lane ?? undefined) === lane).sort((a, b) => b.dist - a.dist || a.id - b.id);
@@ -69,12 +93,17 @@ export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined)
           best = i;
         }
       });
-      if (u.dist - bestD > MAX_LAG) {
-        if (!col) {
+      // Plan item 657: a place behind the lane's start would be drawn clamped onto the gate, every such vehicle on
+      // one spot (the heap on the depot's pier), so those join the column too.
+      if (u.dist - bestD > MAX_LAG || bestD < 0) {
+        // Plan item 657: a queue further back (the depot's, behind an ambush's burst mid-lane) gets its own column,
+        // so one queue's overflow is never drawn at the other's place.
+        if (!col || col.dist - u.dist > MAX_LAG) {
           col = { ...(lane ? { lane } : {}), dist: u.dist, count: 0 };
           columns.push(col);
         }
         inColumn.set(u.id, col.count);
+        columnOf.set(u.id, col);
         col.count++;
         col.dist = Math.min(col.dist, u.dist);
         continue;
@@ -83,7 +112,7 @@ export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined)
       slots.set(u.id, { dist: bestD, side: two ? (best === 0 ? -1 : 1) : 0 });
     }
   }
-  return { slots, inColumn, columns };
+  return { slots, inColumn, columnOf, columns };
 }
 
 /**
@@ -94,7 +123,7 @@ export function placeOnLane(level: Pick<Level, "path" | "path2">, e: { id: numbe
   const lane = e.lane ? { lane: e.lane } : {};
   const at = lay.inColumn.get(e.id);
   if (at !== undefined) {
-    const col = lay.columns.find((c) => (c.lane ?? undefined) === (e.lane ?? undefined));
+    const col = lay.columnOf.get(e.id);
     const p = enemyPoint(level, { dist: col?.dist ?? e.dist, ...lane });
     return { ...p, tier: Math.min(at, COLUMN_TIERS - 1) };
   }

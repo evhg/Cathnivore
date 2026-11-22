@@ -54,7 +54,7 @@ import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedG
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
 import { swarms, SWARM_MIN } from "../swarm";
-import { COLUMN_TIERS, layOutField, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
+import { COLUMN_TIERS, columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
@@ -311,7 +311,7 @@ export class Renderer3D {
   /** Swarm badges (plan item 10), one per queue of more than 12, pooled; `key` is what each one shows. */
   private swarmEls: Array<{ el: HTMLElement; key: string }> = [];
   /** Plan item 45: this frame's convoy layout (syncEnemies), which the swarm badges ride. */
-  private lay: Convoy = { slots: new Map(), inColumn: new Map(), columns: [] };
+  private lay: Convoy = noConvoy();
   /** Plan item 45: each tower's pooled Marks and its "+N" label. */
   private towerMarks = new Map<number, { n: number; quiet: number; el: HTMLElement | null }>();
   /** Wreck panels are lying on the field (cleared once the round is over). */
@@ -2312,7 +2312,7 @@ export class Renderer3D {
       this.gold.age = 0;
     }
     // Plan item 45: the queue laid out as a convoy (convoy.ts); the overflow stacks up as a column at its tail.
-    const lay = (this.lay = layOutField(game.enemies, (k) => 0.55 * enemyScale(k as Enemy["kind"]), SWARM_MIN));
+    const lay = (this.lay = layOutField(game.enemies, (k) => SLOT_LEN * enemyScale(k as Enemy["kind"]), SWARM_MIN));
     // Plan item 439: on a steep view (an upright phone) the vehicles lean back from the lens like item 98's Cath,
     // so their near side, cab and wheels turn up to it instead of reading as roofs (stacked boxes).
     const tilt = this.steepTilt();
@@ -2323,8 +2323,11 @@ export class Renderer3D {
       if (fleet && this.rungs?.has(e.kind)) {
         // Instanced: heading from the lane's direction, a little bob, no per-vehicle objects.
         const p = at;
-        const ahead = enemyPoint(game.level, { dist: e.dist + 0.08, lane: e.lane });
-        const heading = Math.atan2(-(ahead.y - p.y), ahead.x - p.x);
+        // Plan item 657: along the run it is drawn on (from its true place, one held back round a bend sat askew).
+        const dd = lay.slots.get(e.id)?.dist ?? lay.columnOf.get(e.id)?.dist ?? e.dist;
+        const here = enemyPoint(game.level, { dist: dd, lane: e.lane });
+        const ahead = enemyPoint(game.level, { dist: dd + 0.08, lane: e.lane });
+        const heading = Math.atan2(-(ahead.y - here.y), ahead.x - here.x);
         const moving = !(e.stun > 0 || e.held);
         const bob = moving ? Math.abs(Math.sin(t * 9 + e.id)) * 0.012 + (enemyLift(e.kind) ? Math.sin(t * 3 + e.id) * 0.04 : 0) : 0;
         const ghost = !isRevealed(game, e);
@@ -3281,7 +3284,7 @@ export class Renderer3D {
         slot.el.append(bar);
       }
       // Where the queue has a column (convoy.ts), the badge rides its head.
-      const col: ConvoyColumn | undefined = this.lay.columns.find((c) => (c.lane ?? undefined) === (sw.lane ?? undefined));
+      const col: ConvoyColumn | undefined = columnNear(this.lay, sw.lane, sw.dist);
       const p = enemyPoint(game.level, col ? { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) } : sw);
       const up = col ? 1.1 + Math.min(col.count, COLUMN_TIERS) * 0.26 : 1.1;
       const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + up, p.y).project(this.camera);

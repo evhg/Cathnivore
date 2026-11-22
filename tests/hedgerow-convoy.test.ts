@@ -46,4 +46,19 @@ describe("convoy (plan item 45)", () => {
     expect(c.slots.get(2)).toEqual({ dist: 5, side: 0 });
     expect(c.columns).toEqual([]);
   });
+  // Plan item 657: an ambush's burst mid-lane and the depot's queue, each packed past what the lane can show.
+  it("gives each packed queue its own column, at its own place, and never draws one behind the gate", () => {
+    const units: ConvoyUnit[] = [
+      ...Array.from({ length: 30 }, (_, i) => ({ id: i, dist: 18 + (i % 3) * 0.9 + i * 0.01, len: 0.6 })),
+      ...Array.from({ length: 24 }, (_, i) => ({ id: 100 + i, dist: (i % 3) * 0.8 + i * 0.01, len: 0.4 })),
+    ];
+    const c = convoy(units, () => true);
+    expect(c.columns.length).toBe(2);
+    for (const [id, col] of c.columnOf) {
+      const u = units.find((v) => v.id === id)!;
+      expect(Math.abs(col.dist - u.dist)).toBeLessThanOrEqual(MAX_LAG + 1);
+    }
+    for (const sl of c.slots.values()) expect(sl.dist).toBeGreaterThanOrEqual(0);
+    expect(c.columns.reduce((n, col) => n + col.count, 0)).toBe(c.inColumn.size);
+  });
 });
