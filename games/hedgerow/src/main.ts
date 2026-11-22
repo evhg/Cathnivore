@@ -2696,6 +2696,7 @@ function counterLine(kind: TowerKind): string {
 /** Build a tower on a plot, from the build menu or the build ring. */
 function plant(g: Game, kind: TowerKind, sel: { col: number; row: number }): boolean {
   if (!doAct({ t: "place", kind, col: sel.col, row: sel.row })) return false;
+  pickedKind = null;
   sfx.playBuild();
   hostFeel("smirk");
   haptic.build();
@@ -3062,15 +3063,31 @@ function towerTray(p: HTMLElement, g: Game): void {
     roleWord.dataset.role = role;
     roleWord.textContent = ROLE_NAMES[role];
     const pips = trayPips(g, kind);
-    b.append(img(towerIcon(kind), "tray-icon"), glyph, name, roleWord, pips, price);
+    // Plan item 628: the packet's back, printed with its numbers: it slides up over the picture when the packet is
+    // picked (a tap or a click with no plot chosen) or focused.
+    const back = document.createElement("span");
+    back.className = "tray-stats";
+    back.setAttribute("aria-hidden", "true");
+    // Its numbers on two lines: what a hit does and how often, then the reach.
+    const nums = stats.split(" · ").slice(1);
+    back.textContent = [nums.slice(0, -1).join(" · "), nums.at(-1)].filter(Boolean).join("\n");
+    b.append(img(towerIcon(kind), "tray-icon"), glyph, name, roleWord, pips, price, back);
+    if (pickedKind === kind) b.dataset.picked = "";
     // Plan item 396: a tower that answers the soonest unanswered lock wears a seed-tag ribbon saying so.
     if (gap && towerBadges({ kind, tier: 1, spec: null }).find((x) => x.prop === gap)?.ok) {
       b.dataset.answers = gap;
       const tag = document.createElement("span");
       tag.className = "tray-answers";
       tag.title = `Answers ${PROPERTIES[gap].name}, which nothing on your field can yet`;
-      // The lock's own icon (Coming up's chip shows it) and a tick, a seed tag on the packet's corner.
-      tag.append(img(propIcon(gap), "prop-icon"), "✓");
+      // Plan item 628: a worded seed tag, 'For (icon) Airborne' (the lock's own icon, as Coming up's chip shows it),
+      // where it was the icon and a bare tick; a phone's narrow packet keeps 'For' and the icon.
+      const forWord = document.createElement("span");
+      forWord.className = "ans-for";
+      forWord.textContent = "For";
+      const propName = document.createElement("span");
+      propName.className = "ans-name";
+      propName.textContent = PROPERTIES[gap].name;
+      tag.append(forWord, img(propIcon(gap), "prop-icon"), propName);
       b.append(tag);
       b.setAttribute("aria-label", `${b.getAttribute("aria-label")} Answers ${PROPERTIES[gap].name}, which nothing on your field can yet.`);
     }
@@ -3110,7 +3127,10 @@ function towerTray(p: HTMLElement, g: Game): void {
         else toast(`${TOWERS[kind].name}: ${now} Marks. ${etaText(g, now)}`.trim());
         return;
       }
-      toast(`Drag the ${TOWERS[kind].name} onto a plot beside the lane, or tap a plot first. ${stats}.`);
+      // Plan item 628: the picked packet lifts out of the rack and turns its numbers up (a second pick puts it back).
+      pickedKind = pickedKind === kind ? null : kind;
+      for (const o of tray.querySelectorAll<HTMLElement>(".tray-tower")) o.toggleAttribute("data-picked", o.dataset.kind === pickedKind);
+      if (pickedKind) toast(`Drag the ${TOWERS[kind].name} onto a plot beside the lane, or tap a plot first. ${stats}.`);
     };
     tray.append(b);
   }
@@ -3161,6 +3181,8 @@ function towerTray(p: HTMLElement, g: Game): void {
   p.append(wrap);
 }
 
+/** Plan item 628: the rack's picked packet (lifted, its numbers showing), kept across the panel's redraws. */
+let pickedKind: TowerKind | null = null;
 const ROLE_NAMES: Record<TowerRole, string> = { slow: "Slows", splash: "Splash", boost: "Boosts", income: "Earns", shot: "Shoots" };
 /** Plan item 527: the rack's group order. */
 const ROLE_ORDER: readonly TowerRole[] = ["slow", "shot", "splash", "income", "boost"];

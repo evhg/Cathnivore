@@ -5487,3 +5487,125 @@ body:has(#dlg-pause[open]) .paused-note {
     --bench-cath: 70px;
   }
 }
+
+/* ================================================================= the build shop as seed packets (plan item 628) */
+/* Each packet is printed like a seed packet: a picture window in its role's colour lit behind the tower, the price on
+   a hanging tag (its string hole at the left), the name and the role ('Slows', with the range as pips) on the
+   variety band at its foot. A picked packet lifts out of the rack and slides its numbers down over the picture. */
+.tray-stats { display: none; }
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray .tray-tower {
+    background:
+      radial-gradient(ellipse 62% 46% at 46% 40%, color-mix(in srgb, var(--band) 38%, var(--paper-hi)) 0 50%, transparent 100%),
+      var(--mat-kraft);
+    background-blend-mode: normal, multiply, normal;
+    transition: transform 140ms ease, translate 140ms ease, rotate 140ms ease, box-shadow 140ms ease;
+  }
+  .play .tray-wrap .tray .tray-tower:disabled {
+    background:
+      radial-gradient(ellipse 62% 46% at 46% 40%, color-mix(in srgb, var(--band) 14%, var(--paper-hi)) 0 50%, transparent 100%),
+      var(--paper-shade);
+    outline-offset: -2px;
+  }
+  /* the hanging price tag */
+  .play .tray-wrap .tray .build-cost {
+    padding: 1px 6px 1px 10px;
+    border-radius: 2px 999px 999px 2px;
+    background:
+      radial-gradient(circle at 4.5px 50%, var(--line) 0 1.6px, transparent 2.2px),
+      var(--paper-hi);
+  }
+  /* the variety band: the name, then the role in words with its glyph and the range as pips, one strip */
+  .play .tray-wrap .tray .tray-tower .tray-name { border-bottom: 0; padding-bottom: 1px; }
+  .play .tray-wrap .tray .tray-tower .tray-role-word {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 0;
+    padding: 0 3px 4px;
+    background: color-mix(in srgb, var(--band) 30%, var(--paper-hi));
+    color: var(--ink);
+    font: 700 var(--fs-rack) / 1.1 var(--font-ui);
+  }
+  .play .tray-wrap .tray .tray-tower .tray-role-word { justify-content: flex-start; padding-inline: 7px 30px; }
+  .play .tray-wrap .tray .tray-tower .tray-pips {
+    position: absolute;
+    right: 6px;
+    bottom: 8px;
+    display: inline-flex;
+    gap: 2px;
+  }
+  .play .tray-wrap .tray .tray-tower .tray-pips .pip-row.damage { display: none; }
+  .play .tray-wrap .tray .tray-tower .tray-pips .pip-row.range { display: inline-flex; gap: 2px; }
+  .play .tray-wrap .tray .tray-tower .tray-pips b {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--band) 70%, var(--ink));
+  }
+  .play .tray-wrap .tray .tray-tower .tray-pips b.on { background: color-mix(in srgb, var(--band) 75%, var(--ink)); }
+  /* picked: lifted out of the rack, tipped a little, its numbers turned down over the picture */
+  .play .tray-wrap .tray .tray-tower[data-picked] {
+    z-index: var(--z-raise);
+    translate: 0 -6px;
+    rotate: -1.5deg;
+    box-shadow: 0 10px 14px -6px var(--shade-a35), 0 0 0 2px var(--brass), 0 0 0 3.5px var(--line);
+  }
+  .play .tray-wrap .tray .tray-tower .tray-stats {
+    position: absolute;
+    inset: 17px 0 auto;
+    display: block;
+    padding: 2px 4px 3px;
+    white-space: pre-line;
+    background: color-mix(in srgb, var(--paper-hi) 94%, transparent);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--band) 75%, var(--ink));
+    color: var(--ink);
+    font: 700 var(--fs-label) / 1.15 var(--font-ui);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    opacity: 0;
+    translate: 0 -10px;
+    transition: translate 160ms ease, opacity 120ms ease;
+    pointer-events: none;
+  }
+  .play .tray-wrap .tray .tray-tower:is([data-picked], :focus-visible) .tray-stats { opacity: 1; translate: 0 0; }
+}
+/* The 'answers' seed tag in words, 'For' and the lock's icon (as Coming up's lock chip shows it), its corner left of
+   the price; the lock's name is in its title and label. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray .tray-tower .tray-answers {
+    gap: 3px;
+    padding: 0 7px 0 5px;
+  }
+}
+@media (max-width: 899.98px), (max-height: 520px) {
+  .play .tray-wrap .tray .tray-tower .tray-answers { gap: 2px; padding-inline: 3px 5px; }
+}
+.play .tray-wrap .tray .tray-tower .tray-answers .ans-name { display: none; }
+/* On a phone the packets fan along the tray, each tipped a hair, and a picked one stands up out of the row. */
+@media (max-width: 899.98px), (max-height: 520px) {
+  .play .tray-wrap .tray .tray-tower { transform-origin: 50% 100%; transition: transform var(--dur-2) var(--spring), translate 140ms ease, rotate 140ms ease; }
+  .play .tray-wrap .tray .tray-tower:nth-child(odd) { rotate: -1.2deg; }
+  .play .tray-wrap .tray .tray-tower:nth-child(even) { rotate: 1deg; }
+  .play .tray-wrap .tray .tray-tower[data-picked] { rotate: 0deg; translate: 0 -3px; box-shadow: 0 0 0 2px var(--brass), 0 0 0 3.5px var(--line); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play .tray-wrap .tray .tray-tower,
+  .play .tray-wrap .tray .tray-tower .tray-stats { transition: none; }
+}
+/* Four to a row the packet is too narrow for the tag beside the price: it hangs at the picture's foot instead. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower :is(.tray-name, .tray-role-word) { order: 2; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-answers {
+    position: relative;
+    inset: auto;
+    order: 1;
+    align-self: flex-start;
+    z-index: var(--z-raise);
+    margin: -20px 0 0;
+    border-radius: 0 10px 10px 0;
+  }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-stats { inset-block-start: 7px; }
+}
