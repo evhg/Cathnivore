@@ -6,6 +6,7 @@ import Portrait from './portraits/Portrait'
 import CathArt from './CathArt'
 import { ProduceCrates } from './TableProps'
 import CampaignMap from './CampaignMap'
+import CampaignTicket from './CampaignTicket'
 import { CHAPTER_HOMES, CHAPTER_SEALS, MAP_AXIAL, hasHardSeal, liberatedRegions } from '../content/campaignMap'
 import { LANDMARKS } from '../content/campaignMapLayout'
 import { Landmark } from './Landmark'
@@ -545,6 +546,16 @@ export default function CampaignScreen({
   const [hovered, setHovered] = useState<string | null>(null)
   const [focused, setFocused] = useState<string | null>(null)
   const pointed = focused ?? hovered
+  // Plan item 659: the pointer leaving a stop lets the ticket go after a beat (so it can be reached for Play), and
+  // while the pointer rests on the ticket it holds still.
+  const [held, setHeld] = useState<string | null>(null)
+  const unpoint = useRef(0)
+  const point = (id: string | null) => {
+    window.clearTimeout(unpoint.current)
+    if (id) setHovered(id)
+    else unpoint.current = window.setTimeout(() => setHovered(null), 450)
+  }
+  useEffect(() => () => window.clearTimeout(unpoint.current), [])
   const next = chapters.find((c, i) => !completed.includes(c.id) && (i === 0 || completed.includes(chapters[i - 1]!.id)))
   const wide = useMedia('(min-width: 1100px)')
   // Plan item 386: on a phone one chapter is open at a time, in a sheet under the map: a map stop or a tab opens it,
@@ -618,6 +629,18 @@ export default function CampaignScreen({
     const previous = chapters[i - 1]
     return i > 0 && !!previous && !completed.includes(previous.id) ? 'locked' : 'current'
   }
+  const ticketId = held ?? pointed ?? next?.id ?? chapters[chapters.length - 1]!.id
+  const ticketAt = chapters.findIndex((c) => c.id === ticketId)
+  const ticket =
+    ticketAt >= 0 ? (
+      <CampaignTicket
+        chapter={chapters[ticketAt]!}
+        index={ticketAt}
+        state={stateOf(ticketAt)}
+        onStart={start}
+        onHold={(h) => setHeld(h ? ticketId : null)}
+      />
+    ) : null
   // Plan item 248: Cath hosts the map at full height, head to boots, with her line over her head. On a desktop she
   // narrates at half length in the map's sea beside the island (item 325); on a phone she stands beside her line in the header.
   // One copy in the DOM (mounted by viewport), so `.cmp-cath` and its line stay single for tests and screen readers.
@@ -739,7 +762,8 @@ export default function CampaignScreen({
         host={wide ? host : undefined}
         onPick={phone ? (c) => pick(c.id) : undefined}
         picked={phone ? open : undefined}
-        onPoint={phone ? undefined : setHovered}
+        onPoint={phone ? undefined : point}
+        overlay={wide && !departing && ticket ? ticket : undefined}
       />
       {/* Plan item 386: on a phone a row of six chapter tabs opens each chapter in the sheet below. */}
       {phone && (

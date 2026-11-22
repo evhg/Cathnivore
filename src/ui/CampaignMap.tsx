@@ -247,6 +247,7 @@ export default function CampaignMap({
   onPick,
   picked,
   onPoint,
+  overlay,
   departing,
 }: {
   chapters: Chapter[]
@@ -263,6 +264,8 @@ export default function CampaignMap({
   picked?: string
   /** Plan item 395: a stop under the pointer points at its chapter in the rail (null when it leaves). */
   onPoint?(id: string | null): void
+  /** Plan item 659: drawn over the atlas (the desktop's pinned chapter ticket). */
+  overlay?: ReactNode
   /** Plan item 483: the chapter being started; its home regions lift and glow while the atlas zooms in on them. */
   departing?: string
 }) {
@@ -333,7 +336,7 @@ export default function CampaignMap({
 
   return (
     <figure className="cmp-map" data-free={freedCount} data-phase={phase}>
-      <svg ref={svgRef} className="cmp-map-svg" viewBox="-160 -150 320 296" role="img" aria-label={label}>
+      <svg ref={svgRef} className="cmp-map-svg" viewBox="-160 -150 320 296" preserveAspectRatio={host ? "xMinYMid meet" : undefined} role="img" aria-label={label}>
         <defs>
           <pattern id="cmp-hold-hatch" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
             <line x1={0} y1={0} x2={0} y2={6} className="cmp-hold-line" />
@@ -519,6 +522,7 @@ export default function CampaignMap({
         />
       </svg>
       {host && <div className="cmp-map-host">{host}</div>}
+      {overlay}
       {celebrate && (phase === 'walk' || phase === 'done') && !allDone && (
         <figcaption className="cmp-map-next" role="status">
           <span className="cmp-map-next-kicker">Next stop</span> Chapter {here + 1}: {herChapter.title}

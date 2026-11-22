@@ -41,7 +41,9 @@ test('the campaign map is an atlas sheet, not a flat sea box', async ({ page }) 
   if ((page.viewportSize()?.width ?? 0) >= 1100) {
     const sea = (await page.locator('.cmp-sea').boundingBox())!
     const cath = (await page.locator('.cmp-map-host .cmp-header-cath').boundingBox())!
-    const meet = cath.x < sea.x + sea.width && sea.x < cath.x + cath.width && cath.y < sea.y + sea.height && sea.y < cath.y + cath.height
-    expect(meet, 'Cath stands on the sheet\'s sea').toBe(false)
+    // Plan item 659: she stands at the sheet's lower-right corner, pointing in: her middle past the sea's right edge
+    // and her boots under its foot, so she stands on the table, not out on the water.
+    expect(cath.x + cath.width / 2, 'Cath stands on the sheet\'s sea').toBeGreaterThanOrEqual(sea.x + sea.width - 10)
+    expect(cath.y + cath.height).toBeGreaterThanOrEqual(sea.y + sea.height)
   }
 })

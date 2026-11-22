@@ -1987,3 +1987,82 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   .cmp-header .cmp-header-cath { height: 164px; }
   .cmp-header .cmp-host-stand { margin: -6px -10px -46px -16px; }
 }
+
+/* Plan item 659: at a desktop the atlas and the chosen chapter are one scene: the map takes the column (820 px+ at
+   1440x900, it was 700 beside a 290 px gap), Cath stands at its lower-right corner on the sheet's sea pointing in,
+   and the chapter pointed at (else the next) is a ticket pinned beside its numbered stop with a leader line. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .campaign-screen > .cmp-map { display: block; position: relative; }
+  .campaign-screen > .cmp-map .cmp-map-svg { height: 100%; max-height: none; }
+  .campaign-screen > .cmp-map > .cmp-map-host {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    z-index: var(--z-lift);
+    pointer-events: none;
+  }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { pointer-events: auto; width: 196px; align-self: flex-end; margin-right: -34px; font-size: .9375rem; }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line::after { left: 46px; }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-header-cath { height: clamp(280px, calc(100vh - 560px), 360px); }
+}
+.cmp-ticket-lead {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: var(--z-lift);
+}
+.cmp-ticket-lead line { stroke: var(--soil); stroke-width: 2; stroke-dasharray: 5 4; stroke-linecap: round; }
+.cmp-ticket-lead circle { fill: var(--seal); }
+.cmp-ticket {
+  position: absolute;
+  z-index: var(--z-lift);
+  width: 250px;
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px 14px;
+  border-radius: 6px;
+  background: var(--paper-hi);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--rule), 0 10px 22px color-mix(in srgb, var(--ink) 22%, transparent);
+  rotate: -1deg;
+  transition: left 260ms ease, top 260ms ease;
+}
+.cmp-ticket-pin {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--surface) 60%, var(--seal)), var(--seal) 60%);
+  box-shadow: 0 2px 3px color-mix(in srgb, var(--ink) 30%, transparent);
+}
+.cmp-ticket-no { font-size: var(--fs-label); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+.cmp-ticket-title { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; color: var(--soil); }
+.cmp-ticket-goal { font-size: .9375rem; line-height: 1.3; color: var(--ink); text-wrap: pretty; }
+.cmp-ticket-sealed { margin-top: 6px; font-size: .875rem; font-style: italic; color: var(--ink-muted); }
+.cmp-ticket-play {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--seal);
+  background: linear-gradient(180deg, var(--primary-hi), var(--pasture-deep));
+  color: var(--paper-on-fixed-fill);
+  font: 800 1rem / 1 inherit;
+  box-shadow: var(--inset-hi), 0 4px 0 var(--seal);
+  cursor: pointer;
+}
+.cmp-ticket-play svg { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.cmp-ticket-play:hover { filter: brightness(1.08); }
+.cmp-ticket-play:focus-visible { outline: 3px solid var(--wheat); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .cmp-ticket { transition: none; } }
