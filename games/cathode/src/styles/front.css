@@ -861,6 +861,9 @@
   /* Plan item 378: wrapped this narrow, each part a line of its own; the dots between them only read in one line. */
   .menu-hint .mh-part { display: block; }
   .menu-hint .mh-sep { display: none; }
+  /* Plan item 661: the case lines hang just over the LUNA neon on the wall; a soft dark halo under the letters (no
+     box) keeps them off the glow. */
+  .menu-hint { text-shadow: 0 0 calc(var(--u) * 4) rgb(var(--black-rgb) / .95), 0 0 calc(var(--u) * 12) rgb(var(--black-rgb) / .85), 0 0 calc(var(--u) * 24) rgb(var(--black-rgb) / .7); }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
   /* Plan item 159: upright, the plate is as narrow as its words, so it ends left of her coat; the reason a slot is
      shut sits under its name. Plan item 177: flush with the screen's edge it read as bleeding off it, with the neon
