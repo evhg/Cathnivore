@@ -5732,3 +5732,15 @@ body:has(#dlg-pause[open]) .paused-note {
     mask: none;
   }
 }
+
+/* Plan item 661: the round banner, a toast and Cath's tip slid clear of Hollowell's depots (main.ts clearOfDepots) */
+#banner[data-clear="y"],
+#bubble[data-clear="y"] {
+  top: var(--clear-y);
+  bottom: auto;
+}
+#bubble[data-clear="x"] {
+  left: var(--clear-x);
+  right: auto;
+  width: var(--clear-w);
+}

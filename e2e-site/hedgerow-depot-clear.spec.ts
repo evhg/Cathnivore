@@ -28,5 +28,8 @@ test("level 34's round banner and Cath's tip meet no depot", async ({ page }) =>
   expect(await overlaps('.banner.show.round')).toBe(0)
   // her tip on the pie, when it comes up with the round
   const bubble = await expect.poll(() => overlaps('#bubble'), { timeout: 5000 }).not.toBeNull().then(() => true, () => false)
-  if (bubble) expect(await overlaps('#bubble')).toBe(0)
+  if (bubble) {
+    await page.waitForTimeout(500) // its pop-in
+    expect(await overlaps('#bubble')).toBe(0)
+  }
 })

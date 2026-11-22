@@ -4168,7 +4168,7 @@ function banner(text: string, sub = "", boss = false, cls = ""): void {
   }
   ui.banner.className = `banner show${boss ? " boss" : ""}${cls ? ` ${cls}` : ""}`;
   if (cls === "round" || cls === "small") clearOfDepots(ui.banner, cls === "round" ? "down" : "up");
-  else for (const k of ["top", "bottom"]) ui.banner.style.removeProperty(k);
+  else delete ui.banner.dataset.clear;
   clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => ui.banner.classList.remove("show"), boss ? 2600 : 1700);
 }
@@ -4194,12 +4194,10 @@ function depotBoxesIn(host: HTMLElement): Box[] {
  * along the foot first, then up. On level 34 'Round 17: The wall' sat over a phone's top depot and her tip over the
  * lower one at D. Measured from the layout box (the show transitions move it a few px).
  */
+let bubbleClearAt = 0;
 function clearOfDepots(el: HTMLElement, way: "down" | "up" | "along"): void {
-  el.style.removeProperty("top");
-  el.style.removeProperty("bottom");
-  el.style.removeProperty("left");
-  el.style.removeProperty("right");
-  el.style.removeProperty("width");
+  // (the shift is a data attribute and custom properties, read by components.css: no inline layout styles)
+  delete el.dataset.clear;
   const host = el.offsetParent as HTMLElement | null;
   if (!host || el.hidden) return;
   const depots = depotBoxesIn(host);
@@ -4208,7 +4206,8 @@ function clearOfDepots(el: HTMLElement, way: "down" | "up" | "along"): void {
   const h = el.offsetHeight;
   // (a banner is centred with translate(-50%): its layout box starts half its width left of where it paints)
   const dx = el === ui.banner ? -w / 2 : 0;
-  const meets = (x: number, y: number) => depots.some((d) => d.x < x + w + 4 && x - 4 < d.x + d.w && d.y < y + h + 4 && y - 4 < d.y + d.h);
+  // (8 px clear: the pop-in overshoots its box by a few px)
+  const meets = (x: number, y: number) => depots.some((d) => d.x < x + w + 8 && x - 8 < d.x + d.w && d.y < y + h + 8 && y - 8 < d.y + d.h);
   const x0 = el.offsetLeft + dx;
   const y0 = el.offsetTop;
   if (!meets(x0, y0)) return;
@@ -4216,17 +4215,17 @@ function clearOfDepots(el: HTMLElement, way: "down" | "up" | "along"): void {
   if (way === "along")
     for (let x = x0 + 6; x + w <= room.w - 10; x += 6)
       if (!meets(x, y0)) {
-        el.style.width = `${w}px`;
-        el.style.left = `${x}px`;
-        el.style.right = "auto";
+        el.style.setProperty("--clear-w", `${w}px`);
+        el.style.setProperty("--clear-x", `${x}px`);
+        el.dataset.clear = "x";
         return;
       }
   for (let k = 1; k * 6 < room.h; k++) {
     const y = way === "down" ? y0 + k * 6 : y0 - k * 6;
     if (y < 0 || y + h > room.h) break;
     if (!meets(x0, y)) {
-      el.style.top = `${y}px`;
-      el.style.bottom = "auto";
+      el.style.setProperty("--clear-y", `${y}px`);
+      el.dataset.clear = "y";
       return;
     }
   }
@@ -5723,6 +5722,12 @@ function frame(now: number): void {
   renderer.draw(g, paused || introHold || still ? 0 : renderStep(dt * Math.min(speed, 2), now, knockoutUntil));
   syncFieldFit();
   syncCathSay(g, now);
+  // Plan item 661: the tip bubble's spot is re-checked as the field's foot changes under it (a phone's drawer tab
+  // and controls come and go with the round, moving its CSS spot back over a depot).
+  if (!ui.bubble.hidden && now - bubbleClearAt > 300) {
+    bubbleClearAt = now;
+    clearOfDepots(ui.bubble, "along");
+  }
   syncTwists(g);
   // Plan item 162: her pose on the stage (rest, cheer after a clean round, worried after a leak), for tests and CSS.
   const pose = (renderer as { heroMood?: string } | null)?.heroMood;
