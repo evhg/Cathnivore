@@ -3,11 +3,12 @@ import { expect, test } from '@playwright/test'
 // Plan item 657: the fleet you're fighting reads mid-round. Level 21 (sandbox, no towers), round 11: quadcopters
 // from the depot and a burst of stealth lorries out of cover half way down the lane. 3 s after the send the lane
 // carries vehicles, and the lorries that can't be shown one by one stand in a column at the ambush, not on the
-// depot's pier (before, the lane's one column took the depot queue's place). In 3D each vehicle is 40 px+ long.
+// depot's pier (before, the lane's one column took the depot queue's place). In 3D each vehicle is 40 px+ long, and a column is
+// a jam of three with its count on screen, not a stack.
 type HG = {
   game(): { wave: number; enemies: Array<{ dist: number; kind: string; lane?: number }>; pathLength: number }
   sendWave(g: unknown, force?: boolean): void
-  convoy(): { drawn: number; column: number; cols: Array<{ dist: number; count: number; lane: number }> } | null
+  convoy(): { drawn: number; column: number; cols: Array<{ dist: number; count: number; lane: number; shown?: number; counted?: boolean }> } | null
   vehicleBoxes(): Array<{ x: number; y: number; w: number; h: number }>
 }
 
@@ -61,10 +62,20 @@ test('3D: every vehicle on the lane is drawn 40 px or more long', async ({ page,
   test.setTimeout(240_000)
   await open(page, '3d')
   await runFor(page, 6000)
+  // Under a loaded machine's few frames a second the first vehicles can take longer than that to leave the depot.
+  await page.waitForFunction(() => (window as unknown as { hedgerow: HG }).hedgerow.game().enemies.length > 0, null, { timeout: 60_000 })
   const boxes = await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.vehicleBoxes())
   expect(boxes.length).toBeGreaterThan(0)
   const long = boxes.map((b) => Math.max(b.w, b.h)).sort((a, b) => a - b)
   // The median vehicle; quadcopters are square and small by design, lorries long.
   expect(long[Math.floor(long.length / 2)]).toBeGreaterThanOrEqual(40)
+  // A column is a jam of three on the road, not a tower eight vehicles high, and the rest it holds are counted on
+  // screen (its swarm badge or its own '+N' plate).
+  const cv = await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.convoy())
+  expect(cv).not.toBeNull()
+  for (const c of cv!.cols) {
+    expect(c.shown).toBeLessThanOrEqual(3)
+    if (c.count > 3) expect(c.counted).toBe(true)
+  }
   await page.screenshot({ path: 'e2e/screenshots/fleet657/l21-3d-D.png' })
 })

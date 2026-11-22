@@ -54,7 +54,7 @@ import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedG
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
 import { swarms, SWARM_MIN } from "../swarm";
-import { COLUMN_TIERS, columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
+import { ABREAST, columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
@@ -107,6 +107,12 @@ function queueShadowMat(): THREE.MeshBasicMaterial {
 }
 /** Plan item 657: a vehicle's 3D slot along the lane, as a share of its model's length (a sliver of road between). */
 const GAP_3D = 1.08;
+/** Plan item 657: how many of a column's vehicles 3D draws (a jam on the road, not a stack); the rest are its '+N'. */
+const JAM_3D = 3;
+/** Sideways offset of the jam's two rear vehicles, in cells. */
+const JAM_SIDE = 0.22;
+/** Furthest a file of two abreast stands off the lane's middle, in cells. */
+const ROAD_HALF = 0.3;
 const RISE = 0.24;
 const RISE_SPREAD = 0.22;
 /** How long the plinth takes to settle (parts start rising once it's down, unless it's an upgrade). */
@@ -312,6 +318,12 @@ export class Renderer3D {
   private bossBar: HTMLElement;
   /** Swarm badges (plan item 10), one per queue of more than 12, pooled; `key` is what each one shows. */
   private swarmEls: Array<{ el: HTMLElement; key: string }> = [];
+  /** Plan item 657: a '+N' plate per column no swarm badge rides. */
+  private columnEls: HTMLElement[] = [];
+  /** Plan item 657: the columns counted on screen last frame (by a swarm badge or their own plate). */
+  private countedCols = new Set<ConvoyColumn>();
+  /** Plan item 657: how many of each column's vehicles were drawn last frame. */
+  private jamDrawn = new Map<ConvoyColumn, number>();
   /** Plan item 45: this frame's convoy layout (syncEnemies), which the swarm badges ride. */
   private lay: Convoy = noConvoy();
   /** Plan item 45: each tower's pooled Marks and its "+N" label. */
@@ -1080,6 +1092,13 @@ export class Renderer3D {
       ys.push(((1 - v.y) / 2) * r.height);
     }
     return { w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+  }
+
+  /** Plan item 657: the 3D convoy for the e2e tests: how many each column holds and draws (a jam, never a stack)
+   * and whether its count is on screen. */
+  convoyStats(): { drawn: number; column: number; cols: Array<{ dist: number; count: number; lane: number; shown: number; counted: boolean }> } {
+    const cols = this.lay.columns.map((c) => ({ dist: c.dist, count: c.count, lane: c.lane ?? 0, shown: this.jamDrawn.get(c) ?? 0, counted: this.countedCols.has(c) }));
+    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, cols };
   }
 
   /** Plan item 215: each vehicle's box on screen (CSS px, the canvas's own frame), for the size checks: its
@@ -2328,10 +2347,48 @@ export class Renderer3D {
     // so their near side, cab and wheels turn up to it instead of reading as roofs (stacked boxes).
     const tilt = this.steepTilt();
     if (this.rungs) this.rungs.tilt = tilt;
+    this.jamDrawn.clear();
     for (const e of game.enemies) {
       const at = placeOnLane(game.level, e, lay);
-      const tierUp = at.tier * 0.26 * enemyScale(e.kind);
+      // Plan item 657: in 3D a column is a jam of JAM_3D on the road (the head, two staggered behind it), not a tower
+      // eight vehicles high (a stack of lorries, the quads a pile of discs); the rest wait in it unseen, counted on
+      // the swarm badge or the column's own '+N' plate (syncSwarms).
+      const ci = lay.inColumn.get(e.id);
+      const hidden = ci !== undefined && ci >= JAM_3D;
+      if (ci !== undefined && !hidden) {
+        const col = lay.columnOf.get(e.id);
+        if (col) this.jamDrawn.set(col, (this.jamDrawn.get(col) ?? 0) + 1);
+      }
+      if (ci !== undefined && ci > 0 && !hidden) {
+        const col = lay.columnOf.get(e.id);
+        const cd = col?.dist ?? e.dist;
+        const ln = e.lane ? { lane: e.lane } : {};
+        const back = (rungs?.drawnLength(e.kind) ?? SLOT_LEN * enemyScale(e.kind)) * 0.55;
+        const q = enemyPoint(game.level, { dist: Math.max(0, cd - back), ...ln });
+        const r = enemyPoint(game.level, { dist: Math.max(0, cd - back) + 0.05, ...ln });
+        const dx = r.x - q.x;
+        const dy = r.y - q.y;
+        const l = Math.hypot(dx, dy) || 1;
+        const side = ci === 1 ? -JAM_SIDE : JAM_SIDE;
+        at.x = q.x - (dy / l) * side;
+        at.y = q.y + (dx / l) * side;
+      }
+      // Plan item 657: two abreast, each file stands half the model's width off the lane's middle (ABREAST, 0.2 cells,
+      // overlapped the quads' rotor spans into one pile of discs), within the road's edge.
+      const sl = lay.slots.get(e.id);
+      const wd = sl?.side ? rungs?.drawnWidth(e.kind) : undefined;
+      if (sl?.side && wd !== undefined && wd / 2 > ABREAST) {
+        const ln = e.lane ? { lane: e.lane } : {};
+        const q = enemyPoint(game.level, { dist: sl.dist, ...ln });
+        const r = enemyPoint(game.level, { dist: sl.dist + 0.05, ...ln });
+        const l = Math.hypot(r.x - q.x, r.y - q.y) || 1;
+        const off = Math.min(ROAD_HALF, (wd / 2) * 1.04) * sl.side;
+        at.x = q.x - ((r.y - q.y) / l) * off;
+        at.y = q.y + ((r.x - q.x) / l) * off;
+      }
+      const tierUp = 0;
       if (fleet && this.rungs?.has(e.kind)) {
+        if (hidden) continue;
         // Instanced: heading from the lane's direction, a little bob, no per-vehicle objects.
         const p = at;
         // Plan item 657: along the run it is drawn on (from its true place, one held back round a bend sat askew).
@@ -2422,7 +2479,7 @@ export class Renderer3D {
       if (rings) rings.rotation.y += dt * 1.5;
       // Stealth: a cloaked shimmer until a Radio Mast sees it.
       const ghost = !isRevealed(game, e);
-      v.obj.visible = !ghost || Math.sin(t * 25 + e.id) > 0.75;
+      v.obj.visible = !hidden && (!ghost || Math.sin(t * 25 + e.id) > 0.75);
       // Status effects as particles.
       const top = gy + lift + 0.62 * enemyScale(e.kind);
       if (e.stun > 0 && Math.random() < dt * 10) this.sparks.emit(p.x, top + 0.1, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
@@ -2442,8 +2499,8 @@ export class Renderer3D {
       if (crack >= 3 && Math.random() < dt * 7) this.sparks.emit(p.x, top + 0.15, p.y, "#7a7a7a", 1, 0.3, 0.18, 1.1, 1.2);
       else if (crack === 2 && Math.random() < dt * 2) this.sparks.emit(p.x, top, p.y, "#555", 1, 0.3, 0.12, 0.8, 0.6);
       const frac = Math.max(0, Math.min(1, e.hp / max));
-      if (fleet && e.pm) this.rungs?.addIcons(e.pm, p.x, top + 0.34, p.y);
-      v.bar.visible = frac < 1 && !ghost && !isBig(e.kind);
+      if (fleet && e.pm && !hidden) this.rungs?.addIcons(e.pm, p.x, top + 0.34, p.y);
+      v.bar.visible = frac < 1 && !ghost && !hidden && !isBig(e.kind);
       if (v.bar.visible) {
         v.bar.position.set(p.x, top + 0.2, p.y);
         v.bar.quaternion.copy(this.camera.quaternion);
@@ -3258,6 +3315,7 @@ export class Renderer3D {
     const list = game.phase === "wave" ? swarms(game.enemies) : [];
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
+    const ridden = new Set<ConvoyColumn>();
     list.forEach((sw, i) => {
       let slot = this.swarmEls[i];
       if (!slot) {
@@ -3297,12 +3355,37 @@ export class Renderer3D {
       // Where the queue has a column (convoy.ts), the badge rides its head.
       const col: ConvoyColumn | undefined = columnNear(this.lay, sw.lane, sw.dist);
       const p = enemyPoint(game.level, col ? { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) } : sw);
-      const up = col ? 1.1 + Math.min(col.count, COLUMN_TIERS) * 0.26 : 1.1;
+      if (col) ridden.add(col);
+      const up = 1.1;
       const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + up, p.y).project(this.camera);
       slot.el.hidden = false;
       slot.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
     });
     for (let i = list.length; i < this.swarmEls.length; i++) this.swarmEls[i]!.el.hidden = true;
+    // Plan item 657: a column no badge rides shows how many wait in it past the JAM_3D drawn.
+    let n = 0;
+    this.countedCols = new Set(ridden);
+    if (game.phase === "wave")
+      for (const col of this.lay.columns) {
+        if (ridden.has(col) || col.count <= JAM_3D) continue;
+        let el = this.columnEls[n];
+        if (!el) {
+          el = document.createElement("div");
+          el.className = "swarm-badge column-count";
+          el.setAttribute("aria-hidden", "true");
+          el.append(document.createElement("b"));
+          this.overlayEl.append(el);
+          this.columnEls.push(el);
+        }
+        n++;
+        this.countedCols.add(col);
+        el.firstElementChild!.textContent = `+${col.count - JAM_3D}`;
+        const p = enemyPoint(game.level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
+        const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + 0.9, p.y).project(this.camera);
+        el.hidden = false;
+        el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
+      }
+    for (let i = n; i < this.columnEls.length; i++) this.columnEls[i]!.hidden = true;
   }
 
   /** Plan item 45: each tower's pooled Marks, one "+N" over it that counts up while it knocks and fades once it stops. */

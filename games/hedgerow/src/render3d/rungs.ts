@@ -132,6 +132,8 @@ export class RungInstances {
   private outlines = new Map<EnemyKind, THREE.InstancedMesh>();
   /** Each kind's model length (its x extent at scale 1). */
   private lengths = new Map<EnemyKind, number>();
+  /** Each kind's model width (its z extent at scale 1). */
+  private widths = new Map<EnemyKind, number>();
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
   private s = new THREE.Vector3();
@@ -153,6 +155,7 @@ export class RungInstances {
       const geo = bakeModel(model);
       geo.computeBoundingBox();
       this.lengths.set(kind, geo.boundingBox ? geo.boundingBox.max.x - geo.boundingBox.min.x : 0.55);
+      this.widths.set(kind, geo.boundingBox ? geo.boundingBox.max.z - geo.boundingBox.min.z : 0.3);
       const mesh = new THREE.InstancedMesh(geo, mat, CAPACITY);
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.count = 0;
@@ -232,6 +235,12 @@ export class RungInstances {
    * instanced. The convoy spaces the 3D queue by it: on SLOT_LEN slots a lorry (1.31 cells long) overlapped the next by
    * nearly half and a packed queue read as one dark slab.
    */
+  /** Plan item 657: a kind's drawn width across the lane, in cells (undefined when it isn't instanced). */
+  drawnWidth(kind: EnemyKind): number | undefined {
+    const l = this.widths.get(kind);
+    return l === undefined ? undefined : l * enemyScale(kind) * 1.3;
+  }
+
   drawnLength(kind: EnemyKind): number | undefined {
     const l = this.lengths.get(kind);
     return l === undefined ? undefined : l * enemyScale(kind) * 1.3;

@@ -1710,7 +1710,8 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       g.add(box(0.3, 0.08, 0.3, gloss("#f08a3c", 0.3), 0, 0, 0));
       for (const [x, z] of [[0.2, 0.2], [-0.2, 0.2], [0.2, -0.2], [-0.2, -0.2]] as const) {
         g.add(cyl(0.03, 0.03, 0.04, metal("#3b3f44"), x, 0.05, z, 8));
-        g.add(mesh(geo("quadrotor", () => new THREE.CylinderGeometry(0.11, 0.11, 0.005, 12)), matte("#cfd6dc", 0.5), x, 0.1, z));
+        // Plan item 657: the rotors a dark blur, a little smaller: pale full discs read as a pile of plates, not drones.
+        g.add(mesh(geo("quadrotor", () => new THREE.CylinderGeometry(0.09, 0.09, 0.005, 12)), matte("#5d666e", 0.5), x, 0.1, z));
       }
       g.add(box(0.2, 0.14, 0.2, matte("#c79a62"), 0, -0.2, 0), box(0.21, 0.03, 0.03, matte("#e0c48a"), 0, -0.13, 0));
       return g;
