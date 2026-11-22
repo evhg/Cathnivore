@@ -885,7 +885,9 @@ export class Renderer3D {
       return t;
     };
     const foot = () => Math.max(py(0, 0, rows + 0.25), py(cols, 0, rows + 0.25));
-    const TOP = 3, FOOT = h - 3;
+    // (6 px: since item 637's tighter phone dock the canvas starts ~4.5 px under the HUD, not 6, and 3 left the depot 7 px
+    // under it where 8 is wanted)
+    const TOP = 6, FOOT = h - 3;
     place(1, 0);
     if (top() >= TOP) return;
     for (let s = 1; s <= 1.4001; s += 0.004) {
