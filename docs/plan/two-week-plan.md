@@ -6065,7 +6065,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** tower art 56 px+ at D, 44 px+ at P; role text 13 px+ at AA; no unexplained glyph badges; picking a packet lifts it within 250 ms (e2e in `?2d`); hedgerow tray/shop specs pass; shot P, D and L.
 - **Size:** 2
 
-## 629. [ ] NIGHT SHIFT: the case loading screen as a staged briefing
+## 629. [ ] NIGHT SHIFT: the case loading screen as a staged briefing *(lane A, in progress)*
 *(planned 2026-11-21 23:25, lane A, plan1121m critique)*
 - **Why:** `plan1121m/ns-street-D` (the case loader, 'Julian Crisp 94%'): about 60% of the frame is empty black rain (640-1440 x 430-900); Cath is a 64 px 2D bust (68-130 x 725-818) unlike her 3D self on the title and pick; The List (1290-1385 x 755-815) is tiny. VISION 5, 1.
 - **Build:** `games/cathode/src/ui/` loader (find the view that renders it; busts.ts, districtmap.ts): a case-file briefing: the target's surveillance still pinned by the quote, the district's survey map with a red-string route to the objective, Cath as the large class-pick poster render (not the bust), progress as the string drawing itself.
