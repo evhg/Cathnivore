@@ -9,6 +9,10 @@ import { boardHexes, computeFlow, currentMask, DIRECTIONS, hashString, neighbour
 
 const SVG = 'http://www.w3.org/2000/svg'
 const S = 50 // hex circumradius in SVG units
+/** Plan item 646: the channel's width (banks, lips, hub) over item 61's, and the water's, so the water reads as a
+ *  running ribbon from across the room rather than a thin line (CSS widths scale with them). */
+const CW = 1.35
+const WATER_W = 1.75
 /** Plan item 264: how far a tile's side shows under its face (SVG units). */
 const TILE_SIDE = 5
 const APOTHEM = (S * Math.sqrt(3)) / 2
@@ -367,20 +371,20 @@ export class Board {
       const nx = -Math.sin(a)
       const ny = Math.cos(a)
       for (const side of [1, -1] as const) {
-        const o = 4.6 * side
+        const o = 4.6 * CW * side
         const line = el('line', { x1: nx * o, y1: ny * o, x2: end.x + nx * o, y2: end.y + ny * o, class: 'bank' }, grooves)
         view.banks.push({ line, dir: d, side })
         // Plan item 97: the cut edge on the shaded side throws a shadow down its wall (hidden on the sunlit side),
         // so the ditch reads as dug into the soil rather than laid on it.
-        const c = 7.9 * side
+        const c = 7.9 * CW * side
         const cast = el('line', { x1: nx * c, y1: ny * c, x2: end.x + nx * c, y2: end.y + ny * c, class: 'bank-cast' }, grooves)
         view.banks.push({ line: cast, dir: d, side })
         // The shaded wall's foot darkens into the damp bed (the sunlit wall stays lit to the bed).
-        const f = 3.6 * side
+        const f = 3.6 * CW * side
         const foot = el('line', { x1: nx * f, y1: ny * f, x2: end.x + nx * f, y2: end.y + ny * f, class: 'bank-foot' }, grooves)
         view.banks.push({ line: foot, dir: d, side })
         // A ragged cut edge: spoil from the digging thrown just past the lip, so the edge is not ruled.
-        const r = 11.4 * side
+        const r = 11.4 * CW * side
         const crumb = el('line', { x1: nx * r, y1: ny * r, x2: end.x + nx * r, y2: end.y + ny * r, class: 'lip-crumb' }, grooves)
         crumb.style.setProperty('stroke-dashoffset', `${((seed >>> (d * 3 + (side > 0 ? 1 : 0))) % 7) * 0.9}`)
       }
@@ -389,7 +393,7 @@ export class Board {
       const h = (seed >>> (d * 4)) & 0xff
       if (h % 3 !== 0) {
         const t = 0.4 + (h / 255) * 0.45
-        const o = ((h >> 2) % 3 - 1) * 1.3
+        const o = ((h >> 2) % 3 - 1) * 1.3 * CW
         el('circle', { cx: end.x * t + nx * o, cy: end.y * t + ny * o, r: 0.7 + (h % 2) * 0.35, class: 'pebble' }, grooves)
       }
       const water = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'water' }, waters)
@@ -399,12 +403,12 @@ export class Board {
       const sh = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'shimmer' }, shimmer)
       sh.dataset.dir = String(d)
     }
-    el('circle', { r: S * 0.2 + 1.6, class: 'hub-cut' }, cuts)
-    el('circle', { r: S * 0.2, class: 'hub-lip' }, lips)
-    el('circle', { r: S * 0.17, class: 'hub-groove' }, grooves)
-    el('circle', { r: S * 0.155, class: 'hub-basin' }, grooves)
-    el('circle', { r: S * 0.1, class: 'hub-bed' }, grooves)
-    el('circle', { r: S * 0.1, class: 'hub-water' }, waters)
+    el('circle', { r: S * 0.2 * CW + 1.6, class: 'hub-cut' }, cuts)
+    el('circle', { r: S * 0.2 * CW, class: 'hub-lip' }, lips)
+    el('circle', { r: S * 0.17 * CW, class: 'hub-groove' }, grooves)
+    el('circle', { r: S * 0.155 * CW, class: 'hub-basin' }, grooves)
+    el('circle', { r: S * 0.1 * WATER_W, class: 'hub-bed' }, grooves)
+    el('circle', { r: S * 0.1 * WATER_W, class: 'hub-water' }, waters)
     // Plan item 323: the hub is a small wooden sluice, not a grey washer: a plank rim (CSS), and a gate board on two
     // posts across it, square to the first channel, turning with the tile.
     const first = view.spokeDirs[0] ?? 0

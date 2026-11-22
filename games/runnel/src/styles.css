@@ -5402,3 +5402,13 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 /* (and 'The month' tab: its name on one line, centred with the summary beside it) */
 .rail-more-tab { align-items: center; }
 .rail-more-tab > span:first-child { white-space: nowrap; }
+
+/* Plan item 646: a wider channel (x1.35, board.ts CW) carrying a ribbon of water ~1.75x item 97's (WATER_W), so the
+   water reads as running water from across the room, not a line. */
+.groove { stroke-width: 25.6; }
+.groove-lip { stroke-width: 29.7; }
+.groove-cut { stroke-width: 34; }
+.bank { stroke-width: 12.4; }
+.groove-bed { stroke-width: 11.4; }
+.water { stroke-width: 13.1; }
+.shimmer { stroke-width: 4.6; stroke-dasharray: 0.05 0.6; }
