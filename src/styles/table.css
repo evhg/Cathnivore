@@ -3438,7 +3438,7 @@ html.no-animations .table-cath-line { animation: none; }
   /* One row: the picture is the top 60% of the face, edge to edge (the card's own corners clip it). */
   .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 72px; }
   /* a name that wouldn't fit under the 60% window (measured in Game.tsx) gives it back 4 px */
-  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 64px; }
+  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 58px; }
   .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
   .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-card-draggable { position: relative; padding-top: 0; padding-bottom: 5px; gap: 3px; border-width: 3px; }
   /* the picture already says what is sold: the band names the count alone (the accessible name keeps the word) */
@@ -3469,7 +3469,7 @@ html.no-animations .table-cath-line { animation: none; }
 }
 @media (min-width: 1240px) and (min-height: 861px) {
   .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 80px; }
-  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 72px; }
+  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 64px; }
 }
 @media (min-width: 1240px) and (min-height: 760px) {
   /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
@@ -6708,4 +6708,46 @@ html.no-animations .table-cath-figure { animation: none; }
       inset 0 0 160px rgb(var(--shadow-ink) / .26), inset 0 1px 0 var(--ink-a08),
       0 0 0 4px var(--wood), 0 0 0 6px var(--wood-lo), 0 8px 18px rgb(var(--shadow-ink) / .22);
   }
+}
+
+/* Plan item 632: on a big desktop the board is the hero. Tomorrow's papers stand as a stack in the cloth's top-right
+   corner (beside Saltmarsh, over Rivermead's shoulder) and Pell beside the Market Board in its top-left, so the map
+   runs from the table's top edge to the hand and the hexes (sized by height) grow into it. */
+@media (min-width: 1400px) and (min-height: 860px) {
+  .game:has(.table-head.with-table-cath) { position: relative; }
+  .game:has(.table-head.with-table-cath) .map-wrap { grid-row: 1 / 3; }
+  .game:has(.table-head.with-table-cath) .market-board { z-index: var(--z-raised); align-self: start; margin-top: 4px; }
+  .game:has(.table-head.with-table-cath) .table-head {
+    grid-row: 1 / 3;
+    align-self: start;
+    justify-self: end;
+    z-index: var(--z-raised);
+    display: block;
+    width: 206px;
+    margin: 8px 66px 0 0;
+    padding: 0;
+  }
+  .game:has(.table-head.with-table-cath) .table-head .plan-strip {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+    padding: 4px 3px 3px;
+  }
+  .game:has(.table-head.with-table-cath) .table-head .plan-strip-item { rotate: none; }
+  .game:has(.table-head.with-table-cath) .plan-strip[data-corp]::before { right: -6px; border-radius: 16px; }
+  .game:has(.table-head.with-table-cath) .table-head .rival {
+    position: absolute;
+    top: 6px;
+    left: 222px;
+    margin: 0;
+  }
+  .game:has(.table-head.with-table-cath) .event-ticket { top: 82px; }
+  .game-layout .game:has(.table-head.with-table-cath) .map-wrap > .map-key { top: 300px; }
+  /* the plaque's tab names the plan under the stack, inside its width */
+  .game:has(.table-head.with-table-cath) .table-head .plan-plaque-tab { max-width: 100%; gap: 5px; padding-inline: 4px; font-size: .8125rem; letter-spacing: .01em; overflow: hidden; }
+  .game:has(.table-head.with-table-cath) .table-head .plan-plaque-tab > * { letter-spacing: inherit; }
+  /* her bubble keeps clear of Brindle Hills' left edge */
+  .game:has(.table-head.with-table-cath) .table-cath-line { margin-right: 14px; }
+  /* she stands clear of Brindle Hills' left edge (the board's box reaches 533 px at 1440x900) */
+  .game:has(.table-head.with-table-cath) .table-cath { width: 192px; }
+  .game:has(.table-head.with-table-cath) .table-cath-figure :is(.cath-art, svg) { width: 206px; }
 }

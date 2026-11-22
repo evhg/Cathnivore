@@ -19,9 +19,18 @@ test('Hollowell\'s rival bust docks opposite Cath at D', async ({ page }, testIn
     const cath = (await page.locator('.table-cath').boundingBox())!
     const papers = (await page.locator('.plan-strip').boundingBox())!
     // Opposite Cath: right of the papers, and she is at the row's other end (plan item 118: at the table's left edge).
-    expect(papers.x + papers.width).toBeLessThanOrEqual(r.x + 1)
-    expect(cath.x + cath.width).toBeLessThan(papers.x + papers.width / 2)
-    expect(Math.abs(r.y + r.height / 2 - (papers.y + papers.height / 2))).toBeLessThan(40)
+    if (width < 1400) {
+      expect(papers.x + papers.width).toBeLessThanOrEqual(r.x + 1)
+      expect(cath.x + cath.width).toBeLessThan(papers.x + papers.width / 2)
+      expect(Math.abs(r.y + r.height / 2 - (papers.y + papers.height / 2))).toBeLessThan(40)
+    } else {
+      // Plan item 632: at 1440x900 he sits in the cloth's top-left corner beside the readings, over Cath's head; the
+      // papers stand as a stack in the top-right corner.
+      const board = (await page.locator('.market-board').boundingBox())!
+      expect(r.x).toBeGreaterThanOrEqual(board.x + board.width)
+      expect(r.y + r.height).toBeLessThanOrEqual(cath.y + 1)
+      expect(papers.x).toBeGreaterThan(r.x + r.width + 300)
+    }
     expect(r.x + r.width).toBeLessThanOrEqual(width)
     expect(['smug', 'gloat', 'rattled']).toContain(await rival.getAttribute('data-mood'))
     await expect(rival.getByRole('img', { name: /Graham Pell/ })).toBeVisible()

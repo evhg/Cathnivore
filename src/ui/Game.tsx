@@ -4290,44 +4290,55 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
   const ref = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     const el = ref.current
-    const parent = el?.offsetParent
-    if (!el || !parent) return
-    const at = parent.getBoundingClientRect()
-    const dockLine = el.closest('.cath-dock')?.querySelector('.cath-dock-line')
-    if (el.closest('.counter-bench') && dockLine) {
-      const t = dockLine.getBoundingClientRect()
-      // Custom properties, read by table.css's [data-placed]: the CSP suite allows only those on a style attribute.
-      el.style.setProperty('--pl-left', `${t.left - at.left}px`)
-      el.style.setProperty('--pl-top', `${t.top - at.top}px`)
-      el.style.setProperty('--pl-w', `${t.width}px`)
-      el.style.setProperty('--pl-h', `${t.height}px`)
-      el.dataset.placed = 'dock'
-      // Item 586: the tail can only reach the nearest bust; when the far one speaks it goes, and their name and lit
-      // bust say who it is (the tail pointed Tomas's line at Mara).
-      const nearest = el.closest('.counter-bench')?.querySelector('[data-table-producer]')
-      el.dataset.tail = nearest?.getAttribute('data-table-producer') === reply.producer ? 'near' : 'none'
-      return
+    if (!el) return
+    // Plan item 632: placed again once its entrance (a scale) has settled: measured mid-entrance, a bubble beside a
+    // grown board could slide too little and land on Rivermead's edge.
+    const place = () => {
+      const parent = el.offsetParent
+      if (!parent) return
+      const at = parent.getBoundingClientRect()
+      const dockLine = el.closest('.cath-dock')?.querySelector('.cath-dock-line')
+      if (el.closest('.counter-bench') && dockLine) {
+        const t = dockLine.getBoundingClientRect()
+        // Custom properties, read by table.css's [data-placed]: the CSP suite allows only those on a style attribute.
+        el.style.setProperty('--pl-left', `${t.left - at.left}px`)
+        el.style.setProperty('--pl-top', `${t.top - at.top}px`)
+        el.style.setProperty('--pl-w', `${t.width}px`)
+        el.style.setProperty('--pl-h', `${t.height}px`)
+        el.dataset.placed = 'dock'
+        // Item 586: the tail can only reach the nearest bust; when the far one speaks it goes, and their name and lit
+        // bust say who it is (the tail pointed Tomas's line at Mara).
+        const nearest = el.closest('.counter-bench')?.querySelector('[data-table-producer]')
+        el.dataset.tail = nearest?.getAttribute('data-table-producer') === reply.producer ? 'near' : 'none'
+        return
+      }
+      const map = el.closest('.map-wrap')?.getBoundingClientRect()
+      const me = el.getBoundingClientRect()
+      if (!map) return
+      let clear = map.left + 8
+      // 14 px: the box is the polygon's geometry; its rim stroke reaches about 6 px past it
+      for (const hex of document.querySelectorAll('.region-hex polygon')) {
+        const h = hex.getBoundingClientRect()
+        if (h.width > 0 && h.top < me.bottom && me.top < h.bottom) clear = Math.max(clear, h.right + 14)
+      }
+      const room = map.right - 8 - clear
+      // Plan item 632: the grown board leaves about 140 px right of Rivermead at 1440x900; a narrow bubble there beats one
+      // over the hexes.
+      if (room < 128) return
+      const width = Math.min(240, room)
+      // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
+      const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
+      el.style.setProperty('--pl-left', `${left - at.left}px`)
+      el.style.setProperty('--pl-w', `${width}px`)
+      // Item 553: the tail points down at whoever is speaking, wherever the slide left the bubble (it sat fixed at the
+      // bubble's right, so a slid bubble pointed at the other producer).
+      const seat = el.parentElement?.getBoundingClientRect()
+      if (seat) el.style.setProperty('--pl-tail', `${Math.min(Math.max(seat.left + seat.width / 2 - left - 7, 14), width - 28)}px`)
+      el.dataset.placed = 'map'
     }
-    const map = el.closest('.map-wrap')?.getBoundingClientRect()
-    const me = el.getBoundingClientRect()
-    if (!map) return
-    let clear = map.left + 8
-    for (const hex of document.querySelectorAll('.region-hex polygon:first-of-type')) {
-      const h = hex.getBoundingClientRect()
-      if (h.width > 0 && h.top < me.bottom && me.top < h.bottom) clear = Math.max(clear, h.right + 8)
-    }
-    const room = map.right - 8 - clear
-    if (room < 150) return
-    const width = Math.min(240, room)
-    // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
-    const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)
-    el.style.setProperty('--pl-left', `${left - at.left}px`)
-    el.style.setProperty('--pl-w', `${width}px`)
-    // Item 553: the tail points down at whoever is speaking, wherever the slide left the bubble (it sat fixed at the
-    // bubble's right, so a slid bubble pointed at the other producer).
-    const seat = el.parentElement?.getBoundingClientRect()
-    if (seat) el.style.setProperty('--pl-tail', `${Math.min(Math.max(seat.left + seat.width / 2 - left - 7, 14), width - 28)}px`)
-    el.dataset.placed = 'map'
+    place()
+    el.addEventListener('animationend', place)
+    return () => el.removeEventListener('animationend', place)
   }, [reply])
   return (
     <span ref={ref} className={`producer-line pc-${reply.producer}`} data-producer-line={reply.producer} data-beat={reply.beat} aria-hidden="true">

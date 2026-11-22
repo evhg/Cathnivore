@@ -32,6 +32,7 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
         cath: box(document.querySelector('.table-cath-figure')!),
         bea: box(document.querySelector('.beas-drawing')!),
         scroll: document.documentElement.scrollHeight,
+        svgW: document.querySelector('.map-wrap svg.map')!.getBoundingClientRect().width,
       }
     })
     const at = `${width}x${height}`
@@ -39,8 +40,16 @@ test('the board takes the table at D', async ({ page }, testInfo) => {
     // its target line), so the head is one row of 78 px or less instead of two rows (about 133 px).
     // Plan item 495 slice 2: from 1240 px the fold is the same one row, so the board takes the status bar's row back
     // at 1280x800 too (hexes 16% -> 22% of the window).
-    expect(r.head, at).toBeLessThanOrEqual(78)
-    expect(Math.abs(r.boardTop - r.headTop), `${at} readings beside the papers`).toBeLessThan(12)
+    // Plan item 632: at 1440x900 the papers stand as a stack in the cloth's top-right corner and the map runs from the
+    // table's top edge (the hexes 760 px+ wide, below), so the head row is only the readings and Pell.
+    if (width < 1400) {
+      expect(r.head, at).toBeLessThanOrEqual(78)
+      expect(Math.abs(r.boardTop - r.headTop), `${at} readings beside the papers`).toBeLessThan(12)
+    } else {
+      expect(r.r - r.l, `${at} the board's width`).toBeGreaterThanOrEqual(718)
+      expect(r.svgW, `${at} the drawn board 760 px+ (plan item 632)`).toBeGreaterThanOrEqual(760)
+      expect(r.table.y, `${at} the cloth from the table's top`).toBeLessThan(20)
+    }
     expect(((r.r - r.l) * (r.b - r.t)) / (width * height), `${at} hex board's share of the window`).toBeGreaterThanOrEqual(width >= 1440 ? 0.24 : 0.21)
     expect(r.w, at).toBeGreaterThanOrEqual(minW)
     expect(r.h, at).toBeGreaterThanOrEqual(0.9)

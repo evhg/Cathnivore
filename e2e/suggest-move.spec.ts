@@ -82,7 +82,9 @@ test('desktop: one Cath voice, from her table bubble', async ({ page }, testInfo
     await expect(page.locator('.table-cath [data-testid=suggest-line]')).toHaveCount(1)
     await expect(page.locator('.actions-sheet .frame-title')).toHaveCount(0)
     const [bubble, strip] = await Promise.all([page.locator('.table-cath-line').boundingBox(), page.locator('.plan-strip').first().boundingBox()])
-    expect(bubble && strip && bubble.y >= strip.y + strip.height - 1, `${width}x${height}: bubble below the plan strip`).toBe(true)
+    // Plan item 632: from 1400x860 the papers stand in the cloth's top-right corner, across the board from her bubble.
+    if (width >= 1400 && height >= 860) expect(bubble && strip && bubble.x + bubble.width < strip.x - 300, `${width}x${height}: bubble clear of the papers`).toBe(true)
+    else expect(bubble && strip && bubble.y >= strip.y + strip.height - 1, `${width}x${height}: bubble below the plan strip`).toBe(true)
     await page.evaluate(() => localStorage.clear())
   }
 })
