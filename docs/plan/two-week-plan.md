@@ -6336,7 +6336,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** hatching under 1.3:1 against its base; Cath's token 120 px+ tall at D, 72+ at P (e2e); played stops show their stars in the DOM; shots P and D.
 - **Size:** 2
 
-## 664. [ ] Cathnivore at D: the hand folds to a tray so the table is the hero *(lane A, in progress)*
+## 664. [ ] Cathnivore at D: the hand folds to a tray so the table is the hero *(handed back 2026-11-22 22:35 by lane A, measured, no code: on today's build (Quick Game, default and seed 7, with and without `?e2eHandFan=1`) the D hand is one row of 6 cards, 128-136 px tall at y 737-885 (1280x800: 7 cards at 637-785), not the critique's 11 tiles in 3 rows; the map svg is 1026x726 at (380,14) (57% of 1440x900 by box) but the hexes span about 520-1240 x 40-740 (39%). So the work left is the tray (136 -> 120 px or less, rising on hover/focus) and giving the board the room it frees; measure the board by its hex bounds. Shots scratchpad c664 before-D/D2, fan-D/D2)*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique)*
 - **Why:** `plan1122f/cath-game-D`: the hand shelf takes 335-1410 x 598-885 (about a third of the screen) as 11 flat tiles in 3 rows, art about 80 px and repeated; the board (595-1190 x 40-590) is smaller than the panels round it (VISION 3).
 - **Build:** at D the hand rests as a tray of fanned cards (120 px or less tall) and rises on hover/focus or when an action needs a card; each card face keeps its own art.
