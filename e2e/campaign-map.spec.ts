@@ -441,6 +441,9 @@ test('the map speaks the board: tiles with a body, held land under Hollowell wra
     els.map((e) => [e.getAttribute('data-state'), Number(getComputedStyle(e.querySelector('.cmp-map-wrap')!).opacity)] as const),
   )
   for (const [state, o] of wrap) expect(o, String(state)).toBe(state === 'freed' ? 0 : 1)
+  // the map's own paint: item 659's chapter ticket is an overlay that can lie over a hex's centre (item 666 places it
+  // off the region names, which can put it over a freed tile), so it steps aside for the sample
+  await page.addStyleTag({ content: '.cmp-ticket, .cmp-ticket-lead { visibility: hidden !important; }' })
   const shot = (await page.screenshot()).toString('base64')
   const sat = await page.evaluate(async (shot) => {
     const img = new Image()

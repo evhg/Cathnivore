@@ -45,12 +45,47 @@ export default function CampaignTicket({
       const host = fig.querySelector('.cmp-map-host')?.getBoundingClientRect()
       const minX = s.left - f.left + 8
       const maxX = Math.min(s.right, host ? host.left : s.right) - f.left - 8
-      const right = px - GAP - w < minX && px + GAP + w <= maxX
-      const left = right ? px + GAP : Math.max(minX, px - GAP - w)
-      const top = Math.min(Math.max(py - h / 2, s.top - f.top + 8), s.bottom - f.top - h - 8)
-      const ex = right ? left : left + w
+      const minY = s.top - f.top + 8
+      const maxY = s.bottom - f.top - h - 8
+      // Plan item 666: centred on its stop the ticket hid the region names around it (chapter 1's covered Oakvale's
+      // and Shingle Bay's): try it level, raised and lowered on each side the sheet has room for, and keep the place
+      // that covers least of the names and the other stops (ties go to the old one: level, left of the stop).
+      const keep = [...fig.querySelectorAll('.cmp-map-name, .cmp-pin-disc')]
+        .filter((e) => e !== disc)
+        .map((e) => e.getBoundingClientRect())
+        .map((r) => ({ l: r.left - f.left, t: r.top - f.top, r: r.right - f.left, b: r.bottom - f.top }))
+      const cover = (x: number, y: number) =>
+        keep.reduce((a, k) => a + Math.max(0, Math.min(x + w, k.r) - Math.max(x, k.l)) * Math.max(0, Math.min(y + h, k.b) - Math.max(y, k.t)), 0)
+      // Beside the stop on either side (level, raised, lowered), or above or below it; the least covered wins, a
+      // nearer place winning a near tie.
+      const clampX = (x: number) => Math.min(Math.max(x, minX), maxX - w)
+      const clampY = (y: number) => Math.min(Math.max(y, minY), maxY)
+      const spots: Array<{ x: number; y: number }> = []
+      for (const x of [px - GAP - w, px + GAP]) {
+        if (x < minX || x + w > maxX) continue
+        for (const dy of [0, -0.4, 0.4, -0.75, 0.75]) spots.push({ x, y: clampY(py - h / 2 + dy * h) })
+      }
+      for (const y of [py + GAP * 0.6, py - GAP * 0.6 - h]) {
+        if (y < minY || y > maxY) continue
+        for (const x of [px - w / 2, px - w + 48, px - 48]) spots.push({ x: clampX(x), y })
+      }
+      if (!spots.length) spots.push({ x: clampX(px - GAP - w), y: clampY(py - h / 2) })
+      const near = (x: number, y: number) => Math.hypot(Math.max(x - px, 0, px - x - w), Math.max(y - py, 0, py - y - h))
+      let best = spots[0]!
+      let score = Infinity
+      for (const sp of spots) {
+        const sc = cover(sp.x, sp.y) + near(sp.x, sp.y) * 8
+        if (sc < score) [best, score] = [sp, sc]
+      }
+      const left = best.x
+      const top = best.y
+      // the leader meets the ticket's edge nearest the stop
+      const ex = Math.min(Math.max(px, left + 18), left + w - 18)
       const ey = Math.min(Math.max(py, top + 18), top + h - 18)
-      setPlace({ left, top, px, py, ex, ey })
+      const side = px < left ? 'l' : px > left + w ? 'r' : py < top ? 't' : 'b'
+      const exx = side === 'l' ? left : side === 'r' ? left + w : ex
+      const eyy = side === 't' ? top : side === 'b' ? top + h : ey
+      setPlace({ left, top, px, py, ex: exx, ey: eyy })
     }
     measure()
     if (typeof ResizeObserver === 'undefined') return
