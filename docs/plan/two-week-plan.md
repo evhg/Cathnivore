@@ -6112,7 +6112,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each region's landmark 25%+ of its hex's width at D and P, no two sharing a silhouette; pieces and labels never overlap the landmark or each other (board-landmarks, board-pieces specs); scout chits 28 px+ at P; shot P and D, light and dark.
 - **Size:** 3
 
-## 635. [ ] Cathnivore phone: the hand as a fanned deck you can read
+## 635. [ ] Cathnivore phone: the hand as a fanned deck you can read *(lane B, in progress)*
 *(planned 2026-11-22 03:25, lane A, plan1122a critique)*
 - **Why:** `plan1122a/cath-game-P` 0-390 x 610-780: eight cards overlap so seven are slivers with no readable title, a separate '8 more' pill sits above; the lifted card hides its neighbours. VISION 1, 3.
 - **Build:** `src/ui/Game.tsx` phone hand, table css: an arcing fan where every card keeps a title-and-cost strip; a swipe scrubs the lift; the 'more' pill becomes the drawn deck stack it opens.
