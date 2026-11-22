@@ -3,7 +3,7 @@ import { ABILITY_MOMENT_MS, abilityUsed, type AbilityMomentView } from './abilit
 import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, regionControl, squeezedLastTurn, type GripStage } from './grip'
-import { COUNT_FROM, ENEMY_Y, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
+import { COUNT_FROM, ENEMY_Y, outletStage, type OutletStage, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
@@ -284,9 +284,12 @@ function ShrinkWrap({ x, y, tight }: { x: number; y: number; tight: boolean }) {
 // Outlet: a sawtooth-roofed chain storefront: an H on its fascia, a striped awning, a dark plate-glass window and
 // door. Item 139's wordless price tag hangs off the awning's corner when there is room (`ornament`).
 const OUTLET_ROOF = '0.4,4.4 0.4,2.6 3.1,0.6 3.1,2.6 5.9,0.6 5.9,2.6 8.7,0.6 8.7,2.6 11.6,2.6 11.6,4.4'
-export function Outlet({ ornament = true }: { ornament?: boolean }) {
+// Plan item 645: one glossy shape per stage, so a board of Outlets isn't one icon nine times: a region's lone Outlet is
+// a pop-up kiosk (a serving hatch on a chrome ledge), two make the storefront, three or more a superstore (full-width
+// sliding glass under a lit roundel, skylights in the roof's teeth). The roof's sawtooth (item 172's outline) stays.
+export function Outlet({ ornament = true, stage = 2 }: { ornament?: boolean; stage?: OutletStage }) {
   return (
-    <g className="enemy-piece enemy-outlet">
+    <g className="enemy-piece enemy-outlet" data-stage={stage}>
       {/* the moulded side, a deep step under the face (no ink line: plan item 413) */}
       <g transform="translate(0.8 0.9)" className="corp-shadow" fill="var(--hollowell-ink)">
         <polygon points={OUTLET_ROOF} />
@@ -297,17 +300,40 @@ export function Outlet({ ornament = true }: { ornament?: boolean }) {
       <rect x={0.6} y={4} width={10.8} height={8} fill="url(#hollowell-gloss)" />
       <rect className="corp-chrome-rim" x={0.6} y={4} width={10.8} height={8} fill="none" stroke="var(--corp-chrome)" strokeWidth={0.45} />
       <rect x={0.6} y={4} width={10.8} height={2.1} fill="var(--hollowell-ink)" />
-      <path d="M 5,4.5 v 1.2 M 7,4.5 v 1.2 M 5,5.1 h 2" stroke="var(--corp-acrylic)" strokeWidth={0.55} strokeLinecap="round" fill="none" />
+      {stage === 3 && <circle cx={6} cy={5.05} r={1.15} fill="var(--corp-acrylic)" />}
+      <path d="M 5,4.5 v 1.2 M 7,4.5 v 1.2 M 5,5.1 h 2" stroke={stage === 3 ? 'var(--hollowell)' : 'var(--corp-acrylic)'} strokeWidth={0.55} strokeLinecap="round" fill="none" transform={stage === 3 ? 'translate(6 5.1) scale(0.75) translate(-6 -5.1)' : undefined} />
       {/* the striped awning, scalloped along its lip */}
       <polygon points="0,6.1 12,6.1 12.4,7.8 -0.4,7.8" fill="var(--corp-acrylic)" />
       {[0, 2, 4].map((i) => (
         <polygon key={i} points={`${i * 2.4},6.1 ${(i + 1) * 2.4},6.1 ${(i + 1) * 2.56 - 0.4},7.8 ${i * 2.56 - 0.4},7.8`} fill="var(--hollowell)" />
       ))}
       <path d="M -0.4,7.8 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0 q 1.07,1 2.13,0" fill="var(--hollowell-ink)" opacity={0.55} />
-      {/* plate-glass window and door, one highlight across the glass */}
-      <rect x={1.5} y={8.6} width={5.4} height={3.4} rx={0.3} fill="var(--corp-slate)" />
-      <rect x={7.7} y={8.6} width={2.8} height={3.4} rx={0.3} fill="var(--corp-slate)" />
-      <path className="corp-specular" d="M 2.4,11.4 L 4.4,9.1" stroke="white" strokeWidth={0.7} strokeLinecap="round" opacity={0.7} />
+      {stage === 1 ? (
+        <g className="outlet-kiosk">
+          {/* the pop-up's serving hatch on a chrome ledge */}
+          <rect x={1.6} y={8.5} width={8.8} height={2.3} rx={0.3} fill="var(--corp-slate)" />
+          <rect x={1.1} y={10.7} width={9.8} height={0.8} rx={0.3} fill="var(--corp-chrome)" />
+          <path className="corp-specular" d="M 2.6,10.2 L 4,8.9" stroke="white" strokeWidth={0.7} strokeLinecap="round" opacity={0.7} />
+        </g>
+      ) : stage === 2 ? (
+        <g className="outlet-store">
+          {/* plate-glass window and door, one highlight across the glass */}
+          <rect x={1.5} y={8.6} width={5.4} height={3.4} rx={0.3} fill="var(--corp-slate)" />
+          <rect x={7.7} y={8.6} width={2.8} height={3.4} rx={0.3} fill="var(--corp-slate)" />
+          <path className="corp-specular" d="M 2.4,11.4 L 4.4,9.1" stroke="white" strokeWidth={0.7} strokeLinecap="round" opacity={0.7} />
+        </g>
+      ) : (
+        <g className="outlet-superstore">
+          {/* full-width sliding glass in three panes, skylights in the roof's teeth */}
+          <rect x={1.1} y={8.5} width={9.8} height={3.5} rx={0.3} fill="var(--corp-slate)" />
+          <path d="M 4.4,8.5 V 12 M 7.6,8.5 V 12" stroke="var(--corp-chrome)" strokeWidth={0.45} />
+          <path className="corp-specular" d="M 1.9,11.5 L 3.6,9" stroke="white" strokeWidth={0.7} strokeLinecap="round" opacity={0.7} />
+          <path d="M 5.4,11.5 L 6.8,9.4" stroke="white" strokeWidth={0.5} strokeLinecap="round" opacity={0.45} />
+          {[3.1, 5.9, 8.7].map((x) => (
+            <path key={x} d={`M ${x - 0.35},1.25 V 2.4`} stroke="var(--corp-acrylic)" strokeWidth={0.55} strokeLinecap="round" opacity={0.9} />
+          ))}
+        </g>
+      )}
       <path d="M 1.2,3.7 L 2.9,2.4" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
       {ornament && <g transform="translate(9.6,7.2) rotate(14)">
         <path d="M 0.6,0 v 0.9" stroke="var(--corp-chrome)" strokeWidth={0.35} />
@@ -407,7 +433,7 @@ function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlet
   // so the piece fills the slot now, less 0.2 a side (slice 3; was 0.4) so neighbours keep their 3-unit gap.
   const k = Math.min((STACK_W * scale) / 16, (STACK_H * scale) / 18.6)
   const bottom = cy + (STACK_H * scale) / 2
-  const icon = kind === 'outlets' ? <Outlet ornament={ornaments} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
+  const icon = kind === 'outlets' ? <Outlet ornament={ornaments} stage={outletStage(n)} /> : kind === 'buyouts' ? <Buyout ornament={ornaments} /> : <Doubt />
   // Plan item 413: one piece a kind (item 172's pile of copies cluttered every hex); the count says how many.
   return (
     <g className={`enemy-stack enemy-stack-${kind}`}>
@@ -424,58 +450,110 @@ function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlet
 }
 
 /**
- * Plan item 63: a producer's stalls as a standing painted miniature: their portrait bust on an arched standee
- * over a round base in their colour, casting a shadow, matte against Hollowell's glossy plastic. x from the
- * slot's left, y in tile units round the tile centre. The colour-blind setting stamps their initial on the base.
+ * Plan item 63: a producer's stalls as a standing painted miniature, matte against Hollowell's glossy plastic. x from
+ * the slot's left, y in tile units round the tile centre. The colour-blind setting stamps their initial on the base.
+ * Plan item 645: the miniature is the producer's own wooden market stall, not a portrait card: a cloth awning striped
+ * in their colour on two turned posts, the producer standing behind a plank counter, a basket of wares on it, all on
+ * their round base. It grows as their engine does: a second stall on the region stacks a crate on the counter, a
+ * third a second crate (the `pile-copy` pieces), so a held region reads as a busy stall from across the table.
  */
-function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = PRODUCER_Y }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace; py?: number }) {
+export function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = PRODUCER_Y }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace; py?: number }) {
   const colour = `var(--p-${pid})`
   const w = PRODUCER_W * s
   const cx = w / 2
-  // Plan item 554: 1.8 units under the slot's top (was 1), so the standee's wooden frame stays inside its slot.
+  // Plan item 554: 1.8 units under the slot's top (was 1), so the piece stays inside its slot.
   const top = py - PRODUCER_H * s * 0.6 + 1.8 * s
   const foot = py + PRODUCER_H * s * 0.4 - 4.2 * s
-  // Plan item 554: a wider standee (22.8 of the slot's 26 units; 22 in slice 1, was 20), so the portrait reads as a
-  // piece, not a pin; its frame's outer edge (1.2 a scale plus half a unit past it) stays inside the slot.
   const hw = 11.4 * s
-  const archAt = (h: number) => `M ${cx - h} ${foot} L ${cx - h} ${top + hw} A ${h} ${h} 0 0 1 ${cx + h} ${top + hw} L ${cx + h} ${foot} Z`
-  const arch = archAt(hw)
-  const bustH = hw * 2.5
-  // Plan item 172: two or three stalls stand as a pile of standees, the front one stepped left to make room (the
-  // copies rise only into the slot's spare top unit, so they never meet Hollowell's row above).
+  // The awning: a ridge under the slot's top, its lip 0.9 a scale past the posts, a scalloped valance under it.
+  const lip = top + 6 * s
+  const aw = hw + 0.9 * s
+  const stripes = 5
+  // The posts and the window between them, where the producer stands; the counter across the posts' feet.
+  const post = 2.2 * s
+  const counter = foot - 8.4 * s
+  const winL = cx - hw + post
+  const winW = 2 * (hw - post)
   const copies = Math.min(n, 3)
-  const off = 2.6 * s
-  const shift = ((copies - 1) * off) / 2
+  const plank = 'var(--kraft)'
   return (
-    <g className="producer-mini stall-pin" data-producer={pid} data-face={face ?? 'neutral'}>
-      {/* Plan item 554: the cast shadow kept inside its slot (it reached 0.8 units a scale past the right edge, onto a
-          landmark the layout had placed just clear of the slot) */}
+    <g className="producer-mini stall-pin" data-producer={pid} data-face={face ?? 'neutral'} data-stalls={copies}>
+      {/* Plan item 554: the cast shadow kept inside its slot */}
       <ellipse cx={cx + 0.6 * s} cy={foot + 3 * s} rx={12.4 * s} ry={3.4 * s} className="token-shadow" />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
       <ellipse cx={cx} cy={foot + 1.8 * s} rx={12 * s} ry={3.6 * s} fill="black" opacity={0.28} />
       <ellipse cx={cx} cy={foot} rx={12 * s} ry={3.6 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.8} />
-      {Array.from({ length: copies - 1 }).map((_, j) => (
-        <path key={j} className="pile-copy" d={arch} transform={`translate(${shift - j * off}, ${-(copies - 1 - j) * 0.5 * s})`} fill={colour} stroke="var(--ink)" strokeWidth={1} />
-      ))}
-      <g className="stall-piece" key={n} transform={copies > 1 ? `translate(${-shift} 0)` : undefined}>
+      <g className="stall-piece" key={n}>
         <clipPath id={clip}>
-          <path d={arch} />
+          <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} />
         </clipPath>
-        <path d={arch} fill="var(--paper)" />
+        {/* the stall's back cloth, a shade of their colour, and the producer behind the counter */}
+        <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} fill="var(--paper)" />
+        <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} fill={colour} opacity={0.22} />
         <g clipPath={`url(#${clip})`}>
-          <svg x={cx - hw} y={top} width={hw * 2} height={bustH} viewBox="14 12 72 90" aria-hidden="true">
+          <svg x={winL - 0.6 * s} y={lip - 1.6 * s} width={winW + 1.2 * s} height={(winW + 1.2 * s) * 1.25} viewBox="14 12 72 90" aria-hidden="true">
             <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
           </svg>
-          <rect x={cx - hw} y={top + bustH - 0.5} width={hw * 2} height={foot - top - bustH + 1} fill={colour} />
-          <path d={`M ${cx - hw} ${top + bustH} h ${hw * 2}`} stroke="var(--ink)" strokeWidth={0.6} opacity={0.5} />
         </g>
-        {/* Plan item 554: a turned-wood frame (kraft with a lit inner edge and a grain line), the producer's colour
-            inlaid just inside it, matte against Hollowell's glossy plastic */}
-        <path d={arch} fill="none" stroke="var(--ink)" strokeWidth={2.4 * s + 1} />
-        <path className="standee-wood" d={arch} fill="none" stroke="var(--kraft)" strokeWidth={2.4 * s} />
-        <path className="standee-grain" d={archAt(hw + 0.4 * s)} fill="none" stroke="var(--kraft-lo)" strokeWidth={0.35 * s} strokeDasharray={`${3 * s} ${1.4 * s} ${6 * s} ${2 * s}`} />
-        <path className="standee-shine" d={archAt(hw - 0.8 * s)} fill="none" stroke="var(--paper-hi, #fffaf0)" strokeWidth={0.4 * s} opacity={0.7} />
-        <path d={archAt(hw - 1.6 * s)} fill="none" stroke={colour} strokeWidth={1.1 * s} />
+        {/* two turned posts, kraft with a lit edge and a grain line */}
+        {[cx - hw, cx + hw - post].map((x, i) => (
+          <g key={i} className="stall-post">
+            <rect x={x} y={lip - s} width={post} height={foot - lip + 0.4 * s} fill={plank} stroke="var(--ink)" strokeWidth={0.7} />
+            <path d={`M ${x + post * (i ? 0.3 : 0.7)} ${lip + s} V ${foot - s}`} stroke="var(--kraft-lo)" strokeWidth={0.35 * s} strokeDasharray={`${4 * s} ${1.5 * s}`} />
+          </g>
+        ))}
+        {/* the awning: stripes of their colour and paper, a darker valance scalloped along its lip */}
+        <g className="stall-awning">
+          <polygon points={`${cx - hw + 1.2 * s},${top} ${cx + hw - 1.2 * s},${top} ${cx + aw},${lip} ${cx - aw},${lip}`} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.8} strokeLinejoin="round" />
+          {Array.from({ length: stripes }, (_, i) =>
+            i % 2 ? null : (
+              <polygon
+                key={i}
+                points={`${cx - hw + 1.2 * s + ((2 * hw - 2.4 * s) * i) / stripes},${top} ${cx - hw + 1.2 * s + ((2 * hw - 2.4 * s) * (i + 1)) / stripes},${top} ${cx - aw + (2 * aw * (i + 1)) / stripes},${lip} ${cx - aw + (2 * aw * i) / stripes},${lip}`}
+                fill={colour}
+              />
+            ),
+          )}
+          <path
+            d={`M ${cx - aw} ${lip} ${Array.from({ length: stripes }, () => `q ${aw / stripes} ${2.4 * s} ${(2 * aw) / stripes} 0`).join(' ')} Z`}
+            fill={colour}
+            stroke="var(--ink)"
+            strokeWidth={0.7}
+            strokeLinejoin="round"
+          />
+          <path d={`M ${cx - aw} ${lip} ${Array.from({ length: stripes }, () => `q ${aw / stripes} ${2.4 * s} ${(2 * aw) / stripes} 0`).join(' ')}`} fill="none" stroke="black" strokeWidth={0.9 * s} opacity={0.18} />
+          <polygon points={`${cx - hw + 1.2 * s},${top} ${cx + hw - 1.2 * s},${top} ${cx + aw},${lip} ${cx - aw},${lip}`} fill="none" stroke="var(--ink)" strokeWidth={0.8} strokeLinejoin="round" />
+          <path d={`M ${cx - hw + 2 * s} ${top + 1 * s} L ${cx - hw + 0.4 * s} ${lip - 1 * s}`} stroke="white" strokeWidth={0.5 * s} strokeLinecap="round" opacity={0.5} />
+        </g>
+        {/* the plank counter: its top lit, its front a panel in their colour between two boards */}
+        <rect className="stall-counter" x={cx - hw - 0.4 * s} y={counter} width={2 * hw + 0.8 * s} height={2.4 * s} rx={0.4 * s} fill={plank} stroke="var(--ink)" strokeWidth={0.8} />
+        <path d={`M ${cx - hw + 0.4 * s} ${counter + 0.7 * s} h ${2 * hw - 0.8 * s}`} stroke="var(--paper-hi, #fffaf0)" strokeWidth={0.4 * s} opacity={0.6} />
+        <rect x={cx - hw + post} y={counter + 2.4 * s} width={winW} height={foot - counter - 2.8 * s} fill={colour} stroke="var(--ink)" strokeWidth={0.6} />
+        <path d={`M ${cx - hw + post} ${counter + 4.6 * s} h ${winW} M ${cx} ${counter + 2.4 * s} V ${foot - 0.4 * s}`} stroke="black" strokeWidth={0.4 * s} opacity={0.22} />
+        {/* the wares: a basket of produce, then a crate for each further stall on the region */}
+        <g className="stall-wares">
+          <path d={`M ${cx - 3.6 * s} ${counter} q ${3.6 * s} ${-0.2 * s} ${7.2 * s} 0 l ${-0.8 * s} ${-2.6 * s} h ${-5.6 * s} Z`} fill="var(--kraft-lo)" stroke="var(--ink)" strokeWidth={0.6} />
+          {[
+            [-2.3, 'var(--clay)'],
+            [0, 'var(--wheat)'],
+            [2.3, 'var(--pasture)'],
+          ].map(([dx, f], i) => (
+            <circle key={i} cx={cx + (dx as number) * s} cy={counter - 3 * s} r={1.5 * s} fill={f as string} stroke="var(--ink)" strokeWidth={0.5} />
+          ))}
+        </g>
+        {Array.from({ length: copies - 1 }).map((_, j) => {
+          const x = j === 0 ? cx + hw - 7.2 * s : cx - hw + 1.4 * s
+          const y = counter - 4.6 * s
+          return (
+            <g key={j} className="pile-copy">
+              <rect x={x} y={y} width={5.8 * s} height={4.6 * s} fill={plank} stroke="var(--ink)" strokeWidth={0.7} />
+              <path d={`M ${x} ${y + 1.6 * s} h ${5.8 * s} M ${x} ${y + 3.1 * s} h ${5.8 * s}`} stroke="var(--kraft-lo)" strokeWidth={0.45 * s} />
+              {[1.4, 2.9, 4.4].map((dx, k) => (
+                <circle key={k} cx={x + dx * s} cy={y - 0.4 * s} r={1.1 * s} fill={j === 0 ? 'var(--clay)' : 'var(--pasture)'} stroke="var(--ink)" strokeWidth={0.4} />
+              ))}
+            </g>
+          )
+        })}
         {showInitial && (
           <text x={cx} y={foot - 1.6 * s} textAnchor="middle" className="stall-initial" fontSize={7 * s}>
             {PRODUCER_INITIAL[pid]}

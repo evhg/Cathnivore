@@ -279,3 +279,7 @@ function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx 
     }
   return t
 }
+
+/** Plan item 645: an Outlet stack's look by its count: a lone kiosk, a storefront at two, a superstore from three. */
+export type OutletStage = 1 | 2 | 3
+export const outletStage = (n: number): OutletStage => (n <= 1 ? 1 : n === 2 ? 2 : 3)
