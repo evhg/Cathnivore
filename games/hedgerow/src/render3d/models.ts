@@ -2075,6 +2075,7 @@ export function buildCath(faceTexture: THREE.Texture | null): THREE.Group {
   const skinM = matte(SKIN, 0.6, false);
   // Plan item 102: her parts are named (the materials survive the merges and her lift), so tests and shots can find them.
   jacketM.name = "jacket";
+  sleeveM.name = "sleeve";
   blouseM.name = "blouse";
   root.userData.dress = { id: o.id, mats: { trousers: trousersM, boots: bootsM, jacket: jacketM, blouse: blouseM, sleeve: sleeveM } };
   // Plan item 208: her figure to the character bible, about five heads tall (it was a chibi, the head a third of
@@ -2544,13 +2545,45 @@ export function dressCath(root: THREE.Group): void {
   for (const k of Object.keys(d.mats) as Array<keyof typeof d.mats>) {
     d.mats[k].color.set(o[k]);
     liftColour(d.mats[k].emissive.set(o[k]));
+    deepen(d.mats[k]);
   }
   const lapel = (d as { lapel?: THREE.MeshStandardMaterial }).lapel;
-  if (lapel) liftColour(lapel.emissive.copy(lapel.color.set(o.jacket).multiplyScalar(0.6)));
+  if (lapel) {
+    liftColour(lapel.emissive.copy(lapel.color.set(o.jacket).multiplyScalar(0.6)));
+    deepen(lapel);
+  }
 }
 
 /** Plan item 66: how much of her own colour Cath gives off, so her dark jacket never reads as a blob on the grass. */
 const CATH_LIFT = 0.42;
+/** Plan item 647: her olive cloth (jacket, lapels, sleeves) lit at this share of the lift: at the full lift it washed to
+ * the grass's own pale green and she sank into the field; the warm rim (`rimCloth`) now carries her outline instead. */
+const CLOTH_LIFT = 0.45;
+const DEEP_CLOTH = new Set(["jacket", "lapel", "sleeve"]);
+/** Plan item 647: the warm cream back-light on her olive cloth, strongest where the cloth turns from the lens. */
+const CLOTH_RIM = new THREE.Color("#ffe2b0").multiplyScalar(0.7);
+/** and the cloth itself a half-tone deeper on the field (the sun lit #6e7c4b to the grass's own sage) */
+const CLOTH_TONE = 0.62;
+function deepen(m: THREE.MeshStandardMaterial): void {
+  if (!DEEP_CLOTH.has(m.name)) return;
+  m.emissive.multiplyScalar(CLOTH_LIFT);
+  m.color.multiplyScalar(CLOTH_TONE);
+}
+/** Plan item 647: a fresnel rim added to the cloth's emission (her outline against the green field, any outfit). */
+function rimCloth(m: THREE.MeshStandardMaterial): void {
+  if (m.userData.rim) return;
+  m.userData.rim = true;
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uClothRim = { value: CLOTH_RIM };
+    sh.fragmentShader = sh.fragmentShader
+      .replace("void main() {", "uniform vec3 uClothRim;\nvoid main() {")
+      .replace(
+        "#include <emissivemap_fragment>",
+        "#include <emissivemap_fragment>\n  float clothRim = 1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);\n  totalEmissiveRadiance += uClothRim * smoothstep(0.6, 0.97, clothRim);",
+      );
+  };
+  m.customProgramCacheKey = () => "cath-cloth-rim";
+}
 /** Plan item 81: light colours (her skin, her blouse collar) already read; lit at the full lift they blew out to
  * white and her lower face read as a beard, so the lift fades as a colour gets lighter. */
 function liftColour(c: THREE.Color): THREE.Color {
@@ -2576,6 +2609,8 @@ export function liftCath(root: THREE.Group): void {
       // Plan item 84: a vertex-coloured material (her hair) is white at heart; three.js doesn't tint the
       // emission by the vertex colours, so lift it by the colour it actually shows.
       liftColour(next.emissive.copy(next.vertexColors ? new THREE.Color(HAIR.base) : next.color));
+      deepen(next);
+      if (DEEP_CLOTH.has(next.name)) rimCloth(next);
       next.emissiveIntensity = 1;
       done.set(mat, next);
     }
