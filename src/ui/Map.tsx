@@ -491,7 +491,7 @@ export function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face
         <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} fill="var(--paper)" />
         <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} fill={colour} opacity={0.22} />
         <g clipPath={`url(#${clip})`}>
-          <svg x={winL - 0.6 * s} y={lip - 1.6 * s} width={winW + 1.2 * s} height={(winW + 1.2 * s) * 1.25} viewBox="14 12 72 90" aria-hidden="true">
+          <svg x={winL - 0.6 * s} y={lip - 3.8 * s} width={winW + 1.2 * s} height={(winW + 1.2 * s) * 1.25} viewBox="14 12 72 90" aria-hidden="true">
             <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
           </svg>
         </g>
