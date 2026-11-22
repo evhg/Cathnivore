@@ -6189,7 +6189,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 645. [ ] Cathnivore: the players' own wooden pieces on the board *(lane A, in progress)*
+## 645. [x] Cathnivore: the players' own wooden pieces on the board *(done 2026-11-22 08:22, lane A, in 2 slices: each producer's board piece is their wooden market stall (`ProducerMini`: an awning striped in their colour on two posts, the producer behind a plank counter, a basket of wares; a crate on the counter per further stall, 1-3), matte with no gloss; Hollowell's Outlet one glossy shape per stage (`outletStage`: a lone kiosk's hatch, a storefront at two, a superstore's sliding glass and lit roundel from three), the sawtooth outline kept; a freed region already drops its plastic (item 127's flip) and keeps the stalls. **Deviation:** the blue '?' is Candor's Doubt piece, not a scouted plot, so it stays a bubble. board-stalls (new: stalls on 2+ regions at start, no gloss, no repeated Outlet, 40 px+ at D), piece-looks (stall parts, crates by count, three Outlet stages), board-tokens, piece-art, board-landmarks, producer-pose, table-producers pass P and D --retries=0; board-pieces and producer-faces fail locally on the unchanged code too (CI passed them). Shots scratchpad p645 (b0, a1-a3; start P/D light/dark, round 6 P/D))*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique)*
 - **Why:** `plan1122c/cath-game-D` 520-1360 x 60-740 (also `cath-game-P` 0-390 x 130-470, `cath-setup-D`): every hex carries the same flat orange Hollowell outlet icon (nine on the board, often two a hex) and four identical blue '?' bubbles; the players show only as producer portraits in arches, so the table reads as an icon grid Hollowell owns. VISION 2 and the art direction's wood-and-paper versus glossy plastic.
 - **Build:** `src/ui/Map.tsx` and its piece art (`pieceArt`/landmark kits): the players' side drawn as wooden pieces on the plots they hold (a stall, crates, a producer's token) that grow as their engine does; Hollowell's outlets one glossy shape per stage (not the same icon twice in a hex); a scouted '?' a face-down card on its plot; a freed region swaps its plastic for wood at once (a short swap, a fade under reduced motion).
@@ -6210,7 +6210,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath's silhouette has jacket, hair and arms read at 1440x900 (e2e frame sample vs today's); vehicles carry the logo panel; draw calls and triangles in budget; hedgerow-cath3d/3dframe specs pass; key art re-shot; P and D.
 - **Size:** 2
 
-## 648. [ ] /games/: the slate names the collection and today's pick, the stall's back dressed
+## 648. [ ] /games/: the slate names the collection and today's pick, the stall's back dressed *(lane A, in progress)*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique)*
 - **Why:** `plan1122c/games-D` 895-1260 x 180-250: the slate's biggest word is 'Cathnivore', the same as the first card's title, while its quote and buttons pitch Runnel; above the counter 300-860 x 60-300 is empty dark awning but for Cath. VISION 1.
 - **Build:** `site/src/` hero: the slate's headline names the collection ('Games from Marrow', 'Cathnivore' as the brand line) and today's pick as its lede; the stall's back hung with the four games' wares or Bea's drawings, kept off Cath and the slate.
