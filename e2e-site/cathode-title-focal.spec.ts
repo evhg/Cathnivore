@@ -16,7 +16,9 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
     await page.goto('/nightshift/?front=title&shot&t=8&quality=phone')
     await page.waitForFunction(() => (window as unknown as W).cathodeFront?.ready === true, null, { timeout: 150_000 })
     // The focused New Case opens the paper; ?shot draws its held frame a moment after ready.
-    await page.waitForSelector('#dossier.is-open[data-front-page]', { timeout: 90_000 })
+    await page.waitForSelector('#dossier.is-open[data-front-page]', { timeout: 90_000, state: 'attached' })
+    // Plan item 652: an upright phone folds the paper to a tab under the menu; a tap opens it.
+    if (await page.locator('#ledger-tab').isVisible()) await page.locator('#ledger-tab').click()
     await page.waitForTimeout(3000)
     const boxes = await page.evaluate(() => {
       const box = (e: Element | null): B | null => { if (!e) return null; const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom } }

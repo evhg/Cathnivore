@@ -45,6 +45,8 @@ test('the title case file is the morning paper, and it reports the last case', a
   })
   await title(page)
   const paper = page.locator('#dossier.is-open[data-front-page]')
+  // Plan item 652: an upright phone folds the paper to a tab under the menu; a tap opens it.
+  if (hasTouch) await page.locator('#ledger-tab').click()
   await expect(paper).toBeVisible()
   await expect(paper).toHaveAttribute('data-case', 'reed')
   const teaser = await paper.locator('.fp-head').textContent()

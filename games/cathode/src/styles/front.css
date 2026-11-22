@@ -1881,3 +1881,31 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .menu-label::after { transform: none; opacity: 0; transition: opacity 160ms linear; }
   .menu-item[data-lit] .menu-label::after { transform: none; opacity: 1; }
 }
+
+/* Plan item 652: on an upright phone the Ledger is folded to a tab under the menu (the open paper stood over her
+   coat); a tap opens it under the tab, over the hint (which says the same). The tab is a strip of the paper's own newsprint with its masthead. */
+.ledger-tab { display: none; }
+@media (max-width: 600px) and (orientation: portrait) {
+  .ledger-tab:not([hidden]) {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px; /* px-ok */
+    min-height: 44px; /* px-ok: a 44 px target */
+    margin-top: 8px; /* px-ok */
+    padding: 0 12px 0 10px; /* px-ok */
+    border: 0;
+    border-left: 3px solid var(--blood); /* px-ok */
+    background: color-mix(in srgb, var(--card-paper) 84%, rgb(var(--white-rgb)));
+    box-shadow: 0 4px 12px rgb(var(--black-rgb) / .55); /* px-ok */
+    color: var(--card-ink);
+    rotate: -2deg;
+    cursor: pointer;
+  }
+  .ledger-tab .lt-title { font: italic 800 var(--fs-2) / 1 var(--font-voice); white-space: nowrap; }
+  .ledger-tab .lt-act { font: 700 var(--fs-1) / 1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .06em; text-transform: uppercase; color: color-mix(in srgb, var(--blood) 72%, var(--card-ink)); }
+  .ledger-tab:focus-visible { outline: 2px solid var(--blood); outline-offset: 3px; } /* px-ok */
+  .dossier.front-page.is-open:not(.is-unfolded) { opacity: 0; visibility: hidden; }
+  .dossier.front-page.is-open.is-unfolded { visibility: visible; pointer-events: auto; cursor: pointer; }
+  .title-col:has(.ledger-tab:not([hidden])) #menu-hint { visibility: visible; }
+  .title-col:has(.dossier.is-unfolded.is-open) #menu-hint { visibility: hidden; }
+}

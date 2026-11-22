@@ -972,6 +972,8 @@ test('upright, the open case is a pinned card and the List names each print', as
     await page.goto('/nightshift/?shot')
     await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
     await page.goto('/nightshift/?shot')
+    // Plan item 652: the paper is folded to a tab under the menu; a tap opens it.
+    await page.locator('#ledger-tab').click({ timeout: 120_000 })
     await expect(page.locator('#dossier.is-open')).toBeVisible({ timeout: 120_000 })
     const m = await page.evaluate(() => {
       const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()

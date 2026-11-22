@@ -304,7 +304,11 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   box.classList.toggle("is-open", !!d);
   // Plan item 379: on an upright phone the case file stands in the menu hint's place, under the menu.
   const phone = innerWidth <= 600 && innerHeight > innerWidth;
-  box.style.setProperty("--dossier-top", `${phone ? $("menu-hint").offsetTop : $("menu").offsetTop}px`);
+  // Plan item 652: there the paper is folded to a tab under the menu (it stood over her coat), and a tap opens it
+  // under the tab, over the hint (which says the same).
+  const fold = ledgerTab(box, phone && !!d);
+  box.style.setProperty("--dossier-top", `${phone ? (fold ? fold.offsetTop + fold.offsetHeight + 8 : $("menu-hint").offsetTop) : $("menu").offsetTop}px`);
+  if (fold) requestAnimationFrame(() => liftLedger(box, fold));
   if (!d) return;
   let last: LastCase | null = null;
   try {
@@ -374,6 +378,51 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   el("span", "dossier-tag", where, d.tag);
   el("p", "fp-classified", col, page.classified);
   placeDossier(box);
+}
+
+/** Plan item 652: an upright phone's folded Ledger: a tab under the menu that opens the paper (and folds it
+ *  again). Null where the paper isn't folded (D, a landscape phone, no case row in focus). */
+function ledgerTab(box: HTMLElement, on: boolean): HTMLButtonElement | null {
+  let tab = document.getElementById("ledger-tab") as HTMLButtonElement | null;
+  if (!tab && on) {
+    tab = document.createElement("button");
+    tab.type = "button";
+    tab.id = "ledger-tab";
+    tab.className = "ledger-tab";
+    tab.setAttribute("aria-controls", "dossier");
+    tab.setAttribute("aria-expanded", "false");
+    el("b", "lt-title", tab, "The Ledger");
+    el("span", "lt-act", tab, "Read");
+    $("menu").after(tab);
+    tab.addEventListener("click", () => {
+      const open = !box.classList.contains("is-unfolded");
+      box.classList.toggle("is-unfolded", open);
+      box.setAttribute("aria-hidden", String(!open));
+      tab!.setAttribute("aria-expanded", String(open));
+      tab!.querySelector(".lt-act")!.textContent = open ? "Fold" : "Read";
+      liftLedger(box, tab!);
+    });
+    // On a short phone the open paper may stand over the tab: a tap on the paper folds it too.
+    box.addEventListener("click", () => {
+      if (box.classList.contains("is-unfolded") && !tab!.hidden) tab!.click();
+    });
+  }
+  if (tab) tab.hidden = !on;
+  if (on && box.classList.contains("is-unfolded")) box.setAttribute("aria-hidden", "false");
+  return on ? tab : null;
+}
+
+/** Plan item 652: the open paper stands under its tab, lifted (over the tab) where its foot would meet The List on a
+ *  short phone (375x667), never above the menu's last row. */
+function liftLedger(box: HTMLElement, tab: HTMLElement): void {
+  const parent = box.offsetParent;
+  const list = document.querySelector(".the-list");
+  if (!parent || !list || tab.hidden) return;
+  const p = parent.getBoundingClientRect().top;
+  const want = tab.getBoundingClientRect().bottom + 8;
+  const room = list.getBoundingClientRect().top - 6 - box.offsetHeight;
+  const menu = Math.max(...[...document.querySelectorAll("#menu .menu-label")].map((e) => e.getBoundingClientRect().bottom)) + 6;
+  box.style.setProperty("--dossier-top", `${Math.round(Math.max(menu, Math.min(want, room)) - p)}px`);
 }
 
 /** Plan item 194: the case file stands beside the menu while its foot clears The List; on a shorter screen (16:9 at
