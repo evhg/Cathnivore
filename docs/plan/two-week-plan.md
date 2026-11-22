@@ -6196,7 +6196,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at the start of a quick game the players' pieces show on 2+ regions (e2e); no hex shows two identical outlet icons; each piece kind tested in `tests/piece-looks.test.ts`; board/piece specs pass; P and D shot, light and dark.
 - **Size:** 2
 
-## 646. [ ] Runnel: every tile reads as what it is from across the room
+## 646. [ ] Runnel: every tile reads as what it is from across the room *(lane B, in progress)*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique; item 636 grew the crops, this is the tiles and the water)*
 - **Why:** `plan1122c/runnel-solved-D` 590-1210 x 40-600 (P 0-390 x 240-600): ~37 near-identical pale hexes; the water is a thin blue dashed line that reads as rail track; channel tiles, fields and the spring barely differ. VISION 2, 6.
 - **Build:** `games/runnel/src/board.ts`, styles: water a ribbon about 3x today's width with banks and a slow glint that runs downstream (reduced motion: still); channel tiles edged in stone or timber, fields raised plots with a soil rim, the spring a small stone well; dry and wet keep item 636's contrast.
