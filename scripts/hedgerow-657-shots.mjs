@@ -1,4 +1,4 @@
-// Plan item 657: Hedgerow l21 (sandbox) with round 11 sent and no towers, shot 3 s and 8 s after the send at D and P,
+// Plan item 657: Hedgerow l21 (sandbox; LEVEL=34 for another) with round 11 sent and no towers, shot 3 s and 8 s after the send at D and P,
 // 2D and 3D (MODES=2d,3d), into <out>/<tag>-<mode>-<size>-<ms>.png, with the fleet's spread printed: vehicles per
 // lane cell (floor(dist)) and the renderer's convoy stats.
 //   node scripts/hedgerow-657-shots.mjs http://localhost:<port> <out> <tag>
@@ -16,8 +16,8 @@ for (const mode of modes)
     const stars = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [String(i + 1), 3]))
     const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
     await p.goto(`${base}/hedgerow/?2d`)
-    await p.evaluate(([s, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { 21: true }, tips: t })), [stars, tips])
-    await p.goto(`${base}/hedgerow/?sandbox=1&level=21${mode === '2d' ? '&2d' : ''}`)
+    await p.evaluate(([s, t, lv]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { [lv]: true }, tips: t })), [stars, tips, process.env.LEVEL ?? '21'])
+    await p.goto(`${base}/hedgerow/?sandbox=1&level=${process.env.LEVEL ?? 21}${mode === '2d' ? '&2d' : ''}`)
     await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 120000 })
     await p.waitForTimeout(mode === '2d' ? 1000 : 5000)
     await p.evaluate((wave) => {

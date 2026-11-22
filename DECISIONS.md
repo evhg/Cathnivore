@@ -254,3 +254,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-22 20:50 lane A (657): a 3D convoy column draws a jam of three on the road (head plus two staggered) and counts the rest on the swarm badge or a '+N' plate, rather than stacking up to eight high; quad rotors darkened and shrunk, two abreast by model width.
 - 2026-11-22 20:40 lane A: gate 6's red was the spec, not the page: the campaign ticket's Play and the rail card both name Fresh Meat, so the axe spec opens chapter 1 by /^Fresh Meat/ like every other spec.
 - 2026-11-22 21:05 lane A: planned 662-666 from plan1122f; the critique's top gap (NIGHT SHIFT Cath's face) is already items 319/543, so not re-planned.
+- 2026-11-22 21:50 lane A: the release was not shipped on a borderline Lighthouse (83, 84, 86 alone): the gate is fixed at the root, not rerun until a lucky score; handed to the next lane A session.
