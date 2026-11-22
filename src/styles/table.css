@@ -5899,8 +5899,7 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
     translate: 0 -5px;
     box-shadow: 0 4px 10px rgb(var(--shadow-ink) / .32), 0 0 0 2px var(--wheat);
   }
-  /* a strip shows its seal, picture and price; its name would read as a cut word ('Sel', 'Gra'), so it waits for the lift */
-  .action-tray .actions[data-fan] > .action-item[data-fan]:not([data-lifted]):not(:focus-within) :is(.action-label, .action-region, .action-pick) { color: transparent; }
+  /* (plan item 635: the cards no longer overlap, so every card keeps its name; item 405's strips hid it as a cut word) */
   /* a strip's 'i' would sit under the next card: only the lifted card's answers */
   .action-tray .actions[data-fan] > .action-item[data-fan]:not([data-lifted]) > .tooltip-trigger { visibility: hidden; }
   .action-tray .actions[data-fan] > .action-item[data-fan] > button:first-child { cursor: pointer; }

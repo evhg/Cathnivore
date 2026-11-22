@@ -210,7 +210,7 @@ function clearFan(c: HTMLElement) {
   delete c.dataset.lifted
   for (const p of ['--fan-ml', '--fan-w', '--fan-z', '--fan-tilt']) c.style.removeProperty(p)
 }
-const FAN_STRIP_MIN = 30
+const FAN_SPACE = 6
 const FAN_LIFT_W = 144
 // Lays the fan out: every card at its rest width except the lifted one (FAN_LIFT_W), each later card over the one
 // before so a strip of each shows on its left (seal and price), the lifted card above them all and whole.
@@ -230,14 +230,8 @@ function layFan(row: HTMLElement, cards: HTMLElement[]) {
   delete row.dataset.fanMeasure
   const W = Math.max(FAN_LIFT_W, rest[lifted]!)
   const rs = getComputedStyle(row)
-  const inner = row.clientWidth - parseFloat(rs.paddingLeft || '0') - parseFloat(rs.paddingRight || '0')
   const gap = parseFloat(rs.columnGap || '0') || 0
   const n = cards.length
-  const last = n - 1
-  // the room the strips share: the lifted card whole (and a 2 px breath after it), the last card whole
-  const whole = W + (lifted === last ? 0 : 2 + rest[last]!)
-  const strips = lifted === last ? n - 1 : n - 2
-  const step = Math.max(FAN_STRIP_MIN, Math.min(Math.min(...rest), Math.floor((inner - whole) / Math.max(1, strips))))
   const mid = (n - 1) / 2
   cards.forEach((c, i) => {
     c.dataset.fan = keys[i]!
@@ -247,8 +241,10 @@ function layFan(row: HTMLElement, cards: HTMLElement[]) {
     } else delete c.dataset.lifted
     if (i > 0) {
       // how far this card starts after the previous card's left edge, less what the flex row already puts between them
-      const advance = i - 1 === lifted ? W + 2 : step
+      // Plan item 635: no card lies over another any more (a strip of 30 px showed no readable name): each stands
+      // whole, FAN_SPACE after the one before, in the fan's arc, and the row swipes sideways.
       const prevW = i - 1 === lifted ? W : rest[i - 1]!
+      const advance = prevW + FAN_SPACE
       c.style.setProperty('--fan-ml', `${Math.round(advance - prevW - gap)}px`)
     }
     c.style.setProperty('--fan-z', String(i === lifted ? n + 1 : i + 1))

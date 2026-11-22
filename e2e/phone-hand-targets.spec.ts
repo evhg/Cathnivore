@@ -4,7 +4,7 @@ import { fillSeed } from './setupSeed'
 // Plan item 541: on a 390x844 phone the playable cards are the held fan (item 405), every one in view at rest; the
 // lifted card's 'i' and Sell's coins answer a finger 44 px tall (the 'i' a 26 px dot in a 44 px target, the coins
 // 28 px meeting their neighbours halfway); Sell's gain chip stays clear of its name.
-test('phone: the held fan is all in view and its small controls take a 44 px finger', async ({ page }, testInfo) => {
+test('phone: the held fan stands apart and its small controls take a 44 px finger', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'phone', 'the held fan is the phone layout')
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/?e2eHandFan=1')
@@ -21,10 +21,11 @@ test('phone: the held fan is all in view and its small controls take a 44 px fin
     }),
   )
   expect(fan.length).toBeGreaterThan(2)
-  for (const c of fan) {
-    expect(c.l).toBeGreaterThanOrEqual(-1)
-    expect(c.r).toBeLessThanOrEqual(391)
-  }
+  // Plan item 635 (was item 541's whole fan in view): the cards stand whole and apart, three or more in view, the
+  // rest a swipe away; none lies over another
+  expect(fan.filter((c) => c.l >= -1 && c.r <= 391).length).toBeGreaterThanOrEqual(3)
+  const byLeft = [...fan].sort((a, b) => a.l - b.l)
+  for (let i = 1; i < byLeft.length; i++) expect(byLeft[i]!.l).toBeGreaterThanOrEqual(byLeft[i - 1]!.r - 6)
 
   // lift Sell (a tap on its strip), then probe its coins and its 'i' 20 px above and below their centres
   const sell = page.locator('.action-tray .action-item.action-sell')

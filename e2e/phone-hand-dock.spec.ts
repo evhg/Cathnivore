@@ -24,6 +24,14 @@ async function dock(page: Page) {
         width: c.offsetWidth,
         seal: shows(c, c.querySelector('.action-seal')),
         cost: shows(c, c.querySelector('.action-cost')),
+        // plan item 635: its name shows whole, not under another card
+        title: (() => {
+          const l = c.querySelector('.action-label')
+          if (!l) return false
+          const lr = l.getBoundingClientRect()
+          const hit = document.elementFromPoint(Math.min(lr.left + lr.width / 2, row.right - 2), lr.top + lr.height / 2)
+          return !!hit && c.contains(hit) && parseFloat(getComputedStyle(l).fontSize) >= 12 && getComputedStyle(l).color !== 'rgba(0, 0, 0, 0)'
+        })(),
         inRow: r.left >= row.left - 2 && r.right <= row.right + 2,
         bottom: r.bottom,
         navTop: nav.top,
@@ -32,7 +40,7 @@ async function dock(page: Page) {
   })
 }
 
-test('phone counter: the hand is a fanned dock, every card in reach, a strip tap lifts it unplayed', async ({ page }, info) => {
+test('phone counter: the hand is a fanned dock, every card readable, a tap lifts it unplayed', async ({ page }, info) => {
   test.skip(info.project.name !== 'phone', 'the upright phone')
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/?e2eHandFan=1')
@@ -50,7 +58,10 @@ test('phone counter: the hand is a fanned dock, every card in reach, a strip tap
     expect(c.seal, `${c.name}'s seal shows`).toBe(true)
     expect(c.cost, `${c.name}'s price shows`).toBe(true)
   }
-  expect(cards.filter((c) => c.inRow).length).toBeGreaterThanOrEqual(Math.min(cards.length, 6))
+  // Plan item 635 (was item 405's six strips in view): the cards no longer overlap, so three or more stand whole in
+  // the row and each in it shows its name; the rest are a swipe away
+  expect(cards.filter((c) => c.inRow).length).toBeGreaterThanOrEqual(Math.min(cards.length, 3))
+  for (const c of cards.filter((x) => x.inRow)) expect(c.title, `${c.name}'s name shows`).toBe(true)
   expect(cards.find((c) => c.lifted)!.width).toBeGreaterThanOrEqual(140)
 
   // tap the strip of a card that isn't lifted
