@@ -6329,7 +6329,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** e2e on l34: card under 30% of the board's area at D and under 40% of the viewport at P; the vehicle visible and ringed; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 663. [ ] Hedgerow act map: a painted coast with Cath's token on it
+## 663. [ ] Hedgerow act map: a painted coast with Cath's token on it *(lane A, in progress)*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique)*
 - **Why:** `plan1122f/hedge-menu-D`: wavy hatching over the whole field (0-1120 x 60-900), a dead band at 400-1100 x 470-700, locked stops all the same grey glass bubble, Cath a 25x110 px stick (165-195 x 300-425; 18x70 at P), the cloud a grey smudge (460-745 x 95-205). A tier below Cathnivore's campaign map (VISION 'every screen is designed', 'if a screen has room for a character, it's Cath').
 - **Build:** terrain layers with a vignette and quieter hatching; locked, open and starred stops drawn differently with 0-3 stars under each played one; Cath as a token with her portrait, walking to a newly opened stop.
