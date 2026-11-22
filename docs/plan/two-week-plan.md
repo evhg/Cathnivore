@@ -6203,7 +6203,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the water's stroke 3x+ today's at D; the three tile kinds differ by ΔE 15+ on their faces (e2e sample); the glint off under reduced motion; runnel board/water/tiles/bloom specs pass; key art re-shot; P and D unsolved and solved.
 - **Size:** 2
 
-## 647. [ ] Hedgerow 3D: Cath and the fleet at the field's quality
+## 647. [ ] Hedgerow 3D: Cath and the fleet at the field's quality *(lane A, in progress)*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique)*
 - **Why:** `plan1122c/hedge-l21-3d-D` 145-235 x 490-625: field Cath is a stiff low-poly doll (no jacket shape, no hair waves, no face) beside the panel's drawn Cath (1130-1200 x 375-540); the vans (230-300 x 210-400) are plain pink boxes. VISION 5, the Cath bible.
 - **Build:** `games/hedgerow/src/render3d/` Cath and vehicle meshes: Cath to the bible at field scale (olive jacket's shape and lapels, long centre-parted waved hair, the leaf clip, a face read from the camera) keeping item 310's poses; the fleet in Hollowell's glossy livery with a branded side, wheels and a bounce on the road.
