@@ -174,7 +174,7 @@ test.describe('landing page', () => {
 })
 
 test.describe('Runnel', () => {
-  /** The first-visit lesson (plan item 22): three taps on the glowing tile, then today's daily. */
+  /** The first-visit lesson (plan item 22): three taps on the glowing tile, then the first-week climb (skipped), then today's daily. */
   async function walkLesson(page: Page): Promise<void> {
     await expect(page.locator('.tiles > g.cell')).toHaveCount(4)
     for (let i = 0; i < 3; i++) {
@@ -182,8 +182,13 @@ test.describe('Runnel', () => {
       await expect(target).toHaveCount(1)
       await target.click({ force: true })
     }
-    await expect(page.locator('#host-line')).toContainText("Here's today's field")
-    await expect(page.locator('.tiles > g.cell')).not.toHaveCount(4, { timeout: 10_000 })
+    // Plan item 653: a first visit climbs three short fields next (the first has 7 tiles); skip on to today's daily.
+    await expect(page.locator('#host-line')).toContainText('Three small fields')
+    await expect(page.locator('.tiles > g.cell')).toHaveCount(7, { timeout: 10_000 })
+    await expect(page.locator('#hud-title')).toContainText('First fields · 1 of 3')
+    await page.locator('#btn-climb-skip').click()
+    await expect(page.locator('#hud-title')).toContainText('Daily #')
+    await expect(page.locator('#btn-climb-skip')).toBeHidden()
   }
 
   test("first visit teaches on the board (no modal), then today's daily plays", async ({ page }) => {

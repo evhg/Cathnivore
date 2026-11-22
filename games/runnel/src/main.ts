@@ -13,6 +13,7 @@ import '../../../shared/cath/cath.css'
 import { cathMarkup, cathMoment, createHost } from './host'
 import { Board } from './board'
 import { LESSON_DONE, LESSON_STEPS, lessonPuzzle, lessonTap } from './lesson'
+import { CLIMB, climbDailyLine, climbDue, climbPuzzle } from './climb'
 import { boardSky, skyArt } from './sky'
 import { lightVars, sceneLight, valleyLayers } from './valley'
 import { weekBeds, weekStrip } from './weekstrip'
@@ -43,7 +44,7 @@ import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed
 import { mountWeekChip } from '../../../shared/cath/weekchip'
 import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
-type Mode = 'daily' | 'practice' | 'orchard' | 'sunday'
+type Mode = 'daily' | 'practice' | 'orchard' | 'sunday' | 'climb'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -105,6 +106,7 @@ let playDay = today // the daily being played: today, or a missed day from the l
 let mode: Mode = 'daily'
 let size: Size = 'medium'
 let level = 1 // the Orchard level being played
+let climbAt = 0 // plan item 653: the first-week climb's board being played
 let puzzle: Puzzle
 let game: SavedGame
 let board: Board
@@ -160,6 +162,12 @@ function openGame(): void {
     puzzle = sundayPuzzle(today)
     game = restore(puzzle, (data.sunday ??= {})[week])
     data.sunday[week] = game
+  } else if (mode === 'climb') {
+    // Plan item 653: the first-week climb, from the board it reached (a reload resumes it).
+    climbAt = Math.min(data.climb ?? 0, CLIMB.length - 1)
+    puzzle = climbPuzzle(climbAt)
+    game = restore(puzzle, data.climbGame)
+    data.climbGame = game
   } else if (mode === 'orchard') {
     const games = (data.orchardGames ??= {})
     level = Math.min(level, unlockedLevel((data.orchard ??= {})))
@@ -176,7 +184,8 @@ function openGame(): void {
   save(data)
   board = new Board(ui.board, puzzle, { onTurn, onToggleLock })
   wetCount = computeFlow(puzzle.cells).wet.size
-  host.greet(mode !== 'practice', mode === 'daily' ? dailyNumber(playDay) : mode === 'orchard' ? level : Math.floor(Math.random() * 3) + 1)
+  if (mode === 'climb') host.say(CLIMB[climbAt]!.expression, CLIMB[climbAt]!.ask)
+  else host.greet(mode !== 'practice', mode === 'daily' ? dailyNumber(playDay) : mode === 'orchard' ? level : Math.floor(Math.random() * 3) + 1)
   if (game.solved) host.react(1, true)
   if (game.solved) board.celebrate()
   render()
@@ -254,6 +263,7 @@ function finish(): void {
   game.elapsedMs = elapsed()
   pauseClock()
   game.solved = true
+  if (mode === 'climb') return finishClimb()
   if (mode === 'daily' && !data.results[playDay]) {
     data.results[playDay] = { number: dailyNumber(playDay), timeMs: game.elapsedMs, taps: game.taps, par: puzzle.par }
   }
@@ -1175,6 +1185,7 @@ function render(): void {
   $<HTMLButtonElement>('tab-weekly').setAttribute('aria-selected', String(mode === 'sunday'))
   document.body.dataset.mode = mode
   ui.btnBoard.hidden = mode !== 'practice'
+  $<HTMLButtonElement>('btn-climb-skip').hidden = mode !== 'climb'
   const sizeName = `${size[0]!.toUpperCase()}${size.slice(1)}`
   $<HTMLSpanElement>('board-chip-label').textContent = sizeName
   ui.btnBoard.setAttribute('aria-label', `Board options: ${sizeName} board`)
@@ -1191,6 +1202,8 @@ function render(): void {
     ? `Orchard ${level} · ${orchardName(level)}`
     : mode === 'sunday'
     ? `The big valley · week of ${formatDay(sundayOf(today))}`
+    : mode === 'climb'
+    ? `First fields · ${climbAt + 1} of ${CLIMB.length}`
     : `Practice · ${size[0]!.toUpperCase()}${size.slice(1)}`
   const skySlot = document.getElementById('hud-sky')
   if (skySlot) {
@@ -2234,6 +2247,44 @@ document.addEventListener('keydown', (e) => {
 })
 document.addEventListener('pointerdown', () => document.body.classList.remove('keyboard'))
 
+// ---- the first-week climb (plan item 653) ------------------------------------------------------------
+
+/** What she says as the lesson's field blooms when the climb comes next. */
+const LESSON_CLIMB_DONE = "That's all there is to it: every tile watered, nothing spilling. Three small fields to warm up, then today's."
+function climbAfterLesson(): boolean {
+  return mode === 'daily' && !params.has('lesson') && climbDue(data)
+}
+function finishClimb(): void {
+  data.climb = Math.max(data.climb ?? 0, climbAt + 1)
+  data.climbGame = undefined
+  const last = climbAt + 1 >= CLIMB.length
+  if (last) data.climbDone = true
+  save(data)
+  board.celebrate()
+  playWin()
+  ui.announce.textContent = last ? "Watered. Here comes today's puzzle." : 'Watered. Here comes a bigger field.'
+  const at = climbAt
+  // (a tick later: the turn's render() runs after finish(), and its solve reaction would talk over her line)
+  if (!last) window.setTimeout(() => mode === 'climb' && climbAt === at && host.say('delighted', CLIMB[at]!.bloom), 0)
+  window.setTimeout(() => {
+    if (mode !== 'climb' || climbAt !== at) return
+    if (last) leaveClimb()
+    else openGame()
+  }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 600 : 1600)
+}
+/** On to today's daily, the climb finished or skipped; it doesn't come back. */
+function leaveClimb(): void {
+  data.climbDone = true
+  data.climbGame = undefined
+  mode = 'daily'
+  playDay = today
+  openGame()
+  host.say('delighted', climbDailyLine(arcLabel(today)))
+}
+$<HTMLButtonElement>('btn-climb-skip').addEventListener('click', () => {
+  if (mode === 'climb') leaveClimb()
+})
+
 // ---- the first-visit lesson -------------------------------------------------------------------------
 
 /** The lesson's step while it runs, else -1. */
@@ -2273,7 +2324,7 @@ function startLesson(): void {
         playWin()
         markLessonTarget(-1)
         markLessonCard(LESSON_STEPS.length)
-        host.say('delighted', LESSON_DONE)
+        host.say('delighted', climbAfterLesson() ? LESSON_CLIMB_DONE : LESSON_DONE)
         ui.announce.textContent = 'Watered. Here comes today\'s puzzle.'
         // Plan item 134: on to today's daily in about a second (it waited 2.6 s); item 170: 1 s, so the board is up by 1.5.
         // (750 ms, was 1000: the daily's board build after it took a slow CI past runnel-lesson-close's 1.5 s handover)
@@ -2378,11 +2429,17 @@ function markLessonCard(step: number): void {
 }
 function endLesson(): void {
   if (lessonStep < 0) return
-  flyDailyCard()
+  // Plan item 653: a first visit climbs three short fields before the daily (`?lesson`, a replay, goes to the daily).
+  const climb = climbAfterLesson()
+  if (!climb) flyDailyCard()
   markLessonCard(-1)
   lessonStep = -1
   document.body.classList.remove('in-lesson')
   data.seenHelp = true
+  if (climb) {
+    mode = 'climb'
+    data.climb ??= 0
+  }
   save(data)
   openGame()
   // Plan item 170: the camera pulls back from the lesson's close field to today's board in the same valley.
@@ -2442,9 +2499,15 @@ if (params.get('mode') === 'orchard') {
   mode = 'orchard'
   level = unlockedLevel(data.orchard ?? {})
 }
-openGame()
 // A first visit learns on the board, not from a rules sheet (plan item 22): `?lesson` replays it.
-if ((!data.seenHelp && !params.has('nohelp')) || params.has('lesson')) startLesson()
+const lessonNow = ((!data.seenHelp && !params.has('nohelp')) || params.has('lesson')) && !params.has('climb')
+// Plan item 653: a climb left part-way resumes on the next visit (`?climb` starts it, for the tests).
+if (mode === 'daily' && !lessonNow && (params.has('climb') || (climbDue(data) && data.climb !== undefined && !params.has('nohelp')))) {
+  mode = 'climb'
+  data.climb ??= 0
+}
+openGame()
+if (lessonNow) startLesson()
 // Screenshot hook: `?shotwin` finishes the board straight away so the win dialog can be shot. It plays as a solve
 // on par (with no taps it read '0 taps, 41 under par'); `?shotwin` saves nothing (store.ts `frozen`).
 if (params.has('shotwin')) shotWin()

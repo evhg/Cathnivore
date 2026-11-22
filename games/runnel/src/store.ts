@@ -52,6 +52,10 @@ export interface SaveData {
   /** Plan item 193: the week's big valley, its game in progress and its result, keyed by the week's Sunday. */
   sunday?: Record<string, SavedGame>
   sundayResults?: Record<string, DailyResult>
+  /** Plan item 653: the first-week climb: boards solved so far (set once it starts), its board in play, and done (finished or skipped). */
+  climb?: number
+  climbGame?: SavedGame
+  climbDone?: boolean
 }
 
 const KEY = 'runnel:v1'
