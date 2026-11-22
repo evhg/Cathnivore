@@ -1,5 +1,5 @@
 // Plan item 658: NIGHT SHIFT's first street frame at D for each render scale given (default 0.5 and 1), with the
-// Laplacian variance (sharpness) of the frame's middle third. CATHODE_URL=... node scripts/cathode-658-sharp.mjs <tag> [rs...]
+// Laplacian variance (sharpness) of the frame's middle third. QUALITY=high|phone (default phone) CATHODE_URL=... node scripts/cathode-658-sharp.mjs <tag> [rs...]
 import { chromium } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
 const [tag = 'x', ...scales] = process.argv.slice(2)
@@ -9,7 +9,7 @@ const url = process.env.CATHODE_URL ?? 'http://localhost:4175/nightshift/'
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'] })
 for (const rs of scales.length ? scales : ['0.5', '1']) {
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
-  await p.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await p.addInitScript((q) => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: q })), process.env.QUALITY ?? 'phone')
   await p.goto(`${url}?play&class=ghost&rs=${rs}`)
   await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 240000 }).catch(() => {})
   await p.waitForTimeout(4000)

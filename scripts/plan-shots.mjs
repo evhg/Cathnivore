@@ -86,7 +86,9 @@ const jobs = {
     await p.waitForTimeout(1000); await battle(); await p.screenshot({ path: `${out}/hedge-l34-2d-${s}.png` })
   },
   async nightshift(p, s) {
-    await p.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+    // Plan item 658: shoot at the quality a player gets ('auto': high on a desktop, the phone preset on a phone); the
+    // desktop shots forced 'phone' (a low-res frame, FXAA, upscaled) and read 4.3x softer than a player's frame.
+    await p.addInitScript((q) => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: q })), s === 'D' ? 'high' : 'phone')
     // Plan item 132: at 9 s under SwiftShader the loading poster (her back, the loading line at the foot) was still up and
     // read as a regression; the live street is drawn by about 30 s.
     await p.goto(`${base}/nightshift/`); await p.waitForTimeout(30000); await p.screenshot({ path: `${out}/ns-title-${s}.png` })
