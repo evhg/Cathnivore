@@ -244,7 +244,10 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const outlines = new Outlines();
   // Brighter than the moody first pass: people kept losing enemies in the dark (owner, 2026-10-04:
   // "visibility is really bad"). Phones get more, since they're played on small screens in lit rooms.
-  post.grade.uniforms.uExposure!.value = quality === "phone" ? 1.7 : 1.35;
+  // Plan item 639: the arrival's first stretch is lifted by this share, fading as she walks out of it (session.ts).
+  const ARRIVAL_LIFT = 0.36;
+  const baseExposure = quality === "phone" ? 1.7 : 1.35;
+  post.grade.uniforms.uExposure!.value = baseExposure;
   if (theme?.cast) (post.grade.uniforms.uCast!.value as THREE.Vector3).set(...theme.cast);
 
   // ------------------------------------------------------------ environment (neon reflections for the game's materials)
@@ -480,6 +483,9 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
       u.uHurt!.value = THREE.MathUtils.clamp(hurt, 0, 1);
       (u.uHurtDir!.value as THREE.Vector2).set(dirX, dirY);
       u.uWound!.value = THREE.MathUtils.clamp(wound, 0, 1);
+    },
+    setLift(k) {
+      post.grade.uniforms.uExposure!.value = baseExposure * (1 + ARRIVAL_LIFT * THREE.MathUtils.clamp(k, 0, 1));
     },
     setToe(k) {
       post.grade.uniforms.uToe!.value = THREE.MathUtils.clamp(k, 0, 1);

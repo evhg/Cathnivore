@@ -539,11 +539,12 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       const p = V(x, f.under - 0.85, z);
       b.box("glowSodium", p.x, p.y, p.z, 0.5, 0.1, 0.25);
       b.box("darkMetal", p.x, p.y + 0.1, p.z, 0.6, 0.12, 0.35);
-      light(p.clone().add(V(0, -0.4, 0)), NEON.sodium, 7, 11, null, fl);
-      cones.push({ top: p.clone(), length: f.under - 0.9, radius: 2.8, color: C(NEON.sodium), strength: 0.5 });
+      // (plan item 639: the arrival looks down the street into this underpass, so its lamps carry further)
+      light(p.clone().add(V(0, -0.4, 0)), NEON.sodium, 10, 13, null, fl);
+      cones.push({ top: p.clone(), length: f.under - 0.9, radius: 2.8, color: C(NEON.sodium), strength: 0.75 });
     }
     // Expressway signage on both faces of the deck.
-    sign({ text: "HOLLOWELL EXPRESSWAY 7 · ALL LANES TOLLED", style: "box", color: NEON.ice, w: 14, h: 0.9, center: V(-1.5, f.top - 0.7, f.z1 + 0.02), normal: V(0, 0, 1), flicker: 0, intensity: 2.0 }, 0.6);
+    sign({ text: "HOLLOWELL EXPRESSWAY 7 · ALL LANES TOLLED", style: "box", color: NEON.ice, w: 14, h: 0.9, center: V(-1.5, f.top - 0.7, f.z1 + 0.02), normal: V(0, 0, 1), flicker: 0, intensity: 3.4 }, 1.3);
     sign({ text: "配達します · WE DELIVER", style: "tube", color: NEON.cyan, w: 9, h: 0.9, center: V(-2, f.top - 0.7, f.z0 - 0.02), normal: V(0, 0, -1), flicker: 1, intensity: 5 }, 0.6);
   }
 

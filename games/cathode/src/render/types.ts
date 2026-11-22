@@ -158,6 +158,8 @@ export interface World {
   setPause?(k: number): void;
   /** Plan item 456: the grade's deeper toe, 0..1 (the title only; 0 in play). */
   setToe?(k: number): void;
+  /** Plan item 639: lift the grade's exposure by k (0..1 of the arrival's lift) while she stands in the first stretch. */
+  setLift?(k: number): void;
   setDeath?(o: { death: number; ink: number; glitch: number; ca: number; grey?: boolean }): void;
   /** C7 acceptance: the grade pass's mean ms per draw with the Vitals pass idle or at its busiest. */
   benchGrade?(n: number, on: boolean | { wound: number; hurt: number; pulse: number; lens: number }): number;

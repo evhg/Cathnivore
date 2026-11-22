@@ -2149,6 +2149,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
       world.camera.rotation.x -= (1 - e) * 0.05;
       arrivalT += realDt;
     }
+    // Plan item 639: the first stretch (z 57 to 42 in the market) is lifted, fading out over its last 8 m, so the
+    // street she arrives in reads lit; once she walks past it the night's grade is as it was.
+    if (job && world.setLift) world.setLift(job.stage === 0 && inMarket ? THREE.MathUtils.clamp((player.pos.z - 42) / 8, 0, 1) : 0);
     // C17 (S6.5): Second Wind puts her on one knee: the eye drops 35 cm and the camera rolls 12 degrees.
     if (swLook.drop > 0 || swLook.roll > 0) {
       world.camera.position.y -= swLook.drop;
