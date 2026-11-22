@@ -1229,7 +1229,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         return { ...row, step, width: sum + step * (n - 1) }
       })
     }
-    const cardH = Math.max(...cards.map((c) => c.offsetHeight))
+    // Plan item 664: a one-row tray's card rises on hover/focus (and transitions back), so its resting height comes from
+    // table.css (--rest-h), never from a card the pointer happens to be over while the hand is laid out.
+    const restH = (c: HTMLElement) => parseFloat(getComputedStyle(c).getPropertyValue('--rest-h')) || c.offsetHeight
+    const cardH = Math.max(...cards.map(restH))
     const rowStep = cardH + 6
     // Set on the parent so the spacer that holds the hand's place while it steps away (item 190) keeps its height:
     // on the hand itself the spacer fell back to 140 px, and the board jumped 34 px on Hollowell's turn after the
@@ -4332,8 +4335,8 @@ function ProducerLineBubble({ reply }: { reply: ProducerReply & { n: number } })
       }
       const room = map.right - 8 - clear
       // Plan item 632: the grown board leaves about 140 px right of Rivermead at 1440x900; a narrow bubble there beats one
-      // over the hexes.
-      if (room < 128) return
+      // over the hexes. Item 664's tray grows the board 12 px more, leaving 121 px: 112 px still holds a 14 px line.
+      if (room < 112) return
       const width = Math.min(240, room)
       // nearest its producer that keeps it clear: start at its CSS spot, slid right past the hexes and back inside the map
       const left = Math.min(Math.max(me.left, clear), map.right - 8 - width)

@@ -18,7 +18,7 @@ test('the desktop hand rests as a tray and a card rises on focus', async ({ page
     await page.waitForTimeout(500)
     const hand = (await page.locator('.table-hand').boundingBox())!
     expect(hand.height, `${width}x${height}: the tray`).toBeLessThanOrEqual(120)
-    // the board's hexes (their land polygons) take more of the screen than before the tray (38.3% / 27.3%)
+    // the board's hexes (their land polygons) take more of the screen than before the tray (38.3% / 27.3%; 40.9% / 29.7% after)
     const hex = await page.locator('.region-hex > polygon.land-layer:first-child').evaluateAll((ps) => {
       const bs = ps.map((p) => p.getBoundingClientRect())
       return (Math.max(...bs.map((b) => b.right)) - Math.min(...bs.map((b) => b.left))) * (Math.max(...bs.map((b) => b.bottom)) - Math.min(...bs.map((b) => b.top)))

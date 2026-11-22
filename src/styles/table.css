@@ -3476,7 +3476,8 @@ html.no-animations .table-cath-line { animation: none; }
    the cards at rest, so the hand's height (--hand-h) is the tray's. Rows keep their own layout. */
 @media (min-width: 1240px) and (min-height: 760px) {
   .game-layout .table-hand:not([data-rows]) .action-item.action-item {
-    height: 102px;
+    --rest-h: 102px;
+    height: var(--rest-h);
     transition: transform 160ms ease-out, height 160ms ease-out;
   }
   /* the rested window is 24 px shorter than the risen one, so a name measured at rest (data-tight) fits either way */
@@ -6776,8 +6777,9 @@ html.no-animations .table-cath-figure { animation: none; }
   .game:has(.table-head.with-table-cath) .table-head .plan-plaque-tab > * { letter-spacing: inherit; }
   /* her bubble keeps clear of Brindle Hills' left edge */
   .game:has(.table-head.with-table-cath) .table-cath-line { margin-right: 14px; }
-  /* she stands clear of Brindle Hills' left edge (the board's box reaches 533 px at 1440x900) */
-  .game:has(.table-head.with-table-cath) .table-cath { width: 192px; }
+  /* she stands clear of Brindle Hills' left edge (the board's box reaches 522 px at 1440x900 since item 664's tray, its
+     glow ring 515: her box 180 px, was 192; her drawing keeps its 206 px, overflowing where the hex's edge slants away) */
+  .game:has(.table-head.with-table-cath) .table-cath { width: 180px; }
   .game:has(.table-head.with-table-cath) .table-cath-figure :is(.cath-art, svg) { width: 206px; }
   /* plan item 638: in the stack the (i) sat 4 px into the 'Stage I' tab above it: it hangs clear under the tab's foot */
   .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% + 2px); }
