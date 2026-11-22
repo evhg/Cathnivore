@@ -6302,7 +6302,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 no bare paper span over 80 px between the map and the UI; map 820 px+ wide; Start within 200 px of the selected pin; choosing chapter 3 moves the ticket to pin 3 (e2e); her bubble's tail within 20 px of her head; P unchanged; campaign specs pass; shots P and D.
 - **Size:** 2
 
-## 660. [ ] Runnel: the solve plants something you can see, and Bea tends it
+## 660. [ ] Runnel: the solve plants something you can see, and Bea tends it *(lane B, in progress)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; check item 623's week bed first)*
 - **Why:** `plan1122e/runnel-solved-D`: the result says 'Planted in Bea's garden: a potato' (95-290 x 740-775) but the garden (1195-1400 x 705-835) shows the same sunflowers; Bea is about 15 px (1340-1360 x 795-815); nothing new grows where the water ends (VISION 4 payoff, 5 Bea).
 - **Build:** on a solve the day's crop sprouts in a new bed slot with a 600-900 ms grow (no motion under reduced motion); Bea at a readable size goes to it with her watering can; the result card's crop icon points at that bed.
