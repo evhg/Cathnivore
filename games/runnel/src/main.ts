@@ -854,6 +854,10 @@ function placeGardenSign(): void {
     return false
   }
   if (meets()) garden.dataset.signUnder = ''
+  // Plan item 630's hero plant: 40 px+ whatever size the beds come to (a tight or wide daily's 20 px beds grew it to
+  // 34 px at the 1.7 scale: E2E red on d01f1ba3); styles.css takes the larger of its scale and this floor.
+  const bed = garden.querySelector<HTMLElement>('.bea-crops > i')
+  if (bed?.offsetWidth) garden.style.setProperty('--hero-min', (42 / bed.offsetWidth).toFixed(3))
 }
 
 function placeValleyCath(): void {

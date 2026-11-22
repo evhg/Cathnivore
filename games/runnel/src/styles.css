@@ -5310,7 +5310,7 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
    planted, standing over its neighbours' beds; reduced motion fades it in at that size. */
 .bea-garden[data-watered='true'] .bea-crops .is-today { position: relative; overflow: visible; }
 .bea-garden[data-watered='true'] .bea-crops .is-today svg {
-  scale: var(--hero-plant, 1.7);
+  scale: max(var(--hero-plant, 1.7), var(--hero-min, 0));
   transform-origin: 50% 90%;
   filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--soil) 45%, transparent));
   transition: scale 600ms cubic-bezier(0.3, 1.5, 0.5, 1) 1700ms;
