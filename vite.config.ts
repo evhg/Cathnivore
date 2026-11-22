@@ -87,5 +87,10 @@ export default defineConfig({
   ],
   build: {
     outDir,
+    // Gate 7, 2026-11-22: everything the title loads statically goes in one chunk. Split across nine shared chunks
+    // (react-dom landed in Map's), the first paint waited on ten requests, and Lighthouse's phone model paid a
+    // second round of connections for them (FCP 3.2 s, score 83-86); one entry chunk of the same bytes paints at
+    // 2.9 s (86-90). Lazy screens still split off as before.
+    rolldownOptions: { output: { codeSplitting: { groups: [{ name: 'boot', tags: ['$initial'] }] } } },
   },
 })
