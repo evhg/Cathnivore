@@ -4891,7 +4891,10 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
     filter: none; opacity: 1; box-shadow: none; outline: 0;
     background: color-mix(in srgb, var(--paper-hi) 80%, transparent); border: 2px dashed color-mix(in srgb, var(--ink) 55%, transparent);
   }
-  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li:not([data-earned]) svg > * { opacity: 0; }
+  /* Plan item 650: an unearned pin shows as its own faint pewter cast in its slot, what there is to earn, not an
+     empty dashed ring (it read as an unfinished placeholder) */
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li:not([data-earned]) svg { filter: grayscale(1) contrast(1.1); }
+  .setup[data-steps] .setup-table[data-setup-table] .pin-tin li:not([data-earned]) svg > * { opacity: 0.42; }
   .setup[data-steps] .setup-table[data-setup-table] .pin-tin li[data-week]:not([data-earned]) svg { border-color: var(--short-ink-shelf); border-style: dashed; border-width: 2.5px; outline: 0; }
   .setup[data-steps] .setup-table[data-setup-table] .pin-tin .pin-when {
     position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal;
