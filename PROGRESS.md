@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (05:51 11-22): 644 and 643 done (the four critique bugs; the setup's stall built awning to counter, the week card on its post); 640 slice 1 (today's dailies chalked on the /games/ counter as links), handed back. Open: 319, 543, 639-642. **Next 19:51 session: release** (main untouched at 67ef937d).
+- Lane A (06:51 11-22): E2E red on 2d0d2c08 was hedgerow-3dframe phone l21 (lane B's 2d3bf64a fixes it; its run pending). 640 done (slate carries the today board, one 'today's pick' print, wardrobe off the kicker); 639 in progress. **Next 19:51 session: release** (main untouched at 67ef937d).
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
