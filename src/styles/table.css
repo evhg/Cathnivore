@@ -6759,3 +6759,11 @@ html.no-animations .table-cath-figure { animation: none; }
   /* plan item 638: in the stack the (i) sat 4 px into the 'Stage I' tab above it: it hangs clear under the tab's foot */
   .game:has(.table-head.with-table-cath) .plan-strip-item:has(.plan-strip-target-full[data-long]) > .tooltip-trigger { translate: 0 calc(-50% + 2px); }
 }
+
+/* Plan item 650: the phone's swiped hand fades at its right edge while more cards lie past it (Game.tsx data-more). */
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
+  .action-tray .actions[data-fan][data-more] {
+    -webkit-mask-image: linear-gradient(to right, var(--ink) calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, var(--ink) calc(100% - 36px), transparent);
+  }
+}

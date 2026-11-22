@@ -1090,6 +1090,17 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   useEffect(() => {
     const row = document.querySelector<HTMLElement>('.action-tray .actions')
     if (!row || row.dataset.fan === undefined) return
+    // Plan item 650: while cards lie past the row's right edge, the edge fades (CSS on data-more), so the swiped
+    // row says it goes on; scrolled to its end, the last card stands whole.
+    const more = () => row.toggleAttribute('data-more', row.scrollLeft + row.clientWidth < row.scrollWidth - 4)
+    more()
+    row.addEventListener('scroll', more, { passive: true })
+    window.addEventListener('resize', more)
+    const unmore = () => {
+      row.removeEventListener('scroll', more)
+      window.removeEventListener('resize', more)
+      row.removeAttribute('data-more')
+    }
     let held: HTMLElement | null = null
     const strip = (e: Event) => {
       const card = (e.target as HTMLElement | null)?.closest<HTMLElement>('.action-item[data-fan]')
@@ -1131,6 +1142,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       row.removeEventListener('pointerup', onUpOrClick, true)
       row.removeEventListener('click', onUpOrClick, true)
       row.removeEventListener('focusin', onFocus)
+      unmore()
     }
   })
   // Plan item 149: the hand fans out from its middle: outer cards tilt and dip a little, like cards held.

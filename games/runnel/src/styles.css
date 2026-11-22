@@ -5392,3 +5392,13 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .win-strip[data-dock-rail] .strip-toast { grid-column: 1 / -1; }
 /* (opened, the month turns the page: today's sky and Bea's note step aside, so the rail still ends above the fold) */
 .rail:has(.rail-more[open]) :is(.al-sky, .al-note) { display: none; }
+/* Plan item 650: at D, once every field is watered, the watering bar has said its piece (the result says the rest):
+   it fades out of the valley instead of hanging full under the board (its box stays, so nothing moves). */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .progress { transition: opacity 400ms ease 600ms; }
+  .progress:has(.progress-fill.done) { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .progress { transition: none; } }
+/* (and 'The month' tab: its name on one line, centred with the summary beside it) */
+.rail-more-tab { align-items: center; }
+.rail-more-tab > span:first-child { white-space: nowrap; }
