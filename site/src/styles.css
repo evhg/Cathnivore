@@ -2330,3 +2330,9 @@ body {
   /* Runnel's Cath stands at the poster's left, so its tag hangs at the right */
   .hero-game-runnel .hero-game-status { left: auto; right: 12px; rotate: 3deg; }
 }
+
+/* Plan item 648: the collection's name, three words on one line: sized to the slate (P about 34 px, D about 42 px, inside the slate's 440 px column). */
+.hero .title.title-long { font-size: clamp(2rem, 8.6vw, 3.4rem); letter-spacing: -0.025em; }
+@media (min-width: 1100px) and (min-aspect-ratio: 1/1) {
+  .hero[data-booth] .hero-text .title.title-long { font-size: clamp(2.3rem, 2.95vw, 2.9rem); }
+}

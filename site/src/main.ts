@@ -30,7 +30,8 @@ if (title) {
     ...[...text].map((ch, i) => {
       const span = document.createElement('span')
       span.className = 'letter'
-      span.textContent = ch
+      // Plan item 648: a space between words keeps its width (the letters are inline blocks, which drop a plain space).
+      span.textContent = ch === ' ' ? '\u00A0' : ch
       span.style.setProperty('--i', String(i))
       span.setAttribute('aria-hidden', 'true')
       return span

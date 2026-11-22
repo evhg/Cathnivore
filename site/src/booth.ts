@@ -100,6 +100,66 @@ function crate(x: number, w: number, y: number, k: number): string {
   return o
 }
 
+/**
+ * Plan item 648: one of Bea's crayon drawings pegged to the twine, w wide with its top at y, tilted a little: each of
+ * the games' own motif in a child's hand (the board's hexes, the runnel to a field, a windmill, a sun over a stall).
+ */
+function drawing(x: number, y: number, w: number, k: number): string {
+  const h = w * 1.2
+  const tilt = [-5, 4, -3, 6][k % 4]
+  const cx = x + w / 2
+  const ink = ['#c8553d', '#3f7fbf', '#5aa36b', '#e0a02e'][k % 4]
+  let d = ''
+  if (k % 4 === 0) {
+    // three hexes, the middle one held (green)
+    for (const [hx, hy, f] of [[-0.24, 0.42, 'none'], [0.24, 0.42, 'none'], [0, 0.66, '#8fbf4a']] as const) {
+      const pts = Array.from({ length: 6 }, (_, i) => {
+        const a = (Math.PI / 3) * i + Math.PI / 6
+        return `${r(cx + hx * w + Math.cos(a) * w * 0.17)},${r(y + hy * h + Math.sin(a) * w * 0.17)}`
+      }).join(' ')
+      d += `<polygon points="${pts}" fill="${f}" stroke="${ink}" stroke-width="2.2" stroke-linejoin="round"/>`
+    }
+  } else if (k % 4 === 1) {
+    // the runnel winding down to a green field
+    d += `<path d="M${r(x + w * 0.2)} ${r(y + h * 0.2)}q${r(w * 0.5)} ${r(h * 0.12)} ${r(w * 0.1)} ${r(h * 0.3)}t${r(w * 0.35)} ${r(h * 0.25)}" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`
+    d += `<rect x="${r(x + w * 0.5)} " y="${r(y + h * 0.74)}" width="${r(w * 0.36)}" height="${r(h * 0.14)}" rx="2" fill="#8fbf4a"/>`
+  } else if (k % 4 === 2) {
+    // a windmill on a hill
+    d += `<path d="M${r(x + w * 0.1)} ${r(y + h * 0.86)}q${r(w * 0.4)} ${r(-h * 0.2)} ${r(w * 0.8)} 0" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>`
+    d += `<path d="M${r(cx - w * 0.08)} ${r(y + h * 0.78)}l${r(w * 0.04)} ${r(-h * 0.34)}h${r(w * 0.08)}l${r(w * 0.04)} ${r(h * 0.34)}z" fill="#f3e3c3" stroke="#6b3f24" stroke-width="1.6"/>`
+    d += `<path d="M${r(cx - w * 0.28)} ${r(y + h * 0.3)}L${r(cx + w * 0.28)} ${r(y + h * 0.58)}M${r(cx + w * 0.28)} ${r(y + h * 0.3)}L${r(cx - w * 0.28)} ${r(y + h * 0.58)}" stroke="#6b3f24" stroke-width="2.4" stroke-linecap="round"/>`
+  } else {
+    // a sun over a striped stall
+    d += `<circle cx="${r(x + w * 0.74)}" cy="${r(y + h * 0.24)}" r="${r(w * 0.12)}" fill="${ink}"/>`
+    d += `<path d="M${r(x + w * 0.16)} ${r(y + h * 0.52)}h${r(w * 0.6)}l${r(-w * 0.06)} ${r(-h * 0.12)}h${r(-w * 0.48)}z" fill="#c8553d"/>`
+    d += `<path d="M${r(x + w * 0.22)} ${r(y + h * 0.52)}v${r(h * 0.3)}M${r(x + w * 0.7)} ${r(y + h * 0.52)}v${r(h * 0.3)}M${r(x + w * 0.16)} ${r(y + h * 0.68)}h${r(w * 0.6)}" stroke="#6b3f24" stroke-width="2.2" stroke-linecap="round"/>`
+  }
+  return (
+    `<g class="bea-drawing" transform="rotate(${tilt} ${r(cx)} ${r(y)})">` +
+    `<rect x="${r(x + 2)}" y="${r(y + 3)}" width="${r(w)}" height="${r(h)}" fill="#000" opacity=".25"/>` +
+    `<rect x="${r(x)}" y="${r(y)}" width="${r(w)}" height="${r(h)}" fill="#f6efdf"/>` +
+    d +
+    `<rect x="${r(cx - 4)}" y="${r(y - 6)}" width="8" height="14" rx="2" fill="#b9814a"/>` +
+    `</g>`
+  )
+}
+
+/** Plan item 648: a little shelf of preserves on the stall's back, from x1 to x2 with its board at y. */
+function shelf(x1: number, x2: number, y: number): string {
+  let o = `<rect x="${r(x1)}" y="${r(y)}" width="${r(x2 - x1)}" height="7" rx="2" fill="#a8693a"/><rect x="${r(x1)}" y="${r(y)}" width="${r(x2 - x1)}" height="2.5" fill="#ffe2aa" opacity=".45"/>`
+  o += `<path d="M${r(x1 + 10)} ${r(y + 7)}l8 12M${r(x2 - 10)} ${r(y + 7)}l-8 12" stroke="#6b3f24" stroke-width="3" stroke-linecap="round"/>`
+  const jam = ['#c94a3a', '#e8a53a', '#7a3a6b', '#8fbf4a']
+  let i = 0
+  for (let x = x1 + 12; x + 24 <= x2 - 8; x += 32, i++) {
+    const h = 26 + ((i * 5) % 3) * 3
+    o += `<rect x="${r(x)}" y="${r(y - h)}" width="22" height="${h}" rx="4" fill="${jam[i % jam.length]}" opacity=".95"/>`
+    o += `<rect x="${r(x - 1)}" y="${r(y - h - 6)}" width="24" height="7" rx="2" fill="#f3e3c3"/>`
+    o += `<rect x="${r(x + 4)}" y="${r(y - h * 0.62)}" width="14" height="${r(h * 0.32)}" rx="1.5" fill="#f6efdf" opacity=".9"/>`
+    o += `<rect x="${r(x + 3)}" y="${r(y - h + 4)}" width="3" height="${r(h - 8)}" rx="1.5" fill="#fff" opacity=".3"/>`
+  }
+  return o
+}
+
 let back: SVGSVGElement | null = null
 let front: SVGSVGElement | null = null
 
@@ -147,6 +207,40 @@ export function drawBooth(): void {
   s += `<rect x="${r(board.l - 7)}" y="${r(board.t - 7)}" width="${r(board.r - board.l + 14)}" height="${r(board.b - board.t + 14)}" rx="6" fill="#6b3f24"/>`
   s += `<rect x="${r(board.l - 7)}" y="${r(board.t - 7)}" width="${r(board.r - board.l + 14)}" height="4" rx="2" fill="#d9a15f" opacity=".6"/>`
   s += `<rect x="${r(board.l)}" y="${r(board.t)}" width="${r(board.r - board.l)}" height="${r(board.b - board.t)}" rx="3" fill="#232b28"/>`
+  // Plan item 648: the stall's back is dressed: Bea's drawings pegged along a twine under the awning, either side of
+  // Cath (never behind her), and a shelf of preserves on the stretch between her and the slate, over today's pick.
+  {
+    const ty = roof + hw / 2.4 + 16
+    const dw = Math.max(44, Math.min(62, ch * 0.13))
+    // today's pick stands on the counter right of her (its print about 144 x 126 px); where the drawings would reach
+    // down to it, they hang only past it
+    const printTop = c.t + ch * 0.58 + 4 - 130
+    const clear = ty + dw * 1.2 + 6 < printTop
+    const gaps: [number, number][] = [
+      [x1 + 14, c.l - 6],
+      [clear ? c.r + 6 : c.r + 10 + 144 + 14, board.l - 20],
+    ]
+    s += `<path d="M${r(x1 + 4)} ${r(ty)}Q${r((x1 + board.l) / 2)} ${r(ty + 14)} ${r(board.l - 10)} ${r(ty)}" stroke="#e8d3a8" stroke-width="1.5" fill="none" opacity=".8"/>`
+    const sag = (x: number) => {
+      const t = (x - x1 - 4) / Math.max(1, board.l - 14 - x1)
+      return ty + 28 * t * (1 - t)
+    }
+    let k = 0
+    for (const [a, b] of gaps) {
+      const n = Math.floor((b - a + 14) / (dw + 14))
+      if (n < 1) continue
+      const start = a + (b - a - (n * dw + (n - 1) * 14)) / 2
+      for (let i = 0; i < n; i++, k++) {
+        const x = start + i * (dw + 14)
+        s += drawing(x, sag(x + dw / 2) + 2, dw, k)
+      }
+    }
+    // the shelf stands right of today's pick (its print about 144 px from her right), clear of the drawings over it
+    const shelfY = c.t + ch * 0.58 - 66
+    const sl = c.r + 10 + 144 + 16
+    const sr = board.l - 24
+    if (sr - sl >= 80 && shelfY - 40 > ty + dw * 1.2 + 16) s += shelf(sl, Math.min(sr, sl + 200), shelfY)
+  }
   s += awning(x1, x2, roof)
   // The counter: from the left post to the slate board, its top at her hips, its foot on the rail.
   // Plan item 326: 58% (was 60%), so the fruit meets her jacket hem and no trouser band shows above it.
