@@ -6217,7 +6217,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the slate's h1 is not any one game's name; no empty band over 200 px in the stall's back at 1440x900; site specs pass; key art re-shot if the frame changes; P and D.
 - **Size:** 1
 
-## 649. [ ] NIGHT SHIFT sideways phone: a compact noir HUD
+## 649. [ ] NIGHT SHIFT sideways phone: a compact noir HUD *(lane B, in progress)*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique)*
 - **Why:** `plan1122c/ns-street-P` (844x390) 0-232 x 0-230: the case note, vitals and tutorial line stack into a quarter of the street; 'THE PIN' (515-650 x 10-40) sits far from the weapon, against the compass. VISION 2, 6.
 - **Build:** `games/cathode/src/ui/` HUD at a sideways phone: vitals a slim bar by the move stick, the case line a 2 s title card that fades, the hint a short chip by the stick, the weapon's name by FIRE.
