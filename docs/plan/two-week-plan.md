@@ -6309,7 +6309,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the new crop 40 px+ at D, 28+ at P, in a slot empty before the solve (e2e before/after); Bea 48 px+ tall at D; reduced motion ends on the same frame, still; the Runnel specs pass; shots P and D, solved and unsolved.
 - **Size:** 1-2
 
-## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch
+## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; check each on today's build first)*
 - Hedgerow D (`hedge-l21-2d-D` 1365-1400 x 425-457, `hedge-l21-3d-D` 1375-1400): the Next card's fifth type chip cut at the panel's edge: wrap it or '+1'. (lane B 17:00: the row `.preview-row.ticket-chips` is a horizontal scroller with a 22 px fade mask at its right end (components.css ~2422), so the cut is its designed 'more' cue; decide wrap or '+N' at D)
 - Hedgerow l34 D (`hedge-l34-2d-D` 22-485 x 787-880): Cath's toast over the lower depot (158-290 x 725-785) and its van door.
