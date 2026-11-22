@@ -81,7 +81,7 @@ test('the actions are a hand of cards at the table edge at D', async ({ page }, 
     const hexes = await Promise.all((await page.locator('.region-hex').all()).map(async (h) => (await h.locator('polygon').first().boundingBox())!))
     for (const card of await cards.all()) {
       const c = (await card.boundingBox())!
-      expect(c.height, `${width}x${height}`).toBeGreaterThanOrEqual(110)
+      expect(c.height, `${width}x${height}`).toBeGreaterThanOrEqual(100) // item 664: the resting tray (102 px cards)
       expect(c.x).toBeGreaterThanOrEqual(0)
       expect(c.x + c.width).toBeLessThanOrEqual(width)
       expect(c.y + c.height).toBeLessThanOrEqual(height)

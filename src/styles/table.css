@@ -3471,6 +3471,24 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 80px; }
   .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 64px; }
 }
+/* Plan item 664: at rest the one-row hand is a tray (102 px cards, the hand 120 px or less) so the board takes the room;
+   a card rises to its full painted face (126 px, the whole picture window) on hover or keyboard focus. fan() measures
+   the cards at rest, so the hand's height (--hand-h) is the tray's. Rows keep their own layout. */
+@media (min-width: 1240px) and (min-height: 760px) {
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item {
+    height: 102px;
+    transition: transform 160ms ease-out, height 160ms ease-out;
+  }
+  /* the rested window is 24 px shorter than the risen one, so a name measured at rest (data-tight) fits either way */
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family) { --art-h: 48px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):has(> button[data-tight]) { --art-h: 40px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:is(:hover, :has(:focus-visible)) {
+    height: 126px;
+    transform: rotate(0deg) translateY(-8px) scale(1.04);
+  }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):is(:hover, :has(:focus-visible)) { --art-h: 72px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):has(> button[data-tight]):is(:hover, :has(:focus-visible)) { --art-h: 64px; }
+}
 @media (min-width: 1240px) and (min-height: 760px) {
   /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
   .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 16px), 104px); }

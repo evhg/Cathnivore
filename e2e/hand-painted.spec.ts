@@ -46,7 +46,8 @@ test('desktop hand cards carry a picture window, the name and the price apart', 
       // from the deal, so a long row of narrow cards has a window narrower than 96 px).
       if (c.rows) expect(c.art[0], `${c.name} art width in rows`).toBeGreaterThanOrEqual(c.width * 0.4)
       else expect(c.art[0], `${c.name} art width`).toBeGreaterThanOrEqual(96)
-      expect(c.art[1], `${c.name} art height`).toBeGreaterThanOrEqual(56)
+      // Plan item 664: a one-row hand rests as a tray (a 40-48 px window; a card rises to its full window on hover/focus)
+      expect(c.art[1], `${c.name} art height`).toBeGreaterThanOrEqual(c.rows ? 56 : 38)
       if (!c.dense) expect(c.font, `${c.name} name size`).toBeGreaterThanOrEqual(13.9)
       expect(c.clash, `${c.name}: picture, name and price apart`).toBe(false)
     }
