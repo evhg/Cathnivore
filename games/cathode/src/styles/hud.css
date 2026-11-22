@@ -1888,6 +1888,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
      column, under the vitals and over the move stick, out of the central third where the fight is framed. */
   .hud-target { top: 43%; left: var(--edge-l); width: var(--cluster-w); min-width: 0; max-width: none; transform: none; text-align: left; padding-inline: 0; }
   .hud-target::after { inset: calc(var(--u) * -18) calc(var(--u) * -40); }
+  /* Plan item 644: the compass tape stops short of the arms (top right, 196 px in from the edge, the battery bar its
+     widest line): at 34vw its NE mark sat on the bar's left end and against THE PIN at 844x390. */
+  .hud-root .hud-compass { width: max(140px, min(calc(var(--u) * 420), calc(2 * (50vw - var(--safe-r, 0px) - 196px - var(--u) * 213.3 - 14px)))); }
   .hud-objective { max-width: 36ch; }
   .hud-hp,
   .hud-guard { height: 6px; }

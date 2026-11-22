@@ -73,6 +73,8 @@ test('on a phone the reply lies over her settled dock line, beside the busts', a
   }
   // the text fits its box
   expect(await line.evaluate((e) => e.scrollHeight <= e.clientHeight + 1)).toBe(true)
+  // plan item 644: her own line is gone from under it, so the reply's pop-in never shows two lines through each other
+  expect(await page.locator('.cath-dock-line').evaluate((e) => getComputedStyle(e).opacity)).toBe('0')
 })
 
 test('under reduced motion the reply only fades in', async ({ page }, testInfo) => {

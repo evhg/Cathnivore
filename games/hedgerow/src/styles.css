@@ -5902,7 +5902,12 @@ img.act-scene {
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-enemies .enemy-portrait { width: 64px; height: 64px; }
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-enemies .enemy-portrait img:not(.lcard-counter-badge) { width: 58px; height: 58px; }
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe { justify-items: center; width: 100%; }
-    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe b { max-width: 100%; font-size: 0.8125rem; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe b { max-width: 100%; font-size: 0.8125rem; letter-spacing: -0.015em; }
+    /* plan item 644: the tower's badge sits up on the portrait's foot and the name 5 px under it (the badge's foot ran
+       3 px into the name's cap height), and the long names keep a margin inside their chip ('Cargo quadcopter' ran
+       edge to edge) */
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .level-card .lcard-enemies .enemy-portrait img.lcard-counter-badge { bottom: 0; right: -9px; }
+    #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe { margin-top: 5px; padding-inline: 4px; box-sizing: border-box; }
     /* its one trait a stamp (the threat sentence stays on the phone's sheet and on narrower desktops) */
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe .lcard-threat { display: none; }
     #screen-select li.act.act-has-card:not(.map-hud-row + li) .lcard-foe .lcard-trait { display: block; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--soil) 14%, transparent); font: 800 0.8125rem / 1.35 var(--font-ui); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
@@ -6344,6 +6349,11 @@ img.act-scene {
     font-size: var(--fs-small);
     line-height: 1.25;
     pointer-events: none;
+    /* plan item 644: tall enough to cover the packets to their feet (the tray runs about 76 px from here), so their
+       price tags don't peek out between her line and the powers; one or two lines sit centred in it */
+    display: flex;
+    align-items: center;
+    min-height: 76px;
   }
   /* the tail points left, at her portrait */
   .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-line::after {

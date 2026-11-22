@@ -6226,6 +6226,9 @@ html.no-animations .producer-line { animation-name: producer-line-fade; }
 /* plan item 622: and Cath steps back while they talk, her bust dimmed beside the bubble (the line lay beside her lit
    portrait, so Tomas's opener still read as hers) */
 .cath-dock:has(.counter-bench .producer-line) .cath-dock-bust { opacity: .55; filter: saturate(.4); transition: opacity var(--dur-2, 200ms) ease, filter var(--dur-2, 200ms) ease; }
+/* plan item 644: and her line goes from under the bubble at once, so its pop-in (a fade and a scale from .85) never
+   shows her words through a half-clear second bubble; opacity, not visibility, so a tap there still reaches her line */
+.cath-dock:has(.counter-bench .producer-line[data-placed="dock"]) .cath-dock-line { opacity: 0; }
 
 /* Plan item 495 slice 2: from 1240 px (was 1400) the readings fold beside tomorrow's papers, so the board takes the
    status bar's row back (1280x800: board 16% -> 22% of the window). The row is about 160 px narrower there, so Pell's
