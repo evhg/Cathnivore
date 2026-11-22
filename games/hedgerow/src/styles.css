@@ -6329,24 +6329,28 @@ img.act-scene {
     overflow: visible;
   }
   .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-bust { width: 48px; height: 48px; }
+  /* Plan item 637 (was item 611's bubble over the field's foot, which hid the lower path): her line is a toast on
+     the dock itself, beside her portrait and under the round grip, over the tray's packets and never the field. It
+     takes no tap (the packets under it stay live) and folds after its read time (6 s) or a tap on her portrait. */
   .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-line {
     position: absolute;
-    left: 0;
-    bottom: calc(100% + 24px);
-    width: calc(100vw - 16px);
+    left: 56px;
+    top: calc(var(--notch-h, 0px) + 2px);
+    width: calc(100vw - 16px - 56px - 4px);
     max-width: none;
     box-sizing: border-box;
-    font-size: var(--fs-body);
-    /* over the field's foot, it never takes a tap from a plot under it (picking a plot quiets her, main.ts); her
-       portrait folds it */
+    padding: 5px 10px 6px;
+    border-radius: 12px;
+    font-size: var(--fs-small);
+    line-height: 1.25;
     pointer-events: none;
   }
-  /* the tail points down at her portrait */
+  /* the tail points left, at her portrait */
   .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-line::after {
-    left: 16px;
-    top: auto;
-    bottom: -9px;
-    border-width: 0 2px 2px 0;
+    left: -9px;
+    top: 12px;
+    bottom: auto;
+    border-width: 0 0 2px 2px;
   }
   .play:has(.cath-dock:not([hidden]):not([data-desk]):not([data-folded])) .panel:not(.open) .tray-wrap .tray {
     padding-inline-start: 52px;

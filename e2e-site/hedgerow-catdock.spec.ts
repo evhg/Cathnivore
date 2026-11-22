@@ -42,9 +42,12 @@ for (const level of [21, 34]) {
       const plots = await page.evaluate(() => (window as unknown as { hedgerow: Hg }).hedgerow.plotBoxes())
       expect(plots.length).toBeGreaterThan(0)
       const meets = (a: Box, b: { x: number; y: number; width: number; height: number }) => a.x < b.x + b.width - 1 && b.x < a.x + a.w - 1 && a.y < b.y + b.height - 1 && b.y < a.y + a.h - 1
-      // Plan item 611 (was item 171's 'off every plot'): her line rises over the field's foot so the tray shows with it;
-      // it lets every tap through to the plots under it
-      expect(l.y + l.height).toBeLessThanOrEqual(bust.y)
+      // Plan item 637 (was item 611's bubble over the field's foot, which hid the lower path): her line is a toast on
+      // the dock beside her portrait, off the field and every plot, and the packets under it still take taps
+      const field = (await page.locator('#canvas').boundingBox())!
+      expect(l.y, `${scheme} line on the field`).toBeGreaterThanOrEqual(field.y + field.height - 0.5)
+      for (const p of plots) expect(meets(p, l), `${scheme} line on plot`).toBe(false)
+      expect(l.x).toBeGreaterThanOrEqual(bust.x + bust.width - 1)
       expect(await line.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe('none')
       for (const p of plots) expect(meets(p, bust), `${scheme} bust on plot`).toBe(false)
       // Under the field, over the tray.
