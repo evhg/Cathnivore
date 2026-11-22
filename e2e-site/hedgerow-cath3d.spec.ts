@@ -78,3 +78,47 @@ test('her face is turned toward the camera', async ({ page }) => {
   await page.waitForFunction(() => !!(window as unknown as F).hedgerow?.game() && !!(window as unknown as F).hedgerow!.camSettled?.(), null, { timeout: 120_000 })
   await expect.poll(() => page.evaluate(() => (window as unknown as F).hedgerow!.faceToCamera!() ?? 999), { timeout: 40_000 }).toBeLessThanOrEqual(30)
 })
+
+// Plan item 647: on the field at D her olive jacket stands off the grass beside her: a deeper cloth with a warm rim
+// (`rimCloth`, models.ts). The jacket's mean colour (her chest and waist, 0.27-0.45 of her box's width, 0.35-0.58 of its height)
+// against the grass just right of her figure was ΔE 14 before, 25 after (level 34 between rounds, CIE76 on the frame).
+test('at D her jacket stands off the grass beside her', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop field')
+  test.setTimeout(180_000)
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate(() => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: Object.fromEntries(Array.from({ length: 33 }, (_, i) => [String(i + 1), 3])), seenBefore: { 34: true }, seen: {}, tips: { all: true } })))
+  await page.goto('/hedgerow/?sandbox=1&level=34')
+  type X = { hedgerow?: { game: () => unknown; figureBox?: () => { x: number; y: number; w: number; h: number } | null } }
+  await page.waitForFunction(() => !!(window as unknown as X).hedgerow?.game() && !!(window as unknown as X).hedgerow!.figureBox?.(), null, { timeout: 120_000 })
+  await page.waitForTimeout(8000)
+  const f = await page.evaluate(() => (window as unknown as X).hedgerow!.figureBox!()!)
+  const png = (await page.screenshot()).toString('base64')
+  const regions = {
+    jacket: { x: f.x + f.w * 0.27, y: f.y + f.h * 0.35, w: f.w * 0.18, h: f.h * 0.23 },
+    grass: { x: f.x + f.w + 4, y: f.y + f.h * 0.3, w: 16, h: f.h * 0.25 },
+  }
+  const de = await page.evaluate(async ({ png, regions }) => {
+    const img = new Image()
+    img.src = 'data:image/png;base64,' + png
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const g = c.getContext('2d')!
+    g.drawImage(img, 0, 0)
+    const lab = (r: { x: number; y: number; w: number; h: number }) => {
+      const d = g.getImageData(Math.round(r.x), Math.round(r.y), Math.max(1, Math.round(r.w)), Math.max(1, Math.round(r.h))).data
+      const lin = (v: number) => { const s = v / 255; return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4 }
+      let R = 0, G = 0, B = 0
+      const n = d.length / 4
+      for (let i = 0; i < d.length; i += 4) { R += lin(d[i]!); G += lin(d[i + 1]!); B += lin(d[i + 2]!) }
+      R /= n; G /= n; B /= n
+      const X = (0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.9505, Y = 0.2126 * R + 0.7152 * G + 0.0722 * B, Z = (0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.089
+      const k = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116)
+      return [116 * k(Y) - 16, 500 * (k(X) - k(Y)), 200 * (k(Y) - k(Z))]
+    }
+    const a = lab(regions.jacket), b = lab(regions.grass)
+    return Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!)
+  }, { png, regions })
+  expect(de, JSON.stringify({ f, de })).toBeGreaterThanOrEqual(21)
+})

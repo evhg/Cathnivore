@@ -131,6 +131,12 @@ function at<T extends THREE.Object3D>(o: T, x: number, y: number, z: number): T 
   o.position.set(x, y, z);
   return o;
 }
+/** Plan item 647: Hollowell's livery (panels and marks) lies flush on a body that already casts its shadow: these
+ * parts cast none, so their merged meshes skip the shadow pass (level 34 had gained about 80 draw calls). */
+function livery<T extends THREE.Object3D>(o: T): T {
+  o.castShadow = false;
+  return o;
+}
 function rot<T extends THREE.Object3D>(o: T, x: number, y = 0, z = 0): T {
   o.rotation.set(x, y, z);
   return o;
@@ -1403,15 +1409,15 @@ function vehicle(o: VehicleOpts): THREE.Group {
     const px = -o.len * 0.2;
     const py = wr + o.h * 0.68;
     const r = o.h * 0.2;
-    g.add(box(o.len * 0.46, o.h * 0.42, w + 0.008, matte("#fbf7ee", 0.45), px, py - o.h * 0.21, 0));
-    g.add(rot(cyl(r, r, w + 0.014, glow(logo, 2), px - o.len * 0.1, py - (w + 0.014) / 2, 0, 14), Math.PI / 2));
-    g.add(rot(cyl(r * 0.55, r * 0.55, w + 0.018, matte("#fbf7ee", 0.45), px - o.len * 0.1, py - (w + 0.018) / 2, 0, 12), Math.PI / 2));
+    g.add(livery(box(o.len * 0.46, o.h * 0.42, w + 0.008, matte("#fbf7ee", 0.45), px, py - o.h * 0.21, 0)));
+    g.add(livery(rot(cyl(r, r, w + 0.014, glow(logo, 2), px - o.len * 0.1, py - (w + 0.014) / 2, 0, 14), Math.PI / 2)));
+    g.add(livery(rot(cyl(r * 0.55, r * 0.55, w + 0.018, matte("#fbf7ee", 0.45), px - o.len * 0.1, py - (w + 0.018) / 2, 0, 12), Math.PI / 2)));
     // The same mark on the back doors, which the field camera sees in the gate's queue. Lit (glow 2): the doors face
     // away from the sun, and the fleet's instanced rungs bake a glow as 0.4 x its intensity of the way from black,
     // so plain paint or a dim glow read as a hole.
     // (lane B: a thin box, not a rotated cylinder: the cylinder's turned cap baked dark as a porthole)
-    g.add(box(0.008, o.h * 0.4, w * 0.42, matte("#fbf7ee", 0.45), -o.len * 0.5 - 0.004, wr + o.h * 0.42, 0));
-    g.add(box(0.012, o.h * 0.22, w * 0.22, glow(logo, 2), -o.len * 0.5 - 0.006, wr + o.h * 0.51, 0));
+    g.add(livery(box(0.008, o.h * 0.4, w * 0.42, matte("#fbf7ee", 0.45), -o.len * 0.5 - 0.004, wr + o.h * 0.42, 0)));
+    g.add(livery(box(0.012, o.h * 0.22, w * 0.22, glow(logo, 2), -o.len * 0.5 - 0.006, wr + o.h * 0.51, 0)));
   }
   if (logo) g.add(cyl(0.05, 0.05, 0.012, glow(logo, 1.4), -o.len * 0.14, wr + o.h, 0, 10), cyl(0.056, 0.056, 0.008, chrome(), -o.len * 0.14, wr + o.h, 0, 10));
   const n = o.wheels ?? 2;
@@ -1614,10 +1620,10 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       // Plan item 647: Hollowell's mark on the box, as on the vans: a pale panel with the lit ring through both flanks
       // (one mesh each, through the box), and the mark on the back doors the gate's queue shows.
       const cream = matte("#fbf7ee", 0.45);
-      g.add(box(0.3, 0.15, 0.35, cream, -0.12, 0.18, 0));
-      g.add(rot(cyl(0.05, 0.05, 0.356, glow("#5ab0ff", 2), -0.2, 0.255 - 0.178, 0, 14), Math.PI / 2));
-      g.add(rot(cyl(0.028, 0.028, 0.36, cream, -0.2, 0.255 - 0.18, 0, 12), Math.PI / 2));
-      g.add(box(0.008, 0.15, 0.16, cream, -0.414, 0.2, 0), box(0.012, 0.07, 0.07, glow("#5ab0ff", 2), -0.416, 0.24, 0));
+      g.add(livery(box(0.3, 0.15, 0.35, cream, -0.12, 0.18, 0)));
+      g.add(livery(rot(cyl(0.05, 0.05, 0.356, glow("#5ab0ff", 2), -0.2, 0.255 - 0.178, 0, 14), Math.PI / 2)));
+      g.add(livery(rot(cyl(0.028, 0.028, 0.36, cream, -0.2, 0.255 - 0.18, 0, 12), Math.PI / 2)));
+      g.add(livery(box(0.008, 0.15, 0.16, cream, -0.414, 0.2, 0)), livery(box(0.012, 0.07, 0.07, glow("#5ab0ff", 2), -0.416, 0.24, 0)));
       for (const x of [-0.3, -0.12, 0.33]) for (const side of [-1, 1]) g.add(wheel(0.07, x, side * 0.16));
       g.add(box(0.7, 0.04, 0.3, matte("#26282d", 0.6, false), 0.02, 0.04, 0));
       return g;
