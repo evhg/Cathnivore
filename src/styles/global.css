@@ -5174,6 +5174,12 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
 @media (min-width: 1280px) and (max-height: 860px) {
   .setup[data-steps] .setup-cath-stand .cath-art { width: 262px; transform: translateX(18px); }
 }
+/* Plan item 643 slice 2: the week's card is pinned to the stall's left post, up beside her head, not held over her near
+   arm (it covered her coat and arm at 995-1144 x 566-776): it hangs from its brass pin on the post, under her bubble,
+   clear of her figure and of the board's hexes. */
+@media (min-width: 1280px) {
+  .setup[data-steps] .market-event[data-flyer] { align-self: start; width: 124px; margin: 272px 0 0 -61px; transform: rotate(-1.5deg); transform-origin: 70% 0; }
+}
 /* Plan item 614 at D: the final table is the hero. Three columns: the story on the left, the real board at hero size
    in the middle (on the table, not a framed thumbnail), and a narrow rail with the chart folded into a small ledger
    page over the stats. */

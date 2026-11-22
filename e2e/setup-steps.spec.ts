@@ -32,6 +32,26 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
     const ox = Math.max(0, Math.min(cath.x + cath.width, flyer.x + flyer.width) - Math.max(cath.x, flyer.x))
     const oy = Math.max(0, Math.min(figBottom, flyer.y + flyer.height) - Math.max(cath.y, flyer.y))
     expect((ox * oy) / (cath.width * (figBottom - cath.y)), 'poster over her figure').toBeLessThanOrEqual(0.2)
+    // Plan item 643: from 1280 px the card hangs on the stall's left post, meeting no part of her drawn figure (the
+    // union of her art's shapes) nor the board's hexes.
+    if (width >= 1280) {
+      const clear = await page.evaluate(() => {
+        const f = document.querySelector('.market-event[data-flyer]')!.getBoundingClientRect()
+        let left = Infinity
+        for (const e of document.querySelectorAll('.setup-cath-stand .cath-art svg :is(path, ellipse, circle, rect, polygon)')) {
+          const r = e.getBoundingClientRect()
+          if (r.width > 0 && r.top < f.bottom && f.top < r.bottom) left = Math.min(left, r.left)
+        }
+        let hexRight = 0
+        for (const h of document.querySelectorAll('[data-setup-table] polygon')) {
+          const r = h.getBoundingClientRect()
+          if (r.top < f.bottom && f.top < r.bottom && r.left < f.left) hexRight = Math.max(hexRight, r.right)
+        }
+        return { cath: left - f.right, hexes: f.left - hexRight }
+      })
+      expect(clear.cath, 'the week card meets her figure').toBeGreaterThanOrEqual(0)
+      expect(clear.hexes, 'the week card meets a hex').toBeGreaterThanOrEqual(0)
+    }
     // Her bubble carries the week's event and her pick advice.
     await expect(page.locator('.setup-cath-says .says-event')).toBeVisible()
     await expect(page.locator('.setup-cath-says .says-pick')).toBeVisible()
