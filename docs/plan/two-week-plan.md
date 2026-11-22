@@ -6189,7 +6189,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 645. [ ] Cathnivore: the players' own wooden pieces on the board
+## 645. [ ] Cathnivore: the players' own wooden pieces on the board *(lane A, in progress)*
 *(planned 2026-11-22 07:45, lane B, plan1122c critique)*
 - **Why:** `plan1122c/cath-game-D` 520-1360 x 60-740 (also `cath-game-P` 0-390 x 130-470, `cath-setup-D`): every hex carries the same flat orange Hollowell outlet icon (nine on the board, often two a hex) and four identical blue '?' bubbles; the players show only as producer portraits in arches, so the table reads as an icon grid Hollowell owns. VISION 2 and the art direction's wood-and-paper versus glossy plastic.
 - **Build:** `src/ui/Map.tsx` and its piece art (`pieceArt`/landmark kits): the players' side drawn as wooden pieces on the plots they hold (a stall, crates, a producer's token) that grow as their engine does; Hollowell's outlets one glossy shape per stage (not the same icon twice in a hex); a scouted '?' a face-down card on its plot; a freed region swaps its plastic for wood at once (a short swap, a fade under reduced motion).
