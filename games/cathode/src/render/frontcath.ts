@@ -731,6 +731,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // jaw shadow (its vertex colours) is applied again after it, as a brightness.
     // Plan item 319 slice 84: after the knee and shades, the catch-light texels (#fffaf4) are set bright again: the
     // knee had pressed them to within a few percent of the sclera, so at pick distance the eyes held no light.
+    // Plan item 319 slice 101: the sclera texels (the only ones past 0.58 in every channel but the catch-lights; skin
+    // and its highlights stay under 0.5) are lifted 1.4x and cooled toward neutral after the knee: the knee pressed the
+    // whites to the cheek's level, so the 11-22 critique read them as grey (a brighter paint alone didn't show).
     // Plan item 319 slice 68: after it, the face's very edge (grazing the lens) falls to 0.8, so the cheek turns into
     // the hair and hood instead of ending at them as a pale plate's rim (critique 11-13 03:35, point 1). Narrow, so the
     // far cheek beside the eye keeps its light (the eyes' 3:1); a jaw-underside shade tried with it cost that too.
@@ -745,7 +748,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
             c = max( vec3( 0.0 ), mix( vec3( lc ), c, 1.7 ) ) * vec3( 1.05, 1.0, 0.93 );
             float l2 = lc / ( 1.0 + lc / 1.4 );
             outgoingLight = c * ( lc > 1e-4 ? l2 / lc : 1.0 ) * ${skinTone.toFixed(2)};
-            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); float fe = saturate( dot( normal, normalize( vViewPosition ) ) ); float sh = mix( 0.8, 1.0, smoothstep( 0.02, 0.22, fe ) ); outgoingLight *= sh * vec3( 1.0, 1.0 - 0.1 * ( 1.0 - sh ), 1.0 - 0.2 * ( 1.0 - sh ) ); float cl = smoothstep( 0.86, 0.9, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) ); outgoingLight = mix( outgoingLight, max( outgoingLight * 1.9, vec3( 1.25, 1.22, 1.18 ) ), cl ); }" : ""}
+            ${glint > 0 ? "{ float ks = mix( 0.64, 1.0, smoothstep( -0.05, 0.7, dot( normal, uKeyDir ) ) ); outgoingLight *= ks * vec3( 1.0, 1.0 - 0.12 * ( 1.0 - ks ), 1.0 - 0.24 * ( 1.0 - ks ) ); float fe = saturate( dot( normal, normalize( vViewPosition ) ) ); float sh = mix( 0.8, 1.0, smoothstep( 0.02, 0.22, fe ) ); outgoingLight *= sh * vec3( 1.0, 1.0 - 0.1 * ( 1.0 - sh ), 1.0 - 0.2 * ( 1.0 - sh ) ); float cl = smoothstep( 0.86, 0.9, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) ); outgoingLight = mix( outgoingLight, max( outgoingLight * 1.9, vec3( 1.25, 1.22, 1.18 ) ), cl ); float sc = smoothstep( 0.58, 0.64, min( diffuseColor.r, min( diffuseColor.g, diffuseColor.b ) ) ) * ( 1.0 - cl ); float sl = dot( outgoingLight, W ); outgoingLight = mix( outgoingLight, mix( vec3( sl ), outgoingLight, 0.6 ) * 1.4, sc ); }" : ""}
             ${glint > 0 ? "" : "#ifdef USE_COLOR\n            outgoingLight *= dot( vColor.rgb, W );\n            #endif"}
           }
           #include <opaque_fragment>`
@@ -1723,7 +1726,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         almond();
         g.restore();
         // Plan item 260: a warmer white (a pure white read as a doll's stare under the toon key).
-        g.fillStyle = "#e4d4cb";
+        // Plan item 319 slice 101: a step brighter (#e4d4cb -> #ece0d6; still under the catch-light key's 0.86 floor):
+        // the 11-22 critique read the whites as grey at the title.
+        g.fillStyle = "#ece0d6";
         g.fill();
         g.clip();
         const ix = ex - 0.0005 * E * sx;
@@ -1777,8 +1782,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // Plan item 205: a heavier upper line and a longer wing (the liner is what reads at title distance).
         // Plan item 319 slice 10: a slim line that thickens outward to a sharp, lifted wing (the critique: a heavy band
         // over the lid, no visible wing). The line is about two-thirds of item 205's depth; the wing runs further out and up.
-        g.lineTo(ox + 0.0118 * E * sx, ey + hh * 2.45);
-        g.lineTo(ox - 0.0004 * E * sx, ey + hh * 1.0);
+        // Plan item 319 slice 101: the wing longer and fuller at its root (0.0118 -> 0.0136 out, 2.45 -> 2.6 up, its
+        // underside from 1.0 -> 1.2): the 11-22 critique read the liner as barely there at the title.
+        g.lineTo(ox + 0.0136 * E * sx, ey + hh * 2.6);
+        g.lineTo(ox - 0.001 * E * sx, ey + hh * 1.2);
         g.bezierCurveTo(ex + hw * 0.45 * sx, ey + hh * 3.0, ex - hw * 0.5 * sx, ey + hh * 2.2, ex - hw * sx * 1.02, ey - 0.0002);
         g.closePath();
         g.fill();
