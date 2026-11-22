@@ -1902,7 +1902,8 @@ body {
   /* Plan item 631 (reverses item 563): she stands behind her counter, its top at her hips, so the stall is hers and
      not pasted on behind her legs */
   .hero[data-booth] .hero-cath { position: relative; z-index: var(--z-booth-cath); }
-  /* the four games stand on the counter as its wares: framed prints leaning on the produce, each a link */
+  /* today's pick stands on the counter as her ware: a framed print leaning on the produce, a link (item 640: one
+     print about 140 px wide, in place of four 70 px tiles that repeated the posters below) */
   .stall-wares {
     position: absolute;
     left: var(--ware-l);
@@ -1911,8 +1912,7 @@ body {
     z-index: var(--z-booth-host);
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
-    gap: 4px;
+    justify-content: flex-start;
     translate: 0 -100%;
     opacity: 0;
     transition: opacity 900ms var(--ease-out) 700ms;
@@ -1920,10 +1920,9 @@ body {
   .ready .stall-wares { opacity: 1; }
   .stall-ware {
     display: grid;
-    flex: 1 1 0;
-    max-width: 84px;
+    flex: 0 1 144px;
     gap: 2px;
-    padding: 2px 2px 1px;
+    padding: 3px 3px 2px;
     border-radius: 4px;
     background: var(--awning-cream);
     box-shadow: 0 0 0 2px var(--wood-lo), 0 4px 8px var(--shadow-art);
@@ -1937,7 +1936,8 @@ body {
   .stall-ware:nth-child(even) { rotate: 2.5deg; }
   .stall-ware:hover { rotate: 0deg; translate: 0 -6px; }
   .stall-ware img { display: block; width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: cover; border-radius: 2px; }
-  .stall-ware span { font: 700 0.75rem / 1.15 var(--font-ui); letter-spacing: -0.01em; white-space: nowrap; }
+  .stall-ware span { font: 700 0.875rem / 1.15 var(--font-ui); letter-spacing: -0.01em; white-space: nowrap; }
+  .stall-ware small { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--wood-lo); opacity: 0.85; }
   .hero-game[data-ware-lit] { translate: 0 -6px; }
   /* Plan item 640: today's board chalked on the counter's front (booth.ts placeSlate): each daily a link, a tick once
      played, the run in pennants; it fades in with the wares */
@@ -1978,8 +1978,12 @@ body {
     text-transform: uppercase;
   }
   .slate-run { display: inline-flex; align-items: center; gap: 6px; font: 600 0.875rem / 1.2 var(--font-ui); letter-spacing: 0; text-transform: none; color: var(--gold-hi); }
-  .slate-pennants { display: inline-flex; gap: 2px; }
-  .slate-pennants i { width: 8px; height: 10px; background: var(--gold); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .slate-week { display: inline-flex; gap: 4px; }
+  .slate-week i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--chalk) 70%, transparent); }
+  .slate-week i[data-on] { background: var(--chalk); }
+  .slate-streak[data-pennant] { padding: 0 12px 0 7px; clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%); background: var(--gold); color: var(--slate); font-weight: 800; }
+  /* with the slate up, the words' own today board folds into it (booth.ts) */
+  .hero[data-slate] .today-board { display: none; }
   .stall-slate a {
     display: flex;
     align-items: baseline;
@@ -2166,6 +2170,14 @@ body {
     max-width: 270px;
     margin: 0;
     justify-content: flex-end;
+  }
+  /* Plan item 640: with the stall drawn, the top right is the awning and the slate board's kicker (a returning
+     visitor's chips sat on 'OF MARROW'): the wardrobe hangs in the night sky left of the stall, over the houses */
+  .hero[data-booth] > .wardrobe {
+    right: auto;
+    left: 16px;
+    max-width: min(270px, calc(var(--stall-x1, 300px) - 32px));
+    justify-content: flex-start;
   }
 }
 

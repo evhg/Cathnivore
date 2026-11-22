@@ -82,27 +82,33 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
   })
 }
 
-// Plan item 631: the four games stand on the counter as its wares, each a link to its game, at her side.
-test('at D each game is a ware on the counter that links to it', async ({ page }, testInfo) => {
+// Plan item 631, reworked by item 640: today's pick stands on the counter as her ware, about 140 px wide, at her side:
+// the daily she names next for a returning visitor (here Hedgerow, Runnel being solved), else the button's game.
+test("at D today's pick is a ware on the counter that links to it", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name.includes('phone'), 'desktop')
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/games/')
   await page.waitForTimeout(3400)
   const wares = page.locator('.stall-ware')
-  await expect(wares).toHaveCount(4)
-  expect(await wares.evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['/cathnivore/', '/runnel/', '/hedgerow/', '/nightshift/'])
+  await expect(wares).toHaveCount(1)
+  await expect(wares).toHaveAttribute('href', '/runnel/')
   const m = await page.evaluate(() => {
     const cath = document.querySelector('#hero-cath svg')!.getBoundingClientRect()
-    const w = [...document.querySelectorAll('.stall-ware')].map((e) => e.getBoundingClientRect())
-    return { cathR: cath.right, cathB: cath.bottom, wares: w.map((b) => ({ l: b.left, b: b.bottom, w: b.width })) }
+    const b = document.querySelector('.stall-ware')!.getBoundingClientRect()
+    return { cathR: cath.right, cathB: cath.bottom, l: b.left, b: b.bottom, w: b.width }
   })
-  for (const w of m.wares) {
-    expect(w.l).toBeGreaterThanOrEqual(m.cathR - 8)
-    expect(w.b).toBeLessThan(m.cathB)
-    expect(w.w).toBeGreaterThanOrEqual(56)
-  }
-  await wares.nth(1).click()
-  await expect(page).toHaveURL(/\/runnel\//)
+  expect(m.l).toBeGreaterThanOrEqual(m.cathR - 8)
+  expect(m.b).toBeLessThan(m.cathB)
+  expect(m.w).toBeGreaterThanOrEqual(120)
+  await page.evaluate(() => {
+    const d = new Date().toISOString().slice(0, 10)
+    localStorage.setItem('runnel:v1', JSON.stringify({ results: { [d]: { taps: 31 } } }))
+  })
+  await page.reload()
+  await expect(page.locator('.stall-ware')).toHaveAttribute('href', '/hedgerow/')
+  await expect(page.locator('.stall-ware')).toContainText('Hedgerow')
+  await page.locator('.stall-ware').click()
+  await expect(page).toHaveURL(/\/hedgerow\//)
 })
 
 // Plan item 640: at D the counter's front is today's board: a chalk slate whose lines link to each game's daily, its

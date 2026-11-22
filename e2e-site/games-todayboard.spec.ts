@@ -18,6 +18,27 @@ test('seeded saves tick today, chalk the week and fly the pennant, and the poste
     localStorage.setItem('cathode.save', JSON.stringify({ jobsDone: ['a', 'b'] }))
   })
   await page.reload()
+  // Plan item 640: at D the stall's slate carries the board (ticks, the week's dots, the run) and the words' own folds
+  const booth = await page.locator('.stall-slate').isVisible()
+  if (booth) {
+    await expect(page.locator('.today-board')).toBeHidden()
+    const slate = page.locator('.stall-slate')
+    await expect(slate.locator('a[data-game="runnel"][data-done]')).toContainText('Solved in 31')
+    await expect(slate.locator('a[data-done]')).toHaveCount(1)
+    await expect(slate.locator('.slate-week i[data-on]')).toHaveCount(3)
+    await expect(slate.locator('.slate-streak[data-pennant]')).toHaveText('3-day run')
+    const vh = page.viewportSize()!.height
+    expect((await page.locator('.hero-game').first().boundingBox())!.y).toBeLessThan(vh)
+    // the wardrobe (two jobs earn a second outfit) hangs in the sky clear of the awning's board and its kicker
+    const wardrobe = page.locator('#wardrobe')
+    if (await wardrobe.isVisible()) {
+      const w = (await wardrobe.boundingBox())!
+      const words = (await page.locator('.hero-text').boundingBox())!
+      const cath = (await page.locator('#hero-cath svg').boundingBox())!
+      expect(w.x + w.width).toBeLessThanOrEqual(Math.min(words.x, cath.x))
+    }
+    return
+  }
   const board = page.locator('.today-board')
   await expect(board).toBeVisible()
   await expect(board.locator('.today-tag[data-game="runnel"][data-done]')).toContainText('Solved in 31')

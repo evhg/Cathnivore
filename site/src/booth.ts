@@ -114,8 +114,12 @@ export function drawBooth(): void {
     back?.remove()
     front?.remove()
     wares?.remove()
-    back = front = wares = null
-    if (hero) delete hero.dataset.booth
+    slate?.remove()
+    back = front = wares = slate = null
+    if (hero) {
+      delete hero.dataset.booth
+      delete hero.dataset.slate
+    }
     return
   }
   const o = hero.getBoundingClientRect()
@@ -167,7 +171,8 @@ export function drawBooth(): void {
   // across the front below her (the counter hides her from the hips), past the crates stacked at its left foot
   const slateL = x1 + 112
   const slateR = cr - 10
-  if (!placeSlate(hero, slateL, slateR, top + 24, rail - 8)) {
+  const slated = placeSlate(hero, slateL, slateR, top + 24, rail - 8)
+  if (!slated) {
     f += `<rect x="${r(sx - 66)}" y="${r(sy - 17)}" width="132" height="34" rx="4" fill="#2b3330" stroke="#6b3f24" stroke-width="3"/>`
     f += `<text x="${r(sx)}" y="${r(sy + 6)}" fill="#f4efe2" font-family="Georgia,serif" font-size="17" font-weight="700" text-anchor="middle">FRESH · FREE</text>`
   }
@@ -192,9 +197,10 @@ export function drawBooth(): void {
   f += crate(x1 - 4, Math.min(c.l + 26, x1 + 104) - x1 + 4, rail, 0)
   f += crate(x1 + 8, Math.min(c.l + 8, x1 + 86) - x1 - 8, rail - 50, 3)
   if (cr - c.r > 300) f += crate(cr - 96, 84, rail, 5)
-  // Plan item 631: the four games stand on the counter beside her as its wares, each a framed print of the game with
-  // its name, a link to it (the posters below are the keyboard's way in, so these stay out of the tab order).
-  placeWares(hero, c.r + 4, cr - 2, top + 4)
+  // Plan item 631, reworked by item 640: one game stands on the counter beside her, a framed print of today's pick
+  // (the daily she names next), a link to it (the posters below are the keyboard's way in, so it stays out of the
+  // tab order); the four 70 px tiles only repeated the posters below.
+  placeWares(hero, c.r + 10, cr - 2, top + 4)
   if (!back) {
     back = layer('hero-booth')
     hero.prepend(back)
@@ -206,39 +212,58 @@ export function drawBooth(): void {
   back.innerHTML = s
   front.innerHTML = f
   hero.dataset.booth = ''
+  hero.style.setProperty('--stall-x1', `${r(x1 - 14)}px`)
   drawnAt = signature()
+  // Plan item 640: with the slate up, the words' own today board folds into it (its week dots and run are on the
+  // slate); the words shorten, so the board drawn round them is drawn again once.
+  if ((hero.dataset.slate !== undefined) !== slated) {
+    if (slated) hero.dataset.slate = ''
+    else delete hero.dataset.slate
+    drawBooth()
+  }
 }
 
-const WARES: [string, string][] = [
-  ['cathnivore', 'Cathnivore'],
-  ['runnel', 'Runnel'],
-  ['hedgerow', 'Hedgerow'],
-  ['nightshift', 'NIGHT SHIFT'],
-]
+const WARES: Record<string, string> = { cathnivore: 'Cathnivore', runnel: 'Runnel', hedgerow: 'Hedgerow', nightshift: 'NIGHT SHIFT' }
 let wares: HTMLElement | null = null
+
+/** Today's pick: the first daily not played yet (as her line names it), else the game the hero's button plays. */
+function pickGame(): string {
+  try {
+    const b = todayBoard(localStorage, new Date())
+    const next = b.any ? b.tags.find((t) => t.game !== 'nightshift' && !t.done)?.game : undefined
+    if (next) return next
+  } catch {
+    // unreadable storage: the button's game
+  }
+  const href = document.getElementById('cta-today')?.getAttribute('href') ?? '/runnel/'
+  const id = href.replace(/\//g, '')
+  return id in WARES ? id : 'runnel'
+}
 
 function placeWares(hero: HTMLElement, l: number, rgt: number, foot: number): void {
   if (!wares) {
     wares = document.createElement('div')
     wares.className = 'stall-wares'
     wares.setAttribute('aria-hidden', 'true')
-    for (const [id, name] of WARES) {
-      const a = document.createElement('a')
-      a.className = 'stall-ware'
-      a.href = `/${id}/`
-      a.tabIndex = -1
-      a.dataset.game = id
-      a.innerHTML = `<img src="/work/games-${id}-640.webp" alt="" width="640" height="400" decoding="async" loading="lazy"><span>${name}</span>`
-      // pointing at a ware lights its poster below
-      const poster = () => document.querySelector<HTMLElement>(`.hero-game-${id}`)
-      a.addEventListener('pointerenter', () => poster()?.setAttribute('data-ware-lit', ''))
-      a.addEventListener('pointerleave', () => poster()?.removeAttribute('data-ware-lit'))
-      wares.append(a)
-    }
     hero.append(wares)
   }
+  const id = pickGame()
+  if (wares.dataset.game !== id) {
+    wares.dataset.game = id
+    const a = document.createElement('a')
+    a.className = 'stall-ware'
+    a.href = `/${id}/`
+    a.tabIndex = -1
+    a.dataset.game = id
+    a.innerHTML = `<img src="/work/games-${id}-640.webp" alt="" width="640" height="400" decoding="async" loading="lazy"><span><small>Today's pick</small> ${WARES[id]}</span>`
+    // pointing at the ware lights its poster below
+    const poster = () => document.querySelector<HTMLElement>(`.hero-game-${id}`)
+    a.addEventListener('pointerenter', () => poster()?.setAttribute('data-ware-lit', ''))
+    a.addEventListener('pointerleave', () => poster()?.removeAttribute('data-ware-lit'))
+    wares.replaceChildren(a)
+  }
   const w = Math.max(0, rgt - l)
-  wares.hidden = w < 200
+  wares.hidden = w < 160
   wares.style.setProperty('--ware-l', `${r(l)}px`)
   wares.style.setProperty('--ware-w', `${r(w)}px`)
   wares.style.setProperty('--ware-t', `${r(foot)}px`)
@@ -266,7 +291,12 @@ function placeSlate(hero: HTMLElement, l: number, rgt: number, t: number, b: num
   const tags = order.map((g) => board?.tags.find((x) => x.game === g) ?? { game: g, done: false, label: '' })
   const note = (x: { game: string; done: boolean; label: string }): string =>
     x.game === 'nightshift' ? (x.label ? x.label.replace(' of ', '/').replace(' names crossed off', ' names') : 'next name') : x.done ? x.label.replace('Daily: best', 'best') : 'to play'
-  const run = board && board.streak > 0 ? `<span class="slate-run"><span class="slate-pennants" aria-hidden="true">${'<i></i>'.repeat(Math.min(7, board.streak))}</span>${board.streak}-day run</span>` : ''
+  // the week in seven chalk dots (as the words' board had it), then the run, a gold pennant from three days
+  const week = board?.any
+    ? `<span class="slate-week" role="img" aria-label="${board.week.filter(Boolean).length} of the last 7 days played">${board.week.map((on) => `<i${on ? ' data-on' : ''}></i>`).join('')}</span>`
+    : ''
+  const streak = board && board.streak > 0 ? `<span class="slate-streak"${board.pennant ? ' data-pennant' : ''}>${board.streak}-day run</span>` : ''
+  const run = week || streak ? `<span class="slate-run">${week}${streak}</span>` : ''
   slate.innerHTML =
     `<span class="slate-head">Today at the market${run}</span>` +
     tags.map((x) => `<a href="/${x.game}/" data-game="${x.game}"${x.done ? ' data-done' : ''}><span class="slate-tick" aria-hidden="true">${x.done ? '✓' : '○'}</span>${names[x.game]} <small${!x.done && x.game !== 'nightshift' ? ' data-todo' : ''}>${note(x)}</small></a>`).join('')
