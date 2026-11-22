@@ -5412,3 +5412,16 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .groove-bed { stroke-width: 11.4; }
 .water { stroke-width: 13.1; }
 .shimmer { stroke-width: 4.6; stroke-dasharray: 0.05 0.6; }
+/* Plan item 646 slice 2: each kind of tile reads as itself: a field (a channel's end, where the crop grows) is a
+   planted plot, its face tinted the crop's green (light enough that its channel keeps 3:1); the spring is a stone well-head, pale stone; channels keep
+   the ground they cross. */
+.cell.field:not(.reservoir) .tile { fill: color-mix(in oklab, var(--dry-field) 46%, var(--wet-field)); }
+.cell.field.wet:not(.reservoir) .tile { fill: color-mix(in oklab, var(--wet-field) 80%, var(--dry-field)); }
+@media (prefers-color-scheme: dark) {
+  /* (dark: a lighter touch of green, so the light channels keep 3:1 on it) */
+  :root:not([data-theme="light"]) .cell.field:not(.reservoir):not(.wet) .tile { fill: color-mix(in oklab, var(--dry-field) 86%, var(--wet-field)); }
+}
+.cell.spring .tile { fill: color-mix(in oklab, var(--water) 50%, var(--paper)); }
+/* (the glint's loop matches its new dash, so it runs seamlessly; still under reduced motion) */
+@keyframes flow { to { stroke-dashoffset: -0.65; } }
+@media (prefers-reduced-motion: reduce) { .wet .shimmer { animation: none; } }

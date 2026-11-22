@@ -4,6 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 // watered crop fills 40%+ of its tile's width, the solve's bloom from the spring is done in 1.2 s on any board, and
 // under reduced motion the crop simply fades in within 400 ms.
 const oklab = (c: string): [number, number, number] => {
+  if (c.startsWith('oklab(')) return (c.match(/-?[\d.]+/g) ?? []).slice(0, 3).map(Number) as [number, number, number]
   const v = (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number)
   const [r, g, b] = (c.startsWith('color(') ? v : v.map((x) => x / 255)).map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)) as [number, number, number]
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
@@ -59,4 +60,20 @@ test("the solve's bloom runs out from the spring and is done in 1.2 s", async ({
   for (const e of ends) expect(e.end).toBeLessThanOrEqual(1200)
   const byRing = [...ends].sort((a, b) => a.ring - b.ring)
   expect(byRing[0]!.end).toBeLessThanOrEqual(byRing[byRing.length - 1]!.end)
+})
+
+// Plan item 646: the three kinds of tile read apart on a dry board: a field (its plot), the spring (its well-head)
+// and a channel each 12+ ΔE (OKLab x100) from the others' faces (the plan asked 15; a field plot can't darken further
+// without its channel dropping under 3:1 in runnel-tiles, so the plot is told by hue and the spring by blue).
+test('fields, the spring and channels are told apart by their faces', async ({ page }) => {
+  await page.goto('/runnel/?nohelp')
+  await page.locator('.cell.spring').first().waitFor()
+  const f = await page.evaluate(() => {
+    const fill = (s: string) => { const e = document.querySelector(s); return e ? getComputedStyle(e).fill : null }
+    return { field: fill('.cell.field:not(.reservoir):not(.wet) .tile'), spring: fill('.cell.spring .tile'), channel: fill('.cell.channel:not(.wet) .tile') }
+  })
+  expect(f.field && f.spring && f.channel).toBeTruthy()
+  expect(deltaE(f.field!, f.channel!), `field ${f.field} channel ${f.channel}`).toBeGreaterThanOrEqual(12)
+  expect(deltaE(f.spring!, f.channel!), `spring ${f.spring} channel ${f.channel}`).toBeGreaterThanOrEqual(12)
+  expect(deltaE(f.field!, f.spring!), `field ${f.field} spring ${f.spring}`).toBeGreaterThanOrEqual(12)
 })
