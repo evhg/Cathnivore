@@ -10,7 +10,7 @@ for (const [s, vp, dpr] of [['D', { width: 1440, height: 900 }, 1], ['P', { widt
   await p.goto(`http://localhost:4175/nightshift/?play&class=ghost&rs=0.5${extra}`)
   await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 200000 }).catch(() => {})
   const t0 = Date.now()
-  for (const at of [0, 4000]) {
+  for (const at of (process.env.AT ?? "0,4000").split(",").map(Number)) {
     await p.waitForTimeout(Math.max(0, at - (Date.now() - t0)))
     await p.screenshot({ path: `${out}/${tag}-${s}-${at}.png` })
   }

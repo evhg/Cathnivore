@@ -207,6 +207,8 @@ export class Arsenal {
   /** The idle press-check, ms in; -1 when none. */
   private pressMs = -1;
   private idleS = 0;
+  /** Plan item 639: held low on arrival (the street's first frames are hers to look at); the first input raises it. */
+  lowered = false;
   private pressedThisIdle = false;
   /** Viewmodel recoil springs (S2.3): rotation (pitch, yaw, roll) and position. */
   private readonly recRot = new Spring3(KF.recoil.rot);
@@ -323,6 +325,7 @@ export class Arsenal {
   /** Any input this frame cancels the press-check and restarts the idle clock (S2.4 inspect). */
   noteInput(any: boolean, dt: number): void {
     if (any) {
+      this.lowered = false;
       this.idleS = 0;
       this.pressedThisIdle = false;
       if (this.pressMs >= 0) this.pressMs = -1;
@@ -1209,7 +1212,10 @@ export class Arsenal {
     let dip = clipGun ? 0 : this.raising / 0.35;
     if (this.reloading > 0) dip = Math.max(dip, this.shellReload ? 0.35 : 0.6);
     if (this.boltLeft > 0) dip = Math.max(dip, 0.15);
-    a.dip = THREE.MathUtils.damp(a.dip, dip, 12, dt);
+    // Plan item 639: on arrival it rests low and out of the frame's middle (the full draw dip and a little more),
+    // and comes up at the raise's speed with her first input.
+    if (this.lowered) dip = Math.max(dip, 1.25);
+    a.dip = THREE.MathUtils.damp(a.dip, dip, this.lowered ? 30 : 12, dt);
     const cycle = def.cycle;
     const since = cycle - Math.max(0, this.cd);
     a.action = def.weaponClass === "pistol" ? Math.max(0, 1 - since / 0.07) : def.weaponClass === "shotgun" || def.weaponClass === "sniper" ? Math.max(0, Math.sin(Math.min(1, Math.max(0, (since - 0.15) / (cycle * 0.6))) * Math.PI)) : 0;

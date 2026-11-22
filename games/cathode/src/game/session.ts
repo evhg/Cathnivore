@@ -809,6 +809,13 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         },
       })
     : null;
+  // Plan item 639: a fresh street opens with the weapon held low until her first input (not in ?shot frames).
+  if (job && job.stage === 0 && !o.shot) arsenal.lowered = true;
+  // ...and the camera arrives: a 1.8 s push in from 2.6 m behind and a little above her eye, before she takes control
+  // (not in ?shot frames or under reduced motion; e2e drivers skip it unless the URL asks for ?arrival).
+  const ARRIVAL_S = 1.8;
+  const arrivalAsked = typeof location !== "undefined" && new URLSearchParams(location.search).has("arrival");
+  let arrivalT = job && job.stage === 0 && !o.shot && (arrivalAsked || !navigator.webdriver) ? 0 : -1;
   // The second job, Crisp's ledger, picks up once the Fish Market is closed.
   const crisp =
     !tutorial && progress.jobsDone.includes("fishMarket") && !progress.jobsDone.includes("crispLead") && !o.shot && !inOffice
@@ -1904,7 +1911,8 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     const intent = input.read();
     // Plan item 16: the office is home. The gun is on the bench, so there's nothing to fire, aim, reload or throw.
     // Plan item 192: she holds still while the opener's lens trails her.
-    if (openerShot) Object.assign(intent, { move: { x: 0, y: 0 }, look: { yaw: 0, pitch: 0 }, takedown: false, inspect: false, fire: false, aim: false, alt: false, reload: false, slot: -1, cycle: 0, focus: false, skill1: false, skill2: false, lean: 0, jump: false, crouch: false, sprint: false });
+    if (arrivalT >= 0 && trauma.reducedMotion) arrivalT = -1;
+    if (openerShot || (arrivalT >= 0 && arrivalT < ARRIVAL_S)) Object.assign(intent, { move: { x: 0, y: 0 }, look: { yaw: 0, pitch: 0 }, takedown: false, inspect: false, fire: false, aim: false, alt: false, reload: false, slot: -1, cycle: 0, focus: false, skill1: false, skill2: false, lean: 0, jump: false, crouch: false, sprint: false });
     if (inOffice) Object.assign(intent, { fire: false, aim: false, alt: false, reload: false, slot: -1, cycle: 0, focus: false, skill1: false, skill2: false, lean: 0 });
     // On desktop the game waits while the mouse is free (Esc, or before the first click).
     const portrait = input.isTouch && innerHeight > innerWidth;
@@ -2131,6 +2139,16 @@ export async function startSession(o: SessionOptions): Promise<Session> {
         !!t && t.enemy.state === "combat" && t.angle < 0.04 && w.kind !== "melee" && t.enemy.position.distanceTo(player.pos) < w.range && arsenal.ammo.mag > 0;
     }
     player.applyCamera(world.camera, realDt);
+    // Plan item 639: the arrival's push in, eased out, onto her eye.
+    if (arrivalT >= 0 && arrivalT < ARRIVAL_S) {
+      const e = 1 - (1 - arrivalT / ARRIVAL_S) ** 3;
+      const back = (1 - e) * 2.6;
+      world.camera.position.x += Math.sin(player.yaw) * back;
+      world.camera.position.z += Math.cos(player.yaw) * back;
+      world.camera.position.y += (1 - e) * 0.35;
+      world.camera.rotation.x -= (1 - e) * 0.05;
+      arrivalT += realDt;
+    }
     // C17 (S6.5): Second Wind puts her on one knee: the eye drops 35 cm and the camera rolls 12 degrees.
     if (swLook.drop > 0 || swLook.roll > 0) {
       world.camera.position.y -= swLook.drop;
