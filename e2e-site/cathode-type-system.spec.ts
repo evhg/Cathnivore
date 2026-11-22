@@ -27,7 +27,7 @@ for (const [name, url] of [['title', '/nightshift/'], ['class pick', '/nightshif
         if (cs.visibility === 'hidden' || Number(cs.opacity) === 0 || cs.display === 'none') continue
         if (e.closest('[hidden], [aria-hidden="true"][data-sr-skip]')) continue
         // (a mugshot's printed labels, its height chart and name slate, are part of the photograph, not the HUD's type)
-        if (e.closest('svg.mugshot-vane')) continue
+        if (e.closest('.ld-still, svg.mugshot, svg.mugshot-vane')) continue
         faces.add(cs.fontFamily.split(',')[0]!.replace(/["']/g, '').trim())
         // SVG text's font-size is in its viewBox's units: measured at the size it renders (the case loader's survey
         // sheet sets 13 px on screen, plan item 638)
@@ -98,7 +98,7 @@ for (const size of [{ width: 1440, height: 900 }, { width: 844, height: 390 }]) 
         if (!box.width || !box.height || box.bottom < 0 || box.top > innerHeight) continue
         const cs = getComputedStyle(e)
         if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue
-        if (e.closest('svg.mugshot-vane')) continue
+        if (e.closest('.ld-still, svg.mugshot, svg.mugshot-vane')) continue
         faces.add(cs.fontFamily.split(',')[0]!.replace(/["']/g, '').trim())
         const svgScale = e instanceof SVGGraphicsElement ? Math.abs(e.getScreenCTM()?.a ?? 1) : 1
         const px = parseFloat(cs.fontSize) * svgScale

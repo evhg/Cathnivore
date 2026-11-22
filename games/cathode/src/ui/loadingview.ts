@@ -130,10 +130,13 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   // leaves the small print (landmarks, rooms, tips; they ran into the route at 13 px) to the full map.
   const KEEP = new Set(["zone", "goal", "cath"]);
   function legible(plan: SVGSVGElement): void {
-    const vb = plan.viewBox.baseVal;
-    const w = plan.getBoundingClientRect().width;
-    if (!vb || !vb.width || !w) return;
-    const perPx = vb.width / w;
+    // viewBox units per screen pixel from the drawn transform (the box's width overstates it where the sheet letterboxes)
+    const m = plan.getScreenCTM();
+    const k = m ? Math.hypot(m.a, m.b) : 0;
+    if (!k) return;
+    const perPx = 1 / k;
+    // the legend's 'N' and '10 m' are the full map's small print too (the arrow and the bar still draw)
+    for (const t of plan.querySelectorAll<SVGTextElement>(".dmap-legend text")) t.style.setProperty("display", "none");
     for (const l of plan.querySelectorAll<SVGLineElement>(".dmap-labels .dmap-leader")) {
       const kind = [...l.classList].find((c) => c.startsWith("dmap-leader-"))?.slice(12) ?? "";
       if (!KEEP.has(kind)) l.style.setProperty("display", "none");
@@ -157,6 +160,11 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   requestAnimationFrame(restring);
   // The prints drop into place over about a second: the string follows their pins until they land.
   for (const e of [still, print, sheet]) e.addEventListener("animationend", restring);
+  // (the sheet's labels sized once it has landed: measured mid-deal they came out at 11 px)
+  sheet.addEventListener("animationend", () => {
+    const plan = sheet.querySelector<SVGSVGElement>("svg");
+    if (plan) legible(plan);
+  });
 
   const corner = el("div", "ld-corner", root);
   el("p", "ld-list-h", corner, "The List");

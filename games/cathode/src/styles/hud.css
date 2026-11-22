@@ -2263,7 +2263,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-tl > .hud-vitals :is(.hud-name-text, .hud-arm-row, .hud-defence, .hud-xp) { display: none; }
   .hud-tl > .hud-vitals { padding-top: 4px; }
   .hud-tl > .hud-vitals .hud-name { margin: 0; min-height: 0; }
-  .hud-tr { top: auto; bottom: calc(150px + var(--safe-b, 0px)); }
+  /* (plan item 656: right over FIRE, its name and rounds at the button's shoulder; at the arms' old inset, 196 px in,
+     they floated mid-street) */
+  .hud-tr { top: auto; right: calc(22px + var(--safe-r, 0px)); bottom: calc(200px + var(--safe-b, 0px)); }
   /* the vitals' column a step narrower (its bar still 40 segments' worth), and the lesson a one-line chip by the
      stick (firstjob.ts's short touch line), not a paragraph */
   .hud-root { --cluster-w: 10.5rem; }

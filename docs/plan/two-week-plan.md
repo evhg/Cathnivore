@@ -6270,7 +6270,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 all four games' boxes end above 1.5x the viewport height (e2e:site); each a link; no sideways scroll; games specs pass; shot P (D unchanged).
 - **Size:** 1
 
-## 656. [ ] The bugs from the 2026-11-22 13:35 critique, fixed as one batch *(lane B, in progress)*
+## 656. [ ] The bugs from the 2026-11-22 13:35 critique, fixed as one batch *(lane B 2026-11-22 14:05: the sideways 'THE PIN' fixed: the arms stand right over FIRE (654-822 x 150-190 at 844x390, FIRE 728-816 x 206-294), no longer mid-street (item 649 had moved them there); 'DRAG TO AIM' left as the look stick's hint under the pause button. Also cathode-type-system's HUD test at D green again: the loader's survey labels are sized from the sheet's screen transform once it has landed (they measured 11.3 px mid-deal), its legend's 'N' and '10 m' hidden there, and the test skips any mugshot print (`.ld-still, svg.mugshot`). cathode-hud, cathode-type-system and cathode-front's loader test pass. **Left:** Hedgerow 2D's still battle shot, Hollowell's badge over Highmoor, the class pick's two missing stat deltas at D, the Cathnivore title's region names, the field guide's struck-through towers)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique; check each on today's build first)*
 - Hedgerow 2D D (`hedge-l21-2d-D` 400-910 x 170-870): the staged battle reads still (no vans on the road, '0 NEXT'): `battle()` in plan-shots should wait for vehicles on the lane, or the 2D send needs a visible send-off.
 - NIGHT SHIFT sideways (`ns-street-P` ~515-650 x 198-232): 'THE PIN' and its bar float mid-street since item 649 moved the arms by FIRE; and 'DRAG TO AIM' (725-810 x 70-90) floats free.
