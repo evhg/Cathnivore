@@ -6281,7 +6281,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 657. [ ] Hedgerow: the fleet you're fighting reads mid-round, in 2D and 3D
+## 657. [ ] Hedgerow: the fleet you're fighting reads mid-round, in 2D and 3D *(lane A, in progress)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; check first: the plan shot is 1.5 s after the third vehicle appears, so part of the 'piled at the depot' read may be the send's first seconds)*
 - **Why:** `plan1122e/hedge-l21-2d-D` round 11 running: the only enemies are pink capsules stacked at the depot (405-445 x 375-475), the 13 lane cells (400-900 x 170-870) empty, the towers (Scarecrow 780-840 x 470-555, Windmill 830-910 x 640-750) 3-4x any vehicle; `hedge-l21-3d-D` one pink van (235-275 x 350-405) on an empty loop. The farm, not the fight, is the focal point (VISION 3, 4).
 - **Build:** 2D and 3D vehicles drawn at a fixed share of a lane cell as clear silhouettes in Hollowell's livery (item 647's marks); a queued round leaves the depot as a spaced convoy, never piled on the pier; a pop shows a break (a panel flies, a Mark coin arcs to the purse).
@@ -6309,7 +6309,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the new crop 40 px+ at D, 28+ at P, in a slot empty before the solve (e2e before/after); Bea 48 px+ tall at D; reduced motion ends on the same frame, still; the Runnel specs pass; shots P and D, solved and unsolved.
 - **Size:** 1-2
 
-## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch *(lane A, in progress)*
+## 661. [x] The bugs from the 2026-11-22 16:50 critique, fixed as one batch *(done 2026-11-22 18:25, lane A: the last two. Runnel solved P: a board that reaches the garden's corner leaves it the clear strip right of the tiles (today's phone daily and practice: garden 148 -> 72 px at 308-380, tile hits in its box 98 -> 0; today's bed and Bea at full size, the days ahead then the oldest beds tuck away; three phone specs now accept a tight garden that meets no tile). Hedgerow l34: the round banner slides down (P 62-151 -> 176-265, the top depot ends 168), a toast up, Cath's tip bubble along the foot then up (D 24-484 -> 300-760, the lower depot 153-293; P 619-671 -> 535-587, depot from 591), re-checked while up; new hedgerow-depot-clear spec fails on the old code. Shots scratchpad r661)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; check each on today's build first)*
 - Hedgerow D (`hedge-l21-2d-D` 1365-1400 x 425-457, `hedge-l21-3d-D` 1375-1400): the Next card's fifth type chip cut at the panel's edge: wrap it or '+1'. (lane B 17:00: the row `.preview-row.ticket-chips` is a horizontal scroller with a 22 px fade mask at its right end (components.css ~2422), so the cut is its designed 'more' cue; decide wrap or '+N' at D)
 - Hedgerow l34 D (`hedge-l34-2d-D` 22-485 x 787-880): Cath's toast over the lower depot (158-290 x 725-785) and its van door.
