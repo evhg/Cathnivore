@@ -323,6 +323,9 @@ void main() {
 }`;
 /** The line's width in CSS pixels at a 900 px tall view (1.5 px at D, as the plan asks), scaled with the view. */
 const INK_PX = 1.5;
+/** Plan item 319 slice 102: the line on skin (her face, neck and hands' skin parts): warm sepia, and its width. */
+const INK_SKIN = 0x9a6250;
+const INK_SKIN_W = 0.8;
 /** Plan item 543: the long hair's strand-aligned gloss (times the face key). */
 const HAIR_ANISO = 0.5;
 /** Plan item 254: the hair shine band's strength (times the face key and the strands' colour). */
@@ -462,6 +465,9 @@ const CLOTH_SHEEN = `{
 }`;
 
 /** Plan item 319: each coat part's value against the class colour (the body 1). */
+/** Plan item 319 slice 102: where a sleeve's wool rim band begins (the coat's own is 0.06). */
+export const SLEEVE_WOOL_FROM = 0.45;
+
 export const COAT_TONE = { sleeve: 0.8, collar: 0.48, facing: 0.42 } as const;
 
 export function buildFrontCath(phone: boolean): FrontCath {
@@ -677,7 +683,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const rimA0 = rimU.uRimA.value.clone();
   const key0 = rimU.uKey.value.clone();
   const tmpC = new THREE.Color();
-  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0, edge: "flat" | "wool" | "leather" = "flat", inside = 1) => {
+  const rimify = (m: THREE.MeshStandardMaterial, gain: number, key = 0, glint = 0, shine = 0, hair = false, skin = 0, edge: "flat" | "wool" | "leather" = "flat", inside = 1, woolFrom = 0.06) => {
     // Plan item 275: on the face (the material with catch-lights) the key falls in planes, as a portrait's light does:
     // the planes turned from it (under the cheekbone, the far cheek, the jaw's side) step down to a little over half,
     // so the face is modelled by the mesh's planes rather than lit as one smooth oval.
@@ -806,7 +812,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
             ${hair ? "fr = smoothstep( 0.42, 0.82, fr0 ) * 0.45 * ( gl_FrontFacing ? 1.0 : 0.25 ) * uHairRim;" : ""}
             // Plan item 319: the coat is wool, which takes a back light as a soft, dim bloom along its turn, not item
             // 254's hard flat (a bright white band down the coat's edge read as vinyl); its own weave normal breaks it.
-            ${edge === "wool" ? "fr = smoothstep( 0.06, 0.9, fr0 ) * 0.5;" : ""}
+            // Plan item 319 slice 102: a sleeve is a thin cylinder, so most of what the lens sees of it is turned and fell in
+            // that wide band: both arms drew pale grey against the charcoal coat, and showed as pale strips between the
+            // locks over her shoulder. A sleeve's band starts further out (\`woolFrom\`), keeping its outer edge.
+            ${edge === "wool" ? `fr = smoothstep( ${woolFrom.toFixed(2)}, 0.9, fr0 ) * 0.5;` : ""}
             // Plan item 319: gloves, belt and umbrella are thin black leather: the flat lit whole fingers pale (the
             // umbrella fist read as a skeleton's bones), so leather keeps a narrow gloss line on its outer edge only.
             ${edge === "leather" ? "fr = smoothstep( 0.46, 0.6, fr0 );" : ""}
@@ -830,7 +839,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
           }`,
         );
     };
-    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}-${edge}-${inside}`;
+    m.customProgramCacheKey = () => `front-rim-${gain}-${key}-${glint}-${shine}-${hair}-${edge}-${inside}-${woolFrom}`;
   };
   rimify(coatMat, 1, 0, 0, 0, false, 0, "wool");
   // Plan item 227: the sleeves' own cloth, creased at the elbow and seamed at the cuff.
@@ -838,7 +847,7 @@ export function buildFrontCath(phone: boolean): FrontCath {
   if (sleeveNormal) sleeveMat.normalMap = sleeveNormal;
   coatMats.push(sleeveMat);
   coatTone.set(sleeveMat, COAT_TONE.sleeve);
-  rimify(sleeveMat, 1, 0, 0, 0, false, 0, "wool");
+  rimify(sleeveMat, 1, 0, 0, 0, false, 0, "wool", 1, SLEEVE_WOOL_FROM);
   mats.push(sleeveMat);
   // Plan item 271: the coat itself (its skirt carries the fold shade as vertex colours; the lapels and epaulettes,
   // merged with no colour attribute, stay on coatMat).
@@ -4349,6 +4358,12 @@ float reliefShade( vec2 uv ) {
   const inkU = { uInk: { value: new THREE.Vector2(0.002, 0.003) }, uInkColor: { value: new THREE.Color(0x07050a) } };
   const inkMat = new THREE.ShaderMaterial({ uniforms: inkU, vertexShader: INK_VERT, fragmentShader: INK_FRAG, side: THREE.BackSide });
   mats.push(inkMat);
+  // Plan item 319 slice 102: skin takes a warm sepia line, finer than the coat's (an illustration's coloured line
+  // on a face): the near-black hull drew her far jaw over her neck as a hard dark crease (critique: 'a crease into
+  // the neck'). Same hull, same draw count.
+  const inkSkinU = { uInk: { value: new THREE.Vector2() }, uInkColor: { value: new THREE.Color(INK_SKIN) } };
+  const inkSkinMat = new THREE.ShaderMaterial({ uniforms: inkSkinU, vertexShader: INK_VERT, fragmentShader: INK_FRAG, side: THREE.BackSide });
+  mats.push(inkSkinMat);
   const bodyMats = new Set<THREE.Material>([coatMat, skirtMat, sleeveMat, blackMat, gloveMat, hairMat, skinMat, tightsMat, faceMat]);
   const inked: THREE.Mesh[] = [];
   {
@@ -4367,11 +4382,13 @@ float reliefShade( vec2 uv ) {
       const h = el.clientHeight || el.height;
       const px = INK_PX * THREE.MathUtils.clamp(h / 900, 0.7, 1.6);
       inkU.uInk.value.set((2 * px) / w, (2 * px) / h);
+      inkSkinU.uInk.value.copy(inkU.uInk.value).multiplyScalar(INK_SKIN_W);
     };
     for (const { m } of cands.slice(0, INK_MAX)) {
       inkNormals(m.geometry);
       if (m === handMesh && handPoseGeo) inkNormals(handPoseGeo);
-      const hull = new THREE.Mesh(m.geometry, inkMat);
+      const skin = m.material === skinMat || m.material === faceMat;
+      const hull = new THREE.Mesh(m.geometry, skin ? inkSkinMat : inkMat);
       hull.name = "ink";
       hull.castShadow = false;
       hull.receiveShadow = false;
