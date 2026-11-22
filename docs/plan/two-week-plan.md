@@ -6322,7 +6322,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 662. [ ] Hedgerow: a new vehicle is introduced on the lane, not by a page over the board
+## 662. [ ] Hedgerow: a new vehicle is introduced on the lane, not by a page over the board *(lane B, in progress)*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique)*
 - **Why:** `plan1122f/hedge-l21-2d-D` and `hedge-l34-2d-D`: the field guide's 'New on the lane' card covers the field (200-825 x 228-738 at D; 0-390 x 55-690 at P), so mid-round the board, the hero (VISION 3, 'menus and panels support the table and never compete with it'), is hidden.
 - **Build:** the camera (3D) or a spotlight ring (2D) goes to the new vehicle on its lane, the round pauses, and a compact card docks at the side (D) or as a bottom sheet (P) with its picture, line and the towers that reach it; tap or Got it resumes. 600-1000 ms in, fade only under reduced motion. Also seed the plan shots so the 2D board is judged without it.
