@@ -6172,7 +6172,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 1440x900 the result's box meets neither the board's nor the garden's (e2e); the rail at rest 50% shorter; the almanac opens by keyboard; runnel win/garden/almanac specs pass; shot D and P (P unchanged).
 - **Size:** 2
 
-## 643. [ ] Cathnivore Quick Game desktop: one built stall for the setup
+## 643. [ ] Cathnivore Quick Game desktop: one built stall for the setup *(lane A, in progress)*
 *(planned 2026-11-22 05:45, lane B, plan1122b critique; item 619 closed the card overlap by decision, the shot argues it again)*
 - **Why:** `plan1122b/cath-setup-D` 1050-1372 x 55-890: an awning and 'Cath's stall' sign float over ~120 px of empty cream (150-270), and the 'This week at the market' card covers Cath's arm and chest (1000-1140 x 570-775). VISION 1, 5.
 - **Build:** `src/ui/` setup (SetupScreen and its css): one stall built from the awning down: posts to a counter, Cath behind it from the waist, the week's card pinned to a post beside her, Start as the counter's till.
