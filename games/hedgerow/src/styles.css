@@ -6353,7 +6353,9 @@ img.act-scene {
        price tags don't peek out between her line and the powers; one or two lines sit centred in it */
     display: flex;
     align-items: center;
-    min-height: 76px;
+    /* (72, not 76: at 76 it ran 3 px into the powers' row under the tray, hedgerow-powerdock; the powers' row covers
+       what the tray has left below it) */
+    min-height: 72px;
   }
   /* the tail points left, at her portrait */
   .cath-dock:not([data-desk]):not([data-folded]) .cath-dock-line::after {
