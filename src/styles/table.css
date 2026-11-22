@@ -3332,11 +3332,12 @@ html.no-animations .table-cath-line { animation: none; }
   /* Plan item 218: a card in the hand is a painted card: a wide picture window across its top (the subject in its
      land, ActionArt's scene), the name under it, the price at its foot. The window runs under the next card's
      edge, but the subject sits in its middle, clear of it; the 'i' rides the window's top-left corner. */
-  .game-layout .table-hand:not([data-rows]) .action-item { height: 148px; }
+  /* Plan item 632: 126 px (was 148): the hand gives 22 px more to the board, the picture window shorter by as much. */
+  .game-layout .table-hand:not([data-rows]) .action-item { height: 126px; }
   /* Plan item 291 stood a tall desktop's single row at 160 px; plan item 495 gives those 12 px back to the board (the
      hexes 24.6% -> 25.6% of 1440x900): 148 px as at 800 px, the picture window a touch taller than there. */
   @media (min-height: 861px) {
-    .game-layout .table-hand:not([data-rows]) .action-item { height: 148px; }
+    .game-layout .table-hand:not([data-rows]) .action-item { height: 126px; }
     .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-label > svg.action-art[data-scene] { height: 60px; }
   }
   .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
@@ -3435,9 +3436,9 @@ html.no-animations .table-cath-line { animation: none; }
     background: linear-gradient(180deg, var(--paper-on-fixed-fill), color-mix(in srgb, var(--wheat-hi) 30%, var(--paper-on-fixed-fill)));
   }
   /* One row: the picture is the top 60% of the face, edge to edge (the card's own corners clip it). */
-  .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 94px; }
+  .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 72px; }
   /* a name that wouldn't fit under the 60% window (measured in Game.tsx) gives it back 4 px */
-  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 86px; }
+  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 64px; }
   .game-layout .table-hand:not([data-rows]) .action-item > button:first-child,
   .game-layout .table-hand:not([data-rows]) .action-item:not(.action-family) .action-card-draggable { position: relative; padding-top: 0; padding-bottom: 5px; gap: 3px; border-width: 3px; }
   /* the picture already says what is sold: the band names the count alone (the accessible name keeps the word) */
@@ -3467,8 +3468,8 @@ html.no-animations .table-cath-line { animation: none; }
   .game-layout .table-hand[data-rows] .action-item:not(.action-family) > .tooltip-trigger { top: auto; bottom: 10px; }
 }
 @media (min-width: 1240px) and (min-height: 861px) {
-  .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 102px; }
-  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 94px; }
+  .game-layout .table-hand:not([data-rows]) .action-item { --art-h: 80px; }
+  .game-layout .table-hand:not([data-rows]) .action-item:has(> button[data-tight]) { --art-h: 72px; }
 }
 @media (min-width: 1240px) and (min-height: 760px) {
   /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
