@@ -6288,7 +6288,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at D a 2D vehicle 28 px+ long, a 3D one 40 px+ on screen; 3 s after a send (sandbox l21) 6+ vehicles on lane cells (e2e from `window.hedgerow.game()`); no two queued vehicles overlap more than 30% at the depot; a pop spawns its coin (e2e); shots P and D, l21 2D/3D and l34 at 3 s and 8 s.
 - **Size:** 2-3
 
-## 658. [ ] NIGHT SHIFT: a crisp first frame with one goal you can see
+## 658. [ ] NIGHT SHIFT: a crisp first frame with one goal you can see *(lane B, in progress)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; item 639 lifted the luminance, this is focus and the goal)*
 - **Why:** `plan1122e/ns-street-D`: bloom and depth haze soften the whole frame, no hard edge on the shop signs (330-560 x 140-360), the stall (1100-1440 x 330-560) or the figure (405-465 x 420-640); the goal is a 40 px smudge on the crosshair (690-750 x 425-475) and nothing says 'walk there'; `ns-street-P` 700-1000 is mush. VISION 1 (a clear focal point).
 - **Build:** depth haze and any defocus only past about 30 m; bloom held to emissive surfaces; the stage-0 target a named figure at the first stall, rim-lit, with a 12 px+ label and distance ('TOMAS REED · 14 m'); the arrival mark on the road in front of him.
