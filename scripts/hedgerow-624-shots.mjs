@@ -13,7 +13,7 @@ for (const [n, vp] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, 
   await p.addInitScript(([st, t, l]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { [l]: true }, tips: t })), [stars, tips, won + 1])
   await p.goto('http://localhost:4175/hedgerow/?2d')
   await p.waitForTimeout(2500)
-  if (n === 'P') { await p.locator('.lcard-grip').click().catch(() => {}); await p.waitForTimeout(600) }
+  if (n === 'P' && !process.env.CLOSED) { await p.locator('.lcard-grip').click().catch(() => {}); await p.waitForTimeout(600) }
   await p.screenshot({ path: `${out}${tag}-${n}.png` })
   const m = await p.evaluate(() => {
     const r = (e) => { if (!e || !e.getClientRects().length) return null; const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)] }
