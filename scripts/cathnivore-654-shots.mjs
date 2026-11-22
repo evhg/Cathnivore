@@ -12,6 +12,8 @@ for (const [s, o] of [['P', { viewport: { width: 390, height: 844 }, hasTouch: t
     await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/game-${s}-${scheme}.png` })
     const d = p.locator('[data-piece="d"][data-peekable]').first()
     if (await d.count()) { await d.click(); await p.waitForTimeout(500); await p.screenshot({ path: `${out}/peek-${s}-${scheme}.png` }) }
+    if (s === 'D') { await p.keyboard.press('Escape'); await p.getByRole('button', { name: /map key/i }).first().click().catch(() => {}); await p.waitForTimeout(600); await p.screenshot({ path: `${out}/key-${s}-${scheme}.png` }) }
+    else { await p.keyboard.press('Escape'); await p.waitForTimeout(300); await p.locator('.region-hex[data-region="shinglebay"] .region-inspect, .region-hex[data-region] .region-inspect').last().click({ force: true }).catch(() => {}); await p.waitForTimeout(800); await p.screenshot({ path: `${out}/closeup-${s}-${scheme}.png` }) }
     await p.close()
   }
 }
