@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test'
 // board and 24 px on a phone, and none is under 32 / 20 px (a tile crowded with three kinds, a threat badge and two
 // producers); a producer's two or three stalls stand as a pile with no number, while Hollowell's pieces are one
 // glossy piece a kind with a count from two (plan item 413); the hexes fill the board panel's height.
-const KINDS: Record<string, string> = { o: 'sawtooth', b: 'peak', d: 'bubble', stall: 'standee' }
+const KINDS: Record<string, string> = { o: 'sawtooth', b: 'peak', d: 'leaflet', stall: 'standee' }
 
 test('board pieces are chunky tokens with their own outlines', async ({ page }, info) => {
   test.setTimeout(120_000)

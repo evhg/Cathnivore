@@ -4064,6 +4064,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
               : undefined
           }
           inspected={closeUp}
+          peekPieces={!guidedActive && !drag}
           onInspect={!isDesktop && !guidedActive && pendingEnemyTurn.length === 0 && !drag && !teammatePick ? setCloseUp : undefined}
         />
         {closeUp && !isDesktop && (

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Buyout, Doubt, Outlet, ProducerMini } from '../src/ui/Map'
+import { Buyout, Doubt, LEAFLET_OUTLINE, Outlet, ProducerMini } from '../src/ui/Map'
+import { DOUBT_PEEK, doubtLabel } from '../src/ui/doubtPeek'
 import { outletStage } from '../src/ui/pieceLayout'
 
 // Plan item 618: each piece kind on the board has its own look. Hollowell's are glossy plastic (the gloss gradient, a
@@ -21,7 +22,7 @@ describe('board piece looks', () => {
     expect(looks.outlet).toContain('enemy-outlet')
     expect(looks.buyout).toContain('enemy-buyout')
     expect(looks.doubt).toContain('enemy-doubt')
-    const outlines = [/0\.4,4\.4 0\.4,2\.6 3\.1,0\.6/, /6,0\.3 12,3\.4 12,9 0,9 0,3\.4/, /<circle[^>]*r="5\.9"/]
+    const outlines = [/0\.4,4\.4 0\.4,2\.6 3\.1,0\.6/, /6,0\.3 12,3\.4 12,9 0,9 0,3\.4/, /1\.2,0\.6 8\.6,0\.6 11,3 11,12\.6 1\.2,12\.6/]
     const kinds = Object.values(looks)
     outlines.forEach((re, i) => kinds.forEach((m, j) => expect(re.test(m), `outline ${i} in kind ${j}`).toBe(i === j)))
     expect(new Set(kinds).size).toBe(3)
@@ -54,5 +55,27 @@ describe('item 645 pieces', () => {
       expect(m).toMatch(/0\.4,4\.4 0\.4,2\.6 3\.1,0\.6/)
       expect(m).toContain(['outlet-kiosk', 'outlet-store', 'outlet-superstore'][i])
     }
+  })
+})
+
+// Plan item 654: the '?' is drawn as what it is, Candor's leaflet (a dog-eared sheet with a cyan masthead, mostly
+// paper), and it says what it is: an accessible name and a one-line card naming its cost and the action that clears it.
+describe('item 654 Doubt', () => {
+  const m = svg(createElement(Doubt))
+  it('is a leaflet on an easel, not a speech bubble', () => {
+    expect(m).toContain(LEAFLET_OUTLINE)
+    expect(m).toContain('doubt-sheet')
+    expect(m).toContain('doubt-dogear')
+    expect(m).toContain('doubt-print')
+    expect(m).not.toMatch(/<circle[^>]*r="5\.9"/)
+  })
+  it('names itself and what clears it', () => {
+    const label = doubtLabel(2, 'Saltmarsh')
+    expect(label).toMatch(/^2 Doubt in Saltmarsh/)
+    expect(label).toMatch(/Public Trust/)
+    expect(label).toMatch(/Rebut/)
+    expect(DOUBT_PEEK.body).toMatch(/Candor/)
+    expect(DOUBT_PEEK.body).toMatch(/Rebut/)
+    expect(DOUBT_PEEK.body).toMatch(/Goodwill/)
   })
 })

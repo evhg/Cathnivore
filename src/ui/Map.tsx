@@ -7,12 +7,14 @@ import { COUNT_FROM, ENEMY_Y, outletStage, type OutletStage, PRODUCER_H, PRODUCE
 import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
 import { resolveRules } from '../engine/rules'
 import Portrait from './portraits/Portrait'
+import PiecePeek from './PiecePeek'
+import { doubtLabel } from './doubtPeek'
 import type { ProducerFace } from './portraits/producerFaces'
 import type { Flight } from './boardroom'
 import type { Faction, GameState, ProducerId, RegionId, RegionType } from '../engine/types'
@@ -123,6 +125,8 @@ interface Props {
   featured?: { region: RegionId; round: number }
   /** Plan item 507: the Setup's opening board plays a producer's power over their home region before they're picked. */
   showcase?: AbilityMomentView[]
+  /** Plan item 654: the game's own board, where a Doubt opens its one-line card on tap, hover or focus. */
+  peekPieces?: boolean
   /** Plan item 451: a card is being aimed (pressed, dragged or armed): the hexes it can't go to darken, not fade. */
   aiming?: boolean
   /** Plan item 451: the pointer entered (a region id) or left (null) a hex it could pick, so an armed card shows
@@ -367,22 +371,34 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
 }
 
 // Doubt: Candor's speech bubble with its '?', standing on a stake driven into the land.
+/**
+ * Plan item 654: Candor's Doubt is what Candor actually spreads, a glossy "study" leaflet propped on a chrome easel:
+ * a laminated sheet with a dog-eared corner, Candor's cyan masthead, a printed question mark for a headline and grey
+ * fine print under it. Mostly paper, so it reads quieter than the producers' stalls; its outline (the dog-eared sheet,
+ * `LEAFLET_OUTLINE`) is its own, apart from the Outlet's sawtooth and the Buyout's peak (item 172).
+ */
+export const LEAFLET_OUTLINE = '1.2,0.6 8.6,0.6 11,3 11,12.6 1.2,12.6'
 export function Doubt() {
   return (
     <g className="enemy-piece enemy-doubt">
-      <path d="M 6.4,7.8 V 12.6" stroke="var(--candor-ink)" strokeWidth={1.3} strokeLinecap="round" />
-      <path d="M 6,7.8 V 12.4" stroke="var(--corp-chrome)" strokeWidth={0.5} strokeLinecap="round" opacity={0.7} />
-      {/* Plan item 554: a bubble 11.8 across (10.6 in slice 1, was 8.8), filling its slot like the Outlet's storefront */}
-      <g className="corp-shadow" fill="var(--candor-ink)" transform="translate(0.7 0.8)">
-        <circle cx={6} cy={5.2} r={5.9} />
-        <path d="M 1.4,8.6 L 4.4,10.2 L 0.2,11.5 Z" />
+      {/* the easel's back leg and its foot */}
+      <path d="M 8.2,5 L 10.9,12.9" stroke="var(--candor-ink)" strokeWidth={1.1} strokeLinecap="round" />
+      <path d="M 8.2,5 L 10.9,12.9" stroke="var(--corp-chrome)" strokeWidth={0.45} strokeLinecap="round" opacity={0.8} />
+      <g transform="rotate(-5 6 12.6)">
+        <polygon className="corp-shadow" points={LEAFLET_OUTLINE} fill="var(--candor-ink)" transform="translate(0.6 0.6)" />
+        <polygon className="doubt-sheet" points={LEAFLET_OUTLINE} />
+        {/* the masthead: Candor's glossy cyan band, the dog-ear folded down over it */}
+        <polygon className="corp-face" points="1.2,0.6 8.6,0.6 11,3 11,4.4 1.2,4.4" fill="url(#candor-gloss)" />
+        <circle cx={3} cy={2.5} r={0.9} className="doubt-logo" />
+        <path d="M 4.6,2.1 H 7.6 M 4.6,3.1 H 6.6" className="doubt-mast-print" strokeWidth={0.45} strokeLinecap="round" />
+        <path d="M 8.6,0.6 L 8.6,3 L 11,3 Z" className="doubt-dogear" />
+        {/* the headline, and the fine print under it */}
+        <text x={4.7} y={10.4} textAnchor="middle" className="doubt-mark">
+          ?
+        </text>
+        <path d="M 7.4,6.6 H 9.8 M 7.4,7.9 H 9.8 M 7.4,9.2 H 9.4 M 2.4,11.3 H 9.8" className="doubt-print" strokeWidth={0.4} strokeLinecap="round" />
+        <path className="corp-specular" d="M 1.9,5.6 V 10.8" fill="none" stroke="white" strokeWidth={0.6} strokeLinecap="round" opacity={0.8} />
       </g>
-      <path d="M 1.4,8.6 L 4.4,10.2 L 0.2,11.5 Z" fill="var(--candor)" />
-      <circle cx={6} cy={5.2} r={5.9} className="corp-face" fill="url(#candor-gloss)" />
-      <path className="corp-specular" d="M 2,5.4 A 4.2,4.2 0 0 1 4.3,1.6" fill="none" stroke="white" strokeWidth={0.8} strokeLinecap="round" opacity={0.75} />
-      <text x={6.2} y={7.8} textAnchor="middle" className="doubt-mark">
-        ?
-      </text>
     </g>
   )
 }
@@ -425,7 +441,7 @@ function CountBadge({ cx, cy, r, n }: { cx: number; cy: number; r: number; n: nu
  * drop the .99 tag and the SOLD sign (`ornaments`) before the piece shrinks.
  */
 /** Plan item 172: each piece kind's outline, so the board reads without colour. */
-const SILHOUETTE = { outlets: 'sawtooth', buyouts: 'peak', doubt: 'bubble' } as const
+const SILHOUETTE = { outlets: 'sawtooth', buyouts: 'peak', doubt: 'leaflet' } as const
 
 function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlets' | 'buyouts' | 'doubt'; n: number; scale: number; ornaments: boolean; cy?: number }) {
   // Plan item 554: the art spans 15.6 icon units across (-1.4 to 14.2: the plinth's lip and its contact shadow) and
@@ -842,7 +858,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, featured, aiming, onHoverRegion, showcase }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, featured, aiming, onHoverRegion, showcase, peekPieces }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -863,6 +879,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   // state, so loading a save or the first render plays nothing.
   const seen = useRef<{ lib: Set<RegionId>; lost: Record<string, number>; log: number } | null>(null)
   const [fx, setFx] = useState<Partial<Record<RegionId, 'lib' | 'sq'>>>({})
+  // Plan item 654: the Doubt piece whose one-line card is open (a tap pins it; hover and focus show it while there).
+  const [peek, setPeek] = useState<{ region: RegionId; anchor: Element; pinned: boolean } | null>(null)
+  const closePeek = useCallback(() => setPeek(null), [])
   // Plan item 63: a Squeeze slams Hollowell's box down on its tile (the stack drops in with a thud).
   const [thud, setThud] = useState<ReadonlySet<RegionId>>(() => new Set())
   // Plan item 249: the tiles' idle life pauses while the tab is hidden (CSS keys on html[data-tab-hidden]).
@@ -988,7 +1007,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   }, [active.length, hexPx])
 
   return (
-    <svg ref={svgRef} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect || peekPieces ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {/* Plan item 413: the seven tiles sit on one die-cut board, a printed cardboard plate a little proud of them with
@@ -1276,9 +1295,49 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                   {tray.rects.map((rect) => {
                     if (rect.kind === 'outlets' || rect.kind === 'buyouts' || rect.kind === 'doubt') {
                       const [k, n] = icons[rect.kind]
+                      // Plan item 654: a Doubt names itself and opens its card on tap, hover or focus, except while
+                      // the region is itself the control (a card being aimed), where a tap must pick the region.
+                      const peekable = rect.kind === 'doubt' && Boolean(peekPieces) && !(onSelect && glow)
+                      const peekId = `${uid}-peek-${id}`
+                      const open = peekable && peek?.region === id
                       return (
                         <g
                           key={k}
+                          {...(peekable
+                            ? {
+                                role: 'button',
+                                tabIndex: 0,
+                                'aria-label': doubtLabel(n, def.name),
+                                'aria-expanded': open,
+                                'aria-describedby': open ? peekId : undefined,
+                                'data-peekable': '',
+                                onClick: (e: React.MouseEvent<SVGGElement>) => {
+                                  e.stopPropagation()
+                                  const el = e.currentTarget
+                                  setPeek((p) => (p?.region === id && p.pinned ? null : { region: id, anchor: el, pinned: true }))
+                                },
+                                onKeyDown: (e: React.KeyboardEvent<SVGGElement>) => {
+                                  if (e.key !== 'Enter' && e.key !== ' ') return
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  const el = e.currentTarget
+                                  setPeek((p) => (p?.region === id && p.pinned ? null : { region: id, anchor: el, pinned: true }))
+                                },
+                                onFocus: (e: React.FocusEvent<SVGGElement>) => {
+                                  const el = e.currentTarget
+                                  setPeek((p) => (p?.region === id ? p : { region: id, anchor: el, pinned: false }))
+                                },
+                                onBlur: () => setPeek((p) => (p?.region === id ? null : p)),
+                                onPointerEnter: (e: React.PointerEvent<SVGGElement>) => {
+                                  if (e.pointerType !== 'mouse') return
+                                  const el = e.currentTarget
+                                  setPeek((p) => (p?.region === id ? p : { region: id, anchor: el, pinned: false }))
+                                },
+                                onPointerLeave: (e: React.PointerEvent<SVGGElement>) => {
+                                  if (e.pointerType === 'mouse') setPeek((p) => (p?.region === id && !p.pinned ? null : p))
+                                },
+                              }
+                            : {})}
                           className="piece-slot"
                           transform={`translate(${x + rect.x0} ${y})`}
                           data-piece={k}
@@ -1290,6 +1349,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                           data-going={aim?.region === id && aim.going?.includes(k) ? '' : undefined}
                         >
                           <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} cy={rect.cy ?? tray.enemyY} />
+                          {open && peek && <PiecePeek anchor={peek.anchor} id={peekId} onClose={closePeek} />}
                         </g>
                       )
                     }

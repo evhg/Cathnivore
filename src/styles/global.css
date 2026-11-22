@@ -447,12 +447,33 @@ h3 {
 }
 
 .doubt-mark {
-  font-family: var(--font-text);
+  font-family: var(--font-display);
   font-size: 8px;
   font-weight: 700;
-  fill: var(--ink);
+  fill: var(--candor-ink);
   pointer-events: none;
 }
+
+/* Plan item 654: the Doubt leaflet: a laminated sheet, mostly paper, so it sits quieter than the stalls. */
+.doubt-sheet {
+  fill: color-mix(in srgb, var(--paper-on-fixed-fill) 88%, var(--candor-highlight));
+  stroke: var(--candor-ink);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+.doubt-logo { fill: var(--paper-on-fixed-fill); }
+.doubt-mast-print { stroke: var(--paper-on-fixed-fill); opacity: 0.85; }
+/* the leaflet is a control on the game board: a ring for the keyboard only, none left behind by a tap */
+.piece-slot[data-peekable] { cursor: help; }
+.piece-slot[data-peekable]:focus { outline: none; }
+.piece-slot[data-peekable]:focus-visible .enemy-doubt { filter: drop-shadow(0 0 1.2px var(--focus, var(--candor-ink))) drop-shadow(0 0 0.6px var(--candor-ink)); }
+.doubt-dogear {
+  fill: var(--candor-highlight);
+  stroke: var(--candor-ink);
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+}
+.doubt-print { stroke: var(--corp-chrome); }
 
 .tag-print {
   pointer-events: none;
