@@ -1013,7 +1013,15 @@ test('the case loader pins the still, the sheet and her photograph with nothing 
     await page.goto('/nightshift/?front=loading-travel&shot')
     await expect(page.locator('#loading:not([hidden]) .ld-name')).toHaveText('Dr Octavia Vane', { timeout: 120_000 })
     await expect(page.locator('#loading .ld-still svg.mugshot-vane')).toHaveCount(1)
-    if (w === 1440) await expect(page.locator('#loading.has-map .ld-map svg')).toHaveCount(1, { timeout: 30_000 })
+    if (w === 1440) {
+      await expect(page.locator('#loading.has-map .ld-map svg')).toHaveCount(1, { timeout: 30_000 })
+      // Plan item 638: the sheet's labels that stay read at 12 px or more (the areas, the objective, Cath)
+      const sizes = await page.locator('#loading .ld-map .dmap-labels .dmap-t').evaluateAll((ts) =>
+        ts.filter((t) => getComputedStyle(t).display !== 'none').map((t) => t.getBoundingClientRect().height),
+      )
+      expect(sizes.length).toBeGreaterThanOrEqual(2)
+      for (const h of sizes) expect(h).toBeGreaterThanOrEqual(12)
+    }
     const box = async (sel: string) => {
       const l = page.locator(`#loading ${sel}`)
       if (!(await l.count()) || !(await l.isVisible())) return null

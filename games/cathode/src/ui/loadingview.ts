@@ -117,6 +117,7 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
       const plan = drawPlan({ district, at: { x: r.from[0], z: r.from[1] }, objective: r.to ? { x: r.to[0], z: r.to[1] } : null, jobsDone: [], colliders: [] });
       plan.removeAttribute("role");
       sheet.prepend(plan);
+      legible(plan);
       spots = { at: plan.querySelector(".dmap-cath"), goal: plan.querySelector(".dmap-goal") };
       root.classList.add("has-map");
       restring();
@@ -124,6 +125,34 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     .catch(() => {
       // No sheet (the chunk failed): the string runs from the still to her photograph.
     });
+  // Plan item 638: the survey sheet is drawn small here, so its labels read at 7-8 px: the loader keeps the names
+  // that tell the route (the areas, the objective, Cath), each set to 13 px or more on screen, and
+  // leaves the small print (landmarks, rooms, tips; they ran into the route at 13 px) to the full map.
+  const KEEP = new Set(["zone", "goal", "cath"]);
+  function legible(plan: SVGSVGElement): void {
+    const vb = plan.viewBox.baseVal;
+    const w = plan.getBoundingClientRect().width;
+    if (!vb || !vb.width || !w) return;
+    const perPx = vb.width / w;
+    for (const l of plan.querySelectorAll<SVGLineElement>(".dmap-labels .dmap-leader")) {
+      const kind = [...l.classList].find((c) => c.startsWith("dmap-leader-"))?.slice(12) ?? "";
+      if (!KEEP.has(kind)) l.style.setProperty("display", "none");
+    }
+    for (const t of plan.querySelectorAll<SVGTextElement>(".dmap-labels .dmap-t")) {
+      const kind = [...t.classList].find((c) => c.startsWith("dmap-t-"))?.slice(7) ?? "";
+      if (!KEEP.has(kind)) {
+        t.style.setProperty("display", "none");
+        continue;
+      }
+      const base = Number(t.dataset.size ?? t.getAttribute("font-size") ?? 0);
+      t.dataset.size = String(base);
+      t.setAttribute("font-size", String(Math.max(base, 13 * perPx)));
+    }
+  }
+  addEventListener("resize", () => {
+    const plan = sheet.querySelector<SVGSVGElement>("svg");
+    if (plan) legible(plan);
+  });
   addEventListener("resize", restring);
   requestAnimationFrame(restring);
   // The prints drop into place over about a second: the string follows their pins until they land.
