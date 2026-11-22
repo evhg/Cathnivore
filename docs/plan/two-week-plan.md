@@ -6165,7 +6165,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** no felt (the panel colour) in the canvas at 1440x900 or 1280x800 for levels 3, 21 and 34 (pixel sample); the depot's box inside drawn ground; plots and paths unchanged (hedgerow 2D specs pass); key art re-shot (`render.ts` is a keyart source); shot D and P.
 - **Size:** 2
 
-## 642. [ ] Runnel desktop: the rail folds to one page, the solve's payoff takes the room
+## 642. [ ] Runnel desktop: the rail folds to one page, the solve's payoff takes the room *(lane B, in progress)*
 *(planned 2026-11-22 05:45, lane B, plan1122b critique)*
 - **Why:** `plan1122b/runnel-solved-D` 16-346 x 290-835: the rail is a dense stats sheet (almanac, three stat boxes, 28 mostly empty day squares, the week, the garden) beside the board, and after a solve the result strip still sits over the board's foot (480-1175 x 750-890). VISION 1, 2, 4.
 - **Build:** `games/runnel/src/main.ts`, styles: the rail at rest shows today's page only (the date, the sky, Bea's note, the streak), its stats and calendar folded behind an 'Almanac' tab that opens it; on a solve the result card takes the rail's column (not the board's foot) and the board stays whole with the water's run into Bea's garden in view.
