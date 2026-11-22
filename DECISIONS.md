@@ -255,3 +255,5 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-22 20:40 lane A: gate 6's red was the spec, not the page: the campaign ticket's Play and the rail card both name Fresh Meat, so the axe spec opens chapter 1 by /^Fresh Meat/ like every other spec.
 - 2026-11-22 21:05 lane A: planned 662-666 from plan1122f; the critique's top gap (NIGHT SHIFT Cath's face) is already items 319/543, so not re-planned.
 - 2026-11-22 21:50 lane A: the release was not shipped on a borderline Lighthouse (83, 84, 86 alone): the gate is fixed at the root, not rerun until a lucky score; handed to the next lane A session.
+- 2026-11-22 22:10 lane B (666): the campaign ticket is placed by least cover of the region names among spots beside, above and below its stop (item 659's 200 px reach kept); campaign-map's saturation sample hides the ticket, an overlay over the map's paint.
+- 2026-11-22 22:10 lane B (666): on an upright phone NIGHT SHIFT's case lines move above the Ledger tab (flex order) rather than taking a box: paper over the LUNA neon reads, small letters on it don't.
