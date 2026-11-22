@@ -3145,7 +3145,15 @@ function towerTray(p: HTMLElement, g: Game): void {
     note.className = "tray-later";
     note.style.setProperty("--spare", String(spare));
     const kind = later.towers.find((k) => !g.level.towers.includes(k))!;
-    note.textContent = `More seeds at level ${later.id}`;
+    // Plan item 628: a sealed packet, the coming tower's shadow through its paper, 'Opens at level N' on its band.
+    const sealed = document.createElement("span");
+    sealed.className = "tray-later-packet";
+    sealed.setAttribute("aria-hidden", "true");
+    sealed.append(img(towerIcon(kind), "tray-later-art"));
+    const words = document.createElement("span");
+    words.className = "tray-later-words";
+    words.textContent = `More seeds at level ${later.id}`;
+    note.append(sealed, words);
     note.title = `${TOWERS[kind].name} joins the rack at level ${later.id}.`;
     tray.append(note);
   } else if (spare) tray.classList.add("tray-all-seeds");

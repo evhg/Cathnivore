@@ -4910,6 +4910,8 @@ body:has(#dlg-pause[open]) .paused-note {
    unanswered lock wears the same green seed tag on its corner. */
 @media (max-width: 899.98px), (max-height: 520px) {
   .play .tray-wrap .tray .tray-tower img.tray-icon { width: 40px; height: 40px; margin-block: -4px -2px; }
+  /* Plan item 628: 44 px (the packet's height kept: the art rides up under the seed tag's row) */
+  .play .tray-wrap .tray .tray-tower img.tray-icon { width: 44px; height: 44px; margin-block: -7px -3px; }
   .play .tray-wrap .tray .tray-tower[data-answers] { box-shadow: 0 0 0 2px var(--pasture-ink); }
   .play .tray-wrap .tray .tray-tower .tray-answers {
     position: absolute;
@@ -5516,7 +5518,7 @@ body:has(#dlg-pause[open]) .paused-note {
       var(--paper-hi);
   }
   /* the variety band: the name, then the role in words with its glyph and the range as pips, one strip */
-  .play .tray-wrap .tray .tray-tower .tray-name { border-bottom: 0; padding-bottom: 1px; }
+  .play .tray-wrap .tray .tray-tower .tray-name { border-bottom: 0; padding-bottom: 0; }
   .play .tray-wrap .tray .tray-tower .tray-role-word {
     align-self: stretch;
     display: flex;
@@ -5524,16 +5526,16 @@ body:has(#dlg-pause[open]) .paused-note {
     justify-content: center;
     gap: 5px;
     margin-top: 0;
-    padding: 0 3px 4px;
+    padding: 0 3px 2px;
     background: color-mix(in srgb, var(--band) 30%, var(--paper-hi));
     color: var(--ink);
-    font: 700 var(--fs-rack) / 1.1 var(--font-ui);
+    font: 700 var(--fs-rack) / 1 var(--font-ui);
   }
   .play .tray-wrap .tray .tray-tower .tray-role-word { justify-content: flex-start; padding-inline: 7px 30px; }
   .play .tray-wrap .tray .tray-tower .tray-pips {
     position: absolute;
     right: 6px;
-    bottom: 8px;
+    bottom: 6px;
     display: inline-flex;
     gap: 2px;
   }
@@ -5608,4 +5610,47 @@ body:has(#dlg-pause[open]) .paused-note {
     border-radius: 0 10px 10px 0;
   }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-stats { inset-block-start: 7px; }
+}
+/* The spare cells' note is a sealed packet: kraft, crimped, a wax seal on its flap and the coming tower's shadow
+   through the paper, beside 'More seeds at level N'. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .tray-wrap .tray > .tray-later {
+    grid-auto-flow: column;
+    justify-content: center;
+    gap: 8px;
+    text-align: start;
+  }
+  .play .tray-wrap .tray > .tray-later .tray-later-words { max-width: 9em; }
+  .tray-later-packet {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 64px;
+    border-radius: var(--r-s);
+    background:
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--line) 22%, transparent) 0 1.5px, transparent 1.5px 4px) top / 100% 7px no-repeat,
+      var(--mat-kraft);
+    box-shadow: 0 0 0 1.5px var(--line), 0 3px 0 var(--line);
+    rotate: -3deg;
+  }
+  .tray-later-packet .tray-later-art {
+    width: 40px;
+    height: 40px;
+    filter: grayscale(1) brightness(0.35);
+    opacity: 0.28;
+  }
+  /* the wax seal on the flap */
+  .tray-later-packet::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--clay) 60%, var(--paper-hi)), var(--clay) 45%, var(--clay-ink));
+    box-shadow: 0 1px 1px var(--shade-a35);
+  }
 }
