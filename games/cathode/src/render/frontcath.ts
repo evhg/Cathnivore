@@ -1879,6 +1879,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
       g.bezierCurveTo(0.009, my - 0.0072, -0.009, my - 0.0078, -0.0165, my + lc);
       g.closePath();
       g.fill();
+      // Plan item 319 slice 102: the mouth shaded as a form (the critique's point 5: one flat rose read as a sticker):
+      // the lower lip's middle fuller and lighter, the colour deepening into the corners where the lips turn in.
+      g.save();
+      g.clip();
+      const lipShade = g.createRadialGradient(0.0015, my - 0.0034, 0.0015, 0.0015, my - 0.0014, 0.0185);
+      lipShade.addColorStop(0, "rgba(236,104,128,0.55)");
+      lipShade.addColorStop(0.5, "rgba(200,64,94,0)");
+      lipShade.addColorStop(1, "rgba(92,20,38,0.75)");
+      g.fillStyle = lipShade;
+      g.fillRect(-0.02, my - 0.01, 0.04, 0.02);
+      g.restore();
       // Plan item 275: the upper lip turned from the light (deeper rose) under a lit edge along the cupid's bow.
       g.fillStyle = "#a02c48";
       g.beginPath();
