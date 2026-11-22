@@ -327,7 +327,8 @@ export function reach(from: THREE.Vector3, to: THREE.Vector3): number {
 export const TAKE_RANGE = 3;
 
 const KEYS = {
-  move: ["WASD to move, mouse to look.", "Drag your left thumb to walk. Drag your right thumb to look around."],
+  // Plan item 649: the touch line short enough to sit as a chip by the stick on a phone held sideways.
+  move: ["WASD to move, mouse to look.", "Left thumb walks. Right thumb looks."],
   takedown: [
     "Follow the marker. C to crouch, creep up right behind him, then F for a silent takedown.",
     "Follow the marker. Flick your left thumb down to crouch, sneak up behind him, then tap TAKEDOWN.",

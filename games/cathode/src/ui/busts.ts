@@ -547,7 +547,7 @@ function booking(id: string, who: BustId, small: boolean, slateG: string): strin
     const foot = i % 2 === 0;
     const label = 7 - i / 2;
     return `<line x1="0" y1="${y}" x2="200" y2="${y}" stroke="#4a4740" stroke-width="${foot ? 1.1 : 0.5}" opacity="${foot ? 0.5 : 0.32}"/>${
-      foot && !small && label > 0 ? `<text x="6" y="${y - 2}" font-family="Archivo, system-ui, sans-serif" font-size="7" font-weight="700" fill="#3c3a34" opacity=".7">${label}'</text><text x="194" y="${y - 2}" text-anchor="end" font-family="Archivo, system-ui, sans-serif" font-size="7" font-weight="700" fill="#3c3a34" opacity=".7">${label}'</text>` : ""
+      foot && !small && label > 0 ? `<text x="6" y="${y - 2}" font-family="Cathode UI, system-ui, sans-serif" font-size="7" font-weight="700" fill="#3c3a34" opacity=".7">${label}'</text><text x="194" y="${y - 2}" text-anchor="end" font-family="Cathode UI, system-ui, sans-serif" font-size="7" font-weight="700" fill="#3c3a34" opacity=".7">${label}'</text>` : ""
     }`;
   }).join("");
   return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" class="mugshot mugshot-${who}" data-booking="1">
@@ -590,7 +590,7 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
   const id = `mug${uid}`;
   const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
   const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
+  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Cathode UI, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
   if (who) return booking(id, who, small, slateG);
   // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, and
   // since item 371 Vane's bob, Pell's broad head and the Chair in his high-backed chair), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
@@ -687,8 +687,8 @@ export function mugshotSvg(who: BustId | null, slate: string, small = false, var
 ${rims[v]}
 ${fore[v]}
 <g transform="rotate(${tilt} 100 95)"><path d="${tape}" fill="#b3122a" opacity=".94"/><path d="${tape}" fill="none" stroke="#f3ede2" stroke-width=".8" opacity=".35"/><rect x="66" y="88" width="68" height="3" fill="#fff" opacity=".14"/></g>
-${small ? "" : `<text x="100" y="99" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#f3ede2" transform="rotate(${tilt} 100 95)">REDACTED</text>
-<g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>`}
+${small ? "" : `<text x="100" y="99" text-anchor="middle" font-family="Cathode UI, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#f3ede2" transform="rotate(${tilt} 100 95)">REDACTED</text>
+<g transform="rotate(12 156 150)"><rect x="128" y="136" width="58" height="26" rx="3" fill="none" stroke="#b3122a" stroke-width="2" opacity=".85"/><text x="157" y="153" text-anchor="middle" font-family="Cathode UI, system-ui, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#b3122a" opacity=".9">CASE OPEN</text></g>`}
 ${slateG}
 ${tear}
 </g>
