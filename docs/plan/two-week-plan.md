@@ -6256,7 +6256,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** a fresh save sees board 1 of the climb after the lesson, not the daily (e2e); a save with a result goes straight to the daily; each climb board solvable (unit test on the generator); runnel lesson/win specs pass; shot P and D.
 - **Size:** 2
 
-## 654. [ ] Cathnivore: the '?' on the board says what it is
+## 654. [ ] Cathnivore: the '?' on the board says what it is *(lane A, in progress)*
 *(planned 2026-11-22 13:40, lane B, plan1122d critique; check what the '?' means in the rules first)*
 - **Why:** `plan1122d/cath-game-D` (1025-1090 x 100-180 and three more; P too): four cyan '?' bubbles as loud as the stalls, with no label or key near them. VISION 2, 8.
 - **Build:** `src/ui/Map.tsx` piece art: the '?' drawn as the thing it is (a covered crate, or a sealed envelope stamped by Hollowell), and a tap or hover peeks a one-line card: what it hides and which action reveals it.
