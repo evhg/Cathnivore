@@ -74,7 +74,7 @@ test('title, setup, game, scene, end and rules screens', async ({ page }, testIn
 
   await page.goto('/')
   await page.getByText('Campaign').click()
-  await page.getByRole('button', { name: /Fresh Meat/ }).click()
+  await page.getByRole('button', { name: /^Fresh Meat/ }).click()
   await page.locator('.scene').waitFor()
   await shoot(page, project, '7-scene')
 
