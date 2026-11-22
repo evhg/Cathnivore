@@ -5290,3 +5290,10 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 @media (min-width: 1100px) and (min-height: 640px) {
   .bea-garden:not([data-sign-under]) > .farm-sign { margin-bottom: 18px; }
 }
+
+/* Plan item 633: while the result strip is open, the foot's 'See result' would only repeat it: the foot keeps its
+   'Next in' line alone (it sat cramped beside the button at D; the phone's foot keeps its height, so its board
+   keeps its size under the strip). */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .has-win-strip #btn-new[data-reopens] { display: none; }
+}

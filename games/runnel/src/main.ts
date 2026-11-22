@@ -1266,7 +1266,10 @@ function render(): void {
       : `Solved in ${formatTime(game.elapsedMs)}.`
     ui.btnNew.hidden = false
     ui.btnNew.textContent = isDaily || isOrchard || mode === 'sunday' ? 'See result' : 'New puzzle'
+    // Plan item 633: 'See result' only reopens the result; while its strip is open the foot doesn't repeat it (CSS).
+    ui.btnNew.toggleAttribute('data-reopens', ui.btnNew.textContent === 'See result')
   } else {
+    ui.btnNew.removeAttribute('data-reopens')
     const wet = Math.max(0, flow.wet.size - 1)
     ui.hint.textContent =
       game.taps === 0
