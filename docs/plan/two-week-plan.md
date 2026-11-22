@@ -6295,7 +6295,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the frame's middle third 2x today's Laplacian variance (a script beside `scripts/luma-mid.mjs`); the target 120 px+ tall at D, 60+ sideways P; label 4.5:1 on its scrim; `cathode-perf` in budget; shots D and sideways P at 4 s.
 - **Size:** 2
 
-## 659. [ ] Cathnivore campaign at D: one scene, the chapter pinned to its place on the map *(lane A, in progress)*
+## 659. [x] Cathnivore campaign at D: one scene, the chapter pinned to its place on the map *(done 2026-11-22 17:15 lane A, with deviations: the chosen chapter (pointed at in the rail, on a stop or a flag, else the next) is a ticket pinned on the sheet beside its stop with a dashed leader line, its Play 130 px from the stop at 1440x900 (`campaign-ticket.spec`); the map takes the column, its sheet 805 px wide (was 700; 820 isn't reachable at 900 px tall, the sheet is height-bound), 884 at 1920; Cath at the sheet's lower-right corner, her middle past the sea, her line in the gap beside her; a 1280 rail 400 px (was 440) so she clears the island; the bunting stays as the chapter string tied to the ticket (its flag drops, inked; a flag under the pointer moves the ticket). The rail keeps the next chapter's open card: it is the keyboard path to Play. P unchanged. Shots scratchpad c659.)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique)*
 - **Why:** `plan1122e/cath-campaign-D`: the map (45-745 x 185-830) and the chapter list (1030-1375) sit apart over 290 px of bare paper (745-1030) with Cath standing in the gap (785-880 x 485-880), her bubble 60 px over her head (728-928 x 335-440); the 1-6 bunting (360-720 x 40-95) ties to nothing; chapter 1's card is at the far edge and the map's '1' pin (180-240 x 525-600) is unlabelled.
 - **Build:** the map about 60% of the width; the selected chapter's card a pinned ticket on the map with a leader line to its numbered pin (title, goal, Start); the list a compact chapter rail; Cath at the map's lower-right pointing at the pin; the bunting becomes the rail or goes.
@@ -6309,7 +6309,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the new crop 40 px+ at D, 28+ at P, in a slot empty before the solve (e2e before/after); Bea 48 px+ tall at D; reduced motion ends on the same frame, still; the Runnel specs pass; shots P and D, solved and unsolved.
 - **Size:** 1-2
 
-## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch
+## 661. [ ] The bugs from the 2026-11-22 16:50 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-22 16:50, lane B, plan1122e critique; check each on today's build first)*
 - Hedgerow D (`hedge-l21-2d-D` 1365-1400 x 425-457, `hedge-l21-3d-D` 1375-1400): the Next card's fifth type chip cut at the panel's edge: wrap it or '+1'. (lane B 17:00: the row `.preview-row.ticket-chips` is a horizontal scroller with a 22 px fade mask at its right end (components.css ~2422), so the cut is its designed 'more' cue; decide wrap or '+N' at D)
 - Hedgerow l34 D (`hedge-l34-2d-D` 22-485 x 787-880): Cath's toast over the lower depot (158-290 x 725-785) and its van door.
