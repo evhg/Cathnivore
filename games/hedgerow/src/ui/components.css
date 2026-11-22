@@ -5597,17 +5597,18 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .tray-wrap .tray .tray-tower,
   .play .tray-wrap .tray .tray-tower .tray-stats { transition: none; }
 }
-/* Four to a row the packet is too narrow for the tag beside the price: it hangs at the picture's foot instead. */
+/* Four to a row the packet is too narrow for the tag beside the price: it hangs at the picture's right foot instead,
+   clear of the tower (drawn at the left, under the price row). */
 @media (min-width: 900px) and (min-height: 521px) {
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower :is(.tray-name, .tray-role-word) { order: 2; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-answers {
     position: relative;
     inset: auto;
     order: 1;
-    align-self: flex-start;
+    align-self: flex-end;
     z-index: var(--z-raise);
     margin: -20px 0 0;
-    border-radius: 0 10px 10px 0;
+    border-radius: 10px 0 0 10px;
   }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-stats { inset-block-start: 7px; }
 }
