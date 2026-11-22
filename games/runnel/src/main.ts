@@ -814,7 +814,39 @@ function placeGardenSign(): void {
   const sign = garden?.querySelector<HTMLElement>('.farm-sign')
   if (!garden || !sign) return
   delete garden.dataset.signUnder
+  delete garden.dataset.tight
+  garden.style.removeProperty('--gw')
+  for (const b of garden.querySelectorAll<HTMLElement>('[data-tuck]')) delete b.dataset.tuck
   const polys = screenPolys(document.querySelectorAll<SVGPolygonElement>('#board polygon.tile'))
+  // Plan item 661: a wide daily's board can reach into the garden's corner (the 22 Nov phone board ran its last
+  // hexes over the older beds and the fence). The garden then keeps to the clear strip right of the tiles: today's
+  // bed and Bea stay at full size at its right end, the older beds that no longer fit tuck away on the left.
+  const g = garden.getBoundingClientRect()
+  if (g.width) {
+    let clear = g.left
+    for (let y = g.top + 2; y <= g.bottom - 2; y += 3)
+      for (let x = g.right - 2; x >= g.left; x -= 2)
+        if (inPolys(polys, x, y)) {
+          clear = Math.max(clear, x)
+          break
+        }
+    const zoom = g.width / garden.offsetWidth || 1
+    const w = Math.floor((g.right - clear - 6) / zoom)
+    if (clear > g.left && w >= 72) {
+      garden.dataset.tight = ''
+      garden.style.setProperty('--gw', `${w}px`)
+      // The beds keep their size; the days ahead tuck away first, then the oldest, never today's.
+      const row = garden.querySelector<HTMLElement>('.bea-crops')
+      const beds = [...(row?.querySelectorAll<HTMLElement>(':scope > i') ?? [])]
+      const order = [...beds.filter((b) => b.classList.contains('bed-ahead')).reverse(), ...beds.filter((b) => !b.classList.contains('bed-ahead') && !b.classList.contains('is-today'))]
+      for (const b of order) {
+        // (laid out from the right, a row too full spills off its left edge, which scrollWidth doesn't count)
+        const first = beds.find((x) => x.dataset.tuck === undefined)
+        if (!row || !first || first.getBoundingClientRect().left >= row.getBoundingClientRect().left - 1) break
+        b.dataset.tuck = ''
+      }
+    }
+  }
   const meets = (): boolean => {
     const r = sign.getBoundingClientRect()
     if (!r.width) return false

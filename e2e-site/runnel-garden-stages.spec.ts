@@ -15,7 +15,16 @@ test('the garden grows through the level', async ({ page }) => {
   })
   await expect(garden).toHaveAttribute('data-garden-stage', expected)
   const box = (await garden.boundingBox())!
-  expect(box.width).toBeGreaterThanOrEqual(120)
+  // (plan item 661: where the board reaches its corner it keeps to the clear strip beside the tiles, 72 px+)
+  const fit = await page.evaluate(() => (() => {
+    // plan item 661: a board that reaches the garden's corner leaves it the strip beside the tiles (data-tight)
+    const g = document.querySelector('.bea-garden')!, r = g.getBoundingClientRect()
+    let hits = 0
+    for (let y = r.top + 2; y < r.bottom - 2; y += 4) for (let x = r.left + 2; x < r.right - 2; x += 4) if (document.elementsFromPoint(x, y).some((e) => e.matches('#board polygon.tile'))) hits++
+    return { tight: g.hasAttribute('data-tight'), hits }
+  })())
+  expect(fit.hits).toBe(0)
+  expect(box.width).toBeGreaterThanOrEqual(fit.tight ? 72 : 120)
   expect(box.height).toBeGreaterThanOrEqual(56)
   await page.evaluate(() => (window as unknown as { runnelTest: { nearlySolve: () => void } }).runnelTest.nearlySolve())
   await page.locator('#board [data-last]').click()

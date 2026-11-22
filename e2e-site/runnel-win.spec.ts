@@ -95,7 +95,8 @@ test('the phone daily shows the spring house and Bea\'s garden around the board'
     const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
     const house = r('.spring-house'), garden = r('.bea-garden'), progress = r('.progress'), foot = r('.foot')
     return {
-      house: house.width > 30 && house.top >= 0, garden: garden.width > 100 && garden.bottom <= innerHeight,
+      // (plan item 661: a garden the board reaches keeps to the clear strip beside the tiles, 72 px+)
+      house: house.width > 30 && house.top >= 0, garden: garden.width > (document.querySelector('.bea-garden[data-tight]') ? 70 : 100) && garden.bottom <= innerHeight,
       clearOfBar: garden.bottom <= progress.top + 1 && garden.bottom <= foot.top + 1,
       scroll: document.scrollingElement!.scrollHeight - innerHeight,
     }

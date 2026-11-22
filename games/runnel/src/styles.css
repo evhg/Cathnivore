@@ -5432,3 +5432,8 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 /* (the glint's loop matches its new dash, so it runs seamlessly; still under reduced motion) */
 @keyframes flow { to { stroke-dashoffset: -0.65; } }
 @media (prefers-reduced-motion: reduce) { .wet .shimmer { animation: none; } }
+/* Plan item 661: a board that reaches into the garden's corner leaves it the clear strip beside the tiles
+   (main.ts placeGardenSign): the beds keep their phone size, those that don't fit tuck away (never today's). */
+.stage[data-tile-e] .bea-garden[data-tight] .bea-crops:not(.bare) { justify-content: flex-end; padding-right: 8px; overflow: clip; overflow-clip-margin: 40px; }
+.stage[data-tile-e] .bea-garden[data-tight] .bea-crops:not(.bare) i { flex: none; width: 20px; height: 20px; }
+.bea-crops i[data-tuck] { display: none; }

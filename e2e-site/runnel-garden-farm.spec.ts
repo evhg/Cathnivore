@@ -38,8 +38,17 @@ for (const where of ['the lesson', "today's daily"]) {
       expect(b.top, `${name} top`).toBeGreaterThanOrEqual(0)
       expect(b.bottom, `${name} bottom`).toBeLessThanOrEqual(f.vh)
     }
-    // The garden's beds are a plot you can see: at least 140 px wide and 20 px tall.
-    expect(f.crops.w).toBeGreaterThanOrEqual(140)
+    // The garden's beds are a plot you can see: at least 140 px wide and 20 px tall; where the board reaches its
+    // corner (plan item 661) it keeps to the clear strip beside the tiles, 60 px+, and meets no tile.
+    const fit = await page.evaluate(() => (() => {
+      // plan item 661: a board that reaches the garden's corner leaves it the strip beside the tiles (data-tight)
+      const g = document.querySelector('.bea-garden')!, r = g.getBoundingClientRect()
+      let hits = 0
+      for (let y = r.top + 2; y < r.bottom - 2; y += 4) for (let x = r.left + 2; x < r.right - 2; x += 4) if (document.elementsFromPoint(x, y).some((e) => e.matches('#board polygon.tile'))) hits++
+      return { tight: g.hasAttribute('data-tight'), hits }
+    })())
+    expect(fit.hits).toBe(0)
+    expect(f.crops.w).toBeGreaterThanOrEqual(fit.tight ? 60 : 140)
     expect(f.crops.h).toBeGreaterThanOrEqual(20)
     // Whatever is lowest of the board, the garden and (on a phone) Cath's dock under them, the foot follows within 80 px.
     expect(f.foot.top - Math.max(f.tilesBottom, f.garden.bottom, f.hostBottom)).toBeLessThanOrEqual(80)
