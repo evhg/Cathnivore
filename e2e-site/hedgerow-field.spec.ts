@@ -47,18 +47,24 @@ test('plan item 19: Cath\'s bubble and the "new on the lane" card never show tog
   await expect(page.locator('#panel .cath-tip')).toHaveCount(0)
 })
 
-// Plan item 431 (was item 19's 70% of the window): the board is framed to the field, so its plots span 70%+ of the
-// canvas width on l21 and l34 at 1440x900, and the side panel is a wave card.
-for (const level of [21, 34]) test(`plan item 431: at 1440x900 level ${level}'s field spans 70%+ of the board, the side panel a wave card`, async ({ page }) => {
+// Plan item 431 (was item 19's 70% of the window): the board is framed to the field and the side panel is a wave
+// card. Plan item 641: the stage takes all the room the panel leaves, so the act's scenery runs to the window's left
+// edge and up to the panel (no felt either side, it was 150 px each) while the field keeps its size (half the canvas
+// or more on l21 and l34 at 1440x900).
+for (const level of [21, 34]) test(`plan items 431 and 641: at 1440x900 level ${level}'s scenery fills the stage, the field half of it, the side panel a wave card`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await open(page, level, { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true })
-  const share = await page.evaluate(() => {
+  const m = await page.evaluate(() => {
     const hg = (window as unknown as { hedgerow: { game(): { level: { cols: number } }; cellCenter(c: number, r: number): { x: number } } }).hedgerow
     const g = hg.game()
     const a = hg.cellCenter(0, 0), b = hg.cellCenter(1, 0)
-    return ((b.x - a.x) * g.level.cols) / document.querySelector('#canvas')!.getBoundingClientRect().width
+    const c = document.querySelector('#canvas')!.getBoundingClientRect()
+    const panel = document.querySelector('#panel')!.getBoundingClientRect()
+    return { share: ((b.x - a.x) * g.level.cols) / c.width, left: c.left, gap: panel.left - c.right }
   })
-  expect(share).toBeGreaterThanOrEqual(0.7)
+  expect(m.share).toBeGreaterThanOrEqual(0.5)
+  expect(m.left).toBeLessThanOrEqual(16)
+  expect(m.gap).toBeLessThanOrEqual(24)
   await expect(page.locator('#panel .round-ticket')).toBeVisible()
   await expect(page.locator('#panel .intel-towers')).toHaveCount(0)
 })

@@ -399,7 +399,9 @@ export class Renderer {
     const fit = Math.ceil(cell * (cols + mL + mR));
     this.frameLeft = mL / (mL + mR);
     const panel = Math.max(PANEL_MIN, Math.min(PANEL_MAX, room - fit));
-    const w = Math.max(0, Math.min(fit, room - panel));
+    // Plan item 641: the stage takes all the room the panel leaves (it was the field's fit, centred in felt): the act's
+    // scenery runs on to the window's edge, the field where the depot margins put it.
+    const w = Math.max(0, room - panel);
     play.style.setProperty("--stage-w", `${w}px`);
     play.style.setProperty("--panel-w", `${panel}px`);
   }
