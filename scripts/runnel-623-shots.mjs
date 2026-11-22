@@ -20,8 +20,8 @@ for (const [n, vp] of [['P', { width: 390, height: 844 }], ['D', { width: 1440, 
     await p.waitForTimeout(mode === 'solved' ? 5000 : 1500)
     await p.screenshot({ path: `${out}${tag}-${mode}-${n}.png` })
     const m = await p.evaluate(() => {
-      const r = (s) => { const e = document.querySelector(s); if (!e || !e.offsetParent) return null; const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)] }
-      return { garden: r('.bea-garden'), crops: r('#bea-crops'), rail: r('.rail-garden'), plots: r('#rail-plots'), sign: r('.bea-garden > .farm-sign') }
+      const r = (s) => { const e = document.querySelector(s); if (!e || !e.getClientRects().length) return null; const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)] }
+      return { garden: r('.bea-garden'), crops: r('#bea-crops'), rail: r('.rail-garden'), plots: r('#rail-plots'), sign: r('.bea-garden > .farm-sign'), strip: r('#win-strip'), today: r('.bea-crops .is-today svg') }
     })
     console.log(tag, n, mode, JSON.stringify(m))
     await ctx.close()

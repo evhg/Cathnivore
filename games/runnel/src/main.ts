@@ -1431,7 +1431,7 @@ function showStrip(isDaily: boolean, streak: number): void {
     const crop = cropFor(playDay)
     const gold = game.taps <= puzzle.par
     planted.toggleAttribute('data-gold', gold)
-    planted.innerHTML = `${cropSvg(crop, 'ripe')}<span class="sp-cap">Planted in Bea's garden: <b>a ${crop}</b></span>`
+    planted.innerHTML = `${cropSvg(crop, 'ripe')}<span class="sp-cap"><span class="sp-verb">Planted in </span>Bea's garden: <b>a ${crop}</b></span>`
     planted.setAttribute('aria-label', `Planted in Bea's garden: a ${crop}${gold ? ', with a gold star' : ''}`)
   }
   strip.next.textContent = ui.btnNext.textContent
@@ -1451,8 +1451,18 @@ function showStrip(isDaily: boolean, streak: number): void {
 function placeStrip(): void {
   if (strip.root.hidden) return
   const r = ui.board.getBoundingClientRect()
-  strip.root.style.setProperty('--strip-x', r.width ? `${Math.round(r.left + r.width / 2)}px` : '')
-  strip.root.style.setProperty('--strip-max', r.width ? `${Math.round(r.width)}px` : '')
+  let left = r.left
+  let right = r.right
+  // Plan item 630: at D the result docks clear of Bea's garden (the place the solve planted), between the board's
+  // left edge and the garden's, so the garden's new plant stays in view beside it.
+  const garden = document.querySelector<HTMLElement>('.bea-garden')?.getBoundingClientRect()
+  if (r.width && garden?.width && matchMedia('(min-width: 1100px) and (min-height: 640px)').matches && garden.left > left + 320) {
+    right = Math.min(right, garden.left - 14)
+    // (as wide as its four buttons need, so it stays off Cath at the board's left foot)
+    left = Math.max(left, right - 700)
+  }
+  strip.root.style.setProperty('--strip-x', r.width ? `${Math.round((left + right) / 2)}px` : '')
+  strip.root.style.setProperty('--strip-max', r.width ? `${Math.round(right - left)}px` : '')
 }
 window.addEventListener('resize', placeStrip)
 

@@ -105,7 +105,7 @@ test('the desktop rail ends on Bea\'s garden with no page scroll', async ({ page
   test.skip(vp.width < 1100 || vp.height < 900, 'the desktop rail with room for the garden')
   await page.goto('/runnel/?nohelp')
   await expect(page.locator('.rail-garden')).toBeVisible()
-  expect(await page.locator('#rail-plots .plot').count()).toBe(7)
+  await expect(page.locator('#rail-plots .plot')).toHaveCount(7)
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight - innerHeight)).toBeLessThanOrEqual(0)
 })
 
@@ -149,4 +149,23 @@ test('at D a solve\'s line is never under the result strip, and the page does no
       { timeout: 6000 },
     )
     .toEqual({ under: false, scroll: 0 })
+})
+
+// Plan item 630: after the finale the result stands clear of Bea's garden, where the solve planted, and today's new
+// plant stands in it at hero size (40 px or more); under reduced motion it is there at once (no grow-in to wait for).
+test("the solve's result docks clear of Bea's garden and its new plant", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/runnel/?shotwin&nohelp')
+  await page.locator('#win-strip').waitFor({ state: 'visible', timeout: 20_000 })
+  await page.waitForTimeout(400)
+  const m = await page.evaluate(() => {
+    const g = document.querySelector('.bea-garden')!.getBoundingClientRect()
+    const s = document.getElementById('win-strip')!.getBoundingClientRect()
+    const p = document.querySelector('.bea-crops .is-today svg')?.getBoundingClientRect()
+    const meet = g.width > 0 && s.left < g.right && s.right > g.left && s.top < g.bottom && s.bottom > g.top
+    return { meet, plant: p ? Math.min(p.width, p.height) : 0, garden: g.width }
+  })
+  test.skip(m.garden === 0, 'no valley garden at this size')
+  expect(m.meet).toBe(false)
+  expect(m.plant).toBeGreaterThanOrEqual(40)
 })

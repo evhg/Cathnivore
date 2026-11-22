@@ -2955,7 +2955,7 @@ body {
   animation: bed-grow 600ms cubic-bezier(0.3, 1.5, 0.5, 1) both 1700ms;
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(.bea-garden, .rail-garden)[data-pop] .is-today svg { animation: bed-fade 600ms ease-out both 1700ms; }
+  :is(.bea-garden, .rail-garden)[data-pop] .is-today svg { animation: bed-fade 300ms ease-out both; }
   .bea-crops:not(.bare) { transition: none; }
 }
 .win-drops {
@@ -5297,3 +5297,20 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 @media (min-width: 1100px) and (min-height: 640px) {
   .has-win-strip #btn-new[data-reopens] { display: none; }
 }
+
+/* Plan item 630: once the water reaches the garden, today's new plant grows in at hero size (40 px+) where it was
+   planted, standing over its neighbours' beds; reduced motion fades it in at that size. */
+.bea-garden[data-watered='true'] .bea-crops .is-today { position: relative; overflow: visible; }
+.bea-garden[data-watered='true'] .bea-crops .is-today svg {
+  scale: var(--hero-plant, 1.7);
+  transform-origin: 50% 90%;
+  filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--soil) 45%, transparent));
+  transition: scale 600ms cubic-bezier(0.3, 1.5, 0.5, 1) 1700ms;
+}
+@media (max-width: 600px) { .bea-crops .is-today { --hero-plant: 2.6; } }
+@media (prefers-reduced-motion: reduce) {
+  .bea-garden[data-watered='true'] .bea-crops .is-today svg { transition: none; }
+}
+/* (on a phone the crop's line keeps one line, 'Bea's garden: a potato', so the sheet stays below the garden) */
+@media (max-width: 600px) { .sp-verb { display: none; } }
+@media (max-width: 600px) { .win-strip { row-gap: 2px; padding-top: 4px; } .strip-plant:not([hidden]) { margin-top: 0; } }
