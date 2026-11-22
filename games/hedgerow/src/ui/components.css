@@ -5721,3 +5721,14 @@ body:has(#dlg-pause[open]) .paused-note {
     grid-template-rows: 30px auto;
   }
 }
+/* Plan item 661: at D the Next card's vehicle chips wrap to a second row rather than scrolling under the row's fade
+   (the fifth type read as cut at the panel's edge); the phone keeps its swiped row. */
+@media (min-width: 900px) and (min-height: 521px) {
+  .play .panel .preview-row.ticket-chips {
+    flex-wrap: wrap;
+    overflow: visible;
+    padding-inline-end: 0;
+    -webkit-mask: none;
+    mask: none;
+  }
+}
