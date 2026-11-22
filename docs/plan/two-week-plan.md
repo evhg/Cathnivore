@@ -6133,7 +6133,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** chrome under the field 150 px or less of 844 at P; her line's box meets no path tile (e2e, `?2d`, levels 21 and 34); Coming up's numbers carry a unit; hedgerow tray/bubble/dock specs pass; shot P, D and L.
 - **Size:** 2
 
-## 638. [ ] The bugs from the 2026-11-22 03:20 critique, fixed as one batch *(lane A, in progress)*
+## 638. [ ] The bugs from the 2026-11-22 03:20 critique, fixed as one batch *(handed back 2026-11-22 03:45 by lane A: Runnel D fixed (the stage keeps the open strip's height clear, cells end 724 < strip 749; with Watch the buttons take their own row; runnel-win checks it); the 'Next in' note closed by decision (a pinned paper tag, its pin drawn); Cathnivore setup D 'Second Opinion' stamp fixed (2.2 px inside its card); D 'STAGE I' fixed (the (i) under the tab in item 632's stack); P name pills closed by measurement (item 602's 5-unit gap, ~4 px, no overlap; wider would shrink the discs). **Left:** NIGHT SHIFT briefing map labels, the landscape HUD scrim, portfolio D's 'Live' line at the fold)*
 *(planned 2026-11-22 03:25, lane A, plan1122a critique; check each on today's build first)*
 - Cathnivore P (`cath-game-P` 15-380 x 240-262): Brindle Hills, Kingsmarket and Rivermead's name pills touch, reading as one strip.
 - Cathnivore D (`cath-game-D` 1270-1335 x 88-104): 'STAGE I' overprints 'EXPAND Coast' in Hollowell's plan card.
