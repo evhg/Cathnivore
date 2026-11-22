@@ -80,3 +80,24 @@ test('plan item 64: a cleared round pins its rosette clear of every plot, and it
     await expect(page.locator('.flying-coin').first()).toBeAttached()
   }
 })
+
+// Plan item 662: the page docks beside the field instead of over it: under 30% of the board at D (at its right edge),
+// a sheet at the foot under 40% of the screen on a phone, Got it and the towers that reach it whole.
+test('plan item 662: a new vehicle\'s page docks beside the field, not over it', async ({ page }) => {
+  await page.goto('/hedgerow/?2d&sandbox=1&level=34')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: { game(): unknown } }).hedgerow?.game(), null, { timeout: 30000 })
+  await page.evaluate(() => { const h = (window as unknown as { hedgerow: Hook }).hedgerow; h.sendWave(h.game(), true) })
+  const sheet = page.locator('.intro:not([hidden]) .intro-sheet')
+  await expect(sheet).toBeVisible({ timeout: 20000 })
+  await page.waitForTimeout(800)
+  const m = await page.evaluate(() => {
+    const c = document.querySelector('.intro:not([hidden]) .intro-sheet')!.getBoundingClientRect()
+    const b = document.getElementById('canvas')!.getBoundingClientRect()
+    const ov = Math.max(0, Math.min(c.right, b.right) - Math.max(c.left, b.left)) * Math.max(0, Math.min(c.bottom, b.bottom) - Math.max(c.top, b.top))
+    return { board: ov / (b.width * b.height), view: (c.width * c.height) / (innerWidth * innerHeight), phone: innerWidth <= 600 }
+  })
+  if (m.phone) expect(m.view).toBeLessThan(0.4)
+  else expect(m.board).toBeLessThan(0.3)
+  await expect(page.locator('.intro:not([hidden]) .intro-go')).toBeInViewport({ ratio: 1 })
+  await expect(page.locator('.intro:not([hidden]) .intro-reach li.lit').first()).toBeInViewport({ ratio: 1 })
+})
