@@ -1417,6 +1417,32 @@ function lift(c: string, k: number): string {
   return `#${[1, 3, 5].map((i, j) => Math.round(parseInt(c.slice(i, i + 2), 16) * (1 - k) + w[j]! * k).toString(16).padStart(2, "0")).join("")}`;
 }
 
+const rgbOf = (c: string): number[] => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+const hexOf = (v: number[]): string => "#" + v.map((x) => Math.round(Math.min(255, Math.max(0, x))).toString(16).padStart(2, "0")).join("");
+/** `b` painted over `a` at opacity t. */
+function mixHex(a: string, b: string, t: number): string {
+  const [x, y] = [rgbOf(a), rgbOf(b)];
+  return hexOf(x.map((v, j) => v * (1 - t) + y[j]! * t));
+}
+/** WCAG contrast ratio of two hex colours. */
+export function contrastHex(a: string, b: string): number {
+  const lum = (c: string): number => {
+    const [r, g, bl] = rgbOf(c).map((v) => {
+      const s = v / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * bl!;
+  };
+  const [p, q] = [lum(a), lum(b)].sort((m, n) => n - m);
+  return (p! + 0.05) / (q! + 0.05);
+}
+/** Plan item 663: a furrow's ink, the field stepped toward `ink` until it stands 1.18:1 against it. */
+function furrowInk(field: string, ink: string): string {
+  let t = 0;
+  while (t < 1 && contrastHex(field, mixHex(field, ink, t + 0.02)) <= 1.18) t += 0.02;
+  return mixHex(field, ink, t);
+}
+
 /** Plan item 230: a colour pushed away from its grey (k > 1 saturates), for the won land's richer fields. */
 function richer(c: string, k: number): string {
   const v = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
@@ -1513,10 +1539,22 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
       const lush = won[stop] === true;
       // Plan item 547: every field in full colour (the act's pale palette pushed off its grey), a won one a step
       // richer still and wholly opaque, so the land is painted country before a stop is played.
-      if (k < 3) cells += `<path d="${d}" fill="${richer(g.patches[k]!, lush ? 3.6 : 2.8)}" opacity="${f(lush ? 1 : Math.max(op, 0.88))}"/>`;
-      else if (lush) cells += `<path d="${d}" fill="${richer(g.patches[0], 3)}" opacity=".85"/>`;
-      // Plan item 428: the fourth kind is rough grazing, a deeper tone of the act's hedge green, not the bare card.
-      else cells += `<path d="${d}" fill="${g.leaf}" opacity="${f(0.5 + rand() * 0.15)}"/>`;
+      const baseC = richer(g.base, 2.6);
+      let field: string;
+      if (k < 3) {
+        const fc = richer(g.patches[k]!, lush ? 3.6 : 2.8);
+        const fo = lush ? 1 : Math.max(op, 0.88);
+        cells += `<path d="${d}" fill="${fc}" opacity="${f(fo)}"/>`;
+        field = mixHex(baseC, fc, Math.round(fo * 10) / 10);
+      } else if (lush) {
+        cells += `<path d="${d}" fill="${richer(g.patches[0], 3)}" opacity=".85"/>`;
+        field = mixHex(baseC, richer(g.patches[0], 3), 0.85);
+      } else {
+        // Plan item 428: the fourth kind is rough grazing, a deeper tone of the act's hedge green, not the bare card.
+        const go = 0.5 + rand() * 0.15;
+        cells += `<path d="${d}" fill="${g.leaf}" opacity="${f(go)}"/>`;
+        field = mixHex(baseC, g.leaf, Math.round(go * 10) / 10);
+      }
       // Plan item 428: each field shaded by a soft light across it, at its own angle, so a big field isn't one tone.
       cells += `<path d="${d}" fill="url(#sh${i}-${Math.floor(rand() * 4)})"/>`;
 
@@ -1531,7 +1569,9 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
           rows += `M${f(ox - dx * 14)} ${f(oy - dy * 14)}L${f(ox + dx * 14)} ${f(oy + dy * 14)}`;
         }
         clips += `<clipPath id="pc${i}-${r}-${c}"><path d="${d}"/></clipPath>`;
-        ploughed += `<path clip-path="url(#pc${i}-${r}-${c})" d="${rows}" stroke="${g.hedge}" stroke-width="1.4" opacity=".2" vector-effect="non-scaling-stroke" fill="none"/>`;
+        // Plan item 663: the furrows are a quiet texture, never hatching over the map: their ink is the field's own
+        // colour stepped toward the hedge until it stands 1.18:1 against the field, no further (it read up to 1.5:1).
+        ploughed += `<path clip-path="url(#pc${i}-${r}-${c})" d="${rows}" stroke="${furrowInk(field, g.hedge)}" data-on="${field}" stroke-width="1.4" vector-effect="non-scaling-stroke" fill="none" class="furrows"/>`;
       }
     }
   let hedges = "";
@@ -2070,10 +2110,35 @@ function walkThenOpen(list: HTMLElement, to: HTMLElement, go: () => void): void 
   window.setTimeout(go, 600);
 }
 
-/** Plan item 124: her map figure, head to boots, in a pose (`data-pose` for the e2e). */
+/**
+ * Plan item 663: her map token, a painted pin with her portrait in it (head and shoulders, in a pose: `data-pose`
+ * for the e2e), its point on the road beside her stop. The full-length figure (item 124) drew her 25 px wide at D,
+ * a stick against the land; the portrait reads as her at a glance.
+ */
+export function youPinSvg(pose: "clasped" | "hip" | "wave" | "walk"): string {
+  const face = cathSvg({ framing: "bust", expression: pose === "wave" ? "delighted" : "smirk", pose }).replace(
+    "<svg ",
+    '<svg x="9" y="10" width="82" height="98" preserveAspectRatio="xMidYMin slice" ',
+  );
+  // A 100x150 pin: a gold-rimmed medallion (r 46 at 50,50) over a tapering point at 50,148.
+  const body = "M50 148C44 128 30 110 17 92A46 46 0 1 1 83 92C70 110 56 128 50 148Z";
+  return (
+    `<svg class="you-pin" viewBox="0 0 100 150" aria-hidden="true">` +
+    `<defs><linearGradient id="you-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d27a"/><stop offset=".5" stop-color="#d49a32"/><stop offset="1" stop-color="#8f5d1c"/></linearGradient>` +
+    `<radialGradient id="you-sky" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="#fff6dc"/><stop offset=".7" stop-color="#f1dfb2"/><stop offset="1" stop-color="#cfd9a8"/></radialGradient>` +
+    `<clipPath id="you-clip"><circle cx="50" cy="50" r="38"/></clipPath></defs>` +
+    `<path d="${body}" fill="url(#you-gold)" stroke="#5e3b12" stroke-width="2.4" stroke-linejoin="round"/>` +
+    `<path d="M50 140C46 126 38 114 30 104" fill="none" stroke="#fff3cf" stroke-width="2" stroke-linecap="round" opacity=".55"/>` +
+    `<circle cx="50" cy="50" r="40.5" fill="#fffaf0" stroke="#7a4c16" stroke-width="1.4"/>` +
+    `<g clip-path="url(#you-clip)"><circle cx="50" cy="50" r="38" fill="url(#you-sky)"/>${face}</g>` +
+    `<path d="M22 34A32 32 0 0 1 44 16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>` +
+    `</svg>`
+  );
+}
+
 function setPose(you: HTMLElement, pose: "clasped" | "hip" | "wave" | "walk"): void {
   you.dataset.pose = pose;
-  you.innerHTML = cathSvg({ framing: "full", expression: pose === "wave" ? "delighted" : "smirk", pose });
+  you.innerHTML = youPinSvg(pose);
 }
 
 /** The node Cath stood on at the last render, so she can walk to the new one. */

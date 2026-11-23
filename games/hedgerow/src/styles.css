@@ -5272,42 +5272,45 @@ img.act-scene {
   bottom: -2px;
   left: auto;
   /* Plan item 420: she stands on her stop, her feet at the coin's edge (her foot within 8 px of it), not a step off */
-  right: calc(100% - 12px);
-  width: 36px;
+  right: calc(100% - 24px);
+  width: 53px;
   height: 80px;
   /* map.ts's placeYou steps her further along the road and lower when a name above would meet her */
   margin: 0 var(--you-dx, 0px) calc(-1 * var(--you-dy, 0px)) var(--you-dx, 0px);
 }
-#screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 12px); }
+#screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 24px); }
 /* Plan item 500: she stands on the coin's right edge, where its number badge sat under her legs (plan1118a hedge-menu-D);
    the badge moves to the coin's other foot corner so the stop's number stays clear of her. */
 #screen-select .node.next:has(.you[data-side="right"]) .level-num.vignette .level-n { right: auto; left: -6px; }
 #screen-select .node.next .you svg { transform-origin: 50% 100%; }
 @media (max-width: 420px) {
   /* plan item 441: 72 px on a phone (66) */
-  #screen-select .node.next .you { right: calc(100% + 2px); width: calc(33px * var(--you-k, 1)); height: calc(72px * var(--you-k, 1)); }
+  /* plan item 663: a portrait pin 76 px tall (a 2:3 box) */
+  #screen-select .node.next .you { right: calc(100% + 2px); width: calc(51px * var(--you-k, 1)); height: calc(76px * var(--you-k, 1)); }
   #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% + 2px); }
 }
 /* Plan item 496: a shorter desktop (1280x800) gave her the 80 px middle size, a pin beside the coin; she stands 120 px
    there (the 172 px figure waits for 860 px of height, so the trail keeps its fold). */
 @media (min-width: 1100px) and (min-height: 700px) and (max-height: 859.98px) {
-  #screen-select .node.next .you { right: calc(100% - 22px); width: 54px; height: 120px; }
-  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 22px); }
+  #screen-select .node.next .you { right: calc(100% - 37px); width: 80px; height: 120px; }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 37px); }
 }
 @media (min-width: 1100px) and (min-height: 860px) {
   /* plan item 250: 120 px at D; plan item 441: 172 px; plan item 547: 244 px; plan item 564: 132 px, at most 1.2x a
      stop's 112 px coin, so she walks the trail to scale and keeps off the row above's names */
-  #screen-select .node.next .you { right: calc(100% - 28px * var(--you-k, 1)); width: calc(60px * var(--you-k, 1)); height: calc(132px * var(--you-k, 1)); }
-  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 28px * var(--you-k, 1)); }
+  /* plan item 663: the portrait pin, 88x132, its point 3 px off the coin's edge */
+  #screen-select .node.next .you { right: calc(100% - 41px * var(--you-k, 1)); width: calc(88px * var(--you-k, 1)); height: calc(132px * var(--you-k, 1)); }
+  #screen-select .node.next .you[data-side="right"] { right: auto; left: calc(100% - 41px * var(--you-k, 1)); }
 }
 /* Plan item 547: her shadow on the ground, cast away from the sun (top right), held still while she bobs */
 #screen-select .node.next .you::after {
   content: '';
   position: absolute;
   z-index: calc(var(--z-raise) * -1);
-  left: 4%;
+  /* plan item 663: under the pin's point */
+  left: 26%;
   bottom: -3%;
-  width: 78%;
+  width: 48%;
   height: 7%;
   border-radius: 50%;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--ink) 42%, transparent), transparent);

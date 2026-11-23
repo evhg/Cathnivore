@@ -380,7 +380,7 @@ test('plan item 111: at 1280x800 Play is on screen on act 1', async ({ page }, t
 // Plan item 124: Cath stands on the road at full length beside her stop, clear of every label and padlock, and a
 // locked stop is a pencil sketch (under 15% saturation) that comes into colour (over 30%) when it opens.
 for (const upTo of [3, 23]) {
-  test(`plan item 124: Cath at full length on the road, and locked stops toned, not in full colour (act ${upTo < 10 ? 1 : 3})`, async ({ page, hasTouch }) => {
+  test(`plan item 124 + 663: Cath's portrait pin on the road, and locked stops toned, not in full colour (act ${upTo < 10 ? 1 : 3})`, async ({ page, hasTouch }) => {
     await seed(page, upTo)
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || (a.effect?.getComputedTiming().iterations ?? 1) === Infinity))
     const m = await page.evaluate(() => {
@@ -390,9 +390,9 @@ for (const upTo of [3, 23]) {
       const hits = [...document.querySelectorAll<HTMLElement>('.node .level-name, .node .level-lock, .node .start-tag, .node .level-num')]
         .filter((e) => !(e.matches('.level-num') && e.contains(you)) && ov(e.getBoundingClientRect()))
         .map((e) => `${e.className} @${e.closest('.node')!.getAttribute('data-level')}`)
-      return { h: r.height, pose: (you as HTMLElement).dataset.pose, full: !!you.querySelector('svg.cath .cath-lower'), hits }
+      return { h: r.height, pose: (you as HTMLElement).dataset.pose, pin: !!you.querySelector('svg.you-pin svg.cath'), hits }
     })
-    expect(m.full, JSON.stringify(m)).toBe(true)
+    expect(m.pin, JSON.stringify(m)).toBe(true) // plan item 663: her portrait in a pin (was full length, item 124)
     expect(m.pose).toBe('hip') // plan item 524
     expect(m.h).toBeGreaterThanOrEqual(hasTouch ? 64 : (page.viewportSize()!.height >= 860 ? 110 : 76))
     expect(m.hits).toEqual([])
