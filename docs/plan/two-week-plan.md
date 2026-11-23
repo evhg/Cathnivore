@@ -6446,7 +6446,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 678. [ ] NIGHT SHIFT phone title: Cath is the poster, not under the umbrella and the List
+## 678. [ ] NIGHT SHIFT phone title: Cath is the poster, not under the umbrella and the List *(lane B, in progress)*
 *(planned 2026-11-23 10:00, lane B, plan1123d critique; check against item 652 first: this may be a regression of its phone framing)*
 - **Why:** `plan1123d/ns-title-P` (2x): the focus is an empty umbrella canopy (180-780 x 720-1080) and a cut 'HOLLOW' sign (280-780 x 520-780); her head starts at y≈1090 and THE LIST (20-745 x 1380-1615) lies over her collar and coat, her face about 8% of the frame. At D the same scene works (her figure 880-1180). VISION: Cath the face of every game.
 - **Build:** the phone poster (`scripts/cathode-poster.mjs`) framed on her head to waist, the umbrella a sliver framing her top right, the menu card beside her, The List a 2-row tray below her waist (or a swiped strip) that never covers her.
@@ -6460,7 +6460,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the postcard wholly inside 1440x900 and 1280x800, buttons 44 px+, its crop 80 px+, nothing clipped (scrollHeight ≤ clientHeight, e2e); 600-1200 ms in, a fade under reduced motion; P unchanged; the runnel-win specs updated; shots P and D.
 - **Size:** 2
 
-## 680. [ ] Portfolio phone: one hero composition, the games above the fold *(lane B, in progress)*
+## 680. [x] Portfolio phone: one hero composition, the games above the fold *(closed 2026-11-23 11:40, lane B, by measurement: today's build already meets the accept: at 390x844 Cath 88x219 px (160+), all four game tiles begin above the fold (tops 557 and 731) with two whole (557-715), the headline 52 px over a 17 px body (3.0x, 2.5+); at 1440x900 she stands whole (1247-1408 x 151-553), her bubble above with its tail at her, not cutting her. The critique's portfolio-P matches today's frame (shots e2e/screenshots/p680 before-*, `scripts/portfolio-680-shots.mjs`); its 'no focal point' is a judgement the numbers don't carry, so no redesign on it)*
 *(planned 2026-11-23 10:00, lane B, plan1123d critique)*
 - **Why:** `plan1123d/portfolio-P`: Cath a 70x200 px figure squeezed beside a paragraph (285-375 x 205-415), the fold mostly body text (16-280 x 260-415), no focal point; the game tiles start at y 552 (two show). At D she sits at the far edge, cut by her bubble (1295-1385 x 175-505).
 - **Build:** P: the headline, then Cath 160 px+ in front of a 2x2 game montage she presents; the paragraph cut to two lines (the rest below). D: Cath in a clear column, whole, her bubble's tail at her.
