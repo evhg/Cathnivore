@@ -3,7 +3,7 @@
 Short by design (SPEC 16: under 150 lines). v1's full history (M0 to M7, every session's notes and the full deploy log) is in `docs/archive/PROGRESS-v1.md`; search it with grep and never read it in full.
 
 ## Now
-- Lane A (23:51 11-22): **663 and 665 done** (Hedgerow act map: Cath a portrait pin, furrows under 1.3:1, the banner's sky clear of hedges, a vignette; NIGHT SHIFT phone: the Pin's fist in frame, a clean HUD plate, plan shots press an input first). Gate 7 fix (2820bec5) waits for the 11-23 19:51 release (main still 67ef937d). Open unclaimed: 319 and 543 only (lane B closed 662), so the next session plans (step 4).
+- Lane A (00:51 11-23): E2E red on 6d197b25 fixed (3845b11c: Runnel's dry fields on field/meadow ground lost their plot face to item 516's rule; runnel-bloom). Planning 667+ from plan1123a (one subagent critique). Gate 7 fix (2820bec5) waits for the 11-23 19:51 release (main still 67ef937d).
 - Round-7 'hang' (owner session note, 11-16) checked by lane A 11:10: test-only. `?e2eAutoplayUntil` halted the AI teammate's seat too, so its Kingsmarket bonus choice was never made; real play uses the worker path, which acts on a decision the AI owns. The stop now applies to the human's seat only.
 - E2E red on hedgerow-water (11-15 04:35) fixed by lane A 05:10: the spec samples Rivermead's willow pond (level 31); Saltmarsh's salt pan is pink brine by design (item 399).
 - Owner session (11-09): the owner's release never landed and the pause ended 11-11 02:00 UTC. **Open:** Hedgerow level 12 at D: since item 250's portrait the bubble covers 21% of empty plots; the D bound is 30% there until the placement is reworked.
