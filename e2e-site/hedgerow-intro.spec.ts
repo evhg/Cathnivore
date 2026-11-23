@@ -100,4 +100,16 @@ test('plan item 662: a new vehicle\'s page docks beside the field, not over it',
   else expect(m.board).toBeLessThan(0.3)
   await expect(page.locator('.intro:not([hidden]) .intro-go')).toBeInViewport({ ratio: 1 })
   await expect(page.locator('.intro:not([hidden]) .intro-reach li.lit').first()).toBeInViewport({ ratio: 1 })
+  // the vehicle the page is about is ringed where it stands: on the board, outside the card
+  const ring = await page.evaluate(() => {
+    const r = document.querySelector('.intro:not([hidden]) .intro-ring')?.getBoundingClientRect()
+    if (!r) return null
+    const c = document.querySelector('.intro:not([hidden]) .intro-sheet')!.getBoundingClientRect()
+    const b = document.getElementById('canvas')!.getBoundingClientRect()
+    const x = r.left + r.width / 2, y = r.top + r.height / 2
+    return { onBoard: x > b.left && x < b.right && y > b.top && y < b.bottom, inCard: x > c.left && x < c.right && y > c.top && y < c.bottom }
+  })
+  expect(ring).not.toBeNull()
+  expect(ring!.onBoard).toBe(true)
+  expect(ring!.inCard).toBe(false)
 })

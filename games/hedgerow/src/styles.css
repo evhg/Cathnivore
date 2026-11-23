@@ -6772,3 +6772,20 @@ img.act-scene {
   .intro-sheet .btn.intro-go { min-height: 40px; height: 40px; padding-block: 0; }
   .intro-sheet .intro-body > .eyebrow { white-space: nowrap; letter-spacing: 0.02em; }
 }
+/* (the vehicle the page is about, ringed on the lane: a gold ring that settles in over 700 ms and breathes; still
+   under reduced motion) */
+.intro-ring {
+  position: absolute;
+  left: var(--rx);
+  top: var(--ry);
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--marks), 0 0 0 6px var(--marks-ink), 0 0 26px 8px color-mix(in srgb, var(--marks) 55%, transparent);
+  pointer-events: none;
+  animation: intro-ring-in 700ms cubic-bezier(0.2, 1.2, 0.4, 1) both, intro-ring-breathe 1.6s ease-in-out 700ms infinite alternate;
+}
+@keyframes intro-ring-in { from { opacity: 0; transform: scale(2.2); } }
+@keyframes intro-ring-breathe { to { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .intro-ring { animation: none; } }

@@ -4298,6 +4298,22 @@ const TRAIT_SVG: Partial<Record<Trait, string>> = {
   splits: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 V12 M12 12 L5 5 M12 12 L19 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M5 5 h4 M5 5 v4 M19 5 h-4 M19 5 v4" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
 };
 
+/** Plan item 662: the vehicle the page is about, ringed where it stands on the lane (the round holds under the page),
+ *  so the page points at the field rather than standing in for it. The lead one of its kind; none yet, no ring. */
+function ringNewcomer(g: Game, k: EnemyKind, el: HTMLElement): void {
+  const e = g.enemies.filter((x) => x.kind === k).sort((a, b) => b.dist - a.dist)[0];
+  const at = e && renderer ? enemyPoint(g.level, e) : null;
+  const sc = at ? renderer!.cellCenter(at.x - 0.5, at.y - 0.5) : null;
+  if (!sc) return;
+  const box = el.getBoundingClientRect();
+  const ring = document.createElement("span");
+  ring.className = "intro-ring";
+  ring.setAttribute("aria-hidden", "true");
+  ring.style.setProperty("--rx", `${Math.round(sc.x - box.left)}px`);
+  ring.style.setProperty("--ry", `${Math.round(sc.y - box.top)}px`);
+  el.append(ring);
+}
+
 function showIntroPage(g: Game, k: EnemyKind): void {
   const el = ui.intro;
   el.replaceChildren();
@@ -4389,6 +4405,7 @@ function showIntroPage(g: Game, k: EnemyKind): void {
   el.classList.remove("pop");
   void el.offsetWidth;
   el.classList.add("pop");
+  ringNewcomer(g, k, el);
   say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
   // Plan item 19: one voice at a time. Cath's tip steps aside and comes back after the page.
   if (!ui.bubble.hidden && bubbleTip) {
