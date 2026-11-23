@@ -1,4 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
+Planning: lane B, 2026-11-23T04:55Z
 
 
 
@@ -6367,7 +6368,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 the board's box 460 px+ tall; no two region plates intersect; each region's tap target 44x44+; the resting hand 80 px or less; a region tap changes the board transform within 250 ms (e2e); shots P, and D unchanged.
 - **Size:** 3
 
-## 668. [ ] NIGHT SHIFT class pick: each role is its own person and gun *(lane B, in progress)*
+## 668. [x] NIGHT SHIFT class pick: each role is its own person and gun *(closed 2026-11-23 04:55, lane B, by measurement: already built: each role has its coat colour (frontscene CLASS_COAT: the Ghost's black trench and hood, the Butcher's slate with the apron, the Gunslinger's tan with the hat and duster, the Wirewitch's teal with the halo and rig, the Fixer's purple with the briefcase), its kit (item 112) and its stance (classpose's five outlines, IoU test). At D, high preset, keys 1-5, the figure region (560-880 x 60-880) differs 45-75% in pixels between every pair (`scripts/cathode-668-shots.mjs`, shots e2e/screenshots/ns668 base-*; contact sheet in the session's scratchpad). The critique's shot showed only the default Ghost)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique; separate from 319/543, which sculpt Cath's face, hair and coat)*
 - **Why:** `plan1123a/ns-play-D` and `-P`: all five roles stand as the same Cath in the same grey hooded coat (D 600-840 x 90-850); only the list portraits change; (the Wirewitch's and Fixer's flat red guns in plan1123a were loading placeholders: plan1123b, shot after the line is said, shows all five rendered). VISION 'characters with presence', 'craft in the details'.
 - **Build:** a per-role outfit layer over the shared Cath (the Butcher's apron, the Gunslinger's duster, the Wirewitch's visor and cables, the Fixer's hi-vis, the Ghost's hood), a per-role idle pose with the role's gun in hand, . Inside the class-pick perf budget.
