@@ -6369,9 +6369,9 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 
 ## 668. [ ] NIGHT SHIFT class pick: each role is its own person and gun
 *(planned 2026-11-23 01:40, lane A, plan1123a critique; separate from 319/543, which sculpt Cath's face, hair and coat)*
-- **Why:** `plan1123a/ns-play-D` and `-P`: all five roles stand as the same Cath in the same grey hooded coat (D 600-840 x 90-850); only the list portraits change; the Wirewitch's and Fixer's guns are flat red SVG silhouettes (D 345-450 x 485-620) beside three rendered models. VISION 'characters with presence', 'craft in the details'.
-- **Build:** a per-role outfit layer over the shared Cath (the Butcher's apron, the Gunslinger's duster, the Wirewitch's visor and cables, the Fixer's hi-vis, the Ghost's hood), a per-role idle pose with the role's gun in hand, and rendered thumbnails for all five guns (the same path as the other three). Inside the class-pick perf budget.
-- **Accept:** no SVG silhouette in the role list (all five thumbnails rendered images, e2e); the figure region differs 15%+ in pixels between any two roles; the pose changes within 400 ms of a pick; shots P and D.
+- **Why:** `plan1123a/ns-play-D` and `-P`: all five roles stand as the same Cath in the same grey hooded coat (D 600-840 x 90-850); only the list portraits change; (the Wirewitch's and Fixer's flat red guns in plan1123a were loading placeholders: plan1123b, shot after the line is said, shows all five rendered). VISION 'characters with presence', 'craft in the details'.
+- **Build:** a per-role outfit layer over the shared Cath (the Butcher's apron, the Gunslinger's duster, the Wirewitch's visor and cables, the Fixer's hi-vis, the Ghost's hood), a per-role idle pose with the role's gun in hand, . Inside the class-pick perf budget.
+- **Accept:** the figure region differs 15%+ in pixels between any two roles; the pose changes within 400 ms of a pick; shots P and D.
 - **Size:** 3
 
 ## 669. [ ] Cathnivore campaign D: a war table with Cath at full presence
@@ -6395,7 +6395,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath's face box and the board's box don't intersect; 7 region names visible at 390x844; the entrance 400 ms+ with a reduced-motion fade (e2e); shots P, D unchanged.
 - **Size:** 1-2
 
-## 672. [ ] The bugs from the 2026-11-23 01:35 critique, fixed as one batch *(lane A, in progress)*
+## 672. [ ] The bugs from the 2026-11-23 01:35 critique, fixed as one batch *(handed back 2026-11-23 01:45 by lane A after slice 1)*
 *(planned 2026-11-23 01:40, lane A, plan1123a critique)*
 - Hedgerow 2D D: the field guide (item 662) still sits over the field's middle (655-1000 x 85-750 in `hedge-l34-2d-D`); at D it docks over the right panel (1025-1425) instead, the field clear. Its driver portrait (780-835 x 190-255) clips 'GUIDE' in the kicker.
 - Hedgerow l21 2D D: the vehicle count chip's icons overlap its digits (365-485 x 372-400).
