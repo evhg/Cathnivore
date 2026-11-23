@@ -6361,42 +6361,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Size:** 1-2
 
 ## 667. [ ] Cathnivore phone: the table is the hero (a phone table mode)
-*(planned 2026-11-23 01:40, lane A, plan1123a critique)*
+*(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-game-P`: the board takes y115-475 (43% of 844); pieces are 20-25 px, outlets specks; the region plates run in one crowded row (Brindle Hills, Kingsmarket's 5, Rivermead touch at 95-385 x 240-262); y475-844 is all chrome (dialogue strip, resources, a 160 px hand, tab bar). VISION 3: 'the table is the hero... big, rich, legible and alive'.
 - **Build:** on a phone the board scales to the full width and 55%+ of the viewport; the hand rests as a fan (80 px or less) that rises on tap or when an action needs a card; the dialogue strip becomes a bubble on the board's edge that fades by itself; tapping a region zooms it (250 ms ease-out, fade under reduced motion) with a region sheet (outlets, stall, actions).
 - **Accept:** at 390x844 the board's box 460 px+ tall; no two region plates intersect; each region's tap target 44x44+; the resting hand 80 px or less; a region tap changes the board transform within 250 ms (e2e); shots P, and D unchanged.
 - **Size:** 3
 
 ## 668. [ ] NIGHT SHIFT class pick: each role is its own person and gun
-*(planned 2026-11-23 01:40, lane A, plan1123a critique; separate from 319/543, which sculpt Cath's face, hair and coat)*
+*(planned 2026-11-23 01:15, lane A, plan1123a critique; separate from 319/543, which sculpt Cath's face, hair and coat)*
 - **Why:** `plan1123a/ns-play-D` and `-P`: all five roles stand as the same Cath in the same grey hooded coat (D 600-840 x 90-850); only the list portraits change; (the Wirewitch's and Fixer's flat red guns in plan1123a were loading placeholders: plan1123b, shot after the line is said, shows all five rendered). VISION 'characters with presence', 'craft in the details'.
 - **Build:** a per-role outfit layer over the shared Cath (the Butcher's apron, the Gunslinger's duster, the Wirewitch's visor and cables, the Fixer's hi-vis, the Ghost's hood), a per-role idle pose with the role's gun in hand, . Inside the class-pick perf budget.
 - **Accept:** the figure region differs 15%+ in pixels between any two roles; the pose changes within 400 ms of a pick; shots P and D.
 - **Size:** 3
 
 ## 669. [ ] Cathnivore campaign D: a war table with Cath at full presence
-*(planned 2026-11-23 01:40, lane A, plan1123a critique)*
+*(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-campaign-D`: Cath is a 70 px-wide doll on crates between the map and the list (810-885 x 580-895); the chapters are a plain card list (1030-1378 x 140-880); the chapter popover covers the map and cuts Oakvale's label to 'akvale' (47-298 x 620-778). VISION 'characters with presence', 'story scenes staged like a graphic novel', 'every screen is designed'.
 - **Build:** Cath as a half-length bust (360 px+ at 1440x900) at the table's edge with an expression per chapter state (new, in progress, won); the chapter detail an illustrated panel beside the map, never over it; the chapter rail as envelope tabs that open with a 400-600 ms choreography (fade under reduced motion).
 - **Accept:** Cath's box 360 px+ tall at 1440x900; the chapter detail intersects no region label (e2e); choosing a chapter changes Cath's expression; shots D, 1280x800 and P.
 - **Size:** 2-3
 
 ## 670. [ ] Runnel desktop: Bea's almanac as a notebook page, Cath hosting beside it
-*(planned 2026-11-23 01:40, lane A, plan1123a critique)*
+*(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/runnel-D`: the streak tiles and 'The month' read as form widgets (15-345 x 425-560); 15-345 x 570-840 is empty before a solve; Cath, the host, is a 55x240 px figure at the board's foot (425-480 x 620-860). VISION 'every screen is designed', Cath as the host.
 - **Build:** the streak tiles become pressed-flower stamps on the almanac's ruled page (no bordered boxes), a hand-drawn week strip and Bea's doodle; before a solve the rail's foot holds Cath as a bust (300 px+) whose look follows the board (0 taps, mid-solve, solved); after a solve the result keeps item 642's dock.
 - **Accept:** no empty rail region over 200 px tall at 1440x900 before or after a solve; Cath 300 px+ tall with three expressions (e2e reads the state); no streak tile with a plain border; shots D and 1280x800, P unchanged.
 - **Size:** 2
 
 ## 671. [ ] Cathnivore phone title: one composition, not a board pasted over Cath
-*(planned 2026-11-23 01:40, lane A, plan1123a critique)*
+*(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-title-P`: the board (90-375 x 325-595) covers Cath's arm and torso and drops the region names to number badges; it reads as a collage. VISION 'a clear focal point', 'the map legible'.
 - **Build:** Cath leans on the board's edge from the side at her own depth; the regions keep short name plates; the board deals in its pieces over about 600 ms (a fade under reduced motion).
 - **Accept:** Cath's face box and the board's box don't intersect; 7 region names visible at 390x844; the entrance 400 ms+ with a reduced-motion fade (e2e); shots P, D unchanged.
 - **Size:** 1-2
 
-## 672. [ ] The bugs from the 2026-11-23 01:35 critique, fixed as one batch *(handed back 2026-11-23 01:45 by lane A after slice 1)*
-*(planned 2026-11-23 01:40, lane A, plan1123a critique)*
+## 672. [ ] The bugs from the 2026-11-23 01:15 critique, fixed as one batch *(handed back 2026-11-23 01:23 by lane A after slice 1)*
+*(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - Hedgerow 2D D: the field guide (item 662) still sits over the field's middle (655-1000 x 85-750 in `hedge-l34-2d-D`); at D it docks over the right panel (1025-1425) instead, the field clear. Its driver portrait (780-835 x 190-255) clips 'GUIDE' in the kicker.
 - Hedgerow l21 2D D: the vehicle count chip's icons overlap its digits (365-485 x 372-400).
 - Hedgerow l34: queued lorries stack into one blue column (D 300-370 x 100-480; P 45-90 x 160-340); P: the '0 NEXT' depot sign clipped (30-90 x 105-135).
@@ -6404,4 +6404,4 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - NIGHT SHIFT class pick: the role quote is cut mid-sentence in the shot ('Nobody hears the'); check whether the typewriter just hadn't finished, and make plan-shots wait for it if so.
 - **Accept:** each fixed with a spec or measured in shots P and D.
 - **Size:** 1-2
-- *(slice 1, lane A 01:35: the class-pick quote was the shot, not the page: the line is said word by word and SwiftShader's ~3 fps left it mid-line at 15 s; plan-shots now waits for `[data-speaking]` to clear. Note for the guide: `#intro` sits inside the board (`games/hedgerow/index.html` ~201, styles.css 6750); docking it over the right panel at D needs the sheet placed against the side column's rect, not inside `.intro`'s inset box.)*
+- *(slice 1, lane A 01:20: the class-pick quote was the shot, not the page: the line is said word by word and SwiftShader's ~3 fps left it mid-line at 15 s; plan-shots now waits for `[data-speaking]` to clear. Note for the guide: `#intro` sits inside the board (`games/hedgerow/index.html` ~201, styles.css 6750); docking it over the right panel at D needs the sheet placed against the side column's rect, not inside `.intro`'s inset box.)*
