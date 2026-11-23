@@ -55,7 +55,9 @@ const jobs = {
         const near = (c, r) => Math.min(...path.map(([pc, pr]) => Math.abs(pc - c) + Math.abs(pr - r)))
         const spots = []
         for (let r = 0; r < g.level.rows; r++) for (let c = 0; c < g.level.cols; c++) spots.push([near(c, r), c, r])
-        spots.sort((a, b) => a[0] - b[0] || ((a[1] * 7 + a[2] * 3) % 5) - ((b[1] * 7 + b[2] * 3) % 5))
+        // plan item 676: beside the lane, the plots covering the most of it first (where the fight is), not the first found
+        const cover = (c, r) => path.filter(([pc, pr]) => Math.hypot(pc - c, pr - r) <= 2.2).length
+        spots.sort((a, b) => (a[0] > 1) - (b[0] > 1) || cover(b[1], b[2]) - cover(a[1], a[2]) || a[0] - b[0])
         const kinds = g.level.towers
         let n = 0
         for (const [, c, r] of spots) {
