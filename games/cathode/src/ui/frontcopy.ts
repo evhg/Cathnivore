@@ -111,6 +111,24 @@ export function slotHint(
   }
 }
 
+/** Plan item 672: the case lines' kicker on an upright phone (three bare lines under the menu read as stray text). */
+export function slotKicker(slot: string, hasSave: boolean): string {
+  switch (slot) {
+    case "continue":
+      return hasSave ? "The case" : "";
+    case "new":
+      return "The job";
+    case "cases":
+      return "The wall";
+    case "settings":
+      return "Options";
+    case "credits":
+      return "The crew";
+    default:
+      return "";
+  }
+}
+
 /** The area title after the push (S9.4): Rajdhani caps and a Bodoni italic subline. */
 export function areaTitle(district: string | undefined, jobsDone: readonly string[]): { title: string; sub: string } {
   switch (district) {

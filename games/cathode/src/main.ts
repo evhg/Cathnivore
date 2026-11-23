@@ -24,7 +24,7 @@ import type { ClassId } from "./sim/types";
 import type { World } from "./render/types";
 import type { FrontScene } from "./render/frontscene";
 import { bindMenu, menuKey, type MenuBinding } from "./ui/menu";
-import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, openLead, slotHint, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
+import { areaTitle, COLD_OPEN_LINE, dossierFor, freshlyStruck, struckLine, frontSet, listRows, LIST_FILE, loadingCard, openLead, slotHint, slotKicker, struckJobs, THE_LIST, titleSubtitle } from "./ui/frontcopy";
 import { OPENER_MS, openerHour, playOpener } from "./ui/opener";
 import { BUST_FOR_CASE, mugshotSvg } from "./ui/busts";
 import { listSeen, openLoading } from "./ui/loadingview";
@@ -270,6 +270,7 @@ function hint(id: string): void {
     const hint = $("menu-hint");
     const parts = slotHint(id, { hasSave: hasSave(), jobsDone: done, district, ngPlus: hasSave() && canStartNewGamePlus(done), armed: armed && id === "new" }).split(" · ");
     hint.replaceChildren();
+    hint.dataset.kicker = slotKicker(id, hasSave());
     parts.forEach((part, i) => {
       if (i) {
         // Plan item 378: the dot is its own span, so an upright phone can stack the parts as lines without one

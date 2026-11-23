@@ -870,6 +870,18 @@
   .title-col > .menu-hint { order: 1; align-self: flex-start; margin-top: calc(var(--u) * 6); }
   .title-col > .ledger-tab { order: 2; align-self: flex-start; margin-top: calc(var(--u) * 10); }
   .title-col > .dossier { order: 3; }
+  /* Plan item 672: the case lines get a kicker in THE LIST's red caps ('The job' under New Case), so they read as a
+     labelled note under the menu, not three stray lines. */
+  .menu-hint[data-kicker]:not([data-kicker=""])::before {
+    content: attr(data-kicker);
+    display: block;
+    margin-bottom: calc(var(--u) * 3);
+    font-weight: 700;
+    font-size: var(--fs-1);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--blood-hot);
+  }
   .gate-plate { width: calc(100vw - 2 * var(--safe-x)); }
   /* Plan item 159: upright, the plate is as narrow as its words, so it ends left of her coat; the reason a slot is
      shut sits under its name. Plan item 177: flush with the screen's edge it read as bleeding off it, with the neon
@@ -1905,7 +1917,8 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
     border: 0;
     border-left: 3px solid var(--blood); /* px-ok */
     background: color-mix(in srgb, var(--card-paper) 84%, rgb(var(--white-rgb)));
-    box-shadow: 0 4px 12px rgb(var(--black-rgb) / .55); /* px-ok */
+    /* plan item 672: a deep shade round the strip, so the LUNA neon just under it doesn't glow up round its edges */
+    box-shadow: 0 4px 12px rgb(var(--black-rgb) / .55), 0 0 0 6px rgb(var(--black-rgb) / .35), 0 10px 28px 6px rgb(var(--black-rgb) / .75); /* px-ok */
     color: var(--card-ink);
     rotate: -2deg;
     cursor: pointer;
