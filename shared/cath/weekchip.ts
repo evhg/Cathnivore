@@ -24,12 +24,18 @@ export function weekChipText(goals: WeekGoal[], game?: string): string {
 
 /**
  * Mounts the chip, or refreshes the one already in `host` (plan item 677: a game calls it again after a save, so a
- * solve counts at once; the chip read 0/3 after a daily while the rail read 1 solved).
+ * solve counts at once; the chip read 0/3 after a daily while the rail read 1 solved). `storage` lets a game serve its
+ * own in-memory save (plan item 682: Runnel's `?shotwin` saves nothing, so its shot read 0/3 beside a streak of 1).
  */
-export function mountWeekChip(host: HTMLElement | null, game?: string, doc: Document = document): void {
+export function mountWeekChip(
+  host: HTMLElement | null,
+  game?: string,
+  doc: Document = document,
+  storage?: Pick<Storage, 'getItem'>,
+): void {
   try {
     if (!host) return
-    const now = readProgress()
+    const now = readProgress(storage ?? localStorage)
     const goals = weekGoals(now, loadWeek(now, new Date()).base)
     const a = host.querySelector<HTMLAnchorElement>('a.week-chip') ?? doc.createElement('a')
     a.className = 'week-chip'

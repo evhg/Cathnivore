@@ -2217,9 +2217,18 @@ export class Renderer {
     const pad = h * 0.3;
     const w = pad * 2 + tw + 8 + parts.reduce((a, q) => a + q.w + 4, 0);
     // Kept on the field's canvas (plan item 69: at 390 px a queue near the edge ran its badge off the screen).
-    const x0 = Math.max(4, Math.min(this.cssW - w - 4, x - w / 2));
+    let x0 = Math.max(4, Math.min(this.cssW - w - 4, x - w / 2));
+    let y0 = y - h;
+    // Plan item 682: a depot (a DOM plate over the canvas) hid the badge of the queue at its mouth (l34 at P: the
+    // HOLLOWELL plate over '34 ... 3'): the badge steps beside the depot, the side with room, or below it.
+    for (const d of this.depotBoxes) {
+      if (x0 >= d.x + d.w || x0 + w <= d.x || y0 >= d.y + d.h || y0 + h * 1.3 <= d.y) continue;
+      if (d.x + d.w + 4 + w <= this.cssW - 4) x0 = d.x + d.w + 4;
+      else if (d.x - w - 4 >= 4) x0 = d.x - w - 4;
+      else y0 = d.y + d.h + 4;
+    }
     x = Math.max(x0 + h * 0.4, Math.min(x0 + w - h * 0.4, x));
-    const y0 = y - h;
+    y = y0 + h;
     ctx.beginPath();
     ctx.roundRect(x0, y0, w, h, h / 2);
     ctx.fillStyle = "rgba(255,247,230,0.95)";

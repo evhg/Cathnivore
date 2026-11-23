@@ -4215,6 +4215,9 @@ function levelBadge(g: Game | null, level: number): void {
   sub.textContent = "stronger, tougher";
   badge.append(b, sub);
   document.body.append(badge);
+  // Plan item 682: kept whole on screen (at P Cath stood by the right edge and the badge rose half off it)
+  const half = badge.offsetWidth / 2 + 8;
+  from.x = Math.max(half, Math.min(window.innerWidth - half, from.x));
   badge.style.setProperty("left", `${Math.round(from.x)}px`);
   badge.style.setProperty("top", `${Math.round(from.y)}px`);
   const dx = to.left + to.width / 2 - from.x;

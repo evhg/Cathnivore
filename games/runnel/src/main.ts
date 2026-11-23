@@ -42,7 +42,7 @@ import { boardCode, parseBoardCode } from './code'
 import { initWorkshop } from './workshopui'
 import { encodeLayout, isWorkshopSeed, parseLayout, workshopPuzzle, workshopSeed } from './workshop'
 import { mountWeekChip } from '../../../shared/cath/weekchip'
-import { dailyStats, formatTime, load, save, SIZE_RADIUS, type SavedGame, type Size } from './store'
+import { dailyStats, formatTime, load, save, saveView, SIZE_RADIUS, type SavedGame, type Size } from './store'
 
 type Mode = 'daily' | 'practice' | 'orchard' | 'sunday' | 'climb'
 
@@ -295,7 +295,7 @@ function finish(): void {
     }
   }
   save(data)
-  mountWeekChip(document.getElementById('week-slot'), 'Runnel') // plan item 677: the solve counts on the chip at once
+  mountWeekChip(document.getElementById('week-slot'), 'Runnel', document, saveView()) // plan item 677: the solve counts on the chip at once
   board.celebrate()
   playWin()
   beaRunsOut()
@@ -2645,4 +2645,4 @@ const workshop = initWorkshop({
   toast: (t) => (ui.toast.textContent = t),
 })
 
-mountWeekChip(document.getElementById('week-slot'), 'Runnel')
+mountWeekChip(document.getElementById('week-slot'), 'Runnel', document, saveView())

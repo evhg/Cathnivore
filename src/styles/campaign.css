@@ -2094,6 +2094,11 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
    between the region names round a stop and needn't cover one. */
 .cmp-ticket {
   width: 320px;
+  /* Plan item 682: as wide as its words need, up to 320 px (chapter 1's fits in about 270, and the 320 px ticket had
+     no place by its stop that left stop 3 whole) */
+  width: fit-content;
+  min-width: 230px;
+  max-width: 320px;
   grid-template-columns: minmax(0, 1fr) auto;
   column-gap: 12px;
   row-gap: 2px;

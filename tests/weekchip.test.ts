@@ -41,6 +41,10 @@ describe('mountWeekChip (plan item 677)', () => {
       mountWeekChip(host as unknown as HTMLElement, 'Runnel', doc as unknown as Document)
       expect(kids).toHaveLength(1)
       expect(kids[0]?.textContent).toContain('(1/3)')
+      // Plan item 682: a game's own in-memory save (Runnel's `?shotwin` writes nothing) counts through `storage`.
+      const view = { getItem: (k: string) => (k === 'runnel:v1' ? JSON.stringify({ results: { a: {}, b: {} } }) : ls.getItem(k)) }
+      mountWeekChip(host as unknown as HTMLElement, 'Runnel', doc as unknown as Document, view)
+      expect(kids[0]?.textContent).toContain('(2/3)')
     } finally {
       g.localStorage = prev
     }

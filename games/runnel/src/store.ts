@@ -88,6 +88,23 @@ export function load(): SaveData {
   return data
 }
 
+/**
+ * A storage view that serves Runnel's save from memory and everything else from localStorage, so shared readers
+ * (Cath's Week chip) see this visit's results even when saves are frozen (plan item 682).
+ */
+export function saveView(): Pick<Storage, 'getItem'> {
+  return {
+    getItem: (k: string) => {
+      if (k === KEY) return JSON.stringify(load())
+      try {
+        return localStorage.getItem(k)
+      } catch {
+        return null
+      }
+    },
+  }
+}
+
 export function save(data: SaveData): void {
   memory = data
   // Keep only the last 14 days of in-progress dailies so the save never grows without limit.
