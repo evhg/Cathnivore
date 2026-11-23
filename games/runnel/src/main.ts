@@ -1273,6 +1273,12 @@ function render(): void {
   ui.hudTime.textContent = formatTime(elapsed())
   ui.hudTaps.textContent = String(game.taps)
   ui.hudPar.textContent = String(puzzle.par)
+  // Plan item 670: Bea's drawing of today's field at the rail's foot (the page was 250 px of bare paper before a solve)
+  const doodle = document.getElementById('rail-doodle')
+  if (doodle && doodle.dataset.seed !== puzzle.seed) {
+    doodle.dataset.seed = puzzle.seed
+    doodle.innerHTML = beaDrawing(puzzle.seed, false)
+  }
 
   const flow = computeFlow(puzzle.cells)
   const playable = puzzle.cells.filter((c) => c.kind !== 'stone').length

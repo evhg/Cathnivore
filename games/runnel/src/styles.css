@@ -5470,3 +5470,38 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 @media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
   .board[style*="--garden-cut"] { height: calc(100% - var(--garden-cut)); }
 }
+/* Plan item 670: Bea's crayon drawing of today's field, pinned a little askew at the rail's foot (the page was bare
+   paper there before a solve); it steps aside while the month is open or the result docks in the rail. */
+.rail-doodle { display: none; }
+/* (only where the rail has the height for it: at 1280x800 the rail is already full and it ran past the fold) */
+@media (min-width: 1100px) and (min-height: 880px) {
+  /* (hung under the rail's box, out of its flow: the rail at rest keeps item 642's height and the page never scrolls) */
+  .rail:has(.rail-doodle) { position: relative; }
+  .rail-doodle {
+    display: block;
+    position: absolute;
+    top: calc(100% + 18px);
+    left: 18px;
+    right: 18px;
+    margin: 0;
+    padding: 10px 10px 6px;
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--soil) 18%, transparent), 0 1px 0 color-mix(in srgb, var(--soil) 25%, transparent);
+    rotate: -1.5deg;
+  }
+  .rail-doodle::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 46px;
+    height: 14px;
+    margin-left: -23px;
+    background: color-mix(in srgb, var(--wheat) 55%, transparent);
+    rotate: 3deg;
+  }
+  .rail-doodle figcaption { display: none; }
+  .rail:has(.rail-more[open]) .rail-doodle,
+  .has-win-strip .rail-doodle { display: none; }
+}
