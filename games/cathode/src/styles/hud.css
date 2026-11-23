@@ -1766,15 +1766,17 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-tl::before {
     content: "";
     position: absolute;
-    inset: -12px -56px -18px -28px;
+    inset: -16px -64px -26px -28px;
     z-index: calc(var(--z-lift) * -1);
     /* Plan item 638: a scrim, not just a pool: the street behind the block is blurred and held dark to the bars'
-       end (a shop sign's lettering read through the HP bar), fading out only past the cluster's right edge. */
-    background: linear-gradient(90deg, rgb(var(--shade-rgb) / .74), rgb(var(--shade-rgb) / .66) 68%, rgb(var(--shade-rgb) / 0));
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    -webkit-mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 72%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 10px, rgb(var(--shade-rgb)) calc(100% - 14px), transparent);
-    mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 72%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 10px, rgb(var(--shade-rgb)) calc(100% - 14px), transparent);
+       end (a shop sign's lettering read through the HP bar), fading out only past the cluster's right edge.
+       Plan item 665: it read as a dark slab over a fifth of the frame (plan1122f ns-street-P): a lighter shade over
+       the blur, the blur doing the work, and long feathered edges, so it is a clean plate, not a box. */
+    background: linear-gradient(90deg, rgb(var(--shade-rgb) / .6), rgb(var(--shade-rgb) / .5) 62%, rgb(var(--shade-rgb) / 0));
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 60%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 18px, rgb(var(--shade-rgb)) calc(100% - 30px), transparent);
+    mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 60%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 18px, rgb(var(--shade-rgb)) calc(100% - 30px), transparent);
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
     pointer-events: none;
@@ -1787,13 +1789,13 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-teach::before {
     content: "";
     position: absolute;
-    inset: -10px -40px -10px -28px;
+    inset: -14px -56px -14px -28px;
     z-index: calc(var(--z-lift) * -1);
-    background: rgb(var(--shade-rgb) / .62);
+    background: rgb(var(--shade-rgb) / .5);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    -webkit-mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 55%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 12px, rgb(var(--shade-rgb)) calc(100% - 12px), transparent);
-    mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 55%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 12px, rgb(var(--shade-rgb)) calc(100% - 12px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 45%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 16px, rgb(var(--shade-rgb)) calc(100% - 16px), transparent);
+    mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 45%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 16px, rgb(var(--shade-rgb)) calc(100% - 16px), transparent);
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
     pointer-events: none;
