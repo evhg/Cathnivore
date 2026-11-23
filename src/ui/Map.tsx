@@ -1552,7 +1552,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               stroke="var(--ink)"
               strokeWidth={1.5}
             />
-            <text x={x} data-x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
+            <text x={x} data-x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name" data-full={plate} data-short={SHORT_NAMES[id] !== plate ? SHORT_NAMES[id] : undefined}>
               {plate}
             </text>
             {/* Plan item 550: one status per region on its banner's end: free (a leaf), or how many Hollowell pieces
@@ -1813,7 +1813,38 @@ function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: La
 }
 
 // Sizes each region's plaque to its name as actually set (attributes only: CSP allows no style attributes).
+/** Plan item 682: fits the plates, and where a row can't hold its full names with whole discs inside the board (a
+ *  phone's middle row: Brindle Hills, Kingsmarket and Rivermead at 390 px, a disc at half size and Rivermead's under
+ *  the frame), a name in the tight row gives way to its short one (`SHORT_NAMES`, as the phone title's), one at a time. */
 function fitPlaques(svg: SVGSVGElement) {
+  const names = Array.from(svg.querySelectorAll<SVGTextElement>('.region-name'))
+  const setName = (t: SVGTextElement, v: string | null) => {
+    // the React-owned text node keeps its identity (React compares props, never the DOM)
+    if (v && t.firstChild && t.firstChild.nodeValue !== v) t.firstChild.nodeValue = v
+  }
+  for (const t of names) {
+    setName(t, t.getAttribute('data-full'))
+    t.removeAttribute('data-shortened')
+  }
+  for (let tries = 0; tries < 4; tries++) {
+    const tight = fitPlaquesOnce(svg)
+    if (!tight) return
+    const row = names.filter((t) => t.closest('.region-sign') && tight.includes(t.closest('.region-sign')!) && t.getAttribute('data-short') && !t.hasAttribute('data-shortened'))
+    if (row.length === 0) return
+    // the longest of its neighbours' names first, its own last: a short plate in the row's middle (Kings) pulls its
+    // disc in over the pieces at the hex's centre
+    const others = row.filter((t) => t.closest('.region-sign') !== tight[0])
+    const pool = others.length > 0 ? others : row
+    const widest = pool.reduce((a, t) => ((t.getAttribute('data-full') ?? '').length > (a.getAttribute('data-full') ?? '').length ? t : a))
+    setName(widest, widest.getAttribute('data-short'))
+    widest.setAttribute('data-shortened', '')
+  }
+}
+
+/** Places the plates and discs once; returns the signs of a row too tight for them (a disc shrunk, or a sign pressed
+ *  past the board's edge), or null when every sign fits. */
+function fitPlaquesOnce(svg: SVGSVGElement): Element[] | null {
+  let tight: Element[] | null = null
   const signs: Array<{ sign: Element; text: SVGTextElement; plate: SVGRectElement; status: SVGGElement | null; cx: number; w: number }> = []
   const plates: Array<{ x0: number; x1: number; y0: number; y1: number; sign: Element; disc: number }> = []
   for (const sign of Array.from(svg.querySelectorAll('.region-sign'))) {
@@ -1856,7 +1887,11 @@ function fitPlaques(svg: SVGSVGElement) {
   // than the height-bound board), its parent's box is the edge: Brindle Hills' disc had shrunk to half size against
   // a board edge 37 px inside the stage.
   const host = getComputedStyle(svg).overflow === 'visible' && svg.parentElement ? svg.parentElement : svg
-  const box = host.getBoundingClientRect()
+  const box0 = host.getBoundingClientRect()
+  // Plan item 682: a frame narrower than the svg (the phone game's board, drawn edge to edge inside an 8 px rim) bounds
+  // the signs too: Rivermead's disc stood under the rim.
+  const pb = host === svg ? svg.parentElement?.getBoundingClientRect() : undefined
+  const box = pb && pb.width > 0 && pb.width < box0.width ? { left: Math.max(box0.left, pb.left), right: Math.min(box0.right, pb.right), width: Math.min(box0.right, pb.right) - Math.max(box0.left, pb.left) } : box0
   const edge0 = ctm && ctm.a > 0 && box.width > 0 ? (box.left - ctm.e) / ctm.a : -Infinity
   // Plan item 667: the phone board runs the screen's full width, so its right edge bounds a sign as the left does
   // (a Delta sign ran 3 px off the screen).
@@ -1901,6 +1936,7 @@ function fitPlaques(svg: SVGSVGElement) {
     const span = (rr: number) => reach(rr) + g.w / 2 + 8
     let rr = r
     while (rr > 8 && span(rr) > hi - lo) rr -= 0.5
+    if (rr < r * 0.9 || span(rr) > hi - lo + 0.01) tight = [g.sign, ...row.map((p) => p.sign)]
     const shift = (a: number, b: number) => Math.max(lo - a, Math.min(0, hi - b))
     const dxR = shift(g.cx - g.w / 2 - 8, g.cx + reach(rr))
     const dxL = shift(g.cx - reach(rr), g.cx + g.w / 2 + 8)
@@ -1938,6 +1974,7 @@ function fitPlaques(svg: SVGSVGElement) {
     if (left) status.setAttribute('data-side', 'left')
     else status.removeAttribute('data-side')
   }
+  return tight
 }
 
 function matchesSlot(state: GameState, region: RegionId, slot: 'squeeze' | 'expand'): boolean {

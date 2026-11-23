@@ -295,11 +295,12 @@ try {
     // (no form-list rings); the week's dots and the run head it.
     const names: Record<string, string> = { cathnivore: 'Market', runnel: 'Runnel', hedgerow: 'Hedgerow', nightshift: 'The List' }
     const order = ['cathnivore', 'runnel', 'hedgerow', 'nightshift']
-    const state = (t: { game: string; done: boolean; label: string }): string =>
+    const state = (t: { game: string; done: boolean; label: string; todo?: string }): string =>
       t.game === 'nightshift'
         ? t.label.replace(' of ', '/').replace(' names crossed off', ' names')
         : !t.done
-          ? 'to play'
+          ? // the phone strip's cells are about 90 px: the Market's number, the board's word, the rule
+            (t.todo?.replace(/ · .*$/, '').replace(/ board$/, '') ?? 'to play')
           : t.game === 'runnel'
             ? t.label.replace('Solved in ', 'in ').replace(/^in (\d+)$/, 'in $1 taps').replace(/^Solved$/, 'solved')
             : t.label.replace('Daily: best', 'best').replace('Market ', '')

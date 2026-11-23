@@ -9,10 +9,8 @@ import type { MarketEventId } from '../engine/marketEvent'
 import { ALL_PRODUCER_IDS } from './producers'
 import { layoutConfig, type LayoutId } from './layouts'
 import { plural } from './plural'
+import { DAY_MS, dailyDay, dailyLayout } from './dailyDay'
 
-/** Daily #1 is 2 November 2026, the day the Daily Market opened. */
-const DAY_ONE = Date.UTC(2026, 10, 2)
-const DAY_MS = 86_400_000
 
 export interface DailyMarket {
   /** YYYY-MM-DD (UTC). */
@@ -39,7 +37,6 @@ function hashDate(key: string): number {
   return (h >>> 0) & 0x7fffffff
 }
 
-const LAYOUT_ORDER: LayoutId[] = ['ring', 'coast', 'delta']
 const EVENTS: MarketEventId[] = ['festival', 'drought', 'glut']
 
 /** Every unordered pair of the four producers. */
@@ -52,7 +49,7 @@ function producerPairs(): [ProducerId, ProducerId][] {
 
 export function dailyMarket(now: Date): DailyMarket {
   const date = dailyDateKey(now)
-  const day = Math.floor((Date.parse(`${date}T00:00:00Z`) - DAY_ONE) / DAY_MS)
+  const day = dailyDay(date)
   const seed = hashDate(`cathnivore-daily-${date}`)
   let rng = createRng(seed ^ 0xda11)
   let pick: number
@@ -61,7 +58,7 @@ export function dailyMarket(now: Date): DailyMarket {
   ;[pick, rng] = nextInt(rng, EVENTS.length)
   const marketEvent = EVENTS[pick]!
   // The map turns over day by day so a week holds every layout; the ring is dealt fresh types too.
-  const layout = LAYOUT_ORDER[((day % 3) + 3) % 3]!
+  const layout = dailyLayout(day)
   const config: GameConfig = {
     producers: [...producers],
     difficulty: 'normal',

@@ -3,6 +3,12 @@
 // today's Runnel par come in as arguments, so every line is unit-tested (tests/site-cards.test.ts).
 
 import { dayOf, dailyRule } from '../../games/hedgerow/src/dailyrule'
+import { arcLabel } from '../../games/runnel/src/arc'
+import { dailyDay, dailyLayout } from '../../src/content/dailyDay'
+import type { LayoutId } from '../../src/content/layouts'
+
+/** The Daily Market's map in a word, for the market board (plan item 682). */
+const LAYOUT_SHORT: Record<LayoutId, string> = { ring: 'The Ring', coast: 'The Coast', delta: 'The Delta' }
 
 export type GameId = 'cathnivore' | 'runnel' | 'hedgerow' | 'nightshift'
 
@@ -101,6 +107,8 @@ export interface TodayTag {
   /** Today's daily is played (NIGHT SHIFT has no daily: always false). */
   done: boolean
   label: string
+  /** Plan item 682: what today's daily is, said while it is still open (no more 'to play' four times). */
+  todo?: string
 }
 
 /** Plan item 452: today's market board: a tag per game, the last seven days (oldest first, any daily played),
@@ -129,9 +137,9 @@ export function todayBoard(storage: Pick<Storage, 'getItem'>, now: Date): TodayB
   const solved = obj(rn[today])
   const jobs = Array.isArray(ns.jobsDone) ? Math.min(5, ns.jobsDone.length) : 0
   const tags: TodayTag[] = [
-    { game: 'runnel', done: !!rn[today], label: rn[today] ? `Solved${typeof solved.taps === 'number' ? ` in ${solved.taps}` : ''}` : 'Runnel to play' },
-    { game: 'hedgerow', done: typeof hg[String(dayOf(t0))] === 'number', label: typeof hg[String(dayOf(t0))] === 'number' ? `Daily: best ${hg[String(dayOf(t0))] as number}` : 'Hedgerow daily to play' },
-    { game: 'cathnivore', done: !!cn[today], label: cn[today] ? (obj(cn[today]).won ? 'Market won' : 'Market played') : 'Daily Market to play' },
+    { game: 'runnel', done: !!rn[today], todo: `${arcLabel(today) ?? 'New'} board`, label: rn[today] ? `Solved${typeof solved.taps === 'number' ? ` in ${solved.taps}` : ''}` : 'Runnel to play' },
+    { game: 'hedgerow', done: typeof hg[String(dayOf(t0))] === 'number', todo: dailyRule(dayOf(t0)).name, label: typeof hg[String(dayOf(t0))] === 'number' ? `Daily: best ${hg[String(dayOf(t0))] as number}` : 'Hedgerow daily to play' },
+    { game: 'cathnivore', done: !!cn[today], todo: `#${dailyDay(today) + 1} · ${LAYOUT_SHORT[dailyLayout(dailyDay(today))]}`, label: cn[today] ? (obj(cn[today]).won ? 'Market won' : 'Market played') : 'Daily Market to play' },
     { game: 'nightshift', done: false, label: `${jobs} of 5 names crossed off` },
   ]
   const week = Array.from({ length: 7 }, (_, i) => played(t0 - (6 - i) * 86_400_000))

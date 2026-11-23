@@ -6,6 +6,7 @@
 // on screen, starting east. A puzzle is generated as a random spanning tree rooted at the spring, so every
 // channel piece has a solved rotation; the player's rotations are scrambled, and the puzzle is solved when
 // water from the spring reaches every cell with no channel leaking onto dry ground.
+import { ARC_FROM } from './arc'
 
 export interface Hex {
   q: number
@@ -529,8 +530,7 @@ export function bridgesFor(dateString: string): number {
   return ({ 1: 1, 6: 1, 5: 2 } as Record<number, number>)[day] ?? 0
 }
 
-/** First daily on the weekday difficulty arc; earlier dailies keep their boards (they are in saves). */
-export const ARC_FROM = '2026-11-02'
+export { ARC_FROM, arcLabel } from './arc'
 
 /**
  * The weekday arc (Sunday = 0): Monday is a small board, the week builds through bigger boards with
@@ -546,14 +546,6 @@ export const WEEKDAY_ARC: readonly GenerateOptions[] = [
   { radius: 3, fixedCount: 5, bridgeCount: 2 }, // Fri
   { radius: 3, fixedCount: 2, reservoirCount: 1, bridgeCount: 1 }, // Sat
 ]
-
-/** The arc's difficulty word per weekday (Sunday = 0), shown beside the daily's title. */
-const ARC_LABELS = ['Hardest', 'Gentle', 'Easy', 'Steady', 'Tricky', 'Hard', 'Harder']
-
-export function arcLabel(dateString: string): string | null {
-  if (dateString < ARC_FROM) return null
-  return ARC_LABELS[new Date(`${dateString}T00:00:00Z`).getUTCDay()]!
-}
 
 export function dailyOptions(dateString: string): GenerateOptions {
   if (dateString >= ARC_FROM) return WEEKDAY_ARC[new Date(`${dateString}T00:00:00Z`).getUTCDay()]!

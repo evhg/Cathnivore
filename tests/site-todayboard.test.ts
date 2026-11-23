@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { todayBoard } from '../site/src/cards'
-import { dayOf } from '../games/hedgerow/src/dailyrule'
+import { dailyRule, dayOf } from '../games/hedgerow/src/dailyrule'
+import { dailyMarket } from '../src/content/daily'
 
 // Plan item 452: today's market board reads each game's own save defensively.
 const store = (m: Record<string, unknown>) => ({ getItem: (k: string) => (k in m ? (typeof m[k] === 'string' ? (m[k] as string) : JSON.stringify(m[k])) : null) })
@@ -12,6 +13,15 @@ describe('todayBoard (plan item 452)', () => {
     expect(b.any).toBe(false)
     expect(b.tags.map((t) => t.done)).toEqual([false, false, false, false])
     expect(b.streak).toBe(0)
+  })
+  it("names each open daily (plan item 682: not 'to play' four times)", () => {
+    const b = todayBoard(store({}), now)
+    // 16 Nov 2026 is a Monday, day 14 of the Daily Market (#15, the Delta's turn of ring/coast/delta)
+    const rule = dailyRule(dayOf(Date.parse('2026-11-16T12:00:00Z'))).name
+    expect(b.tags.map((t) => t.todo)).toEqual(['Gentle board', rule, '#15 · The Delta', undefined])
+    expect(new Set(b.tags.map((t) => t.todo)).size).toBe(4)
+    expect(dailyMarket(now).number).toBe(15)
+    expect(dailyMarket(now).layout).toBe('delta')
   })
   it('corrupt and odd saves read as empty', () => {
     const b = todayBoard(store({ 'runnel:v1': '{not json', 'hedgerow:v1': [], 'cathnivore:daily': 'null', 'cathode.save': { jobsDone: 'x' } }), now)

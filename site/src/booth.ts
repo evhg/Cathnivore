@@ -393,8 +393,8 @@ function placeSlate(hero: HTMLElement, l: number, rgt: number, t: number, b: num
   const names: Record<string, string> = { cathnivore: 'Daily Market', runnel: "Today's Runnel", hedgerow: 'Hedgerow daily', nightshift: 'NIGHT SHIFT' }
   const order = ['cathnivore', 'runnel', 'hedgerow', 'nightshift']
   const tags = order.map((g) => board?.tags.find((x) => x.game === g) ?? { game: g, done: false, label: '' })
-  const note = (x: { game: string; done: boolean; label: string }): string =>
-    x.game === 'nightshift' ? (x.label ? x.label.replace(' of ', '/').replace(' names crossed off', ' names') : 'next name') : x.done ? x.label.replace('Daily: best', 'best') : 'to play'
+  const note = (x: { game: string; done: boolean; label: string; todo?: string }): string =>
+    x.game === 'nightshift' ? (x.label ? x.label.replace(' of ', '/').replace(' names crossed off', ' names') : 'next name') : x.done ? x.label.replace('Daily: best', 'best') : (x.todo ?? 'to play')
   // the week in seven chalk dots (as the words' board had it), then the run, a gold pennant from three days
   const week = board?.any
     ? `<span class="slate-week" role="img" aria-label="${board.week.filter(Boolean).length} of the last 7 days played">${board.week.map((on) => `<i${on ? ' data-on' : ''}></i>`).join('')}</span>`
