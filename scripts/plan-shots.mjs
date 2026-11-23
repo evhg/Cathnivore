@@ -14,7 +14,7 @@ const browser = await chromium.launch({
   args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
 })
 const stars = (n) => Object.fromEntries(Array.from({ length: n }, (_, i) => [String(i + 1), 3]))
-const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true, bridge: true }
 const jobs = {
   async site(p, s) {
     // Plan item 146: the entrance (kinetic title, Cath and the prints rising) runs about 3 s; shoot it settled.
