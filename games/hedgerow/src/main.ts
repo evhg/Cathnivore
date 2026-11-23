@@ -816,11 +816,24 @@ if (SANDBOX)
             })
             .map((t) => t.id)
         : [],
+    // Plan item 676: arm a staged field as a player would for the round: each path tower climbs the path that first
+    // reaches Airborne (a drone round can't be shot otherwise), the rest buy two tiers. Returns the towers that hit air.
+    arm: (g: Game) => {
+      for (const t of g.towers) {
+        if (!t.path || !hasPaths(t.kind)) continue;
+        const paths = PATHS[t.kind].paths;
+        let i = paths.findIndex((p) => p.tiers.some((tier) => tier.mod.air));
+        const n = i >= 0 ? paths[i]!.tiers.findIndex((tier) => tier.mod.air) + 1 : 2;
+        if (i < 0) i = 0;
+        for (let k = 0; k < n; k++) if (!upgrade(g, t.id, i).ok) break;
+      }
+      return g.towers.filter((t) => towerStats(t).air).length;
+    },
     // Plan item 676: what the battle shows now, for the staged shots and their spec: towers that attacked in the last
     // second, coins in the air to the purse, vehicles on the lane, and (2D) shots and particles drawn.
     fx: () => {
       const now = performance.now();
-      const r = renderer && !is3D(renderer) ? (renderer as { fxCounts?: () => { shots: number; parts: number } }).fxCounts?.() : undefined;
+      const r = renderer && !is3D(renderer) ? (renderer as { fxCounts?: () => { shots: number; parts: number; cues: number; trails: number } }).fxCounts?.() : undefined;
       return {
         attackers: [...lastAttack.values()].filter((t) => now - t < 1000).length,
         coinsInAir,
@@ -828,6 +841,8 @@ if (SANDBOX)
         vehicles: game ? game.enemies.filter((e) => e.hp > 0).length : 0,
         shots: r?.shots ?? 0,
         parts: r?.parts ?? 0,
+        cues: r?.cues ?? 0,
+        trails: r?.trails ?? 0,
       };
     },
     // Plan item 399: the plain plots (keys "c,r") and the look each is sown with, in the act's field kit.

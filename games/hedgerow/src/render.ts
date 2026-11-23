@@ -92,6 +92,29 @@ interface Shot {
   crit: boolean;
   /** The enemy it is thrown at: it flinches when the shot lands, not when it leaves (plan item 19). */
   enemy: number;
+  /** Plan item 676: landed (the hit is played once); the shot's trail then fades over TRAIL seconds. */
+  landed?: boolean;
+}
+
+/** Plan item 676: how long a shot's trail lingers after it lands, and a muzzle puff lives, so a fight reads in a still. */
+const TRAIL = 0.45;
+const PUFF = 1.1;
+/** The colour of a tower's muzzle puff and shot trail: straw dust, seed-cannon smoke, silo glare, pond spray, honey. */
+function fireTint(kind: TowerKind, spec: 0 | 1 | null): string {
+  switch (kind) {
+    case "cannon":
+      return "#d9d2c6";
+    case "silo":
+      return "#ffe9a8";
+    case "pond":
+      return "#d6eef7";
+    case "beehive":
+      return "#ffe08a";
+    case "scarecrow":
+      return spec === 0 ? "#f6c48a" : "#f3e6b8";
+    default:
+      return "#f4f1ea";
+  }
 }
 
 /** Path tier 3 looks that draw like an old specialisation's shot (the rest have their own). */
@@ -114,7 +137,7 @@ interface Particle {
   life: number;
   size: number;
   color: string;
-  shape: "dot" | "square" | "star" | "ring" | "leaf" | "text" | "bee";
+  shape: "dot" | "square" | "star" | "ring" | "leaf" | "text" | "bee" | "puff";
   rot: number;
   vr: number;
   text?: string;
@@ -510,6 +533,18 @@ export class Renderer {
             crit: !!e.crit,
             enemy: e.enemy,
           });
+          // Plan item 676: a muzzle puff that hangs about the tower's top for most of a second, so a still frame
+          // shows which towers are firing (the shot itself lives a fifth of a second).
+          if (this.parts.length < 400) {
+            const tint = fireTint(e.kind, spec);
+            for (let i = 0; i < 3; i++) {
+              const p = this.particle(e.fromX + (i - 1) * 0.09, e.fromY - 0.4 - (i % 2) * 0.06, tint, "puff", 0.1 + (i === 1 ? 0.04 : 0), PUFF);
+              p.vx = (i - 1) * 0.12;
+              p.vy = this.reducedMotion ? 0 : -0.45 - i * 0.08;
+              p.g = 0;
+              this.parts.push(p);
+            }
+          }
           break;
         }
         case "knock": {
@@ -1949,8 +1984,10 @@ export class Renderer {
   }
 
   /** Plan item 676: shots in flight and particles alive, for the staged battle shots. */
-  fxCounts(): { shots: number; parts: number } {
-    return { shots: this.shots.length, parts: this.parts.length };
+  fxCounts(): { shots: number; parts: number; cues: number; trails: number } {
+    // cues: towers still showing their muzzle puff (fired under PUFF seconds ago); trails: shots in flight or fading
+    const cues = [...this.fired.values()].filter((t) => t < PUFF).length;
+    return { shots: this.shots.filter((sh) => !sh.landed).length, parts: this.parts.length, cues, trails: this.shots.length };
   }
 
   /** Plan item 45, for tests and shots: vehicles drawn one by one, in columns, and the biggest pooled tower count. */
@@ -2443,6 +2480,33 @@ export class Renderer {
       const loft = sh.kind === "silo" ? 0 : sh.kind === "cannon" || sh.kind === "beehive" ? 0.35 + dist * 0.32 : sh.kind === "scarecrow" && sh.spec === 1 ? 0.15 + dist * 0.08 : 0.25 + dist * 0.22;
       const arc = Math.sin(k * Math.PI) * Math.min(1.6, loft);
       const y = sh.y + (sh.toY - sh.y) * k - arc;
+      // Plan item 676: a trail behind the shot along its arc, lingering TRAIL seconds after it lands, so a still frame
+      // reads who is shooting at what (the silo's beam is its own trail).
+      if (sh.kind !== "silo") {
+        const fade = sh.age < sh.life ? 1 : 1 - (sh.age - sh.life) / TRAIL;
+        const tail = sh.age < sh.life ? Math.max(0, k - 0.6) : Math.min(1, ((sh.age - sh.life) / TRAIL) * 1.2);
+        if (fade > 0 && k > tail) {
+          const at = (q: number): [number, number] => [X(sh.x + (sh.toX - sh.x) * q), Y(sh.y + (sh.toY - sh.y) * q - Math.sin(q * Math.PI) * Math.min(1.6, loft))];
+          ctx.save();
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          for (let i = 0; i <= 8; i++) {
+            const [px, py] = at(tail + ((k - tail) * i) / 8);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.globalAlpha = 0.5 * fade;
+          ctx.strokeStyle = INK;
+          ctx.lineWidth = Math.max(3, s * 0.05);
+          ctx.stroke();
+          ctx.globalAlpha = 0.9 * fade;
+          ctx.strokeStyle = fireTint(sh.kind, sh.spec);
+          ctx.lineWidth = Math.max(1.6, s * 0.028);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+      if (sh.age >= sh.life && sh.landed) continue;
       ctx.lineWidth = Math.max(1.4, s * 0.025);
       ctx.strokeStyle = INK;
       switch (sh.kind) {
@@ -2558,6 +2622,7 @@ export class Renderer {
           ctx.fill();
       }
       if (sh.age >= sh.life) {
+        sh.landed = true;
         // Landing: the target flinches (a flash and a squash) as it's struck.
         this.hitAt.set(sh.enemy, 0);
         const color = sh.kind === "scarecrow" ? (sh.spec === 0 ? "#e98a2b" : "#efe2f0") : sh.kind === "silo" ? "#f2c94c" : sh.kind === "pond" ? "#a9d4e6" : sh.kind === "barn" ? "#e2c06a" : "#f2c94c";
@@ -2572,7 +2637,7 @@ export class Renderer {
         }
       }
     }
-    this.shots = this.shots.filter((sh) => sh.age < sh.life);
+    this.shots = this.shots.filter((sh) => sh.age < sh.life + (sh.kind === "silo" ? 0 : TRAIL));
   }
 
   private drawPies(dt: number, X: (v: number) => number, Y: (v: number) => number, s: number): void {
@@ -2648,6 +2713,19 @@ export class Renderer {
           star(ctx, X(p.x), Y(p.y), p.size * s);
           ctx.fill();
           break;
+        case "puff": {
+          // Plan item 676: a soft round of smoke or dust that swells as it fades, inked lightly like the field.
+          const r = p.size * s * (0.6 + k * 0.9);
+          ctx.globalAlpha = 0.85 * (1 - k) * (1 - k * 0.3);
+          ctx.beginPath();
+          ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 0.35 * (1 - k);
+          ctx.strokeStyle = INK;
+          ctx.lineWidth = Math.max(1, s * 0.012);
+          ctx.stroke();
+          break;
+        }
         case "ring":
           ctx.lineWidth = Math.max(2, s * 0.05 * (1 - k));
           ctx.beginPath();

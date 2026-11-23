@@ -64,6 +64,7 @@ const jobs = {
           if (n >= 8) break
           if (hg.place(g, kinds[n % kinds.length], c, r).ok) n++
         }
+        hg.arm?.(g)
         hg.sendWave(g, true)
       })
       // plan item 656: a new vehicle's field-guide page holds the round until it's dismissed ('0 NEXT', an empty road
@@ -84,18 +85,19 @@ const jobs = {
       await p.waitForTimeout(1500)
       for (let i = 0; i < 4 && (await closeGuide()); i++) await p.waitForTimeout(600)
       // plan item 676: shoot the fight, not a lull: wait (up to 20 s) for three towers attacking and a coin in the air
-      await p.waitForFunction(() => { const f = window.hedgerow.fx?.(); return !f || (f.attackers >= 3 && f.coinsInAir >= 1) }, null, { timeout: 20000, polling: 100 }).catch(() => console.log('battle: no peak frame'))
+      await p.waitForFunction(() => { const f = window.hedgerow.fx?.(); return !f || ((f.cues ?? f.attackers) >= 3 && f.coinsInAir >= 1) }, null, { timeout: 20000, polling: 100 }).catch(() => console.log('battle: no peak frame'))
       await closeGuide()
     }
     await p.goto(`${base}/hedgerow/?2d`)
-    await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true }, tips: t })), [stars(20), tips])
+    await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true, 27: true }, tips: t })), [stars(30), tips])
     await p.goto(`${base}/hedgerow/`); await p.waitForTimeout(2500); await p.screenshot({ path: `${out}/hedge-menu-${s}.png` })
     for (const mode of (process.env.HG_MODES ?? '2d,3d').split(',')) {
-      await p.goto(`${base}/hedgerow/?sandbox=1&level=21${mode === '2d' ? '&2d' : ''}`)
+      // plan item 676: level 27 (Brand Deal), not 21: On Air's influencers charm the towers near them, a quiet field by design
+      await p.goto(`${base}/hedgerow/?sandbox=1&level=27${mode === '2d' ? '&2d' : ''}`)
       await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
       await p.waitForTimeout(mode === '2d' ? 1000 : 5000)
       await battle()
-      await p.screenshot({ path: `${out}/hedge-l21-${mode}-${s}.png` })
+      await p.screenshot({ path: `${out}/hedge-l27-${mode}-${s}.png` })
     }
     await p.goto(`${base}/hedgerow/?sandbox=1&level=34&2d`)
     await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
