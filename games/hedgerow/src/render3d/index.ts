@@ -548,7 +548,7 @@ export class Renderer3D {
     (this.grade.uniforms.shape!.value as THREE.Vector2).set(Math.max(this.w / long, 0.5), Math.max(this.h / long, 0.5) * (this.w >= this.h ? 1.05 : 1));
     this.pxScale = this.h * dpr * 0.9;
     this.sparks.setScale(this.pxScale);
-    this.puffs.setScale(this.pxScale);
+    this.puffs.setScale(this.pxScale, dpr);
     this.camera.aspect = this.w / this.h;
     if (game.level.id !== this.levelId) this.buildLevel(game);
     for (const m of this.motes) m.setScale(this.pxScale);

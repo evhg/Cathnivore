@@ -126,10 +126,11 @@ export class Puffs {
     geo.setAttribute("size", new THREE.BufferAttribute(this.size, 1));
     geo.setAttribute("alpha", new THREE.BufferAttribute(this.alpha, 1));
     const mat = new THREE.ShaderMaterial({
-      uniforms: { scale: { value: 300 } },
+      // minK: at least this many pixels a world unit, so a phone's far camera still shows a puff (about 30 CSS px).
+      uniforms: { scale: { value: 300 }, minK: { value: 30 } },
       vertexShader: `attribute float size; attribute float alpha; attribute vec3 color; varying vec3 vColor; varying float vAlpha;
-        uniform float scale; void main() { vColor = color; vAlpha = alpha; vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size * scale / -mv.z; gl_Position = projectionMatrix * mv; }`,
+        uniform float scale; uniform float minK; void main() { vColor = color; vAlpha = alpha; vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = max(size * scale / -mv.z, size * minK); gl_Position = projectionMatrix * mv; }`,
       // A soft disc with a faint darker rim, like the field's inked edges.
       fragmentShader: `varying vec3 vColor; varying float vAlpha; void main() { float r = length(gl_PointCoord - 0.5) * 2.0;
         if (r > 1.0 || vAlpha <= 0.0) discard; float body = smoothstep(1.0, 0.55, r); float rim = smoothstep(0.7, 0.88, r) * (1.0 - smoothstep(0.9, 1.0, r));
@@ -142,8 +143,10 @@ export class Puffs {
     this.points.renderOrder = 2;
   }
 
-  setScale(px: number): void {
-    (this.points.material as THREE.ShaderMaterial).uniforms.scale!.value = px;
+  setScale(px: number, dpr = 1): void {
+    const u = (this.points.material as THREE.ShaderMaterial).uniforms;
+    u.scale!.value = px;
+    u.minK!.value = 30 * dpr;
   }
 
   /** `n` puffs about (x, y, z), drifting up at `rise` units a second, `size` world units across at birth. */
