@@ -85,3 +85,22 @@ test('3D: Cath leaves footprints as she walks', async ({ page }) => {
   })
   await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HF }).hedgerow.footprints()), { timeout: 60_000 }).toBeGreaterThan(1)
 })
+
+// Plan item 681: the level-up is a moment on her, not a banner over the battle: a badge rises from her and flies to
+// her button, which bumps within 1.2 s; no banner shows.
+test('a level-up badge flies from Cath to her button, no banner over the lane', async ({ page }) => {
+  test.setTimeout(120_000)
+  const stars = Object.fromEntries(Array.from({ length: 2 }, (_, i) => [String(i + 1), 3]))
+  const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+  await page.goto('/hedgerow/?sandbox=1&2d')
+  await page.evaluate(([s, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { 3: true }, tips: t })), [stars, tips])
+  await page.goto('/hedgerow/?sandbox=1&2d&level=3')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 60_000 })
+  const t0 = Date.now()
+  await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.heroUp())
+  await expect(page.locator('.lvl-badge')).toHaveCount(1, { timeout: 2000 })
+  await expect(page.locator('#btn-cath.lvl-bump')).toHaveCount(1, { timeout: 2000 })
+  expect(Date.now() - t0).toBeLessThanOrEqual(1200 + 400)
+  await expect(page.locator('#stage')).toHaveAttribute('data-hero-level', '2')
+  expect(await page.locator('.banner.show').count()).toBe(0)
+})

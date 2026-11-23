@@ -4194,6 +4194,50 @@ function fire(x?: number, y?: number): void {
 
 // ---- banners and enemy introductions ----
 
+/** Plan item 681: Cath's level-up as a moment on her, not a banner over the lane: a small 'Lv N' badge rises from her
+ *  head and flies to the Cath button (the phone's action bar or the desktop panel's), which bumps as it lands. Under
+ *  reduced motion it fades in on the button instead. */
+function levelBadge(g: Game | null, level: number): void {
+  const btn = document.getElementById("btn-cath");
+  if (!btn) return;
+  const to = btn.getBoundingClientRect();
+  const stage = ui.stage.getBoundingClientRect();
+  const her = g && renderer ? cathBox(g, stage) : null;
+  const from = her ? { x: stage.left + her.x + her.w / 2, y: stage.top + her.y } : { x: to.left + to.width / 2, y: to.top - 40 };
+  const badge = document.createElement("div");
+  badge.className = "lvl-badge";
+  badge.setAttribute("aria-hidden", "true");
+  const b = document.createElement("b");
+  b.textContent = `Lv ${level}`;
+  const sub = document.createElement("span");
+  sub.textContent = "stronger, tougher";
+  badge.append(b, sub);
+  document.body.append(badge);
+  badge.style.setProperty("left", `${Math.round(from.x)}px`);
+  badge.style.setProperty("top", `${Math.round(from.y)}px`);
+  const dx = to.left + to.width / 2 - from.x;
+  const dy = to.top + to.height / 2 - from.y;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const run = still
+    ? badge.animate([{ opacity: 0, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }, { opacity: 1, offset: 0.3, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }, { opacity: 0, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }], { duration: 900 })
+    : badge.animate(
+        [
+          { opacity: 0, transform: "translate(-50%, -50%) scale(0.4)" },
+          { opacity: 1, offset: 0.25, transform: "translate(-50%, calc(-50% - 34px)) scale(1.12)" },
+          { opacity: 1, offset: 0.4, transform: "translate(-50%, calc(-50% - 30px)) scale(1)" },
+          { opacity: 0.9, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.45)` },
+        ],
+        { duration: 900, easing: "cubic-bezier(0.45, 0, 0.3, 1)" },
+      );
+  run.onfinish = () => {
+    badge.remove();
+    btn.classList.remove("lvl-bump");
+    void btn.offsetWidth;
+    btn.classList.add("lvl-bump");
+    window.setTimeout(() => btn.classList.remove("lvl-bump"), 2000);
+  };
+}
+
 function banner(text: string, sub = "", boss = false, cls = ""): void {
   ui.banner.replaceChildren();
   const big = document.createElement("strong");
@@ -5372,7 +5416,9 @@ function onEvents(g: Game, evs: GameEvent[]): void {
       case "heroUp":
         break;
       case "heroLevel":
-        banner(`Cath is level ${ev.level}`, "Stronger and tougher for the rest of the run");
+        // Plan item 681: no banner over the battle (it covered the lane mid-round): a badge rises from her and flies to
+        // her button, which takes the new number.
+        levelBadge(game, ev.level);
         // Plan item 492: her rosette stamps the new number and the leaves spiral (2D); tests read the level here.
         ui.stage.dataset.heroLevel = String(ev.level);
         (renderer as { levelUp?: () => void } | null)?.levelUp?.();
