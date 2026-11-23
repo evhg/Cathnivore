@@ -8,7 +8,7 @@ const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIU
 const modes = process.env.HG_3D ? ['2d', '3d'] : ['2d']
 for (const mode of modes) for (const [s, o] of [['D', { viewport: { width: 1440, height: 900 } }], ['P', { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true }]]) {
   const ctx = await b.newContext(o); const p = await ctx.newPage()
-  await p.goto(`http://localhost:4175/hedgerow/?sandbox=1&level=34${mode === '2d' ? '&2d' : ''}`)
+  await p.goto(`http://localhost:4175/hedgerow/?sandbox=1&intro=hold&level=34${mode === '2d' ? '&2d' : ''}`)
   await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 90000 })
   await p.evaluate(() => { const hg = window.hedgerow; hg.sendWave(hg.game(), true) })
   await p.waitForSelector('.intro:not([hidden]) .intro-reach', { timeout: 30000 }); await p.waitForTimeout(1500)
