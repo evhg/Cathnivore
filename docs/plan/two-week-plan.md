@@ -6360,7 +6360,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed with a spec or measured in shots P and D.
 - **Size:** 1-2
 
-## 667. [ ] Cathnivore phone: the table is the hero (a phone table mode)
+## 667. [ ] Cathnivore phone: the table is the hero (a phone table mode) *(lane A, in progress)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-game-P`: the board takes y115-475 (43% of 844); pieces are 20-25 px, outlets specks; the region plates run in one crowded row (Brindle Hills, Kingsmarket's 5, Rivermead touch at 95-385 x 240-262); y475-844 is all chrome (dialogue strip, resources, a 160 px hand, tab bar). VISION 3: 'the table is the hero... big, rich, legible and alive'.
 - **Build:** on a phone the board scales to the full width and 55%+ of the viewport; the hand rests as a fan (80 px or less) that rises on tap or when an action needs a card; the dialogue strip becomes a bubble on the board's edge that fades by itself; tapping a region zooms it (250 ms ease-out, fade under reduced motion) with a region sheet (outlets, stall, actions).
