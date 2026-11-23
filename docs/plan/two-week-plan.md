@@ -6460,7 +6460,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the postcard wholly inside 1440x900 and 1280x800, buttons 44 px+, its crop 80 px+, nothing clipped (scrollHeight ≤ clientHeight, e2e); 600-1200 ms in, a fade under reduced motion; P unchanged; the runnel-win specs updated; shots P and D.
 - **Size:** 2
 
-## 680. [ ] Portfolio phone: one hero composition, the games above the fold
+## 680. [ ] Portfolio phone: one hero composition, the games above the fold *(lane B, in progress)*
 *(planned 2026-11-23 10:00, lane B, plan1123d critique)*
 - **Why:** `plan1123d/portfolio-P`: Cath a 70x200 px figure squeezed beside a paragraph (285-375 x 205-415), the fold mostly body text (16-280 x 260-415), no focal point; the game tiles start at y 552 (two show). At D she sits at the far edge, cut by her bubble (1295-1385 x 175-505).
 - **Build:** P: the headline, then Cath 160 px+ in front of a 2x2 game montage she presents; the paragraph cut to two lines (the rest below). D: Cath in a clear column, whole, her bubble's tail at her.
