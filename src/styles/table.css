@@ -2296,6 +2296,22 @@ html.no-animations .cath-companion .cameo {
 /* plan item 28: the table's props, under the board (the map is positioned after them, so it paints over
    them wherever a layout reaches a corner) */
 .map-wrap svg.map { position: relative; }
+/* Plan item 667: a region opened up close on a phone draws the board in toward it, from the region's centre (set by
+   Map.tsx as --zoom-x/--zoom-y), sliding it into the band above the sheet; it eases back when the sheet closes.
+   Reduced motion: the board stays still and only the sheet fades in. */
+.map-wrap svg.map { transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%); }
+/* doubled selectors: over the counter layout's own `translate` on the board (item 519) */
+.game .map-wrap svg.map.map[data-zoom][data-zoom] { scale: 1.32; translate: var(--zoom-dx, 0) var(--zoom-dy, 0); }
+.map-wrap svg.map { transition: scale 220ms cubic-bezier(0.2, 0.8, 0.2, 1), translate 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+/* while it leans in, the frame clips it and its own chrome (the plan strip, the key, the dock) steps aside */
+.map-wrap:has(> svg.map[data-zoom]) { overflow: clip; }
+.map-wrap:has(> svg.map[data-zoom]) > :not(svg.map, .sheet-overlay) { opacity: 0; transition: opacity 160ms linear; }
+/* the close-up's scrim lets the leaned-in board read above the sheet: no blur, a lighter wash */
+.sheet-overlay.region-closeup-overlay { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--scrim) 45%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .map-wrap svg.map { transition: none; }
+  .game .map-wrap svg.map.map[data-zoom][data-zoom] { scale: none; translate: none; }
+}
 .table-prop {
   position: absolute;
   pointer-events: none;

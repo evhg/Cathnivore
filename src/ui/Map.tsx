@@ -996,6 +996,33 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     ro?.observe(svg)
     return () => ro?.disconnect()
   }, [fit.k])
+  // Plan item 667: on a phone a region opened up close draws the board in toward it (CSS `scale` from the region's
+  // centre, 220 ms ease-out; a fade under reduced motion), so the tap reads as leaning over the table, not a popup.
+  // The origin is worked from the svg's own (untransformed) box and the viewBox's 'meet' fit, so a second region
+  // opened while zoomed still finds its centre.
+  const zoomCenter = inspected && active.includes(inspected) ? hexCenter(inspected, layout) : null
+  const zoomX = zoomCenter ? zoomCenter.x * fit.k + fit.tx : 0
+  const zoomY = zoomCenter ? zoomCenter.y * fit.k + fit.ty : 0
+  useLayoutEffect(() => {
+    const svg = svgRef.current
+    if (!svg || !zoomCenter) return
+    const w = svg.clientWidth
+    const h = svg.clientHeight
+    const vw = SIZE * 2
+    const vh = SIZE * 2 - 24
+    const s = Math.min(w / vw, h / vh)
+    if (!s) return
+    const ox = (w - vw * s) / 2 + (zoomX + SIZE) * s
+    const oy = (h - vh * s) / 2 + (zoomY + SIZE - 12) * s
+    svg.style.setProperty('--zoom-x', `${Math.round(ox)}px`)
+    svg.style.setProperty('--zoom-y', `${Math.round(oy)}px`)
+    // The region slides to the middle of the band the close-up's sheet leaves open at the top (under a quarter of the
+    // screen down), so it stays in view above the sheet. The box is read as the zoom's transition starts, still
+    // unzoomed (the sheet's scrim covers the board, so a second region can't be opened before this one closes).
+    const box = svg.getBoundingClientRect()
+    svg.style.setProperty('--zoom-dx', `${Math.round(window.innerWidth / 2 - (box.left + ox))}px`)
+    svg.style.setProperty('--zoom-dy', `${Math.round(window.innerHeight * 0.23 - (box.top + oy))}px`)
+  }, [zoomCenter, zoomX, zoomY])
   useEffect(() => {
     const svg = svgRef.current
     if (!svg) return
@@ -1009,7 +1036,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   }, [active.length, hexPx, shortNames])
 
   return (
-    <svg ref={svgRef} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect || peekPieces ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} data-zoom={zoomCenter ? inspected ?? undefined : undefined} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect || peekPieces ? 'group' : 'img'} aria-label="Map of Marrow">
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {/* Plan item 413: the seven tiles sit on one die-cut board, a printed cardboard plate a little proud of them with
