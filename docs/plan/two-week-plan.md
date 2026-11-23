@@ -6414,7 +6414,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** in ns-street-D's 560-900 x 60-330 no streak pixel darker than its local background median (scripted); a glove 40 px+ at D and the weapon 5%+ of the frame; the P first frame unchanged; `cathode-perf` in budget; shots sideways P and D.
 - **Size:** 2
 
-## 674. [ ] /games/ chalkboard: today at the market as a designed board, not a form list
+## 674. [ ] /games/ chalkboard: today at the market as a designed board, not a form list *(lane A, in progress)*
 *(planned 2026-11-23 05:15, lane B, plan1123c critique)*
 - **Why:** `plan1123c/games-D` 415-835 x 330-410: 'Today at the market' is two columns of plain text with hollow radio-button circles, the one default-looking form on the page. VISION 1.
 - **Build:** each game a chalked line with its own small chalk icon (hex, runnel, windmill, mask) and today's real state (a chalk tick when done, Runnel's par or streak, NIGHT SHIFT n/5), the whole line a link; on P a compact strip under the stall.
@@ -6435,7 +6435,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at the 3D shot frame 12+ vehicles on lane cells; in 2D 3+ towers showing a fire effect and a pop and coin in frame (probe via `window.hedgerow`); 3D frame rate in budget; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 677. [ ] The bugs from the 2026-11-23 05:10 critique, fixed as one batch *(lane A, in progress)*
+## 677. [x] The bugs from the 2026-11-23 05:10 critique, fixed as one batch *(done 2026-11-23 05:26, lane A, 31c256e5: Cath's Week chip refreshes after a save (unit + runnel-weekchip e2e; `?shotwin` saves nothing, so its shot still reads 0/3 by design); region discs count a left neighbour's right-end disc and map px to units from a drawn plate (the title board's CSS lean put its right edge 37 units short; region-status adds a disc-on-disc check on the title); campaign D line clear of chapter 2's envelope; Hedgerow column '+N' chips drawn after the sorted items (key art re-shot); /games/ P Runnel card half length (42x63); plan-shots closes the field guide via the DOM (l21/l34 P clear). Shots scratchpad b677/a677)*
 *(planned 2026-11-23 05:15, lane B, plan1123c critique; check each on today's build first)*
 - Runnel solved (`runnel-solved-D` 60-302 x 177-203, `-P` 80-310 x 124-149): 'Cath's Week 0/3 · Solve 3 dailies (0/3)' after the solve, while 'dailies solved' reads 1.
 - Hedgerow P plan shots (`hedge-l21-2d-P` 5-385 x 325-690, `hedge-l34-2d-P` 5-385 x 345-690): a field-guide page over the battle: `battle()` in plan-shots doesn't close it at P (item 662's sheet: check the `.intro-go` selector and the wait).
