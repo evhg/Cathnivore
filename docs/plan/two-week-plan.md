@@ -6381,7 +6381,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath's box 360 px+ tall at 1440x900; the chapter detail intersects no region label (e2e); choosing a chapter changes Cath's expression; shots D, 1280x800 and P.
 - **Size:** 2-3
 
-## 670. [ ] Runnel desktop: Bea's almanac as a notebook page, Cath hosting beside it
+## 670. [ ] Runnel desktop: Bea's almanac as a notebook page, Cath hosting beside it *(lane B, in progress)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/runnel-D`: the streak tiles and 'The month' read as form widgets (15-345 x 425-560); 15-345 x 570-840 is empty before a solve; Cath, the host, is a 55x240 px figure at the board's foot (425-480 x 620-860). VISION 'every screen is designed', Cath as the host.
 - **Build:** the streak tiles become pressed-flower stamps on the almanac's ruled page (no bordered boxes), a hand-drawn week strip and Bea's doodle; before a solve the rail's foot holds Cath as a bust (300 px+) whose look follows the board (0 taps, mid-solve, solved); after a solve the result keeps item 642's dock.
