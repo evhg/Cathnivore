@@ -854,6 +854,20 @@ function placeGardenSign(): void {
     return false
   }
   if (meets()) garden.dataset.signUnder = ''
+  // (E2E red on 142941cc: the 23 Nov phone board spans the screen and its last row reaches 47 px down into the garden,
+  // with no strip beside it wide enough for item 661. On an upright phone the board then gives up that height, so
+  // its last row ends over the garden, not in it; it re-fits next frame and this runs again until clear.)
+  if (garden.dataset.tight === undefined && matchMedia('(max-width: 600px) and (orientation: portrait) and (min-height: 700px)').matches) {
+    const board = document.getElementById('board')
+    let deepest = -1
+    for (let y = g.top + 2; y <= g.bottom - 2; y += 3) for (let x = g.left + 2; x <= g.right - 2; x += 3) if (inPolys(polys, x, y)) deepest = Math.max(deepest, y)
+    if (board && deepest >= 0) {
+      const cut = Number(board.dataset.gardenCut ?? 0) + Math.ceil(deepest - g.top) + 6
+      board.dataset.gardenCut = String(cut)
+      board.style.setProperty('--garden-cut', `${cut}px`)
+      requestAnimationFrame(() => placeValleyCath())
+    }
+  }
   // Plan item 630's hero plant: 40 px+ whatever size the beds come to (a tight or wide daily's 20 px beds grew it to
   // 34 px at the 1.7 scale: E2E red on d01f1ba3); styles.css takes the larger of its scale and this floor.
   const bed = garden.querySelector<HTMLElement>('.bea-crops > i')

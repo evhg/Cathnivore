@@ -5446,3 +5446,7 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .stage[data-tile-e] .bea-garden[data-tight] .bea-crops:not(.bare) { justify-content: flex-end; padding-right: 8px; overflow: clip; overflow-clip-margin: 40px; }
 .stage[data-tile-e] .bea-garden[data-tight] .bea-crops:not(.bare) i { flex: none; width: 20px; height: 20px; }
 .bea-crops i[data-tuck] { display: none; }
+/* (an upright phone's board gives up the height its last row would take inside Bea's garden: main.ts placeGardenSign) */
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
+  .board[style*="--garden-cut"] { height: calc(100% - var(--garden-cut)); }
+}
