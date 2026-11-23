@@ -7,7 +7,7 @@ mkdirSync(out, { recursive: true })
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
 const stars = (n) => Object.fromEntries(Array.from({ length: n }, (_, i) => [String(i + 1), 1 + (i % 3)]))
 const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
-const SIZES = { P: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 }, D: { viewport: { width: 1440, height: 900 } } }
+const SIZES = { P: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 }, D: { viewport: { width: 1440, height: 900 } }, D2: { viewport: { width: 1280, height: 800 } } }
 for (const [s, opts] of Object.entries(SIZES)) {
   const p = await b.newPage(opts)
   await p.goto('http://localhost:4180/hedgerow/?2d')

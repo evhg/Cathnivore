@@ -6329,7 +6329,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** e2e on l34: card under 30% of the board's area at D and under 40% of the viewport at P; the vehicle visible and ringed; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 663. [ ] Hedgerow act map: a painted coast with Cath's token on it *(lane A, in progress)*
+## 663. [x] Hedgerow act map: a painted coast with Cath's token on it *(done 2026-11-23 00:15, lane A: Cath's token is a gold pin holding her portrait (bust, `youPinSvg`), 88x132 at D, 80x120 at 1280x800, 51x76 on a phone, its point on the road by her stop (the full figure was 25 px wide); furrows are the field's own colour stepped to 1.18:1 (unit test: every act, under 1.3); the banner's fades meet the act's plain ground (`--ground-base`), so no hedges or furrows hatch its sky; a vignette round each act's land; Saltmarsh's cloud lighter. Played stops already wore their stars (rosettes), now asserted in e2e/hedgerow-actmap. Shots e2e/screenshots/h663 (before, a1, a2, a2n3; `scripts/hedgerow-663-shots.mjs`))*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique)*
 - **Why:** `plan1122f/hedge-menu-D`: wavy hatching over the whole field (0-1120 x 60-900), a dead band at 400-1100 x 470-700, locked stops all the same grey glass bubble, Cath a 25x110 px stick (165-195 x 300-425; 18x70 at P), the cloud a grey smudge (460-745 x 95-205). A tier below Cathnivore's campaign map (VISION 'every screen is designed', 'if a screen has room for a character, it's Cath').
 - **Build:** terrain layers with a vignette and quieter hatching; locked, open and starred stops drawn differently with 0-3 stars under each played one; Cath as a token with her portrait, walking to a newly opened stop.
@@ -6343,7 +6343,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** ~~board 50%+ of the viewport's area at 1440x900~~ (amended 2026-11-22: the hexes are height-bound; 50% by hex bounds needs about 820x790 px of a 900 px window) the hexes' share grows with the tray down (40%+ at 1440x900); tray 120 px or less; keyboard reaches every card (e2e); shots D and 1280.
 - **Size:** 2
 
-## 665. [ ] NIGHT SHIFT: the gun in her hands on the sideways phone
+## 665. [ ] NIGHT SHIFT: the gun in her hands on the sideways phone *(lane A, in progress)*
 *(planned 2026-11-22 21:05, lane A, plan1122f critique; check first whether the viewmodel is only hidden in the plan shot's state)*
 - **Why:** `plan1122f/ns-street-P` (1688x780): the HUD names THE PIN (1550-1640 x 300-325) but nothing is in hand in 0-1688 x 380-780; the left HUD is a dark slab (0-460 x 0-330). VISION 'everything responds'.
 - **Build:** the viewmodel (gloved hands and the equipped gun, sway, recoil) on the phone preset, within its draw-call budget; the slab becomes a clean plate.
