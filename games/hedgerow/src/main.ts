@@ -4314,6 +4314,23 @@ function ringNewcomer(g: Game, k: EnemyKind, el: HTMLElement): void {
   el.append(ring);
 }
 
+/** Plan item 672: on a desktop the field-guide page docks over the side panel (the tower rack and round book it pauses),
+ *  not over the field's middle: the page is placed against the panel's own box, since the stage clips its children. */
+function dockIntro(el: HTMLElement): void {
+  const pr = ui.panel.getBoundingClientRect();
+  const sr = ui.stage.getBoundingClientRect();
+  const side = matchMedia("(min-width: 601px) and (min-height: 521px)").matches && pr.width >= 300 && pr.height >= 360 && pr.left >= sr.right - 4;
+  el.classList.toggle("intro-side", side);
+  if (!side) return;
+  el.style.setProperty("--dock-x", `${Math.round(pr.left)}px`);
+  el.style.setProperty("--dock-y", `${Math.round(pr.top)}px`);
+  el.style.setProperty("--dock-w", `${Math.round(pr.width)}px`);
+  el.style.setProperty("--dock-h", `${Math.round(pr.height)}px`);
+}
+addEventListener("resize", () => {
+  if (!ui.intro.hidden && ui.intro.classList.contains("intro-page")) dockIntro(ui.intro);
+});
+
 function showIntroPage(g: Game, k: EnemyKind): void {
   const el = ui.intro;
   el.replaceChildren();
@@ -4405,6 +4422,7 @@ function showIntroPage(g: Game, k: EnemyKind): void {
   el.classList.remove("pop");
   void el.offsetWidth;
   el.classList.add("pop");
+  dockIntro(el);
   ringNewcomer(g, k, el);
   say(`${ENEMIES[k].name}. ${describeEnemy(k)}`);
   // Plan item 19: one voice at a time. Cath's tip steps aside and comes back after the page.

@@ -5481,6 +5481,8 @@ img.act-scene {
 /* Plan item 336: on a small depot (an upright phone) the 12 px count is taller than the drawn LED strip, so its own
    box becomes the board: dark, a touch taller, centred on the strip, so nothing spills onto the cornice. */
 .depot[data-small] .depot-board { top: 22%; height: 17%; padding: 0 4px; background: var(--ink); border-radius: 2px; }
+/* Plan item 672: ...and from the drawn strip's left end to the rep (item 201), so the strip's end doesn't show as a dark wedge. */
+.depot[data-small]:not([data-tiny]) .depot-board { left: 14%; translate: 0 0; min-width: 61%; max-width: 61%; }
 .depot-rep {
   position: absolute;
   /* Plan item 201: along the rail clear of the departures board (26-74%); at 72% his shoulder sat on its end. */
@@ -6757,6 +6759,18 @@ img.act-scene {
   .intro-sketch { justify-self: start; width: 132px; }
   .intro-sketch .intro-icon { width: 104px; }
   .intro-driver { width: 52px; height: 52px; }
+  /* plan item 672: the mugshot hangs below the sketch; the kicker starts under it, whole ('GUIDE' was clipped) */
+  .intro-sketch { margin-bottom: 16px; }
+}
+/* Plan item 672: on a desktop the page docks over the side panel (placed by `dockIntro` against the panel's box), the
+   field left clear under a light dim. */
+.intro.intro-side .intro-sheet {
+  position: fixed;
+  left: var(--dock-x);
+  top: var(--dock-y);
+  width: var(--dock-w);
+  max-height: var(--dock-h);
+  transform: none;
 }
 @media (max-width: 600px) {
   .intro { place-items: end stretch; padding: 6px; }

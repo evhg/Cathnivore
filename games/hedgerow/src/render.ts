@@ -2121,7 +2121,7 @@ export class Renderer {
   /** The columns a swarm badge rode last frame (their own +N chip stands down). */
   private badged = new Set<ConvoyColumn>();
   private layOut(game: Game): Convoy {
-    this.lay = layOutField(game.enemies, (k) => SLOT_LEN * enemyScale(k as EnemyKind), SWARM_MIN);
+    this.lay = layOutField(game.enemies, (k) => Math.max(SLOT_LEN, RIG_LEN[k as EnemyKind] ?? 0) * enemyScale(k as EnemyKind), SWARM_MIN);
     return this.lay;
   }
   /** Where a vehicle is drawn (convoy.ts placeOnLane). */
@@ -2172,7 +2172,10 @@ export class Renderer {
     const tw = ctx.measureText(total).width;
     // One type: the total says it all, so the sprite goes without a count.
     const label = (n: number) => (kinds.length > 1 ? `${n}` : "");
-    const parts = kinds.map((k) => ({ ...k, w: icon + ctx.measureText(label(k.n)).width * 0.8 + 4 }));
+    // Plan item 672: a sprite draws up to 1.3 icons wide (a van's box), so its slot is that wide and the count starts
+    // after it; with an icon-wide slot the vans covered their own digits.
+    const slot = icon * 1.3;
+    const parts = kinds.map((k) => ({ ...k, w: slot + ctx.measureText(label(k.n)).width * 0.8 + 4 }));
     const pad = h * 0.3;
     const w = pad * 2 + tw + 8 + parts.reduce((a, q) => a + q.w + 4, 0);
     // Kept on the field's canvas (plan item 69: at 390 px a queue near the edge ran its badge off the screen).
@@ -2218,9 +2221,9 @@ export class Renderer {
     for (const q of parts) {
       const k = enemyScale(q.kind);
       const es = (icon * 1.7) / Math.max(1, k * 1.1);
-      drawEnemy(ctx, { kind: q.kind, facing: 1, hit: 9, ghost: false, phase: 0 }, cx + icon / 2, y0 + h * 0.86, es, 0);
+      drawEnemy(ctx, { kind: q.kind, facing: 1, hit: 9, ghost: false, phase: 0 }, cx + slot / 2, y0 + h * 0.86, es, 0);
       ctx.fillStyle = INK;
-      ctx.fillText(label(q.n), cx + icon, y0 + h / 2 + 1);
+      ctx.fillText(label(q.n), cx + slot + 2, y0 + h / 2 + 1);
       cx += q.w + 4;
     }
     ctx.restore();
@@ -2719,6 +2722,13 @@ export class Renderer {
 /** Plan item 568: how much the 2D field's baked ground is saturated, toward the 3D diorama's colour (1.7 put the 2D pond
  * 20 dE from the 3D one, past hedgerow-water's 15). */
 const BG_SATURATE = 1.55;
+
+/**
+ * Plan item 672: the big rigs' drawn lengths (as a share of their scale) plus a sliver of road. On SLOT_LEN slots a
+ * queue of box lorries down a north-south lane, two abreast, drew as one solid blue column (l34); the 3D view spaces
+ * them by their model's length the same way (render3d GAP_3D).
+ */
+const RIG_LEN: Partial<Record<EnemyKind, number>> = { lorry: 0.98, steel: 0.98, artic: 1.0, transporter: 1.0, skip: 0.9 };
 
 /** The width of a swarm badge's row of types (at most three) and its total, for layout. */
 const SWARM_KINDS = 3;
