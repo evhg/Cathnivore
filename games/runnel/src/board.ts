@@ -409,13 +409,21 @@ export class Board {
     el('circle', { r: S * 0.155 * CW, class: 'hub-basin' }, grooves)
     el('circle', { r: S * 0.1 * WATER_W, class: 'hub-bed' }, grooves)
     el('circle', { r: S * 0.1 * WATER_W, class: 'hub-water' }, waters)
-    // Plan item 323: the hub is a small wooden sluice, not a grey washer: a plank rim (CSS), and a gate board on two
-    // posts across it, square to the first channel, turning with the tile.
+    // Plan item 323: the hub is wooden, not a grey washer: a plank rim (CSS). Plan item 675: in it a small mill wheel
+    // (six spokes, a paddle on each, a cap), stopped a little askew while the tile is dry and turning once the water
+    // reaches it; item 323's gate board across the hub read, with the round rim, as a 'no entry' sign on a dry board.
     const first = view.spokeDirs[0] ?? 0
-    const gate = el('g', { class: 'sluice', transform: `rotate(${first * 60 + 90})` }, piece)
-    const gw = S * 0.17
-    el('rect', { x: -gw, y: -1.1, width: gw * 2, height: 2.2, rx: 0.6, class: 'sluice-board' }, gate)
-    for (const sx of [-gw, gw]) el('circle', { cx: sx, cy: 0, r: 1.6, class: 'sluice-post' }, gate)
+    const mill = el('g', { class: 'mill', transform: `rotate(${first * 60 + 15})` }, piece)
+    const wheel = el('g', { class: 'mill-wheel' }, mill)
+    const wr = S * 0.155 * CW * 0.86
+    for (let k = 0; k < 6; k++) {
+      const a = (k * Math.PI) / 3
+      const [c, s2] = [Math.cos(a), Math.sin(a)]
+      el('line', { x1: c * wr * 0.22, y1: s2 * wr * 0.22, x2: c * wr, y2: s2 * wr, class: 'mill-spoke' }, wheel)
+      // the paddle, a short board square to its spoke at the rim
+      el('rect', { x: -1.2, y: -wr * 0.22, width: 2.4, height: wr * 0.44, rx: 0.5, class: 'mill-paddle', transform: `rotate(${(a * 180) / Math.PI}) translate(${wr} 0)` }, wheel)
+    }
+    el('circle', { r: wr * 0.26, class: 'mill-cap' }, wheel)
 
     if (cell.bridge) this.drawBridge(piece)
     if (cell.kind === 'spring') this.drawSpring(root)

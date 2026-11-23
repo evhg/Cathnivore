@@ -670,17 +670,15 @@ button {
   stroke-width: 1.8;
   stroke-dasharray: 4.4 0.9;
 }
-/* ...and the sluice's gate board on its two posts, over the water */
-.sluice-board {
-  fill: var(--stake-hi);
-  stroke: var(--stake);
-  stroke-width: 0.8;
-}
-.sluice-post {
-  fill: var(--stake);
-  stroke: var(--groove);
-  stroke-width: 0.6;
-}
+/* Plan item 675: ...and its little mill wheel, wood on the dark basin: stopped while dry, turning once watered (still
+   under reduced motion) */
+.mill-spoke { stroke: var(--stake); stroke-width: 1.5; stroke-linecap: round; }
+.mill-paddle { fill: var(--stake-hi); stroke: var(--stake); stroke-width: 0.7; }
+.mill-cap { fill: var(--stake-hi); stroke: var(--stake); stroke-width: 0.9; }
+.mill-wheel { transform-box: view-box; transform-origin: 0 0; }
+.wet .mill-wheel { animation: mill-turn 7s linear infinite; }
+@keyframes mill-turn { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .wet .mill-wheel { animation: none; } }
 .hub-bed {
   fill: var(--groove-bed);
   transition: fill 380ms ease var(--delay, 0ms);

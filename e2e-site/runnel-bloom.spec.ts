@@ -80,3 +80,24 @@ test('fields, the spring and channels are told apart by their faces', async ({ p
   expect(deltaE(f.spring!, f.channel!), `spring ${f.spring} channel ${f.channel}`).toBeGreaterThanOrEqual(12)
   expect(deltaE(f.field!, f.spring!), `field ${f.field} spring ${f.spring}`).toBeGreaterThanOrEqual(12)
 })
+
+// Plan item 675: a dry tile's hub is a little mill wheel (six spokes with paddles), not a gate board across a ring
+// (which read as a 'no entry' sign on an unwatered board); it turns only once the water reaches it.
+test('every hub is a six-spoked mill wheel, still until watered', async ({ page }) => {
+  await page.goto('/runnel/?nohelp')
+  await expect(page.locator('#board polygon.tile').first()).toBeVisible()
+  const m = await page.evaluate(() => {
+    const wheels = [...document.querySelectorAll('.tiles > g.cell .mill-wheel')]
+    return {
+      wheels: wheels.length,
+      cells: document.querySelectorAll('.tiles > g.cell:not(.spring):not(.stone)').length,
+      spokes: Math.min(...wheels.map((w) => w.querySelectorAll('.mill-spoke').length)),
+      bars: document.querySelectorAll('.sluice-board').length,
+      dryTurning: wheels.filter((w) => !w.closest('.wet') && getComputedStyle(w).animationName !== 'none').length,
+    }
+  })
+  expect(m.wheels).toBeGreaterThan(0)
+  expect(m.spokes).toBeGreaterThanOrEqual(6)
+  expect(m.bars).toBe(0)
+  expect(m.dryTurning).toBe(0)
+})
