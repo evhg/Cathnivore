@@ -83,3 +83,24 @@ test("the setup preview's statuses meet no other plate", async ({ page }) => {
   })
   expect(hits).toEqual([])
 })
+
+// Plan item 677: the title's board at D drew Brindle Hills' '2' over Kingsmarket's '5' (Kingsmarket's disc flipped to
+// its left end without counting Brindle Hills' right-end disc). No disc meets another region's disc or plate.
+for (const url of ['/', '/?e2eHandFan=1']) {
+  test(`no status disc meets another region's banner (${url})`, async ({ page }) => {
+    await page.goto(url)
+    await expect(page.locator('svg.map .region-status').first()).toBeVisible()
+    await page.waitForTimeout(1200)
+    const hits = await page.evaluate(() => {
+      const signs = [...document.querySelectorAll('svg.map .region-sign')]
+      const meet = (a: DOMRect, o: DOMRect) => a.left < o.right && o.left < a.right && a.top < o.bottom && o.top < a.bottom
+      return signs.flatMap((sign) => {
+        const b = sign.querySelector('.region-status')!.getBoundingClientRect()
+        return signs.filter((o) => o !== sign && o.closest('svg') === sign.closest('svg'))
+          .filter((o) => meet(b, o.querySelector('.region-status')!.getBoundingClientRect()) || meet(b, o.querySelector('.region-plaque')!.getBoundingClientRect()))
+          .map((o) => `${sign.getAttribute('data-sign')} on ${o.getAttribute('data-sign')}`)
+      })
+    })
+    expect(hits).toEqual([])
+  })
+}

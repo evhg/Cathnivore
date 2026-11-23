@@ -22,17 +22,21 @@ export function weekChipText(goals: WeekGoal[], game?: string): string {
   return `${head} · ${next.game}: ${next.text.toLowerCase()}`
 }
 
+/**
+ * Mounts the chip, or refreshes the one already in `host` (plan item 677: a game calls it again after a save, so a
+ * solve counts at once; the chip read 0/3 after a daily while the rail read 1 solved).
+ */
 export function mountWeekChip(host: HTMLElement | null, game?: string, doc: Document = document): void {
   try {
     if (!host) return
     const now = readProgress()
     const goals = weekGoals(now, loadWeek(now, new Date()).base)
-    const a = doc.createElement('a')
+    const a = host.querySelector<HTMLAnchorElement>('a.week-chip') ?? doc.createElement('a')
     a.className = 'week-chip'
     a.href = '/games/#week'
     a.dataset.done = String(weekComplete(goals))
     a.textContent = weekChipText(goals, game)
-    host.append(a)
+    if (!a.isConnected) host.append(a)
   } catch {
     // No chip without storage.
   }

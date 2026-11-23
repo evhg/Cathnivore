@@ -1470,7 +1470,9 @@ export class Renderer {
       ctx.fill();
     }
     items.sort((a, b) => a.y - b.y);
+    this.columnChips = [];
     for (const it of items) it.draw();
+    for (const chip of this.columnChips) chip();
     // Each tower's pooled Marks: one "+N" that counts up while it keeps knocking, then floats off and fades.
     for (const [id, m] of this.towerMarks) {
       m.quiet += dt;
@@ -2141,7 +2143,16 @@ export class Renderer {
         drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: i * 0.4, still: true }, X(p.x) + (i % 2 ? s * 0.12 : -s * 0.12), Y(p.y + 0.2) - i * s * 0.16, s * 0.92, t);
       }
       // "+N": how many wait in the column, on a paper chip beside it (the swarm badge covers it once it rides here).
+      // Plan item 677: drawn after the depth-sorted items (a Radio Mast lower on the field covered half the '+7').
       if (this.badged.has(col)) return;
+      this.columnChips.push(() => this.columnChip(ctx, X, Y, s, col, p, layers));
+    }
+  }
+  /** Column "+N" chips waiting for the depth-sorted items to be drawn (plan item 677). */
+  private columnChips: Array<() => void> = [];
+  private columnChip(ctx: CanvasRenderingContext2D, X: (v: number) => number, Y: (v: number) => number, s: number, col: ConvoyColumn, p: { x: number; y: number }, layers: number): void {
+    {
+      ctx.save();
       const label = `+${col.count}`;
       const fs = Math.max(11, s * 0.24);
       ctx.font = `800 ${fs}px ${FONT}`;
@@ -2157,7 +2168,9 @@ export class Renderer {
       ctx.stroke();
       ctx.fillStyle = "#c0392b";
       ctx.textBaseline = "middle";
+      ctx.textAlign = "left";
       ctx.fillText(label, cx + fs * 0.45, cy + fs * 0.72);
+      ctx.restore();
     }
   }
   /** A swarm's badge: its total in bold, then up to three types as small sprites with their counts, on a paper pill. */

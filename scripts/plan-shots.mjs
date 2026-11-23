@@ -66,14 +66,21 @@ const jobs = {
       })
       // plan item 656: a new vehicle's field-guide page holds the round until it's dismissed ('0 NEXT', an empty road
       // under it): close each one, then wait for three vehicles on the lane and a beat for the towers to open up
+      // plan item 677: at P the page's 'Got it' sits below the sheet's fold and a pointer click missed it, and a page
+      // that opened after the loop stood over the shot: press it through the DOM, and again just before the shot.
+      const closeGuide = () => p.evaluate(() => {
+        const go = document.querySelector('.intro:not([hidden]) .intro-go')
+        go?.click()
+        return !!go
+      })
       for (let i = 0; i < 12; i++) {
         await p.waitForTimeout(700)
-        const go = p.locator('.intro:not([hidden]) .intro-go')
-        if (await go.isVisible().catch(() => false)) await go.click().catch(() => {})
-        else if (await p.evaluate(() => window.hedgerow.game().enemies.length >= 3)) break
+        if (await closeGuide()) continue
+        if (await p.evaluate(() => window.hedgerow.game().enemies.length >= 3)) break
       }
       await p.waitForFunction(() => (window.hedgerow.game().enemies?.length ?? 0) >= 3, null, { timeout: 45000 }).catch(() => console.log('battle: under 3 vehicles'))
       await p.waitForTimeout(1500)
+      for (let i = 0; i < 4 && (await closeGuide()); i++) await p.waitForTimeout(600)
     }
     await p.goto(`${base}/hedgerow/?2d`)
     await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true }, tips: t })), [stars(20), tips])

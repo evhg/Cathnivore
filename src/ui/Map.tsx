@@ -1815,7 +1815,7 @@ function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: La
 // Sizes each region's plaque to its name as actually set (attributes only: CSP allows no style attributes).
 function fitPlaques(svg: SVGSVGElement) {
   const signs: Array<{ sign: Element; text: SVGTextElement; plate: SVGRectElement; status: SVGGElement | null; cx: number; w: number }> = []
-  const plates: Array<{ x0: number; x1: number; y0: number; y1: number; sign: Element }> = []
+  const plates: Array<{ x0: number; x1: number; y0: number; y1: number; sign: Element; disc: number }> = []
   for (const sign of Array.from(svg.querySelectorAll('.region-sign'))) {
     const text = sign.querySelector<SVGTextElement>('.region-name')
     const plate = sign.querySelector<SVGRectElement>('.region-plaque')
@@ -1830,14 +1830,28 @@ function fitPlaques(svg: SVGSVGElement) {
     // The hex's own centre (`data-x`): a sign slid aside below is placed afresh on every fit.
     const cx = Number(text.getAttribute('data-x') ?? text.getAttribute('x'))
     const y0 = Number(plate.getAttribute('y'))
-    plates.push({ x0: cx - w / 2 - 8, x1: cx + w / 2 + 8, y0, y1: y0 + Number(plate.getAttribute('height')), sign })
-    signs.push({ sign, text, plate, status: sign.querySelector<SVGGElement>('.region-status'), cx, w })
+    const status = sign.querySelector<SVGGElement>('.region-status')
+    // Plan item 677: how far its status disc reaches past the plate's right end, where every disc rides by default
+    // (Kingsmarket's disc flipped to its left end onto Brindle Hills' right-end disc at D: '2' over '5').
+    const sr = status ? Number(status.getAttribute('data-r')) : 0
+    const disc = status ? Math.max(0, Math.max(14, sr + 4) + sr - 8) : 0
+    plates.push({ x0: cx - w / 2 - 8, x1: cx + w / 2 + 8, y0, y1: y0 + Number(plate.getAttribute('height')), sign, disc })
+    signs.push({ sign, text, plate, status, cx, w })
   }
   // Plan item 602: 5 units (was 3): on a phone the middle row read as one run of plates, a disc 2 px off the next name
   const GAP = 5
   // The board's left edge in its own units (the svg's box, wider than the viewBox where the board is height-bound): a
   // disc moved to a plaque's left end must not leave the board, nor one on its right end.
-  const ctm = svg.getScreenCTM?.()
+  const screen = svg.getScreenCTM?.()
+  // Plan item 677: px to board units from a plate as drawn, not the screen CTM, which misses a CSS transform on the
+  // board (the title's leaning board read its right edge 37 units short, and Rivermead's disc shrank onto its left end).
+  const ref = signs[0]?.plate
+  const refBox = ref?.getBoundingClientRect()
+  const refW = Number(ref?.getAttribute('width'))
+  const ctm =
+    ref && refBox && refBox.width > 0 && refW > 0
+      ? { a: refBox.width / refW, e: refBox.left - Number(ref.getAttribute('x')) * (refBox.width / refW) }
+      : screen
   // Plan item 622: where the svg draws past its own box (the phone Setup's board, `overflow: visible` on a stage wider
   // than the height-bound board), its parent's box is the edge: Brindle Hills' disc had shrunk to half size against
   // a board edge 37 px inside the stage.
@@ -1862,7 +1876,7 @@ function fitPlaques(svg: SVGSVGElement) {
     const row = rowOf(g.sign, Math.min(own.y0, cy - r), Math.max(own.y1, cy + r))
     // Item 578's wider clearance put Brindle Hills' left-end disc past the board's edge on a phone: the board's own
     // box bounds the row as its neighbours do.
-    const lo = Math.max(edge0, ...row.filter((p) => p.x1 <= g.cx).map((p) => p.x1)) + GAP
+    const lo = Math.max(edge0, ...row.filter((p) => p.x1 <= g.cx).map((p) => p.x1 + p.disc)) + GAP
     const hi = Math.min(edge1, ...row.filter((p) => p.x0 >= g.cx).map((p) => p.x0)) - GAP
     let clear = DISC_CLEAR
     const reach = (rr: number) => g.w / 2 + Math.max(14, rr + clear) + rr
@@ -1917,7 +1931,7 @@ function fitPlaques(svg: SVGSVGElement) {
     status.removeAttribute('data-fit-clear')
     const off = w / 2 + Math.max(14, r + clear)
     const cy = Number(status.getAttribute('data-cy'))
-    const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r - GAP < p.x1 && p.x0 < x + r + GAP && cy - r < p.y1 && p.y0 < cy + r)
+    const meets = (x: number) => plates.some((p) => p.sign !== sign && x - r - GAP < p.x1 + p.disc && p.x0 < x + r + GAP && cy - r < p.y1 && p.y0 < cy + r)
     const left = fitSide ? fitSide === 'left' : meets(cx + off) && !meets(cx - off) && cx - off - r >= edge0 + GAP
     const scale = r < r0 ? ` scale(${(r / r0).toFixed(3)})` : ''
     status.setAttribute('transform', `translate(${left ? cx - off : cx + off} ${cy})${scale}`)

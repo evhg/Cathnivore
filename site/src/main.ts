@@ -51,6 +51,7 @@ try {
   boardMood = null
 }
 let outfit = chosenOutfit()
+const phoneCards = matchMedia('(max-width: 599.98px)').matches
 function showCath(expression: CathExpression): void {
   if (heroCath) heroCath.innerHTML = cathSvg({ framing: 'full', expression: boardMood?.expression ?? expression, pose: boardMood?.pose ?? SCREEN_POSE['site:games'], outfit, animate: !reducedMotion })
   // Plan item 96: each game's poster carries Cath in that game's dress. Plan item 108: and in its own pose and
@@ -58,7 +59,9 @@ function showCath(expression: CathExpression): void {
   for (const el of document.querySelectorAll<HTMLElement>('.hero-game-cath')) {
     el.innerHTML ||= cathSvg({
       // Plan item 563: each card its own framing too (a bust, a small full figure, half length), so they don't blur
-      framing: (el.dataset.framing ?? 'half') as 'bust' | 'half' | 'full',
+      // Plan item 677: a phone's card is 170 px wide and the full figure drew 24 px across beside 40 px busts, so a
+      // card may name a phone framing (`data-framing-phone`)
+      framing: ((phoneCards && el.dataset.framingPhone) || el.dataset.framing || 'half') as 'bust' | 'half' | 'full',
       expression: (el.dataset.expression ?? 'delighted') as CathExpression,
       pose: (el.dataset.pose ?? 'clasped') as CathPoseId,
       outfit: el.dataset.outfit as CathOutfit,

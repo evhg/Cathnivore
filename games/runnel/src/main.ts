@@ -295,6 +295,7 @@ function finish(): void {
     }
   }
   save(data)
+  mountWeekChip(document.getElementById('week-slot'), 'Runnel') // plan item 677: the solve counts on the chip at once
   board.celebrate()
   playWin()
   beaRunsOut()

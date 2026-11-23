@@ -2259,7 +2259,8 @@ body {
   .hero-game-art { grid-column: 1 / -1; aspect-ratio: 16 / 8.2; }
   .stall-hero .hero-text > .cta-row { margin-top: 12px; }
   .hero-game-cath { width: 22%; }
-  .hero-game-runnel .hero-game-cath { width: 14%; }
+  /* plan item 677: half length on a phone's card (data-framing-phone), as large as the others' figures */
+  .hero-game-runnel .hero-game-cath { width: 24%; }
   .hero-game-text { padding: 8px 4px 8px 12px; }
   .hero-game-hook {
     display: -webkit-box;

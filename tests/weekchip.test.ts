@@ -18,3 +18,31 @@ describe('weekChipText', () => {
     expect(weekChipText([g('A', 1, 1), g('B', 3, 5)])).toContain('complete')
   })
 })
+
+describe('mountWeekChip (plan item 677)', () => {
+  it('refreshes the chip already mounted, so a solve counts at once', async () => {
+    const mem = new Map<string, string>()
+    const ls = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) }
+    const g = globalThis as unknown as { localStorage?: unknown }
+    const prev = g.localStorage
+    g.localStorage = ls
+    type El = { className: string; href: string; dataset: Record<string, string>; textContent: string; isConnected: boolean }
+    const kids: El[] = []
+    const host = {
+      querySelector: () => kids[0] ?? null,
+      append: (a: El) => { a.isConnected = true; kids.push(a) },
+    }
+    const doc = { createElement: (): El => ({ className: '', href: '', dataset: {}, textContent: '', isConnected: false }) }
+    try {
+      const { mountWeekChip } = await import('../shared/cath/weekchip')
+      mountWeekChip(host as unknown as HTMLElement, 'Runnel', doc as unknown as Document)
+      expect(kids[0]?.textContent).toContain('(0/3)')
+      ls.setItem('runnel:v1', JSON.stringify({ results: { '2026-11-23': {} } }))
+      mountWeekChip(host as unknown as HTMLElement, 'Runnel', doc as unknown as Document)
+      expect(kids).toHaveLength(1)
+      expect(kids[0]?.textContent).toContain('(1/3)')
+    } finally {
+      g.localStorage = prev
+    }
+  })
+})

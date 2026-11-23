@@ -6101,6 +6101,7 @@ function finish(g: Game): void {
   if (won) {
     const cathBefore = levelOf(xpOf(data.stars)).level;
     recordStars(data, lv.id, n);
+    mountWeekChip(document.getElementById("week-slot"), "Hedgerow"); // plan item 677: a clear counts at once
     if (!lv.endless && dailyDay === null) {
       const mode: MedalMode = g.remix ?? (g.heroic ? "hollow" : g.difficulty);
       if (recordMedal(data, lv.id, mode)) pay.medal = `${mode[0]!.toUpperCase() + mode.slice(1)} medal`;

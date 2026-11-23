@@ -2007,6 +2007,9 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   /* Plan item 669: a half-length bust 360 px or more, at the atlas's bottom-right corner (her shoulders in the
      sea past the island and the margin before the rail) */
   .campaign-screen > .cmp-map > .cmp-map-host { right: -30px; }
+  /* Plan item 677: her line keeps to the atlas's own column (host -30 px with the line's -34 put its right end over the
+     rail's chapter-2 envelope) */
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { margin-right: 30px; }
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-header-cath { height: clamp(360px, calc(100vh - 480px), 420px); }
 }
 .cmp-ticket-lead {
