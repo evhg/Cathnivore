@@ -730,7 +730,8 @@ function saltmarsh(b: Brush): string {
   // own pink. Now white tops lit from the sun's side, a cool lavender belly, set lower so the crop clears its domes.
   // Plan item 160: its belly sat on the horizon as a hard lilac scallop: a paler belly, and a haze of the low sky's own
   // light along its base so it dissolves into the sea air instead of ending in a line.
-  o += bigCloud(b, 200, 123, 94, { top: "#ffffff", mid: "#fdf4ea", base: "#c3c2d4", rim: "#fff1cf" }, 1, 0.96);
+  // Plan item 663: still a grey smudge at D (plan1122f): a lighter, warmer belly and a softer outline.
+  o += bigCloud(b, 200, 123, 94, { top: "#ffffff", mid: "#fff8ee", base: "#d8d0d8", rim: "#fff1cf", ink: "#9c98ae" }, 1, 0.98);
   o += soft(b, [[200, 122, 54, 6.5], [176, 124, 26, 4], [226, 124, 26, 4]], "#f7ebd9", 0.9);
   // the sea, bright under the low sun, with a shingle spit, a lighthouse and a sail
   o += `<rect x="-10" y="126" width="${SW + 20}" height="22" fill="${b.lin([[0, "#86aec0"], [1, "#c6d8d4"]])}"/>`;
@@ -1503,6 +1504,12 @@ function LAND_FEATURES(i: number): string {
  * The act's patchwork. Plan item 230: `won` (one flag per stop, in lane order) colours in the fields nearest a won
  * stop, so the country fills with colour as the act is played; the rest keep the act's pale palette.
  */
+/** Plan item 663: an act's plain ground colour (the patchwork's base), for the band behind its banner. */
+export function groundBase(n: number): string {
+  const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
+  return richer(GROUND[i]!.base, 2.6);
+}
+
 export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
   const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
   const g = GROUND[i]!;
@@ -1582,7 +1589,7 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">` +
     // Plan item 428: a paper-and-grass grain over the land (it read as flat pale squares), multiplied in faintly.
-    `<defs>${[0, 1, 2, 3].map((a) => `<linearGradient id="sh${i}-${a}" gradientTransform="rotate(${a * 45 + 20} .5 .5)"><stop offset="0" stop-color="#fffbe8" stop-opacity=".3"/><stop offset=".5" stop-color="#fffbe8" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></linearGradient>`).join("")}${clips}<radialGradient id="sun${i}" cx="100" cy="0" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff3c8" stop-opacity=".42"/><stop offset=".45" stop-color="#fff3c8" stop-opacity="0"/><stop offset=".75" stop-color="${g.hedge}" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></radialGradient><filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
+    `<defs>${[0, 1, 2, 3].map((a) => `<linearGradient id="sh${i}-${a}" gradientTransform="rotate(${a * 45 + 20} .5 .5)"><stop offset="0" stop-color="#fffbe8" stop-opacity=".3"/><stop offset=".5" stop-color="#fffbe8" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></linearGradient>`).join("")}${clips}<radialGradient id="sun${i}" cx="100" cy="0" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff3c8" stop-opacity=".42"/><stop offset=".45" stop-color="#fff3c8" stop-opacity="0"/><stop offset=".75" stop-color="${g.hedge}" stop-opacity="0"/><stop offset="1" stop-color="${g.hedge}" stop-opacity=".3"/></radialGradient><radialGradient id="vg${i}" cx="50" cy="50" r="74" gradientUnits="userSpaceOnUse"><stop offset=".55" stop-color="#2a2010" stop-opacity="0"/><stop offset="1" stop-color="#2a2010" stop-opacity=".3"/></radialGradient><filter id="gr${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.6 0.9" numOctaves="2" seed="${i + 3}"/><feColorMatrix values="0 0 0 0 0.32  0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 .9 -.12"/></filter></defs>` +
     `<rect width="100" height="100" fill="${richer(g.base, 2.6)}"/>${cells}${ploughed}` +
 
     LAND_FEATURES(i) +
@@ -1598,6 +1605,8 @@ export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {
     // the land from that corner, the far corner in the hedges' shade.
     `<rect width="100" height="100" filter="url(#gr${i})" opacity=".55"/>` +
     `<rect width="100" height="100" fill="url(#sun${i})"/>` +
+    // Plan item 663: a painted vignette, the land's edges a step deeper, so the act reads as one framed country.
+    `<rect width="100" height="100" fill="url(#vg${i})"/>` +
     `</svg>`
   );
 }
@@ -2719,6 +2728,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
     }
     drawLane(path, [home ? [pts[0]![0], -26] : [-4, pts[0]![1]], ...pts]);
     // Plan item 18: the act's ground fills the whole band edge to edge, under its banner and its lane.
+    // Plan item 663: the land's plain colour, behind the act's banner, so its fades meet paint, not hedges.
+    li.style.setProperty("--ground-base", groundBase(n));
     li.style.setProperty("--ground", `url("${svgImg(groundSvg(n, lvs.map((lv) => (data.stars[String(lv.id)] ?? 0) > 0), matchMedia("(max-width: 599px)").matches ? 0.6 : 1))}")`);
     li.dataset.act = String(n);
     trail.append(path);

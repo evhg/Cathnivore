@@ -4312,6 +4312,9 @@ img.act-scene {
    already counts the act's stars and every stop shows its own, so the track is dropped there. */
 #screen-select .act.act-has-card .act-track { display: none; }
 #screen-select .act-head { height: clamp(120px, 15vw, 210px); }
+/* Plan item 663: the banner's fades met the patchwork's hedges and furrows, which read as hatching across its sky;
+   behind it the act's plain ground, giving way to the fields only at its foot. */
+#screen-select .act-head { background: linear-gradient(180deg, var(--ground-base, transparent) 62%, transparent); }
 #screen-select .act-scene { object-fit: cover; }
 /* The banner's sky fades into the act's own ground, so the biomes join instead of stacking as cards. */
 #screen-select .act-head > .act-scene { mask-image: linear-gradient(180deg, black 72%, transparent); }
