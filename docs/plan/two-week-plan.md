@@ -6474,7 +6474,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** no level-up element over a lane tile (e2e: its box vs the lane cells); 600-1000 ms with overshoot, a fade under reduced motion; the CATH button reads 'LV 2' within 1.2 s; 2D and 3D; shots P and D.
 - **Size:** 1
 
-## 682. [ ] The bugs from the 2026-11-23 09:55 critique, fixed as one batch *(lane A, in progress)*
+## 682. [ ] The bugs from the 2026-11-23 09:55 critique, fixed as one batch *(handed back 2026-11-23 10:50 by lane A after slices 1-2: **done:** the 3D D shop (pips hidden with the role word, long names on two lines from the picture's headroom, packets still 72 px), the seeds '+1' (coins land on the purse's coin and fade), the Cathnivore phone middle row (fitPlaques bounds by the frame; a tight row's neighbour wears its short name; discs 23 px; region-status 375 px now passes, red on the base locally), /games/ 'to play' x4 (each open daily named: '#22 · The Ring', 'Gentle board', the rule). **Open:** the two Runnel lines, the campaign ticket at D, the Hedgerow depot plate at P)*
 *(planned 2026-11-23 10:00, lane B, plan1123d critique; check each on today's build first; the Hedgerow mid-level shots are now l27)*
 - Hedgerow 3D D shop (`hedge-l27-3d-D` 1108-1412 x 140-322): names clipped into the art ('Seed Cann', 'Market Stal'), a line through them, the role row missing (2D's tiles are right).
 - Hedgerow seeds chip (`hedge-l27-3d-D` 1065-1105 x 22-50; `hedge-l27-3d-P` 140-180 x 10-40; `hedge-l34-2d-P` 140-185 x 10-30): the '+1' chip over the count's first digit ('93979' reads '3979').
