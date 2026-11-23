@@ -127,7 +127,9 @@ const jobs = {
     // Plan item 627: and the street in play, the HUD up (the pick is not play; critiques never saw the game itself). A
     // phone plays held sideways, so it turns first.
     if (s === 'P') await p.setViewportSize({ width: 844, height: 390 })
-    await p.goto(`${base}/nightshift/?play&class=ghost&rs=0.5`)
+    // Plan item 673: at D the street is shot at full scale (as a desktop player sees it): a half-scale world drew the
+    // rain as dark dashes over the lit windows, which no full-scale frame shows
+    await p.goto(`${base}/nightshift/?play&class=ghost${s === 'D' ? '' : '&rs=0.5'}`)
     await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 200000 }).catch(() => {})
     // Plan item 665: item 639 holds the weapon below the frame until her first input, and a critique read the
     // untouched arrival as 'nothing in hand': shoot the street as it plays, after an input.
