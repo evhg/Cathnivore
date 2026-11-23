@@ -97,7 +97,15 @@ test('plan item 662: a new vehicle\'s page docks beside the field, not over it',
     return { board: ov / (b.width * b.height), view: (c.width * c.height) / (innerWidth * innerHeight), phone: innerWidth <= 600 }
   })
   if (m.phone) expect(m.view).toBeLessThan(0.4)
-  else expect(m.board).toBeLessThan(0.3)
+  // plan item 672: at D it docks over the side panel, the field whole (it stood over the field's right third)
+  else expect(m.board).toBeLessThan(0.01)
+  // ...and the driver's mugshot leaves the kicker whole ('GUIDE' was clipped by it)
+  const clip = await page.evaluate(() => {
+    const d = document.querySelector('.intro:not([hidden]) .intro-driver')!.getBoundingClientRect()
+    const e = document.querySelector('.intro:not([hidden]) .intro-body > .eyebrow')!.getBoundingClientRect()
+    return Math.max(0, Math.min(d.right, e.right) - Math.max(d.left, e.left)) * Math.max(0, Math.min(d.bottom, e.bottom) - Math.max(d.top, e.top))
+  })
+  if (!m.phone) expect(clip).toBe(0)
   await expect(page.locator('.intro:not([hidden]) .intro-go')).toBeInViewport({ ratio: 1 })
   await expect(page.locator('.intro:not([hidden]) .intro-reach li.lit').first()).toBeInViewport({ ratio: 1 })
   // the vehicle the page is about is ringed where it stands: on the board, outside the card
