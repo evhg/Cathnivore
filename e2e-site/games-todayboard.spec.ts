@@ -49,3 +49,32 @@ test('seeded saves tick today, chalk the week and fly the pennant, and the poste
   const poster = await page.locator('.hero-game').first().boundingBox()
   expect(poster!.y).toBeLessThan(vh)
 })
+
+// Plan item 674: the slate is a chalked board, not a form list: each line its game's own sign (20 px+, no ring
+// bullets), a 44 px+ link, and a solved Runnel daily chalks a gold tick over its sign.
+test("the slate chalks each game's sign and ticks a solved daily", async ({ page }) => {
+  await page.goto('/games/')
+  await page.evaluate(() => {
+    const d = new Date().toISOString().slice(0, 10)
+    localStorage.setItem('runnel:v1', JSON.stringify({ results: { [d]: { taps: 31 } } }))
+  })
+  await page.reload()
+  const slate = page.locator('.stall-slate')
+  test.skip(!(await slate.isVisible()), 'the desktop stall')
+  await expect(slate.locator('a')).toHaveCount(4)
+  const m = await slate.evaluate((s) =>
+    [...s.querySelectorAll('a')].map((a) => ({
+      game: a.dataset.game,
+      h: a.getBoundingClientRect().height,
+      icon: a.querySelector('.slate-icon')?.getBoundingClientRect().width ?? 0,
+      ring: /[○◯]/.test(a.textContent ?? ''),
+      tick: !!a.querySelector('.slate-tick'),
+    })),
+  )
+  for (const l of m) {
+    expect(l.h, l.game).toBeGreaterThanOrEqual(44)
+    expect(l.icon, l.game).toBeGreaterThanOrEqual(20)
+    expect(l.ring, l.game).toBe(false)
+    expect(l.tick, l.game).toBe(l.game === 'runnel')
+  }
+})
