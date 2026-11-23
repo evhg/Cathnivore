@@ -15,7 +15,7 @@ import type { CathPoseId } from '../../shared/cath/cath'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DEPART_MS, DEPART_STILL_MS, departFrame, departureOn } from './departure'
 import { playCues } from '../platform/sound'
-import { campaignLine } from '../content/campaignLines'
+import { campaignFace, campaignLine } from '../content/campaignLines'
 import { buntingFlags, chaptersWon } from './campaignBunting'
 
 // SPEC 10.1 campaign screen, drawn as a journey across Marrow (ROADMAP 9): each chapter is a stop on a
@@ -632,13 +632,19 @@ export default function CampaignScreen({
     setDeparting(chapter)
     if (!still) playCues(['paperSlide', 'paperFlip'])
   }
-  const say = campaignLine(pointed ?? (phone ? open : next?.id), done === chapters.length)
   const stateOf = (i: number): 'done' | 'locked' | 'current' => {
     const c = chapters[i]!
     if (completed.includes(c.id)) return 'done'
     const previous = chapters[i - 1]
     return i > 0 && !!previous && !completed.includes(previous.id) ? 'locked' : 'current'
   }
+  const sayId = pointed ?? (phone ? open : next?.id)
+  const sayAt = chapters.findIndex((c) => c.id === sayId)
+  const sayState = sayAt >= 0 ? stateOf(sayAt) : undefined
+  const said = campaignLine(sayId, done === chapters.length)
+  // Plan item 669: her face follows the chapter's state (won, next, not yet open)
+  const say = { ...said, expression: done === chapters.length && sayAt < 0 ? said.expression : campaignFace(sayState, said) }
+
   const ticketId = held ?? pointed ?? next?.id ?? chapters[chapters.length - 1]!.id
   const ticketAt = chapters.findIndex((c) => c.id === ticketId)
   const ticket =
@@ -655,7 +661,7 @@ export default function CampaignScreen({
   // narrates at half length in the map's sea beside the island (item 325); on a phone she stands beside her line in the header.
   // One copy in the DOM (mounted by viewport), so `.cmp-cath` and its line stay single for tests and screen readers.
   const host = (
-    <figure className="cmp-cath" data-chapter={pointed ?? (phone ? open : next?.id) ?? 'done'} data-host={wide ? 'map' : 'header'} data-pose={CHAPTER_POSE[pointed ?? (phone ? open : next?.id) ?? ''] ?? SCREEN_POSE['cathnivore:campaign']} data-expression={say.expression}>
+    <figure className="cmp-cath" data-chapter={pointed ?? (phone ? open : next?.id) ?? 'done'} data-host={wide ? 'map' : 'header'} data-pose={CHAPTER_POSE[pointed ?? (phone ? open : next?.id) ?? ''] ?? SCREEN_POSE['cathnivore:campaign']} data-expression={say.expression} data-state={sayState}>
       <p className="cmp-cath-line" aria-live="polite">
         {say.line}
       </p>
@@ -664,9 +670,9 @@ export default function CampaignScreen({
             per chapter; the full figure stays for Hedgerow's map and the site. */}
         <CathArt
           className="cmp-header-cath"
-          // Plan item 556: at D she stands full figure on the table beside the atlas, the crates at her side (they hid
-          // her from the chest down); the phone's header keeps her half-length bust.
-          framing={wide ? 'full' : 'half'}
+          // Plan item 669: at D she is a half-length bust at the atlas's corner, her face a narrator's size (item 556's
+          // full figure was a 70 px-wide doll); the phone's header keeps her half-length bust too.
+          framing="half"
           pose={CHAPTER_POSE[pointed ?? (phone ? open : next?.id) ?? ''] ?? SCREEN_POSE['cathnivore:campaign']}
           expression={say.expression}
           animate

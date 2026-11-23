@@ -34,7 +34,8 @@ test('desktop campaign: the chapter ticket is pinned beside its stop and follows
   await expect(ticket).toHaveAttribute('data-chapter', 'growing-season')
   await page.waitForTimeout(400)
   const b = await near('growing-season')
-  expect(b.ticket).toBeLessThanOrEqual(120)
+  // plan item 669: a place clear of every region name wins over a nearer one, so a little further (125 px here)
+  expect(b.ticket).toBeLessThanOrEqual(150)
   // a locked chapter's ticket has no Play
   await expect(page.locator('.cmp-ticket-play')).toHaveCount(0)
   // the bunting is tied to the map: the ticket's flag is marked, and a flag under the pointer moves the ticket

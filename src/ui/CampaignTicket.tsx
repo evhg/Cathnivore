@@ -50,12 +50,18 @@ export default function CampaignTicket({
       // Plan item 666: centred on its stop the ticket hid the region names around it (chapter 1's covered Oakvale's
       // and Shingle Bay's): try it level, raised and lowered on each side the sheet has room for, and keep the place
       // that covers least of the names and the other stops (ties go to the old one: level, left of the stop).
-      const keep = [...fig.querySelectorAll('.cmp-map-name, .cmp-pin-disc')]
-        .filter((e) => e !== disc)
-        .map((e) => e.getBoundingClientRect())
-        .map((r) => ({ l: r.left - f.left, t: r.top - f.top, r: r.right - f.left, b: r.bottom - f.top }))
-      const cover = (x: number, y: number) =>
-        keep.reduce((a, k) => a + Math.max(0, Math.min(x + w, k.r) - Math.max(x, k.l)) * Math.max(0, Math.min(y + h, k.b) - Math.max(y, k.t)), 0)
+      type Rect = { l: number; t: number; r: number; b: number }
+      const rects = (sel: string): Rect[] =>
+        [...fig.querySelectorAll(sel)]
+          .filter((e) => e !== disc)
+          .map((e) => e.getBoundingClientRect())
+          .map((r) => ({ l: r.left - f.left, t: r.top - f.top, r: r.right - f.left, b: r.bottom - f.top }))
+      const names = rects('.cmp-map-name')
+      const keep = [...names, ...rects('.cmp-pin-disc')]
+      // the ticket is turned 1 degree: its corners reach about 4 px past its box
+      const over = (list: Rect[], x: number, y: number) =>
+        list.reduce((a, k) => a + Math.max(0, Math.min(x + w + 4, k.r) - Math.max(x - 4, k.l)) * Math.max(0, Math.min(y + h + 4, k.b) - Math.max(y - 4, k.t)), 0)
+      const cover = (x: number, y: number) => over(keep, x, y)
       // Beside the stop on either side (level, raised, lowered), or above or below it; the least covered wins, a
       // nearer place winning a near tie.
       const clampX = (x: number) => Math.min(Math.max(x, minX), maxX - w)
@@ -76,6 +82,22 @@ export default function CampaignTicket({
       for (const sp of spots) {
         const sc = cover(sp.x, sp.y) + near(sp.x, sp.y) * 8
         if (sc < score) [best, score] = [sp, sc]
+      }
+      // Plan item 669: a place that covers no region name (nor its own stop) beats any that does: when the
+      // beside/above/below places all touch a name, the nearest clear place on the sheet (a 12 px grid) wins, another
+      // stop under it costing a little.
+      if (over(names, best.x, best.y) > 0) {
+        const own = d
+        const hitsOwn = (x: number, y: number) => x < own.right - f.left + 4 && own.left - f.left - 4 < x + w && y < own.bottom - f.top + 4 && own.top - f.top - 4 < y + h
+        let clear: { x: number; y: number } | null = null
+        let far = Infinity
+        for (let y = minY; y <= maxY; y += 12)
+          for (let x = minX; x + w <= maxX; x += 12) {
+            if (hitsOwn(x, y) || over(names, x, y) > 0) continue
+            const n = near(x, y) + cover(x, y) / 40
+            if (n < far) [clear, far] = [{ x, y }, n]
+          }
+        if (clear) best = clear
       }
       const left = best.x
       const top = best.y

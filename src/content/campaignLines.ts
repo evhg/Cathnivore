@@ -24,3 +24,13 @@ export function campaignLine(chapterId: string | undefined, allDone: boolean): C
   if (chapterId && CAMPAIGN_LINES[chapterId]) return CAMPAIGN_LINES[chapterId]!
   return allDone ? CAMPAIGN_DONE_LINE : CAMPAIGN_LINES['fresh-meat']!
 }
+
+/**
+ * Plan item 669: her face follows the chapter's state as well as its line: proud of a chapter won, a conspiratorial
+ * wink at one not open yet, and the line's own face for the next one to play.
+ */
+export function campaignFace(state: 'done' | 'current' | 'locked' | undefined, line: CampaignLine): CathExpression {
+  if (state === 'done') return 'delighted'
+  if (state === 'locked') return 'wink'
+  return line.expression
+}

@@ -159,7 +159,7 @@
   }
   /* Plan item 556: full figure, head to boots, standing on the table (item 325's half length ended behind crates that
      hid her from the chest down) */
-  .cmp-map-host .cmp-header-cath { height: clamp(330px, calc(100vh - 470px), 440px); position: relative; z-index: var(--z-raised); aspect-ratio: 360 / 898; }
+  .cmp-map-host .cmp-header-cath { height: clamp(360px, calc(100vh - 470px), 440px); position: relative; z-index: var(--z-raised); aspect-ratio: 320 / 480; }
   /* Plan item 444: the crates stand across her lower edge on the table (her half-length figure ended in mid-air) */
   .cmp-map-host .cmp-host-stand { position: relative; display: block; }
   /* Plan item 556: the crates stand behind her at her side, by her boots, not across her */
@@ -2004,7 +2004,10 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   }
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { pointer-events: auto; width: 196px; align-self: flex-end; margin-right: -34px; font-size: .9375rem; }
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line::after { left: 46px; }
-  .campaign-screen > .cmp-map > .cmp-map-host .cmp-header-cath { height: clamp(280px, calc(100vh - 560px), 360px); }
+  /* Plan item 669: a half-length bust 360 px or more, at the atlas's bottom-right corner (her shoulders in the
+     sea past the island and the margin before the rail) */
+  .campaign-screen > .cmp-map > .cmp-map-host { right: -30px; }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-header-cath { height: clamp(360px, calc(100vh - 480px), 420px); }
 }
 .cmp-ticket-lead {
   position: absolute;
@@ -2083,3 +2086,17 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   .cmp-pennant.is-chosen > .cmp-pennant-cloth { stroke: var(--soil); stroke-width: 3; }
 }
 @media (prefers-reduced-motion: reduce) { .cmp-pennant > * { transition: none; } }
+
+/* Plan item 669: a compact ticket (Play beside the goal, not under it: about 125 px tall where it was 180), so it fits
+   between the region names round a stop and needn't cover one. */
+.cmp-ticket {
+  width: 320px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  row-gap: 2px;
+  padding: 12px 14px 12px 16px;
+}
+.cmp-ticket > :is(.cmp-ticket-no, .cmp-ticket-title, .cmp-ticket-sealed) { grid-column: 1 / -1; }
+.cmp-ticket-title { font-size: 1.3rem; }
+.cmp-ticket-goal { grid-column: 1; font-size: .875rem; }
+.cmp-ticket-play { grid-column: 2; grid-row: 3; align-self: end; margin-top: 0; padding: 0 14px; }

@@ -16,8 +16,8 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
   // Plan item 325: she narrates at half length (was full height, item 248), whole on the first screen: 240 px or more at
   // D, beside the island in the map's own panel; 120 px or more on a phone, beside her line in the header.
   expect(art.height).toBeGreaterThanOrEqual(phone ? 120 : 240)
-  // Plan item 556: at D she stands full figure beside the atlas; the phone keeps the half-length bust.
-  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', phone ? '40 20 320 480' : '20 50 360 898')
+  // Plan item 669: a half-length bust at D (item 556's full figure was a 70 px-wide doll) as on a phone.
+  await expect(page.locator('.cmp-header-cath svg')).toHaveAttribute('viewBox', '40 20 320 480')
   // Each chapter has its own pose (CHAPTER_POSE): the figure names one of them.
   await expect(fig).toHaveAttribute('data-pose', /^(point|wave|can|thinking|crossed|flag)$/)
   const vp = page.viewportSize()!
@@ -30,7 +30,9 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
     await expect(fig).toHaveAttribute('data-host', 'map')
     const map = (await page.locator('.cmp-map').boundingBox())!
     expect(art.x).toBeGreaterThanOrEqual(map.x)
-    expect(art.x + art.width).toBeLessThanOrEqual(map.x + map.width)
+    // Plan item 669: her bust's shoulders run on into the margin before the chapter rail, never onto it
+    const rail = (await page.locator('.chapter-list').boundingBox())!
+    expect(art.x + art.width).toBeLessThanOrEqual(rail.x)
     expect(art.y + art.height).toBeLessThanOrEqual(map.y + map.height)
   }
   const size = await page.locator('.cmp-cath-line').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))
@@ -110,7 +112,7 @@ for (const [w, h] of [[1280, 800], [375, 667]] as const) {
   })
 }
 
-// Plan item 556: at D Cath stands full figure clear of the crates (at most 10% of her box covered), locked chapters
+// Plan item 556 (669: a half-length bust now): at D Cath stands clear of the crates (at most 10% of her box covered), locked chapters
 // are sealed letters with a 14 px teaser at 4.5:1, and the bunting dyes one flag per chapter won.
 test('desktop campaign: Cath in front, chapters as sealed letters, bunting follows progress', async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 0) < 1100, 'desktop layout')
@@ -121,7 +123,7 @@ test('desktop campaign: Cath in front, chapters as sealed letters, bunting follo
   await page.goto('/')
   await page.getByRole('button', { name: 'Campaign' }).click()
   await page.mouse.move(2, 2)
-  await expect(page.locator('.cmp-map-host .cmp-header-cath svg')).toHaveAttribute('data-framing', 'full')
+  await expect(page.locator('.cmp-map-host .cmp-header-cath svg')).toHaveAttribute('data-framing', 'half')
   const cath = (await page.locator('.cmp-map-host .cmp-header-cath').boundingBox())!
   const crates = (await page.locator('.cmp-map-host .produce-crates').boundingBox())!
   const ox = Math.max(0, Math.min(cath.x + cath.width, crates.x + crates.width) - Math.max(cath.x, crates.x))
