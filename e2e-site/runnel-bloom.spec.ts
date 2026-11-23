@@ -70,9 +70,12 @@ test('fields, the spring and channels are told apart by their faces', async ({ p
   await page.locator('.cell.spring').first().waitFor()
   const f = await page.evaluate(() => {
     const fill = (s: string) => { const e = document.querySelector(s); return e ? getComputedStyle(e).fill : null }
-    return { field: fill('.cell.field:not(.reservoir):not(.wet) .tile'), spring: fill('.cell.spring .tile'), channel: fill('.cell.channel:not(.wet) .tile') }
+    const fields = [...document.querySelectorAll('.cell.field:not(.reservoir):not(.wet) .tile')].map((e) => getComputedStyle(e).fill)
+    return { field: fields[0] ?? null, fields, spring: fill('.cell.spring .tile'), channel: fill('.cell.channel:not(.wet) .tile') }
   })
   expect(f.field && f.spring && f.channel).toBeTruthy()
+  // every dry field, whatever ground it stands on (a field on field ground once lost its plot face to item 516's rule)
+  for (const fl of f.fields) expect(deltaE(fl, f.channel!), `field ${fl} channel ${f.channel}`).toBeGreaterThanOrEqual(12)
   expect(deltaE(f.field!, f.channel!), `field ${f.field} channel ${f.channel}`).toBeGreaterThanOrEqual(12)
   expect(deltaE(f.spring!, f.channel!), `spring ${f.spring} channel ${f.channel}`).toBeGreaterThanOrEqual(12)
   expect(deltaE(f.field!, f.spring!), `field ${f.field} spring ${f.spring}`).toBeGreaterThanOrEqual(12)

@@ -5424,6 +5424,15 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
    the ground they cross. */
 .cell.field:not(.reservoir) .tile { fill: color-mix(in oklab, var(--dry-field) 46%, var(--wet-field)); }
 .cell.field.wet:not(.reservoir) .tile { fill: color-mix(in oklab, var(--wet-field) 80%, var(--dry-field)); }
+/* (light: item 516's valley-ground rule names the tile's ground (5 classes), so a field on field or meadow ground lost
+   its plot face and matched its channel. Each dry plot is now its own ground with a third of the crop's green, 12+
+   from its channel, and a watered field the full green, 20+ from a dry plot, on every ground.) */
+@media (prefers-color-scheme: light) {
+  .stage .cell.field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))) 63%, var(--wet-field)); }
+  .stage .cell.field.ground-field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))) 63%, var(--wet-field)); }
+  .stage .cell.field.ground-meadow:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))) 63%, var(--wet-field)); }
+  .stage .cell.field.wet:not(.reservoir) .tile { fill: var(--wet-field); }
+}
 @media (prefers-color-scheme: dark) {
   /* (dark: a lighter touch of green, so the light channels keep 3:1 on it) */
   :root:not([data-theme="light"]) .cell.field:not(.reservoir):not(.wet) .tile { fill: color-mix(in oklab, var(--dry-field) 86%, var(--wet-field)); }
