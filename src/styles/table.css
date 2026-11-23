@@ -6038,6 +6038,9 @@ html.no-animations .wrap-peel { display: none; }
   .game:has(.cath-dock) .map-wrap svg.map { translate: none; }
   /* a short phone (375x667) still letterboxes the board sideways rather than scroll it */
   .game:has(.cath-dock) .map-wrap svg.map { height: auto; max-height: 100%; aspect-ratio: 500 / 476; }
+  /* Plan item 667: the board runs the screen's full width (its svg out over the frame's padding and the page's
+     gutter; the hexes still land inside the frame's wooden rim), 368 px of hexes at 390 wide, was 349 */
+  .game:has(.cath-dock) .map-wrap svg.map { flex: none; width: calc(100% + 2 * var(--sp-1) + 2 * var(--gutter-phone, 8px)); max-width: 100vw; margin-inline: calc(-1 * (var(--sp-1) + var(--gutter-phone, 8px))); }
   .game:has(.cath-dock) .action-tray { flex: 1 1 auto; }
   .game:has(.cath-dock) .action-tray .actions-well { flex: 1 1 auto; }
   .game:has(.cath-dock) .action-tray .actions { flex: 1 0 112px; height: auto; max-height: 184px; container-type: size; }

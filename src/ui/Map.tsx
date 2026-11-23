@@ -1836,7 +1836,7 @@ function fitPlaques(svg: SVGSVGElement) {
   // Plan item 602: 5 units (was 3): on a phone the middle row read as one run of plates, a disc 2 px off the next name
   const GAP = 5
   // The board's left edge in its own units (the svg's box, wider than the viewBox where the board is height-bound): a
-  // disc moved to a plaque's left end must not leave the board. The right end stays bounded by neighbours only.
+  // disc moved to a plaque's left end must not leave the board, nor one on its right end.
   const ctm = svg.getScreenCTM?.()
   // Plan item 622: where the svg draws past its own box (the phone Setup's board, `overflow: visible` on a stage wider
   // than the height-bound board), its parent's box is the edge: Brindle Hills' disc had shrunk to half size against
@@ -1844,7 +1844,9 @@ function fitPlaques(svg: SVGSVGElement) {
   const host = getComputedStyle(svg).overflow === 'visible' && svg.parentElement ? svg.parentElement : svg
   const box = host.getBoundingClientRect()
   const edge0 = ctm && ctm.a > 0 && box.width > 0 ? (box.left - ctm.e) / ctm.a : -Infinity
-  const edge1 = Infinity
+  // Plan item 667: the phone board runs the screen's full width, so its right edge bounds a sign as the left does
+  // (a Delta sign ran 3 px off the screen).
+  const edge1 = ctm && ctm.a > 0 && box.width > 0 ? (box.right - ctm.e) / ctm.a : Infinity
   // Plan item 578: the disc's rim stands 4 units clear of the name's last letter (it met the 'r' of Highmoor at D).
   const DISC_CLEAR = 4
   const rowOf = (sign: Element, y0: number, y1: number) => plates.filter((p) => p.sign !== sign && p.y0 < y1 && y0 < p.y1)
