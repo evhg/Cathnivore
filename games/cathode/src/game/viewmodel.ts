@@ -145,8 +145,10 @@ function attachHands(r: GunRig, right: [number, number, number], left: [number, 
 }
 
 /** The Pin: a steel telescopic baton with a knurled rubber grip and a brass end cap. Cath's since the old days. */
-function buildPin(): GunRig {
-  const r = rig(new THREE.Vector3(0.2, -0.2, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+function buildPin(phone = false): GunRig {
+  // Plan item 665: on a phone held sideways the hip sat her fist under the frame's foot, so the baton rose out of
+  // nothing; there it comes up and in, the gloved fist on the frame and clear of the AIM and FIRE buttons.
+  const r = rig(phone ? new THREE.Vector3(0.17, -0.165, -0.38) : new THREE.Vector3(0.2, -0.2, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
   const b = new THREE.Group();
   b.add(at(cyl(0.017, 0.16, M.rubber, 18), 0, 0, 0.0));
   for (let i = 0; i < 7; i++) b.add(at(cyl(0.0185, 0.004, M.rubber, 18), 0, 0, -0.07 + i * 0.022));
@@ -428,7 +430,7 @@ export function buildGun(model: GunModel, phone = false): GunRig {
     return h;
   }
   const r =
-    model === "pin" ? buildPin()
+    model === "pin" ? buildPin(phone)
     : model === "pistol" ? buildPistol(phone)
     : model === "sledge" ? buildSledge()
     : model === "blade" ? buildBlade()

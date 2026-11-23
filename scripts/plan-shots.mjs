@@ -106,6 +106,9 @@ const jobs = {
     if (s === 'P') await p.setViewportSize({ width: 844, height: 390 })
     await p.goto(`${base}/nightshift/?play&class=ghost&rs=0.5`)
     await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 200000 }).catch(() => {})
+    // Plan item 665: item 639 holds the weapon below the frame until her first input, and a critique read the
+    // untouched arrival as 'nothing in hand': shoot the street as it plays, after an input.
+    await p.evaluate(() => { if (window.cathode) window.cathode.input.forced = { reload: true } })
     await p.waitForTimeout(4000); await p.screenshot({ path: `${out}/ns-street-${s}.png` })
   },
 }
