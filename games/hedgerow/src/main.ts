@@ -3091,6 +3091,8 @@ function towerTray(p: HTMLElement, g: Game): void {
     // Plan item 119: a soft hyphen lets a long one-word name break onto the band's second line (Chromium on Linux
     // has no hyphenation dictionary for `hyphens: auto`).
     name.textContent = TOWERS[kind].name.replace("Courthouse", "Court\u00ADhouse");
+    // Plan item 682: a name too long for a tight four-a-row band's one line (Seed Cannon, Market Stall, Courthouse)
+    if (TOWERS[kind].name.length > 10 || TOWERS[kind].name === "Courthouse") b.dataset.longName = "";
     const role = towerRole(kind);
     const glyph = document.createElement("span");
     glyph.className = `tray-role role-${role}`;
@@ -5193,14 +5195,17 @@ function flyCoin(x: number, y: number, n: number): void {
   document.body.append(coin);
   coinsInAir++;
   // The coin sits at the page's corner (components.css) and the keyframes carry it, so no inline style is set.
-  const tx = to.left + to.width / 2;
+  // Plan item 682: it lands on the purse's coin, not its middle, and fades as it lands: a '+1' in flight sat over the
+  // count's first digit ('93979' read '3979').
+  const ico = purse.querySelector("svg")?.getBoundingClientRect();
+  const tx = ico && ico.width ? ico.left + ico.width / 2 : to.left + 16;
   const ty = to.top + to.height / 2;
   const at = (x: number, y: number, k: number) => `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${k})`;
   const a = coin.animate(
     [
       { transform: at(from.x, from.y, 1), opacity: 1 },
       { transform: at(from.x + (tx - from.x) * 0.35, from.y + (ty - from.y) * 0.15 - 30, 1.15), opacity: 1, offset: 0.3 },
-      { transform: at(tx, ty, 0.6), opacity: 0.9 },
+      { transform: at(tx, ty, 0.6), opacity: 0 },
     ],
     { duration: 520, easing: "ease-in" },
   );

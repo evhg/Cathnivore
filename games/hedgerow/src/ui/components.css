@@ -560,12 +560,22 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: normal;
     text-wrap: balance;
   }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img {
+    width: 32px;
+    height: 32px;
+    margin: 4px 0 -8px;
+  }
   /* Item 214's one-row dock leaves the pill about 66 px beside three powers (level 25 on): "Next +31" goes to two
      lines there rather than running past the button. */
   .play .controls:has(#btn-rally:not([hidden])) .go-pill .btn.send {
     line-height: 1.05;
     white-space: normal;
     text-wrap: balance;
+  }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img {
+    width: 32px;
+    height: 32px;
+    margin: 4px 0 -8px;
   }
 }
 @media (max-width: 360px) {
@@ -4779,6 +4789,22 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role-word { display: none; }
   .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-role { display: revert; }
+  /* Plan item 682: the range pips ride the role word's row, so with it gone they stood on the name ('Hedgerow' struck
+     through at 3D's D column); they go with it, and a name too long for the 70 px band (Seed Cannon, Market Stall:
+     'Seed Cann') breaks onto a second line rather than being cut, and takes the line from its picture's headroom so the
+     packet keeps its height (a taller row dropped the round ticket's title from the column). */
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-pips { display: none; }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
+    padding-inline: 1px;
+    line-height: 1.05;
+    white-space: normal;
+    text-wrap: balance;
+  }
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img {
+    width: 32px;
+    height: 32px;
+    margin: 4px 0 -8px;
+  }
 }
 
 /* Plan item 361 (slice 2): at D the side column is one potting-shed bench, not boxes in boxes. The column's paper sits
