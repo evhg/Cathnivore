@@ -74,3 +74,30 @@ test('sideways phone: her weapon is in hand, lower right, and answers FIRE', asy
   }))
   expect(lag).toBeLessThanOrEqual(2)
 })
+
+// Plan item 673: at D too her gloved fist holds the Pin in the frame (its fist sat at the frame's foot, the baton 4.6%).
+test('desktop: the Pin is in her hand, 5% or more of the frame', async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'the desktop layout')
+  test.setTimeout(400_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/nightshift/')
+  await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
+  await page.goto('/nightshift/?play&class=ghost')
+  await page.waitForFunction(() => {
+    const c = (window as unknown as { cathode?: C }).cathode
+    return !!c?.job && c.stats.frames >= 2
+  }, null, { timeout: 200_000 })
+  await page.waitForFunction(() => {
+    const c = (window as unknown as { cathode: C }).cathode
+    c.input.forced = { reload: true }
+    return !c.arsenal.lowered
+  }, null, { timeout: 60_000, polling: 1000 })
+  await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.arsenal.anim.dip < 0.05, null, { timeout: 60_000, polling: 500 })
+  const m = await page.evaluate(() => {
+    const c = (window as unknown as { cathode: C }).cathode
+    const cv = c.world.renderer.domElement
+    return { share: c.vmProbe().vmPx / (cv.width * cv.height), id: c.arsenal.weapon.id }
+  })
+  expect(m.id).toBe('pin')
+  expect(m.share, JSON.stringify(m)).toBeGreaterThanOrEqual(0.05)
+})
