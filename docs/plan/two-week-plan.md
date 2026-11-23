@@ -6421,7 +6421,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** no circle bullets; 4 rows at D, each an icon 20 px+ and a 44 px+ target; a solved Runnel daily turns its row to a tick (e2e with a seeded save); text 4.5:1 on the board; site specs pass; shots P and D.
 - **Size:** 1
 
-## 675. [ ] Runnel: a dry field reads as a field waiting, not a 'no entry' sign
+## 675. [ ] Runnel: a dry field reads as a field waiting, not a 'no entry' sign *(lane B, in progress)*
 *(planned 2026-11-23 05:15, lane B, plan1123c critique)*
 - **Why:** `plan1123c/runnel-D`: 13 dry tiles each carry a big crossed-through circle (the stopped mill wheel reads as a prohibition sign; 540-600 x 400-460, 1040-1100 x 400-470, 1120-1180 x 540-610, 870-930 x 680-740), and with the tan ditch stripes the unsolved board looks barred off; the solved board is lovely. VISION 1, 2.
 - **Build:** the dry tile's mill wheel with spokes and paddles, stopped and a little tilted, no diagonal bar; dusty soil with drooping seedlings and a faint hint of its crop; on hover or focus a slight lift and its channel's ends lit.
