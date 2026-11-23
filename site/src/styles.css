@@ -1952,9 +1952,9 @@ body {
     display: grid;
     grid-template-columns: repeat(2, max-content);
     justify-content: space-between;
-    gap: 1px 16px;
+    gap: 0 16px;
     box-sizing: border-box;
-    padding: 7px 14px 8px;
+    padding: 7px 12px 6px;
     border-radius: 5px;
     background:
       radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--chalk) 7%, transparent), transparent 70%),
@@ -1985,23 +1985,40 @@ body {
   .slate-streak[data-pennant] { padding: 0 12px 0 7px; clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%); background: var(--gold); color: var(--slate); font-weight: 800; }
   /* with the slate up, the words' own today board folds into it (booth.ts) */
   .hero[data-slate] .today-board { display: none; }
+  /* Plan item 674: a chalked line per daily: its own sign, the name over today's state, the whole line a 44 px link */
   .stall-slate a {
     display: flex;
-    align-items: baseline;
-    gap: 6px;
-    min-height: 24px;
-    padding-block: 2px;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 2px 6px 2px 2px;
+    border-radius: 4px;
     color: var(--chalk);
-    font: 600 0.9375rem / 1.25 var(--font-ui);
+    font: 600 0.9375rem / 1.2 var(--font-ui);
     text-decoration: none;
     white-space: nowrap;
   }
+  .slate-icon {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 1px color-mix(in srgb, var(--chalk) 45%, transparent));
+  }
+  .slate-icon .slate-tick { stroke: var(--gold-hi); stroke-width: 2.6; }
+  .slate-line { display: grid; gap: 1px; }
   .stall-slate a small { font-size: 0.875rem; font-weight: 500; color: var(--cream-muted); }
+  .stall-slate a:hover { background: color-mix(in srgb, var(--chalk) 8%, transparent); }
   /* a narrower counter (1280 px) drops the 'to play' notes: the open ring says it */
   .stall-slate { container-type: inline-size; }
   @container (max-width: 400px) { .stall-slate a small[data-todo] { display: none; } }
-  .stall-slate a[data-done] .slate-tick { color: var(--gold); }
-  .stall-slate a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .stall-slate a[data-done] .slate-icon > :not(.slate-tick) { opacity: 0.5; }
+  .stall-slate a:hover .slate-name { text-decoration: underline; text-underline-offset: 3px; }
   .stall-slate a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
   .hero-counter { z-index: var(--z-booth-counter); filter: drop-shadow(0 -2px 6px var(--shadow-art)); }
   .hero[data-booth] .hero-text,
