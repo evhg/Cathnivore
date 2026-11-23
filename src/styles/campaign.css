@@ -2100,3 +2100,19 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
 .cmp-ticket-title { font-size: 1.3rem; }
 .cmp-ticket-goal { grid-column: 1; font-size: .875rem; }
 .cmp-ticket-play { grid-column: 2; grid-row: 3; align-self: end; margin-top: 0; padding: 0 14px; }
+/* Plan item 669: choosing a chapter opens its ticket like a letter: it unfolds down from its pin (480 ms), the words
+   settling after; reduced motion fades it in instead, and "Animations off" shows it at once. */
+.cmp-ticket { transform-origin: 50% 0; animation: cmp-ticket-unfold 480ms var(--ease-settle) both; }
+.cmp-ticket > :not(.cmp-ticket-pin) { animation: cmp-ticket-words 300ms ease-out both 180ms; }
+@keyframes cmp-ticket-unfold {
+  0% { transform: perspective(600px) rotateX(-78deg); }
+  70% { transform: perspective(600px) rotateX(6deg); }
+  100% { transform: none; }
+}
+@keyframes cmp-ticket-words { from { translate: 0 -4px; opacity: 0.2; } }
+@media (prefers-reduced-motion: reduce) {
+  .campaign-screen .cmp-ticket { animation: cmp-fade 200ms ease both !important; }
+  .campaign-screen .cmp-ticket > * { animation: none !important; }
+}
+:root.reduce-motion .campaign-screen .cmp-ticket { animation: cmp-fade 200ms ease both !important; }
+:root.reduce-motion .campaign-screen .cmp-ticket > * { animation: none !important; }

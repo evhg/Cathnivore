@@ -124,7 +124,9 @@ export default function CampaignTicket({
           <circle cx={place.ex} cy={place.ey} r={4} />
         </svg>
       )}
+      {/* Plan item 669: keyed by chapter, so each chapter chosen unfolds afresh from its pin (`cmp-ticket-unfold`) */}
       <div
+        key={chapter.id}
         ref={ref}
         className={`cmp-ticket cmp-ticket-${state}`}
         data-chapter={chapter.id}
