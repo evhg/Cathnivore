@@ -1127,9 +1127,17 @@ export function buildFrontCath(phone: boolean): FrontCath {
     // Slice 44: squashed front to back nearer the coat's own 0.7 (0.82 stood it off the coat's back and front).
     collar.scale(1, 1, 0.76);
     collar.computeVertexNormals();
-    // Its own material: the collar is seen from inside too (double-sided), the coat is not (no shadow acne).
+    // Its own material: the collar is seen from inside too, the coat is not (no shadow acne). Plan item 319: the
+    // inside is its own back-faced mesh, a dark under-collar: drawn with the outside's material (double-sided), the
+    // inside of the roll faced the sky and the key, and read as a pale flat slab over her far shoulder at the title.
     const collarMat = coatMat.clone();
-    collarMat.side = THREE.DoubleSide;
+    collarMat.side = THREE.FrontSide;
+    const underCollarMat = new THREE.MeshStandardMaterial({ color: 0x121216, roughness: 0.95, metalness: 0, side: THREE.BackSide });
+    mats.push(underCollarMat);
+    const underCollar = add(collar, underCollarMat, pelvis);
+    underCollar.name = "undercollar";
+    underCollar.castShadow = false;
+    statics.push(underCollar);
     coatMats.push(collarMat);
     coatTone.set(collarMat, COAT_TONE.collar);
     rimify(collarMat, 1, 0, 0, 0, false, 0, "wool");
