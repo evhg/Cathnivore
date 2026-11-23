@@ -6467,7 +6467,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 all four game tiles begin above y 844 and two are whole; Cath 160 px+; headline/body type ratio 2.5+; at D her box inside the window and clear of the bubble; portfolio specs pass; shots P and D.
 - **Size:** 2
 
-## 681. [ ] Hedgerow: Cath's level-up is a moment on her token, not a banner over the battle
+## 681. [ ] Hedgerow: Cath's level-up is a moment on her token, not a banner over the battle *(lane B, in progress)*
 *(planned 2026-11-23 10:00, lane B, plan1123d critique)*
 - **Why:** `plan1123d/hedge-l34-2d-D`: a flat green 'Cath is level 2' slab (320-705 x 220-320) covers the windmill, the lane and the fleet mid-round; her token (875-925 x 280-370) and the CATH LV 2 button (1030-1090 x 740-810) do nothing. VISION 3, 4.
 - **Build:** her 2D/3D token pulses and sheds a ring of leaves; a small 'Lv 2: stronger, tougher' badge rises from her and flies to the CATH button, which bumps and shows the level for 2 s; never a banner over the lane; on P the badge flies to the action bar.
