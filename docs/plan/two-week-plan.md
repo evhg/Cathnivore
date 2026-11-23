@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-23T04:55Z
 
 
 
@@ -6407,3 +6406,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed with a spec or measured in shots P and D.
 - **Size:** 1-2
 - *(slice 1, lane A 01:20: the class-pick quote was the shot, not the page: the line is said word by word and SwiftShader's ~3 fps left it mid-line at 15 s; plan-shots now waits for `[data-speaking]` to clear. Note for the guide: `#intro` sits inside the board (`games/hedgerow/index.html` ~201, styles.css 6750); docking it over the right panel at D needs the sheet placed against the side column's rect, not inside `.intro`'s inset box.)*
+
+## 673. [ ] NIGHT SHIFT desktop street: rain that reads as rain, and her hand on the Pin
+*(planned 2026-11-23 05:15, lane B, plan1123c critique; check first that the dark dashes aren't a SwiftShader artifact of the high preset)*
+- **Why:** `plan1123c/ns-street-D`: the rain draws as dark dotted vertical dashes over the lit facades (0-560 x 0-700) and the tower windows (560-900 x 60-330), reading as static, not water; the Pin floats as a bare chrome rod with no glove at D (920-1110 x 505-900) where the sideways phone shows her gloved fist (item 665). VISION 1, 6.
+- **Build:** rain streaks thin and additive, lit by the neon and lamps near them, never darker than what's behind; a few refracting lens drops and splash rings in the puddles; at D the phone's hip pose so her glove holds the Pin's grip.
+- **Accept:** in ns-street-D's 560-900 x 60-330 no streak pixel darker than its local background median (scripted); a glove 40 px+ at D and the weapon 5%+ of the frame; the P first frame unchanged; `cathode-perf` in budget; shots sideways P and D.
+- **Size:** 2
+
+## 674. [ ] /games/ chalkboard: today at the market as a designed board, not a form list
+*(planned 2026-11-23 05:15, lane B, plan1123c critique)*
+- **Why:** `plan1123c/games-D` 415-835 x 330-410: 'Today at the market' is two columns of plain text with hollow radio-button circles, the one default-looking form on the page. VISION 1.
+- **Build:** each game a chalked line with its own small chalk icon (hex, runnel, windmill, mask) and today's real state (a chalk tick when done, Runnel's par or streak, NIGHT SHIFT n/5), the whole line a link; on P a compact strip under the stall.
+- **Accept:** no circle bullets; 4 rows at D, each an icon 20 px+ and a 44 px+ target; a solved Runnel daily turns its row to a tick (e2e with a seeded save); text 4.5:1 on the board; site specs pass; shots P and D.
+- **Size:** 1
+
+## 675. [ ] Runnel: a dry field reads as a field waiting, not a 'no entry' sign
+*(planned 2026-11-23 05:15, lane B, plan1123c critique)*
+- **Why:** `plan1123c/runnel-D`: 13 dry tiles each carry a big crossed-through circle (the stopped mill wheel reads as a prohibition sign; 540-600 x 400-460, 1040-1100 x 400-470, 1120-1180 x 540-610, 870-930 x 680-740), and with the tan ditch stripes the unsolved board looks barred off; the solved board is lovely. VISION 1, 2.
+- **Build:** the dry tile's mill wheel with spokes and paddles, stopped and a little tilted, no diagonal bar; dusty soil with drooping seedlings and a faint hint of its crop; on hover or focus a slight lift and its channel's ends lit.
+- **Accept:** no dry-tile glyph has a diagonal bar (unit test on the art's paths); the wheel shows 6+ spokes at the D tile size; the edge still 3:1 (`runnel-contrast` passes); shots P and D, unsolved and solved.
+- **Size:** 2
+
+## 676. [ ] Hedgerow: the staged battle reads as a battle
+*(planned 2026-11-23 05:15, lane B, plan1123c critique; item 657 made the fleet readable, this is the fight)*
+- **Why:** `plan1123c/hedge-l21-2d-D` round 11 of 26 (204 drones next): two pink hatchbacks on the lane (395-445 x 365-470), no tower shot, hit or pop in frame; `hedge-l21-3d-D` one pink stack (215-285 x 345-410), the lane empty. VISION 3, 4.
+- **Build:** every tower type a readable fire cue at 1x (tracer, splash ring, scare puff), a pop burst and a coin flying to the purse, in 2D and 3D; plan shots take 4-6 s into a round at peak density, P too.
+- **Accept:** at the 3D shot frame 12+ vehicles on lane cells; in 2D 3+ towers showing a fire effect and a pop and coin in frame (probe via `window.hedgerow`); 3D frame rate in budget; shots P and D, 2D and 3D.
+- **Size:** 2
+
+## 677. [ ] The bugs from the 2026-11-23 05:10 critique, fixed as one batch
+*(planned 2026-11-23 05:15, lane B, plan1123c critique; check each on today's build first)*
+- Runnel solved (`runnel-solved-D` 60-302 x 177-203, `-P` 80-310 x 124-149): 'Cath's Week 0/3 · Solve 3 dailies (0/3)' after the solve, while 'dailies solved' reads 1.
+- Hedgerow P plan shots (`hedge-l21-2d-P` 5-385 x 325-690, `hedge-l34-2d-P` 5-385 x 345-690): a field-guide page over the battle: `battle()` in plan-shots doesn't close it at P (item 662's sheet: check the `.intro-go` selector and the wait).
+- Cathnivore title D (`cath-title-D` 1010-1050 x 430-455): Brindle Hills' '2' badge over Kingsmarket's '5'.
+- Campaign D (`cath-campaign-D` 795-990 x 390-470): Cath's bubble over the rail's chapter-2 envelope node (970-1005 x 380-415).
+- Hedgerow l34 2D D (`hedge-l34-2d-D` 362-395 x 135-162): the '+7' chip half under the Radio Mast.
+- /games/ P (`games-P` 208-224 x 638-690): the Runnel card's Cath a 14 px figure where the other cards have 40 px+ busts.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1
