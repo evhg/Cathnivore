@@ -2016,7 +2016,16 @@ body {
   .stall-slate a:hover { background: color-mix(in srgb, var(--chalk) 8%, transparent); }
   /* a narrower counter (1280 px) drops the 'to play' notes: the open ring says it */
   .stall-slate { container-type: inline-size; }
-  @container (max-width: 400px) { .stall-slate a small[data-todo] { display: none; } }
+  @container (max-width: 340px) { .stall-slate a small[data-todo] { display: none; } }
+  /* Plan item 674: a 1280 counter's slate (about 330 px inside) keeps its head and right column within the frame */
+  @container (max-width: 380px) {
+    .slate-head { gap: 6px; letter-spacing: 0.03em; }
+    .slate-run { gap: 4px; }
+    .slate-week { gap: 3px; }
+    .slate-week i { width: 7px; height: 7px; }
+    .stall-slate a { gap: 6px; padding-right: 0; }
+    .stall-slate .slate-icon { width: 22px; height: 22px; }
+  }
   .stall-slate a[data-done] .slate-icon > :not(.slate-tick) { opacity: 0.5; }
   .stall-slate a:hover .slate-name { text-decoration: underline; text-underline-offset: 3px; }
   .stall-slate a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }

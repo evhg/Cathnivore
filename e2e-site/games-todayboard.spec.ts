@@ -90,3 +90,23 @@ test("the board chalks each game's sign and ticks a solved daily", async ({ page
   expect(box.x).toBeGreaterThanOrEqual(0)
   expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
 })
+
+// Plan item 674: on a 1280 counter the slate is narrower: its head (name, dots, run) and both columns stay inside it.
+test('the slate holds its lines inside its frame on a 1280 desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/games/')
+  await page.evaluate(() => {
+    const d = new Date().toISOString().slice(0, 10)
+    localStorage.setItem('runnel:v1', JSON.stringify({ results: { [d]: { taps: 31 } } }))
+  })
+  await page.reload()
+  const slate = page.locator('.stall-slate')
+  test.skip(!(await slate.isVisible()), 'the desktop stall')
+  const out = await slate.evaluate((s) => {
+    const r = s.getBoundingClientRect()
+    return [...s.querySelectorAll('a, .slate-head > *')]
+      .map((e) => ({ e: e.textContent?.trim().slice(0, 20), right: e.getBoundingClientRect().right }))
+      .filter((x) => x.right > r.right - 6)
+  })
+  expect(out).toEqual([])
+})
