@@ -12,7 +12,7 @@ import { scrapbookPages } from '../../shared/cath/scrapbook'
 import { renderWeek } from '../../shared/cath/weekui'
 import { startScene } from './scene'
 import { boardCath, cardLines, todayBoard } from './cards'
-import { mountBooth } from './booth'
+import { SLATE_ICONS, SLATE_TICK, mountBooth } from './booth'
 import { startPosterPlay } from './posterplay'
 
 // Plan item 442: her line weight at small sizes, including a figure prerendered into the page.
@@ -290,16 +290,27 @@ try {
   const b = todayBoard(localStorage, new Date())
   const meta = document.querySelector<HTMLElement>('.hero-text .hero-meta')
   if (b.any && meta) {
-    const names: Record<string, string> = { runnel: 'Runnel', hedgerow: 'Hedgerow', cathnivore: 'Market', nightshift: 'The List' }
-    const extra = (t: { game: string; done: boolean; label: string }) =>
-      t.game === 'nightshift' ? t.label.replace(' names crossed off', '') : t.done ? t.label.replace('Daily: best', 'best').replace('Market ', '') : ''
+    // Plan item 674: on a phone (and anywhere the stall's slate can't stand) the board is a chalked strip of four
+    // links, each its game's own sign over its name and today's state, a gold tick chalked over a played daily's sign
+    // (no form-list rings); the week's dots and the run head it.
+    const names: Record<string, string> = { cathnivore: 'Market', runnel: 'Runnel', hedgerow: 'Hedgerow', nightshift: 'The List' }
+    const order = ['cathnivore', 'runnel', 'hedgerow', 'nightshift']
+    const state = (t: { game: string; done: boolean; label: string }): string =>
+      t.game === 'nightshift'
+        ? t.label.replace(' of ', '/').replace(' names crossed off', ' names')
+        : !t.done
+          ? 'to play'
+          : t.game === 'runnel'
+            ? t.label.replace('Solved in ', 'in ').replace(/^in (\d+)$/, 'in $1 taps').replace(/^Solved$/, 'solved')
+            : t.label.replace('Daily: best', 'best').replace('Market ', '')
+    const tags = order.map((g) => b.tags.find((t) => t.game === g)).filter((t) => t !== undefined)
     const board = document.createElement('div')
     board.className = 'today-board'
     board.setAttribute('role', 'group')
     board.setAttribute('aria-label', "Today's market")
     board.innerHTML =
-      `<p class="today-tags">${b.tags.map((t) => `<span class="today-tag" data-game="${t.game}"${t.done ? ' data-done' : ''} title="${t.label}"><span class="today-tick" aria-hidden="true">${t.done ? '✓' : '○'}</span>${names[t.game]}${extra(t) ? ` <small>${extra(t)}</small>` : ''}</span>`).join('')}</p>` +
-      `<p class="today-week"><span class="today-dots" role="img" aria-label="${b.week.filter(Boolean).length} of the last 7 days played">${b.week.map((on) => `<i${on ? ' data-on' : ''}></i>`).join('')}</span>${b.streak > 0 ? `<span class="${b.pennant ? 'today-pennant' : 'today-run'}">${b.streak}-day run</span>` : ''}</p>`
+      `<p class="today-week"><span class="today-head">Today at the market</span><span class="today-run-row"><span class="today-dots" role="img" aria-label="${b.week.filter(Boolean).length} of the last 7 days played">${b.week.map((on) => `<i${on ? ' data-on' : ''}></i>`).join('')}</span>${b.streak > 0 ? `<span class="${b.pennant ? 'today-pennant' : 'today-run'}">${b.streak}-day run</span>` : ''}</span></p>` +
+      `<p class="today-tags">${tags.map((t) => `<a class="today-tag" href="/${t.game}/" data-game="${t.game}"${t.done ? ' data-done' : ''} title="${t.label}"><svg class="today-icon" viewBox="0 0 24 24" aria-hidden="true">${SLATE_ICONS[t.game] ?? ''}${t.done ? SLATE_TICK : ''}</svg><span class="today-name">${names[t.game]}</span><small${!t.done && t.game !== 'nightshift' ? ' data-todo' : ''}>${state(t)}</small></a>`).join('')}</p>`
     meta.replaceWith(board)
   }
 } catch {

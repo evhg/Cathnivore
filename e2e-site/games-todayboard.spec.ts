@@ -41,7 +41,7 @@ test('seeded saves tick today, chalk the week and fly the pennant, and the poste
   }
   const board = page.locator('.today-board')
   await expect(board).toBeVisible()
-  await expect(board.locator('.today-tag[data-game="runnel"][data-done]')).toContainText('Solved in 31')
+  await expect(board.locator('.today-tag[data-game="runnel"][data-done]')).toContainText('in 31 taps')
   await expect(board.locator('.today-tag[data-done]')).toHaveCount(1)
   await expect(board.locator('.today-dots i[data-on]')).toHaveCount(3)
   await expect(board.locator('.today-pennant')).toHaveText('3-day run')
@@ -50,9 +50,10 @@ test('seeded saves tick today, chalk the week and fly the pennant, and the poste
   expect(poster!.y).toBeLessThan(vh)
 })
 
-// Plan item 674: the slate is a chalked board, not a form list: each line its game's own sign (20 px+, no ring
-// bullets), a 44 px+ link, and a solved Runnel daily chalks a gold tick over its sign.
-test("the slate chalks each game's sign and ticks a solved daily", async ({ page }) => {
+// Plan item 674: the board is chalked, not a form list: each line its game's own sign (20 px+, no ring bullets), a
+// 44 px+ link, and a solved Runnel daily chalks a gold tick over its sign. At D on the stall's slate; on a phone (or
+// where the slate can't stand) the words' strip of four under the stall.
+test("the board chalks each game's sign and ticks a solved daily", async ({ page }) => {
   await page.goto('/games/')
   await page.evaluate(() => {
     const d = new Date().toISOString().slice(0, 10)
@@ -60,21 +61,32 @@ test("the slate chalks each game's sign and ticks a solved daily", async ({ page
   })
   await page.reload()
   const slate = page.locator('.stall-slate')
-  test.skip(!(await slate.isVisible()), 'the desktop stall')
-  await expect(slate.locator('a')).toHaveCount(4)
-  const m = await slate.evaluate((s) =>
+  const board = (await slate.isVisible()) ? slate : page.locator('.today-board')
+  await expect(board).toBeVisible()
+  await expect(board.locator('a')).toHaveCount(4)
+  const m = await board.evaluate((s) =>
     [...s.querySelectorAll('a')].map((a) => ({
       game: a.dataset.game,
       h: a.getBoundingClientRect().height,
-      icon: a.querySelector('.slate-icon')?.getBoundingClientRect().width ?? 0,
+      w: a.getBoundingClientRect().width,
+      icon: a.querySelector('svg')?.getBoundingClientRect().width ?? 0,
       ring: /[○◯]/.test(a.textContent ?? ''),
       tick: !!a.querySelector('.slate-tick'),
+      href: a.getAttribute('href'),
+      cut: [...a.querySelectorAll('span, small')].some((e) => e.scrollWidth > e.clientWidth + 1),
     })),
   )
   for (const l of m) {
     expect(l.h, l.game).toBeGreaterThanOrEqual(44)
+    expect(l.w, l.game).toBeGreaterThanOrEqual(44)
     expect(l.icon, l.game).toBeGreaterThanOrEqual(20)
     expect(l.ring, l.game).toBe(false)
     expect(l.tick, l.game).toBe(l.game === 'runnel')
+    expect(l.href, l.game).toBe(`/${l.game}/`)
+    expect(l.cut, l.game).toBe(false)
   }
+  // the board stays inside the page
+  const box = (await board.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
 })

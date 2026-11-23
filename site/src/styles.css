@@ -2203,35 +2203,73 @@ body {
    game, then the week's seven dots and the run (a gold pennant at three days). */
 .today-board {
   display: grid;
-  gap: 3px;
-  justify-items: start;
-  justify-self: start;
-  width: fit-content;
-  max-width: 100%;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 460px;
   margin: 0;
-  padding: 4px 10px 5px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--scrim) 80%, transparent);
+  padding: 6px 6px 4px;
+  border-radius: 5px;
+  background:
+    radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--chalk) 7%, transparent), transparent 70%),
+    var(--slate);
+  box-shadow: 0 0 0 3px var(--wood-lo), 0 6px 12px var(--shadow-art);
   color: var(--chalk);
   font-size: var(--fs-meta);
-  line-height: 1.25;
+  line-height: 1.2;
 }
-.today-tags, .today-week { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; margin: 0; }
-.today-tag { white-space: nowrap; color: color-mix(in srgb, var(--chalk) 85%, transparent); }
-.today-tag small { font-size: 1em; color: color-mix(in srgb, var(--chalk) 75%, transparent); }
-.today-tag[data-done] { color: var(--chalk); }
+/* Plan item 674: the head (its name, the week's dots, the run) over four chalked links, each its game's sign */
+.today-week {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px 6px;
+  margin: 0;
+  padding: 0 1px 4px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--chalk) 35%, transparent);
+}
+.today-head { font: 700 0.75rem / 1.2 var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.today-run-row { display: inline-flex; align-items: center; gap: 5px; color: var(--gold-hi); font-weight: 600; white-space: nowrap; }
+.today-tags { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin: 0; }
+.today-tag {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 50px;
+  padding: 2px;
+  border-radius: 4px;
+  color: var(--chalk);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+.today-icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 1px color-mix(in srgb, var(--chalk) 45%, transparent));
+}
+.today-icon .slate-tick { stroke: var(--gold-hi); stroke-width: 2.6; }
+.today-tag[data-done] .today-icon > :not(.slate-tick) { opacity: 0.5; }
+.today-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.today-tag small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 500; color: var(--cream-muted); }
 .today-tag[data-done] small { color: var(--gold-hi); }
-.today-tick { display: inline-block; width: 1.1em; color: color-mix(in srgb, var(--chalk) 60%, transparent); }
-.today-tag[data-done] .today-tick { color: var(--gold-hi); font-weight: 800; }
-.today-dots { display: inline-flex; gap: 5px; }
+.today-tag:hover { background: color-mix(in srgb, var(--chalk) 8%, transparent); }
+.today-tag:hover .today-name { text-decoration: underline; text-underline-offset: 3px; }
+.today-tag:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.today-dots { display: inline-flex; gap: 3px; }
 .today-dots i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--chalk) 70%, transparent); }
 .today-dots i[data-on] { background: var(--chalk); }
-.today-run { color: color-mix(in srgb, var(--chalk) 85%, transparent); }
-.today-pennant { padding: 0 12px 0 7px; clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%); background: var(--gold); color: var(--slate); font-weight: 800; }
-@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-  /* on the slate itself at D: no backing (it spilled past the slate's frame) */
-  .today-board { padding: 2px 0 0; background: none; }
-}
+.today-run { color: var(--gold-hi); }
+.today-pennant { padding: 0 11px 0 6px; clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%); background: var(--gold); color: var(--slate); font-weight: 800; }
 
 /* Plan item 517: at D Cath is the booth's centre: her column takes the larger share (her centre near the middle of
    the screen, not its left quarter), she stands about 400 px tall behind the counter, and the words (with the slate

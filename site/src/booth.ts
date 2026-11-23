@@ -369,13 +369,13 @@ let slate: HTMLElement | null = null
  *  waits), a tick once today's is played, and the run in pennants. Returns false (and hides) where it can't fit. */
 /** Plan item 674: each daily chalked with its own small sign (no form-list rings): Cathnivore's three hexes, Runnel's
  *  channel, Hedgerow's windmill, NIGHT SHIFT's mask; a gold tick chalked over it once played. */
-const SLATE_ICONS: Record<string, string> = {
+export const SLATE_ICONS: Record<string, string> = {
   cathnivore: '<path d="M7 3.5l3.5 2v4L7 11.5l-3.5-2v-4zM16.5 3.5l3.5 2v4l-3.5 2-3.5-2v-4zM11.8 11.5l3.5 2v4l-3.5 2-3.5-2v-4z"/>',
   runnel: '<path d="M3 5c4 0 4 4 8 4s3 6 7 6 2.5 4 3 4"/><path d="M3 9.5c3 0 3.5 3.5 6.5 3.5" opacity=".55"/><circle cx="3.5" cy="5" r="1.6"/>',
   hedgerow: '<path d="M12 10.5L9.5 21h5zM12 10.5L6 4.5M12 10.5l6-6M12 10.5l-6 6M12 10.5l6 6"/><circle cx="12" cy="10.5" r="1.4"/>',
   nightshift: '<path d="M3 8.5c3-2 6-2 9 0 3-2 6-2 9 0-.5 5-3.5 7.5-6 7.5-1.6 0-2.3-1.3-3-2.6-.7 1.3-1.4 2.6-3 2.6-2.5 0-5.5-2.5-6-7.5z"/><path d="M6.5 10.5h3M14.5 10.5h3"/>',
 }
-const SLATE_TICK = '<path class="slate-tick" d="M12 15.5l3.2 3.5L22 9.5"/>'
+export const SLATE_TICK = '<path class="slate-tick" d="M12 15.5l3.2 3.5L22 9.5"/>'
 
 function placeSlate(hero: HTMLElement, l: number, rgt: number, t: number, b: number): boolean {
   if (!slate) {
