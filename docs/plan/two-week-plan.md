@@ -6404,3 +6404,4 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - NIGHT SHIFT class pick: the role quote is cut mid-sentence in the shot ('Nobody hears the'); check whether the typewriter just hadn't finished, and make plan-shots wait for it if so.
 - **Accept:** each fixed with a spec or measured in shots P and D.
 - **Size:** 1-2
+- *(slice 1, lane A 01:35: the class-pick quote was the shot, not the page: the line is said word by word and SwiftShader's ~3 fps left it mid-line at 15 s; plan-shots now waits for `[data-speaking]` to clear. Note for the guide: `#intro` sits inside the board (`games/hedgerow/index.html` ~201, styles.css 6750); docking it over the right panel at D needs the sheet placed against the side column's rect, not inside `.intro`'s inset box.)*

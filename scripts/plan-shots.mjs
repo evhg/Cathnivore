@@ -100,7 +100,11 @@ const jobs = {
     // her as missing. Wait for the pick to set its class on the canvas, then for the walk-down to settle.
     await p.goto(`${base}/nightshift/?play`)
     await p.waitForFunction(() => document.querySelector('canvas')?.dataset.class, null, { timeout: 90000 }).catch(() => {})
-    await p.waitForTimeout(15000); await p.screenshot({ path: `${out}/ns-play-${s}.png` })
+    // Plan item 672: her quote is said word by word and under SwiftShader it was still mid-line at 15 s ('Nobody hears
+    // the'), read as a cut quote: wait for the line to finish (the pick drops data-speaking when it has been said).
+    await p.waitForTimeout(15000)
+    await p.waitForFunction(() => !document.querySelector('[data-speaking]'), null, { timeout: 30000 }).catch(() => {})
+    await p.screenshot({ path: `${out}/ns-play-${s}.png` })
     // Plan item 627: and the street in play, the HUD up (the pick is not play; critiques never saw the game itself). A
     // phone plays held sideways, so it turns first.
     if (s === 'P') await p.setViewportSize({ width: 844, height: 390 })
