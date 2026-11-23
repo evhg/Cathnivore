@@ -6367,7 +6367,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at 390x844 the board's box 460 px+ tall; no two region plates intersect; each region's tap target 44x44+; the resting hand 80 px or less; a region tap changes the board transform within 250 ms (e2e); shots P, and D unchanged.
 - **Size:** 3
 
-## 668. [ ] NIGHT SHIFT class pick: each role is its own person and gun
+## 668. [ ] NIGHT SHIFT class pick: each role is its own person and gun *(lane B, in progress)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique; separate from 319/543, which sculpt Cath's face, hair and coat)*
 - **Why:** `plan1123a/ns-play-D` and `-P`: all five roles stand as the same Cath in the same grey hooded coat (D 600-840 x 90-850); only the list portraits change; (the Wirewitch's and Fixer's flat red guns in plan1123a were loading placeholders: plan1123b, shot after the line is said, shows all five rendered). VISION 'characters with presence', 'craft in the details'.
 - **Build:** a per-role outfit layer over the shared Cath (the Butcher's apron, the Gunslinger's duster, the Wirewitch's visor and cables, the Fixer's hi-vis, the Ghost's hood), a per-role idle pose with the role's gun in hand, . Inside the class-pick perf budget.
