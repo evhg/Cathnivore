@@ -6395,7 +6395,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** Cath's face box and the board's box don't intersect; 7 region names visible at 390x844; the entrance 400 ms+ with a reduced-motion fade (e2e); shots P, D unchanged.
 - **Size:** 1-2
 
-## 672. [ ] The bugs from the 2026-11-23 01:15 critique, fixed as one batch *(handed back 2026-11-23 01:23 by lane A after slice 1)*
+## 672. [ ] The bugs from the 2026-11-23 01:15 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - Hedgerow 2D D: the field guide (item 662) still sits over the field's middle (655-1000 x 85-750 in `hedge-l34-2d-D`); at D it docks over the right panel (1025-1425) instead, the field clear. Its driver portrait (780-835 x 190-255) clips 'GUIDE' in the kicker.
 - Hedgerow l21 2D D: the vehicle count chip's icons overlap its digits (365-485 x 372-400).
