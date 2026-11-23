@@ -6435,7 +6435,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** at the 3D shot frame 12+ vehicles on lane cells; in 2D 3+ towers showing a fire effect and a pop and coin in frame (probe via `window.hedgerow`); 3D frame rate in budget; shots P and D, 2D and 3D.
 - **Size:** 2
 
-## 677. [ ] The bugs from the 2026-11-23 05:10 critique, fixed as one batch
+## 677. [ ] The bugs from the 2026-11-23 05:10 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-23 05:15, lane B, plan1123c critique; check each on today's build first)*
 - Runnel solved (`runnel-solved-D` 60-302 x 177-203, `-P` 80-310 x 124-149): 'Cath's Week 0/3 · Solve 3 dailies (0/3)' after the solve, while 'dailies solved' reads 1.
 - Hedgerow P plan shots (`hedge-l21-2d-P` 5-385 x 325-690, `hedge-l34-2d-P` 5-385 x 345-690): a field-guide page over the battle: `battle()` in plan-shots doesn't close it at P (item 662's sheet: check the `.intro-go` selector and the wait).
