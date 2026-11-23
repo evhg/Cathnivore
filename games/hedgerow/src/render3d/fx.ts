@@ -99,6 +99,115 @@ export class Sparks {
   }
 }
 
+const MAX_PUFFS = 360;
+
+/**
+ * Plan item 676: soft rounds of smoke, dust or spray that hang about a tower's muzzle and along a shot's path for most
+ * of a second, so a still frame shows which towers are firing (sparks live a quarter second and bloom away). Normal
+ * blending, not additive, so they read against a bright field; they swell as they fade. One draw call.
+ */
+export class Puffs {
+  readonly points: THREE.Points;
+  private pos = new Float32Array(MAX_PUFFS * 3);
+  private col = new Float32Array(MAX_PUFFS * 3);
+  private size = new Float32Array(MAX_PUFFS);
+  private alpha = new Float32Array(MAX_PUFFS);
+  private vel = new Float32Array(MAX_PUFFS * 3);
+  private life = new Float32Array(MAX_PUFFS);
+  private age = new Float32Array(MAX_PUFFS);
+  private base = new Float32Array(MAX_PUFFS);
+  private next = 0;
+  private c = new THREE.Color();
+
+  constructor() {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(this.pos, 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(this.col, 3));
+    geo.setAttribute("size", new THREE.BufferAttribute(this.size, 1));
+    geo.setAttribute("alpha", new THREE.BufferAttribute(this.alpha, 1));
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { scale: { value: 300 } },
+      vertexShader: `attribute float size; attribute float alpha; attribute vec3 color; varying vec3 vColor; varying float vAlpha;
+        uniform float scale; void main() { vColor = color; vAlpha = alpha; vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size * scale / -mv.z; gl_Position = projectionMatrix * mv; }`,
+      // A soft disc with a faint darker rim, like the field's inked edges.
+      fragmentShader: `varying vec3 vColor; varying float vAlpha; void main() { float r = length(gl_PointCoord - 0.5) * 2.0;
+        if (r > 1.0 || vAlpha <= 0.0) discard; float body = smoothstep(1.0, 0.55, r); float rim = smoothstep(0.7, 0.88, r) * (1.0 - smoothstep(0.9, 1.0, r));
+        gl_FragColor = vec4(mix(vColor, vColor * 0.55, rim * 0.6), vAlpha * max(body, rim * 0.5)); }`,
+      transparent: true,
+      depthWrite: false,
+    });
+    this.points = new THREE.Points(geo, mat);
+    this.points.frustumCulled = false;
+    this.points.renderOrder = 2;
+  }
+
+  setScale(px: number): void {
+    (this.points.material as THREE.ShaderMaterial).uniforms.scale!.value = px;
+  }
+
+  /** `n` puffs about (x, y, z), drifting up at `rise` units a second, `size` world units across at birth. */
+  emit(x: number, y: number, z: number, color: THREE.ColorRepresentation, n: number, size: number, life: number, rise = 0.4, spread = 0.1): void {
+    const c = this.c.set(color);
+    for (let k = 0; k < n; k++) {
+      const i = this.next;
+      const j = i * 3;
+      this.next = (this.next + 1) % MAX_PUFFS;
+      const a = Math.random() * Math.PI * 2;
+      this.pos[j] = x + Math.cos(a) * spread * Math.random();
+      this.pos[j + 1] = y + Math.random() * spread * 0.5;
+      this.pos[j + 2] = z + Math.sin(a) * spread * Math.random();
+      this.vel[j] = Math.cos(a) * 0.12;
+      this.vel[j + 1] = rise * (0.7 + Math.random() * 0.6);
+      this.vel[j + 2] = Math.sin(a) * 0.12;
+      this.col[j] = c.r;
+      this.col[j + 1] = c.g;
+      this.col[j + 2] = c.b;
+      this.base[i] = size * (0.75 + Math.random() * 0.5);
+      this.life[i] = life * (0.85 + Math.random() * 0.3);
+      this.age[i] = 0;
+    }
+  }
+
+  /** Puffs alive now. */
+  get live(): number {
+    let n = 0;
+    for (let i = 0; i < MAX_PUFFS; i++) if (this.life[i]! > 0) n++;
+    return n;
+  }
+
+  update(dt: number): void {
+    for (let i = 0; i < MAX_PUFFS; i++) {
+      if (this.life[i]! <= 0) {
+        this.size[i] = 0;
+        this.alpha[i] = 0;
+        continue;
+      }
+      this.age[i]! += dt;
+      const k = this.age[i]! / this.life[i]!;
+      if (k >= 1) {
+        this.life[i] = 0;
+        this.size[i] = 0;
+        this.alpha[i] = 0;
+        continue;
+      }
+      // Slow as they rise, like smoke in still air.
+      const drag = Math.max(0, 1 - dt * 1.5);
+      for (let a = 0; a < 3; a++) {
+        this.vel[i * 3 + a]! *= drag;
+        this.pos[i * 3 + a]! += this.vel[i * 3 + a]! * dt;
+      }
+      this.size[i] = this.base[i]! * (0.6 + k * 0.9);
+      this.alpha[i] = 0.85 * (1 - k) * (1 - k * 0.3);
+    }
+    const g = this.points.geometry;
+    g.attributes.position!.needsUpdate = true;
+    g.attributes.size!.needsUpdate = true;
+    g.attributes.color!.needsUpdate = true;
+    g.attributes.alpha!.needsUpdate = true;
+  }
+}
+
 const MAX_DEBRIS = 400;
 /** A staying chunk's life: long enough that it never fades within a round. */
 const STAY = 1e6;

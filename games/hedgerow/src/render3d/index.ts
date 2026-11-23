@@ -50,7 +50,8 @@ import { CATH_HEAD_Y, buildCath, cathFaceTexture, dressCath, liftCath, buildEnem
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
 import { buildGround, regionShapes, waterNormalTexture, type Ground, setCloudShadows } from "./terrain";
 import { Crops } from "./crops";
-import { Birds, Debris, Floaters, Motes, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
+import { Birds, Debris, Floaters, Motes, Puffs, Sparks, Transients, disposeOwn, sharedGeometry } from "./fx";
+import { PUFF, fireTint } from "../firetint";
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
 import { swarms, SWARM_MIN } from "../swarm";
@@ -70,6 +71,8 @@ interface TowerView {
   fired: number;
   /** Seconds since it was built or upgraded. */
   pop: number;
+  /** Plan item 676: the model's top in world y, measured on its first shot (the muzzle puff rises from there). */
+  top?: number;
   /** The build-up in progress (null once it has finished, or with reduced motion). */
   build: BuildUp | null;
 }
@@ -282,6 +285,10 @@ export class Renderer3D {
   private cath: THREE.Group | null = null;
   private faceTex: THREE.Texture | null = null;
   private sparks = new Sparks();
+  /** Plan item 676: muzzle puffs and shot trails that linger, so a still frame shows the fight. */
+  private puffs = new Puffs();
+  /** Plan item 676: projectiles in the air now (not the silo's beams). */
+  private inFlight = 0;
   private motes: Motes[] = [];
   private birds: Birds | null = null;
   private pxScale = 300;
@@ -425,7 +432,7 @@ export class Renderer3D {
     this.sun.castShadow = true;
     this.sun.shadow.bias = -0.0006;
     this.sun.shadow.normalBias = 0.02;
-    this.dynamic.add(this.sparks.points, this.debris.mesh);
+    this.dynamic.add(this.sparks.points, this.puffs.points, this.debris.mesh);
     this.fx = new Transients(this.dynamic);
     this.floaters = new Floaters(overlay);
     this.overlayEl = overlay;
@@ -541,6 +548,7 @@ export class Renderer3D {
     (this.grade.uniforms.shape!.value as THREE.Vector2).set(Math.max(this.w / long, 0.5), Math.max(this.h / long, 0.5) * (this.w >= this.h ? 1.05 : 1));
     this.pxScale = this.h * dpr * 0.9;
     this.sparks.setScale(this.pxScale);
+    this.puffs.setScale(this.pxScale);
     this.camera.aspect = this.w / this.h;
     if (game.level.id !== this.levelId) this.buildLevel(game);
     for (const m of this.motes) m.setScale(this.pxScale);
@@ -1351,6 +1359,7 @@ export class Renderer3D {
     this.towers.clear();
     this.enemies.clear();
     this.fx.clear();
+    this.inFlight = 0;
     this.floaters.clear();
     if (this.ghost) this.scene.remove(this.ghost);
     this.ghost = null;
@@ -1427,6 +1436,17 @@ export class Renderer3D {
           const ty = this.height(e.toX, e.toY) + 0.25;
           // A path tower's tier 3 throws like the old specialisation it grew from (Crow Caller's crows...).
           const spec = e.spec ?? (e.look ? (LOOK_SPEC[e.look] ?? null) : null);
+          // Plan item 676: a muzzle puff in the tower's tint that hangs about its top for most of a second (the
+          // sparks below last a quarter of one), so a still frame shows which towers are firing.
+          // (from the model's top, cached on it: a windmill's puff at a scarecrow's height hid behind its tower)
+          // (four fifths of the way up: a windmill's sail tips stand well above its cap)
+          let top = fy + 0.15;
+          if (tv) {
+            if (tv.top === undefined && !tv.build) tv.top = this.qBox.setFromObject(tv.obj).max.y;
+            const ground = fy - 0.7;
+            if (tv.top !== undefined && Number.isFinite(tv.top)) top = ground + Math.min(2.4, Math.max(0.8, (tv.top - ground) * 0.8));
+          }
+          this.puffs.emit(e.fromX, top, e.fromY, fireTint(e.kind, spec), 4, 0.55, PUFF, this.reducedMotion ? 0 : 0.35, 0.18);
           this.projectile(e.kind, spec, e.fromX, fy, e.fromY, e.toX, ty, e.toY, !!e.crit, e.enemy);
           break;
         }
@@ -1819,6 +1839,9 @@ export class Renderer3D {
     // A puff at the muzzle.
     this.sparks.emit(fx, fy, fz, kind === "cannon" ? "#efe2c4" : "#fff6d6", kind === "cannon" ? 12 : 3, kind === "cannon" ? 1.4 : 0.8, kind === "cannon" ? 0.16 : 0.08, 0.25, 0);
     const p = obj.position;
+    const tint = fireTint(kind, spec);
+    let lastTrail = -1;
+    this.inFlight++;
     this.fx.add(obj, life, (k) => {
       p.lerpVectors(from, to, k);
       p.y += Math.sin(k * Math.PI) * arc;
@@ -1835,8 +1858,14 @@ export class Renderer3D {
       }
       if (trail && k < 1) {
         this.sparks.emit(p.x, p.y, p.z, trail, crit ? 2 : 1, 0.08, trailSize, crit ? 0.35 : 0.25, 0);
+        // Plan item 676: a soft trail along the arc that lingers after the shot lands, so a still reads who shoots what.
+        if (k - lastTrail >= 0.08) {
+          lastTrail = k;
+          this.puffs.emit(p.x, p.y, p.z, tint, 1, trailSize * 1.6, 0.55, 0.05, 0);
+        }
       }
       if (k >= 1) {
+        this.inFlight = Math.max(0, this.inFlight - 1);
         flash();
         if (kind === "cannon") {
           // The sack bursts: a dust cloud, seed potatoes everywhere, a ring where it landed.
@@ -1974,6 +2003,13 @@ export class Renderer3D {
     this.koUntil = performance.now() + ms;
     this.shot = null;
   }
+  /** Plan item 676, for the staged battle shots: projectiles in the air, towers still showing their muzzle puff, and
+   *  puffs (muzzle and trail) alive. */
+  fxCounts(): { shots: number; parts: number; cues: number; trails: number } {
+    const cues = [...this.towers.values()].filter((v) => v.fired < PUFF).length;
+    return { shots: this.inFlight, parts: this.puffs.live, cues, trails: this.puffs.live };
+  }
+
   /** Tests: how far the camera leans into the held knockout (0 to 1), and where. */
   knockoutView(): { ease: number; held: boolean; until: number; x: number; z: number } {
     return { ease: this.koEase, held: performance.now() < this.koUntil, until: this.koUntil, x: this.koAt.x, z: this.koAt.z };
@@ -2074,6 +2110,7 @@ export class Renderer3D {
     for (const m of this.motes) m.update(dt, t);
     this.birds?.update(t);
     this.sparks.update(dt);
+    this.puffs.update(dt);
     this.debris.update(dt);
     this.fx.update(dt);
     // Camera: zoom towards the target, offset by the pan; then shake.

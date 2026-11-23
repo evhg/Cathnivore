@@ -40,6 +40,7 @@ import {
   type Enemy,
   type Level,
 } from "./engine";
+import { PUFF, fireTint } from "./firetint";
 import { cathSvg } from "../../../shared/cath/cath";
 import { crayonNextBillboard, gateSignRect, isWonLevel, paintBackground, rng, themeFor } from "./theme";
 import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins";
@@ -96,26 +97,8 @@ interface Shot {
   landed?: boolean;
 }
 
-/** Plan item 676: how long a shot's trail lingers after it lands, and a muzzle puff lives, so a fight reads in a still. */
+/** Plan item 676: how long a shot's trail lingers after it lands, so a fight reads in a still (puffs: `PUFF`). */
 const TRAIL = 0.45;
-const PUFF = 1.1;
-/** The colour of a tower's muzzle puff and shot trail: straw dust, seed-cannon smoke, silo glare, pond spray, honey. */
-function fireTint(kind: TowerKind, spec: 0 | 1 | null): string {
-  switch (kind) {
-    case "cannon":
-      return "#d9d2c6";
-    case "silo":
-      return "#ffe9a8";
-    case "pond":
-      return "#d6eef7";
-    case "beehive":
-      return "#ffe08a";
-    case "scarecrow":
-      return spec === 0 ? "#f6c48a" : "#f3e6b8";
-    default:
-      return "#f4f1ea";
-  }
-}
 
 /** Path tier 3 looks that draw like an old specialisation's shot (the rest have their own). */
 const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter: 1, queen: 0, honey: 1 };
@@ -538,7 +521,7 @@ export class Renderer {
           if (this.parts.length < 400) {
             const tint = fireTint(e.kind, spec);
             for (let i = 0; i < 3; i++) {
-              const p = this.particle(e.fromX + (i - 1) * 0.09, e.fromY - 0.4 - (i % 2) * 0.06, tint, "puff", 0.1 + (i === 1 ? 0.04 : 0), PUFF);
+              const p = this.particle(e.fromX + (i - 1) * 0.11, e.fromY - 0.42 - (i % 2) * 0.07, tint, "puff", 0.14 + (i === 1 ? 0.05 : 0), PUFF);
               p.vx = (i - 1) * 0.12;
               p.vy = this.reducedMotion ? 0 : -0.45 - i * 0.08;
               p.g = 0;
@@ -2720,9 +2703,9 @@ export class Renderer {
           ctx.beginPath();
           ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI * 2);
           ctx.fill();
-          ctx.globalAlpha = 0.35 * (1 - k);
+          ctx.globalAlpha = 0.55 * (1 - k);
           ctx.strokeStyle = INK;
-          ctx.lineWidth = Math.max(1, s * 0.012);
+          ctx.lineWidth = Math.max(1.2, s * 0.016);
           ctx.stroke();
           break;
         }

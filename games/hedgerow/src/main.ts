@@ -829,11 +829,20 @@ if (SANDBOX)
       }
       return g.towers.filter((t) => towerStats(t).air).length;
     },
+    // Plan item 676: run the sim `secs` ahead without drawing it (its events dropped), so a staged 3D field (a few
+    // frames a second headless, the sim capped at 0.1 s a frame) reaches the fight before the shot.
+    warp: (g: Game, secs: number) => {
+      for (let i = 0; i < Math.round(secs / STEP) && g.phase === "wave"; i++) {
+        stepGame(g);
+        drainEvents(g);
+      }
+      return g.enemies.filter((e) => e.hp > 0).length;
+    },
     // Plan item 676: what the battle shows now, for the staged shots and their spec: towers that attacked in the last
-    // second, coins in the air to the purse, vehicles on the lane, and (2D) shots and particles drawn.
+    // second, coins in the air to the purse, vehicles on the lane, and shots in the air, puffs and particles, and towers still showing a muzzle puff (2D and 3D).
     fx: () => {
       const now = performance.now();
-      const r = renderer && !is3D(renderer) ? (renderer as { fxCounts?: () => { shots: number; parts: number; cues: number; trails: number } }).fxCounts?.() : undefined;
+      const r = renderer ? (renderer as { fxCounts?: () => { shots: number; parts: number; cues: number; trails: number } }).fxCounts?.() : undefined;
       return {
         attackers: [...lastAttack.values()].filter((t) => now - t < 1000).length,
         coinsInAir,

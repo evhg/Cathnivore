@@ -48,7 +48,7 @@ const jobs = {
   async hedgerow(p, s) {
     // Plan item 650: the mid-level shots show a battle, not a bare sandbox field: up to eight of the level's towers on
     // plots beside the lane, then its round under way.
-    const battle = async () => {
+    const battle = async (warp = 0) => {
       await p.evaluate(() => {
         const hg = window.hedgerow, g = hg.game()
         const path = [...(g.level.path ?? []), ...(g.level.path2 ?? [])]
@@ -84,8 +84,13 @@ const jobs = {
       await p.waitForFunction(() => (window.hedgerow.game().enemies?.length ?? 0) >= 3, null, { timeout: 45000 }).catch(() => console.log('battle: under 3 vehicles'))
       await p.waitForTimeout(1500)
       for (let i = 0; i < 4 && (await closeGuide()); i++) await p.waitForTimeout(600)
+      // plan item 676: headless 3D draws a few frames a second and the sim steps at most 0.1 s a frame, so the
+      // vehicles barely reach the towers in the wait below: run the round on unseen first
+      if (warp) console.log('battle: warped, vehicles', await p.evaluate((sec) => window.hedgerow.warp?.(window.hedgerow.game(), sec), warp))
       // plan item 676: shoot the fight, not a lull: wait (up to 20 s) for three towers attacking and a coin in the air
-      await p.waitForFunction(() => { const f = window.hedgerow.fx?.(); return !f || ((f.cues ?? f.attackers) >= 3 && f.coinsInAir >= 1) }, null, { timeout: 20000, polling: 100 }).catch(() => console.log('battle: no peak frame'))
+      // (and no banner over the field: 'Cath is level 2' stood over the l27 D frame)
+      await p.waitForFunction(() => { const f = window.hedgerow.fx?.(); return !f || ((f.cues ?? f.attackers) >= 3 && f.coinsInAir >= 1 && !document.querySelector('.banner.show')) }, null, { timeout: 20000, polling: 100 }).catch(() => console.log('battle: no peak frame'))
+      console.log('battle', JSON.stringify(await p.evaluate(() => window.hedgerow.fx?.())))
       await closeGuide()
     }
     await p.goto(`${base}/hedgerow/?2d`)
@@ -96,7 +101,7 @@ const jobs = {
       await p.goto(`${base}/hedgerow/?sandbox=1&level=27${mode === '2d' ? '&2d' : ''}`)
       await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
       await p.waitForTimeout(mode === '2d' ? 1000 : 5000)
-      await battle()
+      await battle(mode === '3d' ? 7 : 0)
       await p.screenshot({ path: `${out}/hedge-l27-${mode}-${s}.png` })
     }
     await p.goto(`${base}/hedgerow/?sandbox=1&level=34&2d`)
