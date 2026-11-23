@@ -7,6 +7,18 @@ export interface RegionDef {
   neighbors: RegionId[]
 }
 
+/** Plan item 671: the short plates a small board wears (the phone title), where the full names ran into their
+ * neighbours or past the board's edge (Highmoor under Cath's arm, Rivermead's disc off the cloth). */
+export const SHORT_NAMES: Partial<Record<RegionId, string>> = {
+  kingsmarket: 'Kings',
+  shingleBay: 'Shingle',
+  brindleHills: 'Brindle',
+  saltmarsh: 'Salt',
+  rivermead: 'River',
+  highmoor: 'Moor',
+  oakvale: 'Oak',
+}
+
 // Hex flower: Kingsmarket in the centre, the ring order below sets adjacency
 // (Highmoor-Saltmarsh-Rivermead-ShingleBay-Oakvale-BrindleHills-Highmoor), per SPEC 4.2.
 const RING: RegionId[] = ['highmoor', 'saltmarsh', 'rivermead', 'shingleBay', 'oakvale', 'brindleHills']

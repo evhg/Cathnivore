@@ -762,7 +762,14 @@ html.no-animations .title-screen * {
     font-size: 1rem; /* 16 board units: 12.6 px on the D board */
   }
 }
+/* Plan item 671: on a phone the regions keep short name plates (Kings, Brindle...), large enough to read. */
 @media (max-width: 760px) {
+  .title-board .region-name {
+    font-size: 1.6rem;
+  }
+}
+/* a short phone's board is too small for even the short plates (at 375x667 they met their discs): numbers only */
+@media (max-width: 760px) and (max-height: 720px) {
   .title-board .region-name,
   .title-board .region-plaque {
     display: none;
@@ -1972,10 +1979,31 @@ html.no-animations .title-screen * {
   .title-screen[data-opening='run'] .title-menu > :nth-child(3) { animation-delay: 720ms; }
   .title-screen[data-opening='run'] .title-menu > :nth-child(4) { animation-delay: 800ms; }
   .title-screen[data-opening='run'] .title-menu > :nth-child(5) { animation-delay: 860ms; }
+  /* Plan item 671: the board deals in: the cloth settles, each region's pieces drop onto its tile round the ring,
+     then the name plates; about 820 ms, inside the opening. Transforms only (gate 7: nothing starts unpainted). */
+  .title-screen[data-opening='run'] .title-art.title-table .title-board { animation: title-board-settle 360ms var(--ease-settle) both 80ms; }
+  .title-screen[data-opening='run'] .title-board .piece-tray,
+  .title-screen[data-opening='run'] .title-board .region-sign { transform-box: fill-box; transform-origin: 50% 100%; animation: title-piece-deal 300ms var(--ease-settle) both 220ms; }
+  .title-screen[data-opening='run'] .title-board .region-sign { transform-origin: 50% 50%; animation-name: title-plate-deal; animation-delay: 520ms; }
+  .title-screen[data-opening='run'] .title-board [data-region='brindleHills'] .piece-tray { animation-delay: 280ms; }
+  .title-screen[data-opening='run'] .title-board [data-region='highmoor'] .piece-tray { animation-delay: 330ms; }
+  .title-screen[data-opening='run'] .title-board [data-region='saltmarsh'] .piece-tray { animation-delay: 380ms; }
+  .title-screen[data-opening='run'] .title-board [data-region='rivermead'] .piece-tray { animation-delay: 430ms; }
+  .title-screen[data-opening='run'] .title-board [data-region='shingleBay'] .piece-tray { animation-delay: 480ms; }
+  .title-screen[data-opening='run'] .title-board [data-region='oakvale'] .piece-tray { animation-delay: 530ms; }
+  .title-screen[data-opening='run'] .title-board [data-sign='highmoor'],
+  .title-screen[data-opening='run'] .title-board [data-sign='saltmarsh'] { animation-delay: 570ms; }
+  .title-screen[data-opening='run'] .title-board [data-sign='brindleHills'],
+  .title-screen[data-opening='run'] .title-board [data-sign='rivermead'] { animation-delay: 620ms; }
+  .title-screen[data-opening='run'] .title-board [data-sign='oakvale'],
+  .title-screen[data-opening='run'] .title-board [data-sign='shingleBay'] { animation-delay: 670ms; }
   /* skipped or finished: everything rests where it ends (the everyday entrance doesn't replay) */
   .title-screen[data-opening='done'] .title-art.title-table .title-cath,
   .title-screen[data-opening='done'] .title-art.title-table .title-cath-line,
-  .title-screen[data-opening='done'] .title-menu > * { animation: none; }
+  .title-screen[data-opening='done'] .title-menu > *,
+  .title-screen[data-opening='done'] .title-art.title-table .title-board,
+  .title-screen[data-opening='done'] .title-board .piece-tray,
+  .title-screen[data-opening='done'] .title-board .region-sign { animation: none; }
 }
 @media (max-width: 600px) and (min-height: 721px) and (prefers-reduced-motion: reduce) {
   .title-screen[data-opening='run'] .title-hero { animation: title-opening-fade 300ms ease both !important; }
@@ -2001,6 +2029,17 @@ html.no-animations .title-screen * {
 }
 @keyframes title-tag-drop {
   from { transform: translateY(-16px); }
+}
+@keyframes title-board-settle {
+  from { transform: translateY(18px) scale(0.97); }
+}
+@keyframes title-piece-deal {
+  0% { transform: translateY(-22px) scale(0.6); }
+  70% { transform: translateY(2px) scale(1.04); }
+  100% { transform: none; }
+}
+@keyframes title-plate-deal {
+  from { transform: scale(0.4); }
 }
 @keyframes title-opening-fade {
   from { opacity: 0; }

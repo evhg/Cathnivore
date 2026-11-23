@@ -35,6 +35,8 @@ export default function TitleArt() {
     return startTitleBeats(beat.region, new URLSearchParams(window.location.search).has('attract'))
   }, [beat, still])
   const line = ritual.line ?? titleLine(completed)
+  // Plan item 671: on a phone the board keeps its names, as short plates (the full ones ran together).
+  const small = useNarrow()
   return (
     <div className="title-art title-table" aria-hidden="true" data-free={Object.values(state.regions).filter((r) => r.liberated).length}>
       {/* Plan item 453: the stall's striped awning over her on a tall phone (it unrolls in the day's opening). */}
@@ -54,6 +56,7 @@ export default function TitleArt() {
           {/* Plan item 98: the vans drive under the region name plates (one sat on Kingsmarket's in early frames). */}
           <Map
             state={state}
+            shortNames={small}
             underNames={
               <>
                 <TitleMovers held={Object.values(state.regions).some((r) => !r.liberated)} />
@@ -233,6 +236,21 @@ function TitleMovers({ held }: { held: boolean }) {
       ))}
     </g>
   )
+}
+
+/** Plan item 671: the phone title's layout (the CSS's own 760 px break), following a resize or rotation. */
+function useNarrow(): boolean {
+  const query = '(max-width: 760px)'
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia?.(query).matches === true)
+  useEffect(() => {
+    const mq = window.matchMedia?.(query)
+    if (!mq) return
+    const on = () => setNarrow(mq.matches)
+    on()
+    mq.addEventListener?.('change', on)
+    return () => mq.removeEventListener?.('change', on)
+  }, [])
+  return narrow
 }
 
 /** Plan item 71: Cath reacts to the menu entry under the pointer or the keyboard focus. */

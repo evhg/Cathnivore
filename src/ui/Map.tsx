@@ -8,7 +8,7 @@ import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale,
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
-import { REGIONS, regionMatchesPressureSlot, regionType } from '../content/map'
+import { REGIONS, SHORT_NAMES, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
 import { loadSettings } from '../platform/settings'
 import { resolveRules } from '../engine/rules'
@@ -111,6 +111,8 @@ interface Props {
   faces?: Partial<Record<ProducerId, ProducerFace>>
   /** Plan item 98: drawn over the hexes but under the region name plates (the title's vans on their roads). */
   underNames?: ReactElement
+  /** Plan item 671: the region plates wear their short names (`SHORT_NAMES`), for a small board. */
+  shortNames?: boolean
   /** Plan item 141: the action being looked at, as a ghost piece on each region it could play into. */
   ghost?: { regions: RegionId[]; sign: '+' | '-' }
   /** Plan item 402: the region Cath's suggestion plays into: a chalk ring with her green stake (`lit` when the
@@ -858,7 +860,7 @@ export function TerrainArt({ type, id }: { type: RegionType; id: string }) {
   )
 }
 
-export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, ghost, pick, aim, stamp, featured, aiming, onHoverRegion, showcase, peekPieces }: Props) {
+export default function Map({ state, enemyTurn, highlight, threat, onSelect, onInspect, inspected, faces, underNames, shortNames, ghost, pick, aim, stamp, featured, aiming, onHoverRegion, showcase, peekPieces }: Props) {
   const active = state.config.activeRegions
   const layout = placedLayout(state.config.layout ?? 'ring', state.config.placement)
   const fit = layoutFit(layout, active)
@@ -1004,7 +1006,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
       live = false
     }
     // hexPx: a measured board re-renders each status disc's size and estimated place, so it's fitted again.
-  }, [active.length, hexPx])
+  }, [active.length, hexPx, shortNames])
 
   return (
     <svg ref={svgRef} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect || peekPieces ? 'group' : 'img'} aria-label="Map of Marrow">
@@ -1506,6 +1508,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
       })()}
       {active.map((id) => {
         const def = REGIONS[id]
+        const plate = (shortNames && SHORT_NAMES[id]) || def.name
         const { x, y } = hexCenter(id, layout)
         return (
           <g key={`name-${id}`} className="region-sign" data-sign={id} pointerEvents="none">
@@ -1513,9 +1516,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                 loaded (see `fitPlaques`); the estimate below is only the first paint. */}
             <rect
               className="region-plaque"
-              x={x - def.name.length * 4.3 - 8}
+              x={x - plate.length * 4.3 - 8}
               y={y - HEX_R * 0.62 - 15}
-              width={def.name.length * 8.6 + 16}
+              width={plate.length * 8.6 + 16}
               height={21}
               rx={4}
               fill="var(--paper)"
@@ -1523,7 +1526,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               strokeWidth={1.5}
             />
             <text x={x} data-x={x} y={y - HEX_R * 0.62} textAnchor="middle" className="region-name">
-              {def.name}
+              {plate}
             </text>
             {/* Plan item 550: one status per region on its banner's end: free (a leaf), or how many Hollowell pieces
                 stand there, in Hollowell's colour once it holds the land. `fitPlaques` keeps it on the plaque's end. */}
@@ -1538,7 +1541,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const sr = Math.max(13, (11.5 * HEX_R) / Math.max(24, hexPx ?? 72))
               const k = sr / 11
               return (
-                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + def.name.length * 4.3 + Math.max(14, sr + 4)} ${cy})`}>
+                <g className="region-status" data-region-status={control} data-count={n} data-cy={cy} data-r={sr.toFixed(1)} role="img" aria-label={label} transform={`translate(${x + plate.length * 4.3 + Math.max(14, sr + 4)} ${cy})`}>
                   <title>{label}</title>
                   <circle r={sr} className="region-status-disc" />
                   <g transform={`scale(${k.toFixed(3)})`}>
