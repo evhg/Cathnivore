@@ -6388,14 +6388,14 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** no empty rail region over 200 px tall at 1440x900 before or after a solve; Cath 300 px+ tall with three expressions (e2e reads the state); no streak tile with a plain border; shots D and 1280x800, P unchanged.
 - **Size:** 2
 
-## 671. [ ] Cathnivore phone title: one composition, not a board pasted over Cath
+## 671. [ ] Cathnivore phone title: one composition, not a board pasted over Cath *(measured 2026-11-23 02:30, lane A: at 390x844 the board is 87-374 x 326-603 and Cath 6-206 x 137-437, so her face is already clear and only the torso is covered. Forcing the names on (26 board units, about 13 px) gives 58-95 px names against about 95 px hexes: Brindle Hills ran into Kingsmarket and the status discs sat on the names. It needs short names (Kings, Brindle, Shingle...) and `fitPlaques` re-run at the phone size.)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-title-P`: the board (90-375 x 325-595) covers Cath's arm and torso and drops the region names to number badges; it reads as a collage. VISION 'a clear focal point', 'the map legible'.
 - **Build:** Cath leans on the board's edge from the side at her own depth; the regions keep short name plates; the board deals in its pieces over about 600 ms (a fade under reduced motion).
 - **Accept:** Cath's face box and the board's box don't intersect; 7 region names visible at 390x844; the entrance 400 ms+ with a reduced-motion fade (e2e); shots P, D unchanged.
 - **Size:** 1-2
 
-## 672. [ ] The bugs from the 2026-11-23 01:15 critique, fixed as one batch *(lane A, in progress)*
+## 672. [x] The bugs from the 2026-11-23 01:15 critique, fixed as one batch *(done 2026-11-23 02:40, lane A: the D field guide docks over the side panel (`dockIntro`, spec: under 1% of the board, kicker clear of the mugshot); swarm badge sprites get a 1.3-icon slot so the counts sit clear; the big rigs queue a rig apart (`RIG_LEN`), the l34 column now pairs of lorries; the small depot board runs from the strip's left end to the rep (no dark wedge); NIGHT SHIFT P case lines carry a red kicker per slot (`slotKicker`: The job, The case...) and the Ledger tab a deep shade over the neon. Shots scratchpad before/after/after2, ns-title-P-a1.)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - Hedgerow 2D D: the field guide (item 662) still sits over the field's middle (655-1000 x 85-750 in `hedge-l34-2d-D`); at D it docks over the right panel (1025-1425) instead, the field clear. Its driver portrait (780-835 x 190-255) clips 'GUIDE' in the kicker.
 - Hedgerow l21 2D D: the vehicle count chip's icons overlap its digits (365-485 x 372-400).
