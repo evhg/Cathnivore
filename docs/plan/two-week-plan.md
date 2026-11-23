@@ -6374,7 +6374,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** the figure region differs 15%+ in pixels between any two roles; the pose changes within 400 ms of a pick; shots P and D.
 - **Size:** 3
 
-## 669. [ ] Cathnivore campaign D: a war table with Cath at full presence
+## 669. [ ] Cathnivore campaign D: a war table with Cath at full presence *(lane A, in progress)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-campaign-D`: Cath is a 70 px-wide doll on crates between the map and the list (810-885 x 580-895); the chapters are a plain card list (1030-1378 x 140-880); the chapter popover covers the map and cuts Oakvale's label to 'akvale' (47-298 x 620-778). VISION 'characters with presence', 'story scenes staged like a graphic novel', 'every screen is designed'.
 - **Build:** Cath as a half-length bust (360 px+ at 1440x900) at the table's edge with an expression per chapter state (new, in progress, won); the chapter detail an illustrated panel beside the map, never over it; the chapter rail as envelope tabs that open with a 400-600 ms choreography (fade under reduced motion).
@@ -6388,7 +6388,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** no empty rail region over 200 px tall at 1440x900 before or after a solve; Cath 300 px+ tall with three expressions (e2e reads the state); no streak tile with a plain border; shots D and 1280x800, P unchanged.
 - **Size:** 2
 
-## 671. [ ] Cathnivore phone title: one composition, not a board pasted over Cath *(lane A, in progress)* *(measured 2026-11-23 02:30, lane A: at 390x844 the board is 87-374 x 326-603 and Cath 6-206 x 137-437, so her face is already clear and only the torso is covered. Forcing the names on (26 board units, about 13 px) gives 58-95 px names against about 95 px hexes: Brindle Hills ran into Kingsmarket and the status discs sat on the names. It needs short names (Kings, Brindle, Shingle...) and `fitPlaques` re-run at the phone size.)*
+## 671. [x] Cathnivore phone title: one composition, not a board pasted over Cath *(done 2026-11-23 03:05, lane A: on a tall phone the seven regions wear short plates (`SHORT_NAMES`: Kings, Brindle, Shingle, Moor, Salt, River, Oak; the full one-word names ran off the board), short phones keep numbers; the board lies tilted on the table in front of her (rotateX 13deg), face clear; the day's opening deals it in (settle, pieces round the ring, plates; ~970 ms, transforms only), reduced motion fades. e2e/title-plates.spec.ts. Shots scratchpad t671 (before, a1-a4, deal-300/500/700, 375).)* *(measured 2026-11-23 02:30, lane A: at 390x844 the board is 87-374 x 326-603 and Cath 6-206 x 137-437, so her face is already clear and only the torso is covered. Forcing the names on (26 board units, about 13 px) gives 58-95 px names against about 95 px hexes: Brindle Hills ran into Kingsmarket and the status discs sat on the names. It needs short names (Kings, Brindle, Shingle...) and `fitPlaques` re-run at the phone size.)*
 *(planned 2026-11-23 01:15, lane A, plan1123a critique)*
 - **Why:** `plan1123a/cath-title-P`: the board (90-375 x 325-595) covers Cath's arm and torso and drops the region names to number badges; it reads as a collage. VISION 'a clear focal point', 'the map legible'.
 - **Build:** Cath leans on the board's edge from the side at her own depth; the regions keep short name plates; the board deals in its pieces over about 600 ms (a fade under reduced motion).
