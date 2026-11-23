@@ -1948,6 +1948,11 @@ export class Renderer {
     ctx.restore();
   }
 
+  /** Plan item 676: shots in flight and particles alive, for the staged battle shots. */
+  fxCounts(): { shots: number; parts: number } {
+    return { shots: this.shots.length, parts: this.parts.length };
+  }
+
   /** Plan item 45, for tests and shots: vehicles drawn one by one, in columns, and the biggest pooled tower count. */
   /** Layer-pop shard bursts thrown so far (none under reduced motion), for tests. */
   private shardBursts = 0;

@@ -81,6 +81,9 @@ const jobs = {
       await p.waitForFunction(() => (window.hedgerow.game().enemies?.length ?? 0) >= 3, null, { timeout: 45000 }).catch(() => console.log('battle: under 3 vehicles'))
       await p.waitForTimeout(1500)
       for (let i = 0; i < 4 && (await closeGuide()); i++) await p.waitForTimeout(600)
+      // plan item 676: shoot the fight, not a lull: wait (up to 20 s) for three towers attacking and a coin in the air
+      await p.waitForFunction(() => { const f = window.hedgerow.fx?.(); return !f || (f.attackers >= 3 && f.coinsInAir >= 1) }, null, { timeout: 20000, polling: 100 }).catch(() => console.log('battle: no peak frame'))
+      await closeGuide()
     }
     await p.goto(`${base}/hedgerow/?2d`)
     await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true }, tips: t })), [stars(20), tips])

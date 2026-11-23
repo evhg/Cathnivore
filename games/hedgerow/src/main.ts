@@ -816,6 +816,20 @@ if (SANDBOX)
             })
             .map((t) => t.id)
         : [],
+    // Plan item 676: what the battle shows now, for the staged shots and their spec: towers that attacked in the last
+    // second, coins in the air to the purse, vehicles on the lane, and (2D) shots and particles drawn.
+    fx: () => {
+      const now = performance.now();
+      const r = renderer && !is3D(renderer) ? (renderer as { fxCounts?: () => { shots: number; parts: number } }).fxCounts?.() : undefined;
+      return {
+        attackers: [...lastAttack.values()].filter((t) => now - t < 1000).length,
+        coinsInAir,
+        coinsLanded,
+        vehicles: game ? game.enemies.filter((e) => e.hp > 0).length : 0,
+        shots: r?.shots ?? 0,
+        parts: r?.parts ?? 0,
+      };
+    },
     // Plan item 399: the plain plots (keys "c,r") and the look each is sown with, in the act's field kit.
     plotLooks: () => (game ? [...plotLooks(game.level)] : []),
     // Plan item 202: what the 2D field painted in its margins (the act's set and its pieces).
