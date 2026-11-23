@@ -2031,7 +2031,7 @@ html.no-animations .title-screen * {
   from { transform: translateY(-16px); }
 }
 @keyframes title-board-settle {
-  from { transform: translateY(18px) scale(0.97); }
+  from { translate: 0 18px; scale: 0.97; }
 }
 @keyframes title-piece-deal {
   0% { transform: translateY(-22px) scale(0.6); }
@@ -2266,5 +2266,15 @@ html.no-animations .title-beat *, html.no-animations .title-cath[data-beat] .tit
     text-shadow: 0 1px 0 color-mix(in srgb, var(--wood-lo) 80%, transparent);
     white-space: nowrap;
     pointer-events: none;
+  }
+}
+
+/* Plan item 671: on a tall phone the board lies on the tabletop in front of Cath, as at D (item 482's tilt): its far
+   edge recedes and the cloth's shadow falls toward her, so she stands behind it at her own depth, not under a card. */
+@media (max-width: 600px) and (min-height: 721px) {
+  .title-art.title-table .title-board {
+    transform: perspective(900px) rotateX(13deg);
+    transform-origin: 50% 100%;
+    box-shadow: 0 -6px 14px -6px color-mix(in srgb, var(--ink) 28%, transparent), 0 10px 14px -4px color-mix(in srgb, var(--ink) 30%, transparent), inset 0 -6px 0 color-mix(in srgb, var(--soil) 45%, transparent);
   }
 }
