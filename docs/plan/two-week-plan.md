@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane B, 2026-11-23T09:25Z
 
 
 
@@ -6446,3 +6445,42 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - /games/ P (`games-P` 208-224 x 638-690): the Runnel card's Cath a 14 px figure where the other cards have 40 px+ busts.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
+
+## 678. [ ] NIGHT SHIFT phone title: Cath is the poster, not under the umbrella and the List
+*(planned 2026-11-23 10:00, lane B, plan1123d critique; check against item 652 first: this may be a regression of its phone framing)*
+- **Why:** `plan1123d/ns-title-P` (2x): the focus is an empty umbrella canopy (180-780 x 720-1080) and a cut 'HOLLOW' sign (280-780 x 520-780); her head starts at y≈1090 and THE LIST (20-745 x 1380-1615) lies over her collar and coat, her face about 8% of the frame. At D the same scene works (her figure 880-1180). VISION: Cath the face of every game.
+- **Build:** the phone poster (`scripts/cathode-poster.mjs`) framed on her head to waist, the umbrella a sliver framing her top right, the menu card beside her, The List a 2-row tray below her waist (or a swiped strip) that never covers her.
+- **Accept:** at 390x844 her face 70 px+ tall and no DOM element over her face or shoulders (e2e against the recorded face box); The List and the menu whole without a scroll; D unchanged; posters and key art re-rendered; shots P and D.
+- **Size:** 2
+
+## 679. [ ] Runnel desktop: the solve is a staged moment on the board, not a sidebar card
+*(planned 2026-11-23 10:00, lane B, plan1123d critique; items 630/642/660 set today's result dock and garden)*
+- **Why:** `plan1123d/runnel-solved-D`: the result is a 330 px rail card (15-347 x 675-900) that overflows the window; the planted crop is a 20 px icon (95-120 x 778-800); the 1050 px board and Bea's garden (1190-1400 x 700-840) get no payoff. VISION 4.
+- **Build:** at D on a solve the view eases to Bea's garden and a paper postcard lands over the board's empty field (about 700-1350 x 580-860): the time, taps, on-par stamp and the crop drawn 80 px+, with Share, Your card and Play practice on it; Cath waves, Bea waters it (item 660); the rail goes back to the almanac.
+- **Accept:** the postcard wholly inside 1440x900 and 1280x800, buttons 44 px+, its crop 80 px+, nothing clipped (scrollHeight ≤ clientHeight, e2e); 600-1200 ms in, a fade under reduced motion; P unchanged; the runnel-win specs updated; shots P and D.
+- **Size:** 2
+
+## 680. [ ] Portfolio phone: one hero composition, the games above the fold
+*(planned 2026-11-23 10:00, lane B, plan1123d critique)*
+- **Why:** `plan1123d/portfolio-P`: Cath a 70x200 px figure squeezed beside a paragraph (285-375 x 205-415), the fold mostly body text (16-280 x 260-415), no focal point; the game tiles start at y 552 (two show). At D she sits at the far edge, cut by her bubble (1295-1385 x 175-505).
+- **Build:** P: the headline, then Cath 160 px+ in front of a 2x2 game montage she presents; the paragraph cut to two lines (the rest below). D: Cath in a clear column, whole, her bubble's tail at her.
+- **Accept:** at 390x844 all four game tiles begin above y 844 and two are whole; Cath 160 px+; headline/body type ratio 2.5+; at D her box inside the window and clear of the bubble; portfolio specs pass; shots P and D.
+- **Size:** 2
+
+## 681. [ ] Hedgerow: Cath's level-up is a moment on her token, not a banner over the battle
+*(planned 2026-11-23 10:00, lane B, plan1123d critique)*
+- **Why:** `plan1123d/hedge-l34-2d-D`: a flat green 'Cath is level 2' slab (320-705 x 220-320) covers the windmill, the lane and the fleet mid-round; her token (875-925 x 280-370) and the CATH LV 2 button (1030-1090 x 740-810) do nothing. VISION 3, 4.
+- **Build:** her 2D/3D token pulses and sheds a ring of leaves; a small 'Lv 2: stronger, tougher' badge rises from her and flies to the CATH button, which bumps and shows the level for 2 s; never a banner over the lane; on P the badge flies to the action bar.
+- **Accept:** no level-up element over a lane tile (e2e: its box vs the lane cells); 600-1000 ms with overshoot, a fade under reduced motion; the CATH button reads 'LV 2' within 1.2 s; 2D and 3D; shots P and D.
+- **Size:** 1
+
+## 682. [ ] The bugs from the 2026-11-23 09:55 critique, fixed as one batch
+*(planned 2026-11-23 10:00, lane B, plan1123d critique; check each on today's build first; the Hedgerow mid-level shots are now l27)*
+- Hedgerow 3D D shop (`hedge-l27-3d-D` 1108-1412 x 140-322): names clipped into the art ('Seed Cann', 'Market Stal'), a line through them, the role row missing (2D's tiles are right).
+- Hedgerow seeds chip (`hedge-l27-3d-D` 1065-1105 x 22-50; `hedge-l27-3d-P` 140-180 x 10-40; `hedge-l34-2d-P` 140-185 x 10-30): the '+1' chip over the count's first digit ('93979' reads '3979').
+- Runnel (`runnel-solved-D` 60-302 x 176-203, `-P` 80-310 x 123-150): 'Cath's Week 0/3 · Solve 3 dailies (0/3)' after a solve while the streak reads 1 (item 677 listed it: check whether it regressed or the shot predates the fix).
+- Runnel solved D (`runnel-solved-D` 100-262 x 858-874, 28-334 x 868-900): 'Solved. Next in...' under the Share/Your card buttons and 'Play practice' cut by the window's foot.
+- Cathnivore phone game (`cath-game-P` 285-390 x 248-266, 15-130 x 250-266, 262-273 x 253-265): Rivermead's label and count off the right edge, Brindle Hills' on the left edge, Kingsmarket's '5' badge about 10 px (others 20).
+- Overlaps: `cath-campaign-D` chapter-1 ticket (290-612 x 528-640) over Kingsmarket/Oakvale and the river; `hedge-l34-2d-P` the HOLLOWELL depot plate over the fleet chip (5-150 x 108-135); `games-D` the chalkboard's 'to play' four times (465-600 x 380-440), no information.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
+- **Size:** 1-2
