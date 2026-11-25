@@ -1584,6 +1584,14 @@ export class Renderer {
     // Plan item 695: the towers' screen boxes (the cell and the sprite's height over it), for the badges to keep off.
     this.towerBoxes = game.towers.map((tw) => ({ x: X(tw.col), y: Y(tw.row) - s * 0.55, w: s, h: s * 1.55 }));
     this.badgeBoxes = [];
+    // Plan item 700: and the vehicles drawn on the lanes (l27's '181 103 51 9' sat on the lorries it counted).
+    this.vehicleBoxes = [];
+    for (const e of game.enemies) {
+      if (this.lay.inColumn.has(e.id)) continue;
+      const q = this.placeEnemy(level, e);
+      const sc = s * 0.62 * enemyScale(e.kind);
+      this.vehicleBoxes.push({ x: X(q.x) - sc / 2, y: Y(q.y + 0.2) - sc, w: sc, h: sc });
+    }
     for (const sw of swarms(game.enemies)) {
       const col = columnNear(this.lay, sw.lane, sw.dist, rode);
       if (col) {
@@ -1993,6 +2001,7 @@ export class Renderer {
   /** Plan item 695: the towers' boxes this frame, and the swarm badges drawn so far (e2e reads both). */
   towerBoxes: Rect[] = [];
   badgeBoxes: Rect[] = [];
+  vehicleBoxes: Rect[] = [];
   /** Plan item 403: lanes whose depot stands on the lane's mouth, and how far along the lane its queue starts (cells). */
   depotMouths = new Map<number, number>();
   private queueAge = 0;
@@ -2272,24 +2281,21 @@ export class Renderer {
     // cannon). Try the spot as given, then steps up and down the lane, then sideways; keep the first clear of every
     // tower (and of the depots and badges already placed); none clear keeps the original.
     {
-      const hits = (bx: number, by: number) => {
+      const hits = (bx: number, by: number, cars: boolean) => {
         const r = { x: bx, y: by, w, h: h * 1.3 };
         const over = (b: Rect) => r.x < b.x + b.w && r.x + r.w > b.x && r.y < b.y + b.h && r.y + r.h > b.y;
-        return this.towerBoxes.some(over) || this.depotBoxes.some(over) || this.badgeBoxes.some(over);
+        return this.towerBoxes.some(over) || this.depotBoxes.some(over) || this.badgeBoxes.some(over) || (cars && this.vehicleBoxes.some(over));
       };
-      if (hits(x0, y0)) {
+      // Plan item 700: first a spot clear of the vehicles too (its pointer still drops to the queue), else one clear
+      // of the towers alone, as before.
+      if (hits(x0, y0, true)) {
         const clampX = (v: number) => Math.max(4, Math.min(this.cssW - w - 4, v));
-        const tries: Array<[number, number]> = [];
+        const tries: Array<[number, number]> = [[x0, y0]];
         for (const k of [1, 2, 3]) tries.push([x0, y0 - k * h * 0.7], [x0, y0 + k * h * 0.7]);
         for (const k of [1, 2, 3]) tries.push([clampX(x0 + (k * w) / 3), y0], [clampX(x0 - (k * w) / 3), y0]);
-        for (const [tx, ty] of tries) {
-          if (ty < 4 || ty + h * 1.3 > this.cssH - 4) continue;
-          if (!hits(tx, ty)) {
-            x0 = tx;
-            y0 = ty;
-            break;
-          }
-        }
+        const fits = ([, ty]: [number, number]) => ty >= 4 && ty + h * 1.3 <= this.cssH - 4;
+        const pick = tries.find((c) => fits(c) && !hits(c[0], c[1], true)) ?? tries.find((c) => fits(c) && !hits(c[0], c[1], false));
+        if (pick) [x0, y0] = pick;
       }
       this.badgeBoxes.push({ x: x0, y: y0, w, h: h * 1.3 });
     }
