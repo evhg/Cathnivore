@@ -272,3 +272,4 @@ Newest at the bottom. At most 5 lines per entry, under 250 lines in all (SPEC 16
 - 2026-11-25 09:40 lane A (688): no overlay found over l27's 2D field on today's build; the remaining work is Saltmarsh's bed colour against the lane (3:1), not a veil hunt.
 - 2026-11-25 10:15 lane A (688): Saltmarsh's 2D beds made deep and near-opaque for the lane's 3:1; at Rivermead (l34) the lane is set off by a new dark earth edge and the plots' hedges instead (darkening a water meadow to 0.12 rejected). Build-mode plot outlines are a solid chalk line, not dashes.
 - 2026-11-25 10:40 lane A: planned 690-695 from the plan1125b critique (one subagent). Its NIGHT SHIFT 3D-face feature was not added: it is items 319/543's scope (Cath sculpted; hair and coat), still open.
+- 2026-11-25 10:38 lane A (695): in a game Cath's Week chip names only its own goal's count; the week's goal count beside it read as a contradiction.
