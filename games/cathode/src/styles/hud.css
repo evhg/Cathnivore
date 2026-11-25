@@ -1791,11 +1791,13 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
     position: absolute;
     inset: -14px -56px -14px -28px;
     z-index: calc(var(--z-lift) * -1);
-    background: rgb(var(--shade-rgb) / .5);
+    /* item 695: the shade holds past the line's last word (from 45% the right half of the line sat bare on a lit
+       storefront in ns-street-P) and is a step darker; the blur alone can't be relied on mid fade */
+    background: rgb(var(--shade-rgb) / .62);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    -webkit-mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 45%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 16px, rgb(var(--shade-rgb)) calc(100% - 16px), transparent);
-    mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) 45%, transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 16px, rgb(var(--shade-rgb)) calc(100% - 16px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) calc(100% - 56px), transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 12px, rgb(var(--shade-rgb)) calc(100% - 12px), transparent);
+    mask-image: linear-gradient(90deg, rgb(var(--shade-rgb)) calc(100% - 56px), transparent), linear-gradient(180deg, transparent, rgb(var(--shade-rgb)) 12px, rgb(var(--shade-rgb)) calc(100% - 12px), transparent);
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
     pointer-events: none;
