@@ -36,11 +36,13 @@ export default function CathCompanion({ expression, line }: { expression: CathEx
 // Plan item 171: on an upright phone her line docks above the hand, beside a 64 px bust, so nothing of hers lies on
 // the board (the table is the hero). A new line slides in over 200 ms; a tap folds it away until she next speaks
 // (the dock keeps its height, so the board never jumps), and a tap on the folded dock brings it back.
-export function CathDock({ expression, line, children, beat }: { expression: CathExpression; line: string; children?: ReactNode; beat?: { mood: string; n: number } }) {
+// Plan item 685: with `figure` (a tall phone) she is a half-length figure, 120 px tall, rising from the counter's left
+// end over the board's foot, her face answering each sale, Squeeze and freed region; not a 64 px avatar in a ring.
+export function CathDock({ expression, line, children, beat, figure }: { expression: CathExpression; line: string; children?: ReactNode; beat?: { mood: string; n: number }; figure?: boolean }) {
   const [folded, setFolded] = useState<string | null>(null)
   const isFolded = folded === line
   return (
-    <section className="cath-dock" data-expression={expression} data-folded={isFolded ? '' : undefined} data-beat-mood={beat?.mood} aria-label="Cath">
+    <section className="cath-dock" data-expression={expression} data-figure={figure ? '' : undefined} data-folded={isFolded ? '' : undefined} data-beat-mood={beat?.mood} aria-label="Cath">
       <button
         type="button"
         className="cath-dock-btn"
@@ -50,7 +52,11 @@ export function CathDock({ expression, line, children, beat }: { expression: Cat
       >
         {/* Plan item 436: keyed on the beat, so each reaction replays her bust's beat (table.css) */}
         <span className="cath-dock-bust" aria-hidden="true" key={beat?.n ?? 0}>
-          <CathArt framing="bust" expression={expression} animate width={64} height={64} />
+          {figure ? (
+            <CathArt framing="half" expression={expression} animate width={80} height={120} />
+          ) : (
+            <CathArt framing="bust" expression={expression} animate width={64} height={64} />
+          )}
         </span>
       </button>
       <p className="cath-dock-line voice" role="status" aria-live="polite" key={line} onClick={() => setFolded(line)}>

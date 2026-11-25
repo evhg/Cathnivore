@@ -61,3 +61,31 @@ test('on a phone her dock bust takes the same beat', async ({ page }, testInfo) 
   await expect(dock).toHaveAttribute('data-beat-mood', 'worried', { timeout: 400 })
   expect(await page.locator('.cath-dock-bust > *').first().evaluate((e) => getComputedStyle(e).animationName)).toMatch(/cath-beat-/)
 })
+
+// Plan item 685: on a tall phone she is a half-length figure, 110 px+ tall, rising from the counter's left end over no
+// region name or hand card, and a Sell changes her face within 300 ms.
+test('on a tall phone she is a figure at the counter, and a Sell changes her face', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'the dock is the phone table')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByText('Quick Game').click()
+  await fillSeed(page, '7')
+  await page.getByRole('button', { name: 'Start' }).click()
+  await page.locator('.game .map').waitFor()
+  const dock = page.locator('.cath-dock')
+  await expect(dock).toHaveAttribute('data-figure', '')
+  const bust = (await dock.locator('.cath-dock-bust').boundingBox())!
+  expect(bust.height).toBeGreaterThanOrEqual(110)
+  type B = { x: number; y: number; width: number; height: number }
+  const meets = (a: B, b: B) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+  for (const plate of await page.locator('.map .region-plaque').all()) expect(meets(bust, (await plate.boundingBox())!)).toBe(false)
+  for (const card of await page.locator('.table-hand button').all()) {
+    const b = await card.boundingBox()
+    if (b) expect(meets(bust, b)).toBe(false)
+  }
+  const was = await dock.getAttribute('data-expression')
+  await page.getByRole('button', { name: /^Sell 1 Produce/ }).first().click()
+  const t0 = Date.now()
+  await expect(dock).not.toHaveAttribute('data-expression', was!, { timeout: 300 })
+  expect(Date.now() - t0).toBeLessThan(300)
+})

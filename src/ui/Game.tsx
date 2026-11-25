@@ -282,6 +282,8 @@ const TABLE_CATH_QUERY = '(min-width: 1240px) and (min-height: 760px)'
 const CATH_TIP_DELAY_MS = 4000
 const TABLE_CATH_TALL_QUERY = '(min-width: 1240px) and (min-height: 880px)'
 const PHONE_TABLE_CATH_QUERY = '(max-width: 599.98px) and (min-height: 640px) and (orientation: portrait)'
+/** Plan item 685: a tall phone's counter seats her as a half-length figure rising over its left end (a short one keeps the 52 px bust). */
+const PHONE_CATH_FIGURE_QUERY = '(max-width: 599.98px) and (min-height: 830px) and (orientation: portrait)'
 
 
 // Plan item 92: Graham Pell, Hollowell's face (the boardroom's, plan item 11), in a glossy boardroom medallion with
@@ -915,6 +917,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   const isDesktop = useIsDesktopLayout()
   const deskTableCath = useMedia(TABLE_CATH_QUERY)
   const phoneTableCath = useMedia(PHONE_TABLE_CATH_QUERY)
+  const phoneCathFigure = useMedia(PHONE_CATH_FIGURE_QUERY)
   // Plan item 614: the end screen's producers stand half length at a desktop table, as busts elsewhere.
   const deskEnd = useMedia(END_DESK_QUERY)
   const tableCath = deskTableCath || phoneTableCath
@@ -4091,7 +4094,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         {/* Plan item 519: on an upright phone the counter (her bust, her line, the producers) is the board's near edge, inside
             its frame, so the table takes 55% of the screen and she reacts at it, not below it. */}
         {phoneTableCath && (
-          <CathDock expression={cathReaction.expression} line={cathReaction.line} beat={{ mood: cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind], n: cathBeat.n }}>
+          <CathDock figure={phoneCathFigure} expression={cathReaction.expression} line={cathReaction.line} beat={{ mood: cathBeat.kind === 'idle' ? 'idle' : CATH_REACTION_EXPRESSION[cathBeat.kind], n: cathBeat.n }}>
             {/* Plan item 387: on an upright phone the producers sit at the counter's right end, opposite Cath, off the
                 board: 72 px busts side by side with a name plate in their colour; whoever's turn it is sits up, lit, the
                 other back in the counter's shade. A tap opens the Farm. (They were medallions pinned on the board's edge.) */}

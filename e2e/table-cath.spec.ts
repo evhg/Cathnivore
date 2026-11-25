@@ -88,7 +88,9 @@ test('Cath speaks from a dock above the hand on a phone', async ({ page }, testI
       x0 = Math.min(x0, h.x)
       x1 = Math.max(x1, h.x + h.width)
       expect(meets(h, line), `${scheme} line meets ${await hex.getAttribute('data-region')}`).toBe(false)
-      expect(meets(h, bust), scheme).toBe(false)
+      // Plan item 685: on a tall phone she rises over the board's foot as a figure; the box of a hex's corner may meet
+      // hers, never a region's name (e2e/cath-beats).
+      if ((await dock.getAttribute('data-figure')) === null) expect(meets(h, bust), scheme).toBe(false)
     }
     // Off the board, above the producer's row and the hand.
     expect(line.y, scheme).toBeGreaterThanOrEqual(map.y + map.height)
