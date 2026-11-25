@@ -881,7 +881,7 @@ if (SANDBOX)
     // Plan item 98: the 3D gate signs' letter height on screen (null in 2D).
     gateSigns: () => (renderer && is3D(renderer) ? renderer.gateSigns() : null),
     // Plan item 45: the 2D renderer's convoy (null in 3D).
-    convoy: () => (renderer as { convoyStats?: () => unknown } | null)?.convoyStats?.() ?? null,
+    convoy: () => (renderer as { convoyStats?: (g?: Game) => unknown } | null)?.convoyStats?.(game ?? undefined) ?? null,
     // Plan item 410: the 3D fleet's and depot's main roughness against the farm's (null in 2D).
     materialLook: () => (renderer && is3D(renderer) ? renderer.materialLook() : null),
     // Plan item 539: the lane vehicles' wheels and materials, and the crop shapes on the field (null in 2D).

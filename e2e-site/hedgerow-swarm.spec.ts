@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
 
 // Plan item 45: a late round on level 38 (its last round, 19, sandbox, 2D) reads as a convoy of separate vehicles, not a
-// pile: 40 or more drawn one by one, and a tower's pooled Marks counter rises as it knocks layers off.
+// pile: 30 or more drawn one by one (40 before item 684 drew it in single file, each vehicle its whole length), and a
+// tower's pooled Marks counter rises as it knocks layers off.
 type HG = {
   game(): { wave: number; enemies: unknown[]; towers: unknown[] }
   sendWave(g: unknown, force?: boolean): void
@@ -28,10 +29,10 @@ for (const reduced of [false, true])
       g.wave = 18
       hg.sendWave(g, true)
     })
-    await page.waitForFunction(() => ((window as unknown as { hedgerow: HG }).hedgerow.convoy()?.drawn ?? 0) >= 40, null, { timeout: 120_000 })
+    await page.waitForFunction(() => ((window as unknown as { hedgerow: HG }).hedgerow.convoy()?.drawn ?? 0) >= 30, null, { timeout: 120_000 })
     await page.waitForFunction(() => ((window as unknown as { hedgerow: HG }).hedgerow.convoy()?.marks ?? 0) > 0, null, { timeout: 60_000 })
     const st = await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.convoy())
-    expect(st!.drawn).toBeGreaterThanOrEqual(40)
+    expect(st!.drawn).toBeGreaterThanOrEqual(30)
     // Layers come off in shards of their colour, except under reduced motion.
     if (reduced) expect(st!.shards).toBe(0)
     else expect(st!.shards).toBeGreaterThan(0)

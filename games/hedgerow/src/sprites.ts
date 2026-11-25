@@ -7,6 +7,7 @@
 import type { EnemyKind, TowerKind } from "./engine";
 import { PROPERTIES, propsOf, type Property } from "./fleet";
 import { wornOutfit } from "./wardrobe";
+import { SLOT_LEN } from "./convoy";
 
 export const INK = "#2b2320";
 
@@ -1510,6 +1511,18 @@ const VEHICLE_LEN: Partial<Record<EnemyKind, number>> = {
 };
 const SHORT = 0.437;
 const LONG = 0.9;
+/**
+ * Plan item 672: the big rigs' drawn lengths (as a share of their scale) plus a sliver of road. On SLOT_LEN slots a
+ * queue of box lorries down a north-south lane, two abreast, drew as one solid blue column (l34); the 3D view spaces
+ * them by their model's length the same way (render3d GAP_3D).
+ */
+const RIG_LEN: Partial<Record<EnemyKind, number>> = { lorry: 0.98, steel: 0.98, artic: 1.0, transporter: 1.0, skip: 0.9 };
+/** Plan item 684: the gap between two drawn vehicles nose to tail, as a share of their length. */
+export const ROAD_GAP = 1.06;
+/** Plan item 684: a vehicle's drawn length along the lane, in cells (its body, or a slot for the small fliers). */
+export function drawnLen(k: EnemyKind): number {
+  return Math.max(SLOT_LEN, VEHICLE_LEN[k] ?? 0, RIG_LEN[k] ?? 0) * enemyScale(k);
+}
 export function enemyScale(kind: EnemyKind): number {
   const base = baseEnemyScale(kind);
   const len = VEHICLE_LEN[kind];

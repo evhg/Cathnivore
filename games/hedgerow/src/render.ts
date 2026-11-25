@@ -46,8 +46,8 @@ import { crayonNextBillboard, gateSignRect, isWonLevel, paintBackground, rng, th
 import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins";
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
-import { swarms, SWARM_MIN, type Swarm } from "./swarm";
-import { columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
+import { swarms, type Swarm } from "./swarm";
+import { columnNear, layOutField, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
 import { gateQueue, type GateQueue } from "./gatequeue";
 import { FarmFolk, type Folk } from "./farmfolk";
 import { drawFolk } from "./folkart";
@@ -65,6 +65,8 @@ import {
   drawTower,
   enemyLift,
   enemyScale,
+  drawnLen,
+  ROAD_GAP,
   star,
   drawThornPile,
   castShadow,
@@ -2136,19 +2138,40 @@ export class Renderer {
     ctx.restore();
     return { x: cx, y: cy, w, h };
   }
-  convoyStats(): { drawn: number; column: number; marks: number; shards: number; cols: Array<{ dist: number; count: number; lane: number }> } {
+  convoyStats(game?: Game): {
+    drawn: number;
+    column: number;
+    marks: number;
+    shards: number;
+    cols: Array<{ dist: number; count: number; lane: number; at: number | null; chip: number | null; badged: boolean }>;
+    places: Array<{ x: number; y: number }>;
+  } {
     let marks = 0;
     for (const m of this.towerMarks.values()) marks = Math.max(marks, m.n);
     // Plan item 657: where each column stands, for the spec that keeps an ambush's overflow at the ambush.
-    const cols = this.lay.columns.map((c) => ({ dist: c.dist, count: c.count, lane: c.lane ?? 0 }));
-    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks, shards: this.shardBursts, cols };
+    // Plan item 684: and where its head is drawn and what its chip says.
+    const cols = this.lay.columns.map((c) => ({ dist: c.dist, count: c.count, lane: c.lane ?? 0, at: c.at ?? null, chip: this.chipCount.get(c) ?? null, badged: this.badged.has(c) }));
+    // Plan item 684: the centre (cells) of every vehicle drawn on the field, columns' heads included.
+    const places: Array<{ x: number; y: number }> = [];
+    if (game)
+      for (const e of game.enemies)
+        if (this.lay.slots.has(e.id) || (this.lay.inColumn.get(e.id) === 0 && this.lay.columnOf.get(e.id)?.at !== undefined)) {
+          const p = placeOnLane(game.level, e, this.lay);
+          places.push({ x: p.x, y: p.y });
+        }
+    return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, marks, shards: this.shardBursts, cols, places };
   }
+  /** Plan item 684: the number each column's chip showed this frame. */
+  private chipCount = new Map<ConvoyColumn, number>();
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
   private lay: Convoy = noConvoy();
   /** The columns a swarm badge rode last frame (their own +N chip stands down). */
   private badged = new Set<ConvoyColumn>();
   private layOut(game: Game): Convoy {
-    this.lay = layOutField(game.enemies, (k) => Math.max(SLOT_LEN, RIG_LEN[k as EnemyKind] ?? 0) * enemyScale(k as EnemyKind), SWARM_MIN);
+    // Plan item 684: each slot is the vehicle's whole drawn body plus a sliver of road (SLOT_LEN, 0.62, let a truck
+    // or a lorry overlap the next by a fifth or more).
+    this.lay = layOutField(game.enemies, (k) => drawnLen(k as EnemyKind) * ROAD_GAP);
+    this.chipCount.clear();
     return this.lay;
   }
   /** Where a vehicle is drawn (convoy.ts placeOnLane). */
@@ -2160,13 +2183,17 @@ export class Renderer {
     {
       const tally = new Map<EnemyKind, number>();
       for (const e of game.enemies) if (this.lay.columnOf.get(e.id) === col) tally.set(e.kind, (tally.get(e.kind) ?? 0) + 1);
-      const kinds = [...tally].sort((a, b) => b[1] - a[1]).map(([k]) => k);
-      const p = enemyPoint(game.level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
-      const layers = Math.max(1, Math.min(8, Math.ceil(col.count / 6)));
-      for (let i = 0; i < layers; i++) {
-        const kind = kinds[i % Math.max(1, kinds.length)] ?? "hatchback";
-        drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: i * 0.4, still: true }, X(p.x) + (i % 2 ? s * 0.12 : -s * 0.12), Y(p.y + 0.2) - i * s * 0.16, s * 0.92, t);
+      // Plan item 684: one vehicle stands for the column, its head, nose to tail in the file (a stack of up to eight
+      // stood 3-5 deep over the queue's leader); behind the gate none is drawn and the chip waits at the depot.
+      let head: Enemy | undefined;
+      for (const e of game.enemies) if (this.lay.columnOf.get(e.id) === col && this.lay.inColumn.get(e.id) === 0) head = e;
+      const p = enemyPoint(game.level, { dist: col.at ?? Math.max(0, col.dist), ...(col.lane ? { lane: col.lane } : {}) });
+      const layers = col.at !== undefined && head ? 1 : 0;
+      if (layers && head) {
+        const heading = runOf(game.level, { dist: col.at!, lane: col.lane ?? null });
+        drawEnemy(ctx, { kind: head.kind, facing: this.facing.get(head.id) ?? 1, hit: 9, ghost: !isRevealed(game, head), phase: (head.id % 7) * 0.31, still: true, ...(heading ? { heading } : {}) }, X(p.x), Y(p.y + 0.2), s, t);
       }
+      if (tally.size === 0) return;
       // "+N": how many wait in the column, on a paper chip beside it (the swarm badge covers it once it rides here).
       // Plan item 677: drawn after the depth-sorted items (a Radio Mast lower on the field covered half the '+7').
       if (this.badged.has(col)) return;
@@ -2178,7 +2205,12 @@ export class Renderer {
   private columnChip(ctx: CanvasRenderingContext2D, X: (v: number) => number, Y: (v: number) => number, s: number, col: ConvoyColumn, p: { x: number; y: number }, layers: number): void {
     {
       ctx.save();
-      const label = `+${col.count}`;
+      const label = `+${col.count - layers}`;
+      this.chipCount.set(col, col.count - layers);
+      if (col.count - layers <= 0) {
+        ctx.restore();
+        return;
+      }
       const fs = Math.max(11, s * 0.24);
       ctx.font = `800 ${fs}px ${FONT}`;
       const w = ctx.measureText(label).width + fs * 0.9;
@@ -2811,12 +2843,6 @@ export class Renderer {
  * 20 dE from the 3D one, past hedgerow-water's 15). */
 const BG_SATURATE = 1.55;
 
-/**
- * Plan item 672: the big rigs' drawn lengths (as a share of their scale) plus a sliver of road. On SLOT_LEN slots a
- * queue of box lorries down a north-south lane, two abreast, drew as one solid blue column (l34); the 3D view spaces
- * them by their model's length the same way (render3d GAP_3D).
- */
-const RIG_LEN: Partial<Record<EnemyKind, number>> = { lorry: 0.98, steel: 0.98, artic: 1.0, transporter: 1.0, skip: 0.9 };
 
 /** The width of a swarm badge's row of types (at most three) and its total, for layout. */
 const SWARM_KINDS = 3;

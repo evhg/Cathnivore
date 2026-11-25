@@ -54,7 +54,7 @@ import { Birds, Debris, Floaters, Motes, Puffs, Sparks, Transients, disposeOwn, 
 import { PUFF, fireTint } from "../firetint";
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
-import { swarms, SWARM_MIN } from "../swarm";
+import { swarms } from "../swarm";
 import { ABREAST, columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
@@ -110,10 +110,11 @@ function queueShadowMat(): THREE.MeshBasicMaterial {
 }
 /** Plan item 657: a vehicle's 3D slot along the lane, as a share of its model's length (a sliver of road between). */
 const GAP_3D = 1.08;
-/** Plan item 657: how many of a column's vehicles 3D draws (a jam on the road, not a stack); the rest are its '+N'. */
-const JAM_3D = 3;
-/** Sideways offset of the jam's two rear vehicles, in cells. */
-const JAM_SIDE = 0.22;
+/**
+ * How many of a column's vehicles 3D draws; the rest are its '+N'. Plan item 684: its head alone, in the file (item
+ * 657's jam of three staggered two of them off the road, over the plots).
+ */
+const JAM_3D = 1;
 /** Furthest a file of two abreast stands off the lane's middle, in cells. */
 const ROAD_HALF = 0.3;
 const RISE = 0.24;
@@ -2378,7 +2379,6 @@ export class Renderer3D {
         const l = rungs?.drawnLength(k as Enemy["kind"]);
         return l === undefined ? SLOT_LEN * enemyScale(k as Enemy["kind"]) : l * GAP_3D;
       },
-      SWARM_MIN,
     ));
     // Plan item 439: on a steep view (an upright phone) the vehicles lean back from the lens like item 98's Cath,
     // so their near side, cab and wheels turn up to it instead of reading as roofs (stacked boxes).
@@ -2387,28 +2387,15 @@ export class Renderer3D {
     this.jamDrawn.clear();
     for (const e of game.enemies) {
       const at = placeOnLane(game.level, e, lay);
-      // Plan item 657: in 3D a column is a jam of JAM_3D on the road (the head, two staggered behind it), not a tower
+      // Plan item 657: in 3D a column shows JAM_3D on the road (item 684: its head alone, in the file), not a tower
       // eight vehicles high (a stack of lorries, the quads a pile of discs); the rest wait in it unseen, counted on
       // the swarm badge or the column's own '+N' plate (syncSwarms).
       const ci = lay.inColumn.get(e.id);
-      const hidden = ci !== undefined && ci >= JAM_3D;
+      // Plan item 684: and a column whose head would stand behind the gate shows none (its count waits at the depot).
+      const hidden = ci !== undefined && (ci >= JAM_3D || lay.columnOf.get(e.id)?.at === undefined);
       if (ci !== undefined && !hidden) {
         const col = lay.columnOf.get(e.id);
         if (col) this.jamDrawn.set(col, (this.jamDrawn.get(col) ?? 0) + 1);
-      }
-      if (ci !== undefined && ci > 0 && !hidden) {
-        const col = lay.columnOf.get(e.id);
-        const cd = col?.dist ?? e.dist;
-        const ln = e.lane ? { lane: e.lane } : {};
-        const back = (rungs?.drawnLength(e.kind) ?? SLOT_LEN * enemyScale(e.kind)) * 0.55;
-        const q = enemyPoint(game.level, { dist: Math.max(0, cd - back), ...ln });
-        const r = enemyPoint(game.level, { dist: Math.max(0, cd - back) + 0.05, ...ln });
-        const dx = r.x - q.x;
-        const dy = r.y - q.y;
-        const l = Math.hypot(dx, dy) || 1;
-        const side = ci === 1 ? -JAM_SIDE : JAM_SIDE;
-        at.x = q.x - (dy / l) * side;
-        at.y = q.y + (dx / l) * side;
       }
       // Plan item 657: two abreast, each file stands half the model's width off the lane's middle (ABREAST, 0.2 cells,
       // overlapped the quads' rotor spans into one pile of discs), within the road's edge.
@@ -3404,7 +3391,8 @@ export class Renderer3D {
     this.countedCols = new Set(ridden);
     if (game.phase === "wave")
       for (const col of this.lay.columns) {
-        if (ridden.has(col) || col.count <= JAM_3D) continue;
+        const shown = this.jamDrawn.get(col) ?? 0;
+        if (ridden.has(col) || col.count <= shown) continue;
         let el = this.columnEls[n];
         if (!el) {
           el = document.createElement("div");
@@ -3416,8 +3404,8 @@ export class Renderer3D {
         }
         n++;
         this.countedCols.add(col);
-        el.firstElementChild!.textContent = `+${col.count - JAM_3D}`;
-        const p = enemyPoint(game.level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
+        el.firstElementChild!.textContent = `+${col.count - shown}`;
+        const p = enemyPoint(game.level, { dist: col.at ?? Math.max(0, col.dist), ...(col.lane ? { lane: col.lane } : {}) });
         const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + 0.9, p.y).project(this.camera);
         el.hidden = false;
         el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;

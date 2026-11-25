@@ -41,6 +41,11 @@ export interface ConvoyColumn {
   /** At the tail of the drawn queue (cells). */
   dist: number;
   count: number;
+  /**
+   * Plan item 684: where its head (the first to join) is drawn, nose to tail behind the file's last drawn vehicle;
+   * absent when that would be behind the gate (the column then waits at the depot, only its count shown).
+   */
+  at?: number;
 }
 
 export interface Convoy {
@@ -100,6 +105,12 @@ export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined)
         // so one queue's overflow is never drawn at the other's place.
         if (!col || col.dist - u.dist > MAX_LAG) {
           col = { ...(lane ? { lane } : {}), dist: u.dist, count: 0 };
+          // Plan item 684: its head is drawn in the file, a vehicle's length behind the last one (it stood on the
+          // queue's leader before, 3-5 deep); the vehicles after it queue behind it.
+          if (bestD >= 0) {
+            col.at = bestD;
+            tail[best] = { d: bestD, len: u.len };
+          }
           columns.push(col);
         }
         inColumn.set(u.id, col.count);
@@ -124,7 +135,7 @@ export function placeOnLane(level: Pick<Level, "path" | "path2">, e: { id: numbe
   const at = lay.inColumn.get(e.id);
   if (at !== undefined) {
     const col = lay.columnOf.get(e.id);
-    const p = enemyPoint(level, { dist: col?.dist ?? e.dist, ...lane });
+    const p = enemyPoint(level, { dist: col?.at ?? Math.max(0, col?.dist ?? e.dist), ...lane });
     return { ...p, tier: Math.min(at, COLUMN_TIERS - 1) };
   }
   const sl = lay.slots.get(e.id);
@@ -138,12 +149,10 @@ export function placeOnLane(level: Pick<Level, "path" | "path2">, e: { id: numbe
   return { x: p.x - (dy / l) * ABREAST * sl.side, y: p.y + (dx / l) * ABREAST * sl.side, tier: 0 };
 }
 
-/** The layout for a field this frame: two abreast on a lane carrying more than `crowd` vehicles. */
-export function layOutField(enemies: readonly { id: number; dist: number; lane?: 1; kind: string }[], len: (kind: string) => number, crowd: number): Convoy {
-  const n = [0, 0];
-  for (const e of enemies) n[e.lane ? 1 : 0]!++;
-  return convoy(
-    enemies.map((e) => ({ id: e.id, dist: e.dist, ...(e.lane ? { lane: e.lane } : {}), len: len(e.kind) })),
-    (lane) => n[lane ? 1 : 0]! > crowd,
-  );
+/**
+ * The layout for a field this frame. Plan item 684: always single file (two abreast put a packed lane's vehicles over
+ * the plots either side, 3-5 deep); what can't be shown waits in a column, counted on its chip.
+ */
+export function layOutField(enemies: readonly { id: number; dist: number; lane?: 1; kind: string }[], len: (kind: string) => number): Convoy {
+  return convoy(enemies.map((e) => ({ id: e.id, dist: e.dist, ...(e.lane ? { lane: e.lane } : {}), len: len(e.kind) })));
 }
