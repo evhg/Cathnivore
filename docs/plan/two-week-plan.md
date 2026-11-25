@@ -6541,7 +6541,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 1
 
-## 690. [ ] NIGHT SHIFT: the case briefing is a staged case board, not a loading page
+## 690. [ ] NIGHT SHIFT: the case briefing is a staged case board, not a loading page *(lane A, in progress)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique; shots at 2x for NIGHT SHIFT)*
 - **Why:** `plan1125b/ns-street-D`: the map (597-862 x 148-668) is a grey schematic of hatched blocks with an unlabelled dashed box (598-850 x 397-445); a lone '92%' (515-546 x 637-652); most of the frame empty black (0-580 x 0-120, 870-1440 x 640-900). VISION 4: big moments are choreographed.
 - **Build:** an ink-on-paper street map (stalls, canal, lamp marked); the red string draws itself Crisp -> objective -> Cath in about 800 ms, pins drop, Cath's line types in her italic voice; loading is a pencil route being drawn, no percentage; reduced motion shows the finished board.
