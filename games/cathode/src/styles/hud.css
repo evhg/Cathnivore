@@ -2272,7 +2272,28 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-tl > .hud-vitals .hud-name { margin: 0; min-height: 0; }
   /* (plan item 656: right over FIRE, its name and rounds at the button's shoulder; at the arms' old inset, 196 px in,
      they floated mid-street) */
-  .hud-tr { top: auto; right: calc(22px + var(--safe-r, 0px)); bottom: calc(200px + var(--safe-b, 0px)); }
+  /* Plan item 686: the weapon is a small tag under FIRE (its name, its rounds beside it, the battery a hairline
+     under both), not a heading over a bare rule mid-sky. */
+  .hud-tr { top: auto; right: calc(10px + var(--safe-r, 0px)); bottom: calc(4px + var(--safe-b, 0px)); }
+  .hud-tr > .hud-arms { display: grid; justify-items: end; gap: 2px; width: 112px; min-width: 0; }
+  .hud-tr > .hud-arms::before { display: none; }
+  .hud-tr > .hud-arms .hud-weapon { font: 700 var(--fs-1)/1 var(--font-ui); letter-spacing: .06em; color: rgb(var(--ink-rgb) / .78); text-shadow: var(--hud-shadow); white-space: nowrap; }
+  .hud-tr > .hud-arms .hud-weapon-tag { display: none; }
+  .hud-tr > .hud-arms .hud-ammo { order: -1; padding: 2px 0 2px var(--sp-2); margin: -2px 0; }
+  .hud-tr > .hud-arms .hud-mag { font-size: var(--fs-3); }
+  .hud-tr > .hud-arms .hud-reserve { font-size: var(--fs-1); }
+  .hud-tr > .hud-arms .hud-slots { display: none; }
+  .hud-tr > .hud-arms .hud-battery { width: 100%; height: 2px; margin-top: 0; opacity: .7; }
+  /* Plan item 686: the action keys are a thumb arc in the right third, clear of the gun in her hand (the viewmodel
+     sits left of 75% of the width above its grip and below 82% of the height across its fist). FIRE in the corner
+     over the weapon tag; AIM up-left of it and Swap up-right on the first ring; Takedown, Skill and Focus on the
+     outer ring above. Measured by cathode-phone-controls.spec.ts at 844x390 and 932x430. */
+  .tbtn-fire { right: calc(10px + var(--safe-r)); bottom: calc(64px + var(--safe-b, 0px)); width: 84px; height: 84px; }
+  .tbtn-aim { right: calc(108px + var(--safe-r)); bottom: calc(136px + var(--safe-b, 0px)); }
+  .tbtn-cycle { right: calc(12px + var(--safe-r)); bottom: calc(158px + var(--safe-b, 0px)); width: 52px; height: 52px; }
+  .tbtn-takedown { right: calc(84px + var(--safe-r)); bottom: calc(214px + var(--safe-b, 0px)); }
+  .tbtn-skill { right: calc(160px + var(--safe-r)); bottom: calc(204px + var(--safe-b, 0px)); }
+  .tbtn-focus { right: calc(12px + var(--safe-r)); bottom: calc(228px + var(--safe-b, 0px)); }
   /* the vitals' column a step narrower (its bar still 40 segments' worth), and the lesson a one-line chip by the
      stick (firstjob.ts's short touch line), not a paragraph */
   .hud-root { --cluster-w: 10.5rem; }

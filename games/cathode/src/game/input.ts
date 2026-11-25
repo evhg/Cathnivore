@@ -60,6 +60,9 @@ function loadUsed(): Set<string> {
   }
 }
 
+/** Plan item 686: how long the look hint stays after the first touch. */
+export const HINT_MS = 4000;
+
 const BUTTONS = ["fire", "aim", "jump", "crouch", "focus", "takedown", "cycle", "skill", "sheet"] as const;
 type TouchButton = (typeof BUTTONS)[number];
 
@@ -69,6 +72,8 @@ export class Input {
   private mouse = { x: 0, y: 0, left: false, right: false, middle: false };
   private wheel = 0;
   private lookHintEl: HTMLElement | null = null;
+  /** performance.now() of the first touch on the play area (0 before it): the look hint fades HINT_MS after. */
+  firstTouchAt = 0;
   private touchLook = { x: 0, y: 0 };
   private stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
   private lookTouch = { id: -1, x: 0, y: 0 };
@@ -238,6 +243,11 @@ export class Input {
     // the touch here would stop iOS from ever turning it into a click.
     const tgt = e.target as Element | null;
     if (tgt?.closest(".coach, .cx, .cp, dialog, a, button:not([data-btn]), input, label, .hud-ammo")) return;
+    // Plan item 686: the floating hint ("Drag to aim") has done its job 4 s after the first touch of the play area.
+    if (e.type === "touchstart" && !this.firstTouchAt) {
+      this.firstTouchAt = performance.now();
+      setTimeout(() => this.lookHintEl?.classList.add("gone"), HINT_MS);
+    }
     e.preventDefault();
     for (const t of Array.from(e.changedTouches)) {
       const target = document.elementFromPoint(t.clientX, t.clientY) as HTMLElement | null;
