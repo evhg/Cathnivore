@@ -118,8 +118,8 @@ describe('Kinetiq gate', () => {
 describe('plan item 454: the live last-shipped line', () => {
   it('names the release age, the build and the next session (:21 and :51)', async () => {
     const { shippedLine } = await import('../portfolio/src/fx')
-    expect(shippedLine(3 * 3600_000, 'abcdef0123', new Date('2026-11-16T15:40:00Z'))).toBe('Live: last shipped 3 h ago, build abcdef0. The next build session starts in 11 min.')
-    expect(shippedLine(60_000, undefined, new Date('2026-11-16T15:10:00Z'))).toBe('Live: last shipped just now. The next build session starts in 11 min.')
+    expect(shippedLine(3 * 3600_000, 'abcdef0123', new Date('2026-11-16T15:40:00Z'))).toBe('Live: shipped 3 h ago, build abcdef0. Next build session in 11 min.')
+    expect(shippedLine(60_000, undefined, new Date('2026-11-16T15:10:00Z'))).toBe('Live: shipped just now. Next build session in 11 min.')
     expect(shippedLine(60_000, 'not-a-sha', new Date('2026-11-16T15:55:00Z'))).toMatch(/starts in 26 min\.$/)
   })
 })

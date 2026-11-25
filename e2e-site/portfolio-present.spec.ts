@@ -38,7 +38,7 @@ test('Cath presents the print you point at', async ({ page }) => {
 
 test('the stats end on a live last-shipped line', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('#shipped-text')).toHaveText(/^Live: last shipped .+ The next build session starts in \d+ min\.$/)
+  await expect(page.locator('#shipped-text')).toHaveText(/^Live: shipped .+ Next build session in \d+ min\.$/)
   const box = (await page.locator('#shipped').boundingBox())!
   const stats = (await page.locator('.hero .stats').boundingBox())!
   // Plan item 509: on a phone it is the studio's pulse over the prints, above the fold.
@@ -57,6 +57,10 @@ test('the stats end on a live last-shipped line', async ({ page }) => {
     expect(settled.y + settled.height).toBeLessThanOrEqual(row.y + row.height + 1)
     expect(settled.y + settled.height).toBeLessThanOrEqual(page.viewportSize()!.height)
     expect(box.width).toBeGreaterThan(0)
+    // Plan item 689: one line, with 32 px+ of air to the number pairs on both sides (it ran into the right pair's '8')
+    expect(settled.height).toBeLessThan(30)
+    const pairs = await page.locator('.hero .stats > *').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [r.left, r.right] as [number, number] }))
+    for (const [l, r] of pairs) expect(r <= settled.x - 32 || l >= settled.x + settled.width + 32).toBe(true)
   } else expect(box.y).toBeGreaterThanOrEqual(stats.y + stats.height - 1)
 })
 

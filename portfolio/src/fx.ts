@@ -182,5 +182,6 @@ export function shippedLine(sinceMs: number, commit: string | undefined, now: Da
   const m = now.getUTCMinutes()
   const next = m < 21 ? 21 - m : m < 51 ? 51 - m : 81 - m
   const build = commit && /^[0-9a-f]{7,}$/.test(commit) ? `, build ${commit.slice(0, 7)}` : ''
-  return `Live: last shipped ${ago(sinceMs)}${build}. The next build session starts in ${next} min.`
+  // Plan item 689: short enough to sit between the studio's two number pairs at 1280 px+ with air either side
+  return `Live: shipped ${ago(sinceMs)}${build}. Next build session in ${next} min.`
 }
