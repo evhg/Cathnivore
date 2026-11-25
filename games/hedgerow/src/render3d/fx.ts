@@ -461,8 +461,10 @@ export class Transients {
 
 /** Floating text (bounties, "SPLAT!", "CRUNCH!") as HTML over the canvas: always crisp, cheap to draw. */
 export class Floaters {
-  private items: Array<{ el: HTMLElement; pos: THREE.Vector3; age: number; life: number }> = [];
+  private items: Array<{ el: HTMLElement; pos: THREE.Vector3; age: number; life: number; off: { x: number; y: number } | null }> = [];
   private v = new THREE.Vector3();
+  /** Plan item 691: the screen boxes (CSS px on the canvas) a new callout keeps off: the built towers. */
+  avoid: (() => Array<{ x: number; y: number; w: number; h: number }>) | null = null;
   constructor(private layer: HTMLElement) {}
 
   add(text: string, pos: THREE.Vector3, color: string, big = 1): void {
@@ -472,22 +474,56 @@ export class Floaters {
     el.style.setProperty("--c", color);
     el.style.setProperty("--s", String(big));
     this.layer.append(el);
-    this.items.push({ el, pos: pos.clone(), age: 0, life: 1.1 });
+    this.items.push({ el, pos: pos.clone(), age: 0, life: 1.1, off: null });
+  }
+
+  /** Plan item 691: a screen offset that keeps a label of size lw x lh centred at (x, y) off every box: up or down the
+   * screen in growing steps, then sideways; none clear keeps it where it rose. */
+  static dodge(x: number, y: number, lw: number, lh: number, boxes: ReadonlyArray<{ x: number; y: number; w: number; h: number }>, w: number, h: number): { x: number; y: number } {
+    const hits = (cx: number, cy: number) =>
+      boxes.some((b) => cx - lw / 2 < b.x + b.w && cx + lw / 2 > b.x && cy - lh / 2 < b.y + b.h && cy + lh / 2 > b.y);
+    const inside = (cx: number, cy: number) => cx - lw / 2 >= 2 && cx + lw / 2 <= w - 2 && cy - lh / 2 >= 2 && cy + lh / 2 <= h - 2;
+    if (!hits(x, y)) return { x: 0, y: 0 };
+    // Held inside the frame first (a tower at the edge put half the label past it, so no step counted as clear).
+    const x0 = Math.min(Math.max(x, lw / 2 + 2), w - lw / 2 - 2);
+    const y0 = Math.min(Math.max(y, lh / 2 + 2), h - lh / 2 - 2);
+    const step = Math.max(8, lh * 0.6);
+    for (let k = 0; k <= 12; k++)
+      for (const [dx, dy] of [[0, -k * step], [0, k * step], [-k * step, 0], [k * step, 0]] as const)
+        if (inside(x0 + dx, y0 + dy) && !hits(x0 + dx, y0 + dy)) return { x: x0 - x + dx, y: y0 - y + dy };
+    return { x: 0, y: 0 };
   }
 
   update(dt: number, camera: THREE.Camera, w: number, h: number): void {
+    let boxes: Array<{ x: number; y: number; w: number; h: number }> | null = null;
     for (const it of this.items) {
       it.age += dt;
       it.pos.y += dt * 0.6;
       this.v.copy(it.pos).project(camera);
-      const x = (this.v.x * 0.5 + 0.5) * w;
-      const y = (-this.v.y * 0.5 + 0.5) * h;
+      let x = (this.v.x * 0.5 + 0.5) * w;
+      let y = (-this.v.y * 0.5 + 0.5) * h;
+      if (!it.off) {
+        boxes ??= this.avoid?.() ?? [];
+        // 1.05: the pop's peak scale; 8 px of air round it.
+        it.off = boxes.length ? Floaters.dodge(x, y, it.el.offsetWidth * 1.05 + 8, it.el.offsetHeight * 1.05 + 8, boxes, w, h) : { x: 0, y: 0 };
+      }
+      x += it.off.x;
+      y += it.off.y;
       const k = it.age / it.life;
       it.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${k < 0.15 ? 0.6 + k * 3 : 1.05 - k * 0.1})`;
       it.el.style.opacity = String(Math.min(1, 2.2 * (1 - k)));
     }
     for (const it of this.items) if (it.age >= it.life) it.el.remove();
     this.items = this.items.filter((it) => it.age < it.life);
+  }
+
+  /** Plan item 691 (tests): each live callout's text and box on the canvas, CSS px. */
+  boxes(): Array<{ text: string; x: number; y: number; w: number; h: number }> {
+    const lr = this.layer.getBoundingClientRect();
+    return this.items.map((it) => {
+      const r = it.el.getBoundingClientRect();
+      return { text: it.el.textContent ?? "", x: r.left - lr.left, y: r.top - lr.top, w: r.width, h: r.height };
+    });
   }
 
   clear(): void {

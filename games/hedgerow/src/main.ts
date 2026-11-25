@@ -880,6 +880,11 @@ if (SANDBOX)
     faceTone: () => (renderer && is3D(renderer) ? renderer.faceTone() : null),
     // Plan item 98: the 3D gate signs' letter height on screen (null in 2D).
     gateSigns: () => (renderer && is3D(renderer) ? renderer.gateSigns() : null),
+    // Plan item 691: the 3D callouts' and towers' screen boxes, and a callout raised from a tower (null in 2D).
+    callouts: () => (renderer && is3D(renderer) ? renderer.calloutCheck() : null),
+    testCallout: (text: string, i?: number) => (renderer && is3D(renderer) ? renderer.testCallout(text, i) : null),
+    // Plan item 691: the 3D canvas's backing pixels per CSS px (the device's ratio, capped at 2).
+    canvasRatio: () => { const c = document.querySelector<HTMLCanvasElement>("#canvas"); return c && c.clientWidth ? c.width / c.clientWidth : null; },
     // Plan item 45: the 2D renderer's convoy (null in 3D).
     convoy: () => (renderer as { convoyStats?: (g?: Game) => unknown } | null)?.convoyStats?.(game ?? undefined) ?? null,
     // Plan item 410: the 3D fleet's and depot's main roughness against the farm's (null in 2D).

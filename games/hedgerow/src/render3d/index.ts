@@ -436,6 +436,8 @@ export class Renderer3D {
     this.dynamic.add(this.sparks.points, this.puffs.points, this.debris.mesh);
     this.fx = new Transients(this.dynamic);
     this.floaters = new Floaters(overlay);
+    // Plan item 691: callouts ('Bridge up!' over the windmill) rise clear of the towers.
+    this.floaters.avoid = () => this.towerRects();
     this.overlayEl = overlay;
     // Plan item 469: the composer draws into a multisampled target (the renderer's own antialias does nothing once
     // a composer renders the scene, so every hedge, kerb and roof edge stair-stepped and the phone frame read soft).
@@ -1244,7 +1246,10 @@ export class Renderer3D {
       // arch read as two gates).
       const depot = depots[lane];
       const fascia = !!depot && this.inFrame(depot);
-      sign.visible = !fascia && !((grow > 1 || this.openFrame) && sign.userData.inField);
+      sign.updateMatrixWorld();
+      // Plan item 691: a board cut by the frame's edge (an upright phone's l27 read 'HOLL' at the canvas foot, under
+      // the tray's tab) steps down too, and the plate carries the town.
+      sign.visible = !fascia && !((grow > 1 || this.openFrame) && sign.userData.inField) && this.wholeInFrame(sign);
       // The depot's count plate covers its fascia's lettering, so with the board down the plate names the town.
       if (!sign.visible) this.plateTown = sign.userData.town as string;
       // With the depot in frame the lane leaves from it: the gate's bare posts go too (alone they read as stray
@@ -1254,6 +1259,44 @@ export class Renderer3D {
       if (bar) bar.visible = sign.visible;
       sign.updateMatrixWorld();
     }
+  }
+
+  /** Plan item 691: each built tower's screen box (CSS px on the canvas), for the callouts to keep off. */
+  towerRects(): Rect[] {
+    const out: Rect[] = [];
+    for (const [, v] of this.towers) {
+      const lean = (v.obj.userData.lean as THREE.Object3D | undefined) ?? v.obj;
+      out.push(this.boxRect(new THREE.Box3().setFromObject(lean), this.w, this.h));
+    }
+    return out;
+  }
+
+  /** Plan item 691 (tests): a callout rising from the i-th built tower's foot, as 'Bridge up!' does from a bridge
+   * beside one. */
+  testCallout(text: string, i = 0): boolean {
+    const v = [...this.towers.values()][i];
+    if (!v) return false;
+    const p = v.obj.getWorldPosition(new THREE.Vector3());
+    this.floaters.add(text, p.setY(p.y + 1.1), "#ffb3a8", 0.9);
+    return true;
+  }
+
+  /** Plan item 691 (tests): the live callouts' boxes and the towers' boxes, CSS px on the canvas. */
+  calloutCheck(): { callouts: Array<{ text: string; x: number; y: number; w: number; h: number }>; towers: Rect[] } {
+    return { callouts: this.floaters.boxes(), towers: this.towerRects() };
+  }
+
+  /** Plan item 691: whether an object's projected box lies wholly inside the canvas (with a margin, CSS px). */
+  private wholeInFrame(o: THREE.Object3D, margin = 6): boolean {
+    const b = new THREE.Box3().setFromObject(o);
+    if (b.isEmpty()) return true;
+    for (let i = 0; i < 8; i++) {
+      const v = this.v2.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(this.camera);
+      const px = (v.x * 0.5 + 0.5) * this.w;
+      const py = (-v.y * 0.5 + 0.5) * this.h;
+      if (v.z > 1 || px < margin || px > this.w - margin || py < margin || py > this.h - margin) return false;
+    }
+    return true;
   }
 
   /** Plan item 450: whether an object (all its ancestors shown) has its centre inside the frame, off its very edge. */
