@@ -16,7 +16,8 @@ export function weekChipText(goals: WeekGoal[], game?: string): string {
     const own = goals.find((g) => g.game === game)
     if (!own) return head
     if (own.done >= own.need) return `${head} · ${own.game} done ✓`
-    return `${head} · ${own.text} (${own.done}/${own.need})`
+    // Plan item 695: one count only; 'Cath's Week 0/3 · Solve 3 dailies (1/3)' read as two counts disagreeing.
+    return `Cath's Week · ${own.text} (${own.done}/${own.need})`
   }
   const next = goals.find((g) => g.done < g.need)!
   return `${head} · ${next.game}: ${next.text.toLowerCase()}`

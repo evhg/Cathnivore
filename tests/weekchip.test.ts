@@ -10,7 +10,7 @@ describe('weekChipText', () => {
   })
   it("inside a game names only that game's goal, or the count once it is met (plan item 47)", () => {
     const goals = [g('Runnel', 3, 1), g('Hedgerow', 3, 2)]
-    expect(weekChipText(goals, 'Hedgerow')).toBe("Cath's Week 0/2 · Do it (2/3)")
+    expect(weekChipText(goals, 'Hedgerow')).toBe("Cath's Week · Do it (2/3)")
     expect(weekChipText([g('Runnel', 3, 1), g('Hedgerow', 3, 3)], 'Hedgerow')).toBe("Cath's Week 1/2 · Hedgerow done ✓")
     expect(weekChipText(goals, 'Cathnivore')).toBe("Cath's Week 0/2")
   })
