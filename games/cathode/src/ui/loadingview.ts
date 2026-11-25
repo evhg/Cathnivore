@@ -82,11 +82,14 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     rest.textContent = "";
   } else {
     // about 1.6 s for the line, after the prints have landed
+    // Plan item 700: paced by the clock, not one letter a tick: the street loads on this thread, and a timer per
+    // letter stalled with it, leaving the line cut mid-sentence ('Tomas Reed owes') while the load ran. A late tick
+    // now catches up to where the line should be.
     const per = Math.max(10, Math.min(24, 1600 / said.length));
-    let n = 0;
+    const start = performance.now() + 700;
     const type = () => {
       if (closed) return;
-      n = Math.min(said.length, n + 1);
+      const n = Math.min(said.length, Math.max(1, Math.floor((performance.now() - start) / per)));
       typed.textContent = said.slice(0, n);
       rest.textContent = said.slice(n);
       if (n < said.length) setTimeout(type, per);
