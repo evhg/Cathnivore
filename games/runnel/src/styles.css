@@ -5550,7 +5550,10 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
     padding: 7px 7px 4px;
     rotate: -3deg;
   }
-  .app[data-rail-cath] .foot {
+  /* (the open month takes the rail's foot: hidden at once, in the same frame the fold opens, not a frame later when
+     main.ts moves her back to the valley; the 240 px page scroll that one frame left was red on E2E) */
+  .app:has(#rail-more[open]) .rail-host { display: none; }
+  .app[data-rail-cath]:not(:has(#rail-more[open])) .foot {
     justify-content: flex-start;
     padding-right: calc(100% - var(--rc-fig-left, 180px) - 10px);
   }

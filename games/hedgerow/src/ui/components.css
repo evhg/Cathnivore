@@ -5696,7 +5696,11 @@ body:has(#dlg-pause[open]) .paused-note {
    the top-right corner and the 'For' tag the right foot beside it; the price row's padding above the picture goes
    (the price hangs over the picture's corner), so the packet keeps its height. */
 @media (min-width: 900px) and (min-height: 861px) {
-  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower { padding-top: 0; }
+  /* (min-width 0: a one-line name's min-content made a packet a pixel wider than its track, the rack read as
+     overflowing, took the More arrow's 44 px of padding and then truly cut the names: level 40 at 1440x900; the clip
+     keeps a name set in the fallback face before the webfont loads from doing the same) */
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower { padding-top: 0; min-width: 0; }
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name { overflow: clip; }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower img {
     align-self: flex-start;
     width: 56px;
@@ -5787,11 +5791,11 @@ body:has(#dlg-pause[open]) .paused-note {
 /* Plan item 692: the 2D panel is 26% of the window (374 px at 1440). Its four-to-a-row packets are 83 px, wide enough to
    hold 'Seed Cannon' and 'Market Stall' on one line with no side padding, so a tight round keeps every band one line
    high (a wrapped name made its band 14 px taller than the rest). 3D's narrower column (70 px bands) still wraps. */
-@media (min-width: 900px) and (min-height: 861px) {
-  .play .panel .tray-wrap .tray { container: hg-tray / inline-size; }
-}
-@container hg-tray (min-width: 340px) {
-  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
+/* (a media query, not a container query on the tray: Chromium kept an inline-size-contained tray's tracks at its
+   first layout's width after the panel grew, so level 40's packets ran 46 px past the rack's edge. The 2D panel is
+   26% of the window, so its tray reaches 340 px from a 1400 px window.) */
+@media (min-width: 1400px) and (min-height: 861px) {
+  html:not(.hedgerow-3d) .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
     padding-inline: 0;
     white-space: nowrap;
     letter-spacing: -0.015em;

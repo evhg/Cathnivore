@@ -3228,6 +3228,8 @@ function towerTray(p: HTMLElement, g: Game): void {
   };
   tray.addEventListener("scroll", sync, { passive: true });
   requestAnimationFrame(sync);
+  // (and once the webfont is in: names set in the fallback face are wider, and a rack measured then read as overflowing)
+  void document.fonts?.ready.then(() => tray.isConnected && requestAnimationFrame(sync));
   // Item 439: her dock folding (item 392) or the drawer opening moves the packets' start: check the cut again.
   const mo = new MutationObserver(() => (tray.isConnected ? requestAnimationFrame(sync) : mo.disconnect()));
   const dock = document.querySelector(".cath-dock");

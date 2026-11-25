@@ -6772,6 +6772,12 @@ img.act-scene {
   max-height: var(--dock-h);
   transform: none;
 }
+/* (plan item 692 narrowed the panel to 26% of the window: at 374 px the page's lines wrap more and 'Got it' fell under
+   the dock's foot (level 18's drone at 1440x900), so the docked page's sketch is a size smaller) */
+.intro.intro-side .intro-sketch { width: 104px; padding: 8px; margin-bottom: 12px; }
+.intro.intro-side .intro-sketch .intro-icon { width: 84px; }
+.intro.intro-side .intro-driver { width: 44px; height: 44px; right: -12px; bottom: -12px; }
+.intro.intro-side .intro-go { margin-top: 10px; }
 @media (max-width: 600px) {
   .intro { place-items: end stretch; padding: 6px; }
   .intro-sheet { grid-template-columns: 64px 1fr; grid-template-rows: none; gap: 4px 10px; padding: 10px 12px 10px 26px; max-height: none; }
