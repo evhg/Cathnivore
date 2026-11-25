@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-25T05:18Z
 
 
 
@@ -6493,3 +6492,51 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Build:** pick one model and tune it with a script over every season x hour x weather (no hand-picking): e.g. the wet field also takes the hour (a deep dusk green, so the wet/dry gap holds), channels take less of the dusk (ground 65%+), and plots keep a fixed green share of their own ground. Check against runnel-tiles (3:1 channel on plot), runnel-contrast, runnel-greened, runnel-water and the key art.
 - **Accept:** runnel-bloom passes for every sky (a unit test over the palette model asserting ΔE wet/dry 20+ and field/any channel 12+ in all 64 combinations, plus the e2e on today's board); the other Runnel colour specs pass; shots of a dusk and a noon board P and D.
 - **Size:** 2
+
+Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, D 1440x900, every game; the NIGHT SHIFT D street caught its loading board at 91%: plan-shots now waits 400 s), one subagent critique against VISION.md, told to skip items 319, 543 and 678 and to check items 650-683 first.
+
+## 684. [ ] Hedgerow: the fleet drives the lane in single file, in 2D and 3D
+*(planned 2026-11-25 05:30, lane A, plan1125a critique; builds on items 657 and 672, which don't hold at late rounds)*
+- **Why:** `plan1125a/hedge-l27-2d-D` 260-580 x 290-880: purple lorries overlap 3-5 deep with no road under them; `hedge-l27-3d-D` 175-660 x 260-820: ~30 vans carpet the fields either side of the lane; `hedge-l34-2d-D` 300-380 x 75-880 one solid column depot to depot (round 15, ~180 vehicles). The battle can't be read. VISION 1, 2.
+- **Build:** a minimum along-path gap between drawn vehicles; the overflow waits at the depot as a '+N waiting' chip on its sign instead of being drawn; the lane surface always drawn over the field and under the vehicles; 3D the same spacing rule with an instance cap per lane cell. The sim's numbers are unchanged (drawing only), or retune with the tuner if not.
+- **Accept:** a unit test on drawn positions: no two vehicle boxes overlap by more than 15%; e2e via `window.hedgerow` (sandbox, round 15): every drawn vehicle's centre on a lane cell, the chip's count right; 3D frame budget holds; shots P and D, l27 and l34, 2D and 3D.
+- **Size:** 3
+
+## 685. [ ] Cathnivore phone: Cath at the table, reacting
+*(planned 2026-11-25 05:30, lane A, plan1125a critique)*
+- **Why:** `plan1125a/cath-game-P` 10-80 x 500-570: on the phone Cath is a 70 px flat round avatar beside the producers' lines (Mara and Tomas the same, 265-375 x 500-570); nothing shows her face answering a sale, a Squeeze or a liberation. At D she stands (345-470 x 480-760). VISION 3, 5.
+- **Build:** a `shared/cath` bust 120 px+ rising from the dialogue strip's left edge, five expressions on events (sale: delighted; Squeeze landing: worried; liberation: wink; region lost: determined; default: smirk), a 200 ms ease-out swap with a small bob, a fade under reduced motion.
+- **Accept:** her box 110 px+ tall at 390x844, over no region plate or hand card (e2e boxes); a unit test on the event-to-expression map; an e2e plays a Sell and reads `data-expression` change within 300 ms; shots P and D.
+- **Size:** 2
+
+## 686. [ ] NIGHT SHIFT sideways phone: controls composed around the gun
+*(planned 2026-11-25 05:30, lane A, plan1125a critique; the first-person glove, not item 543's third-person Cath)*
+- **Why:** `plan1125a/ns-street-P` (2x, 1688x780): AIM (1265-1395 x 535-665) sits on the Pin's grip; the gloved hand (1230-1600 x 640-780) reads as a grey lump without fingers; 'DRAG TO AIM' (1455-1615 x 145-175) and 'THE PIN' over a bare rule (1380-1645 x 300-360) float over the skyline; the vitals and tutorial line fill 0-480 x 0-420 behind a dark gradient. VISION 1, 6.
+- **Build:** AIM and FIRE as a thumb arc in the right third, clear of the viewmodel's projected box; the viewmodel glove with knuckles and fingers; 'THE PIN' a small tag under FIRE; the hint lines fade after the first move or look.
+- **Accept:** e2e: no control button intersects the viewmodel's screen bounds at 844x390 and 932x430; the glove mesh 4+ finger segments; the hint gone 4 s after the first input; `cathode-perf` phone budget holds; shots sideways P and D.
+- **Size:** 2
+
+## 687. [ ] Runnel: an unsolved board you can trace
+*(planned 2026-11-25 05:30, lane A, plan1125a critique; follows items 675 and 683)*
+- **Why:** `plan1125a/runnel-D` 470-1330 x 40-880: about 30 tiles each carry the same 25-30 px brown mill wheel (item 675), the loudest repeated shape on the board, louder than the channels; channels are tan planks on tan or sage, and which ends meet across an edge can't be seen; `runnel-P` 5-385 x 270-640 the same at 14 px. The solved board is lovely. VISION 1, 3.
+- **Build:** the wheel only on hub tiles (3+ ends); channel beds darker than the soil; where two dry ends meet across an edge, a lit seam tick on that edge, so a tap shows progress before any water flows.
+- **Accept:** a unit test: wheels no more than hub tiles; channel against tile 3:1+ under all four skies (extend `runnel-contrast`); e2e rotates a tile into a match and sees the seam marker within 250 ms; shots P and D, unsolved and solved.
+- **Size:** 2
+
+## 688. [ ] Hedgerow 2D: a painted field, not a tinted grid
+*(planned 2026-11-25 05:30, lane A, plan1125a critique)*
+- **Why:** `plan1125a/hedge-l27-2d-P` 0-390 x 55-690: the field under a translucent green veil that flattens towers and lane; plots teal rectangles with dashed edges, an empty dashed box at 15-55 x 108-148; `hedge-l27-2d-D` 260-770 x 95-880 the same flat plots. 2D is the fallback and the tests' screen, and reads as a level editor beside the 3D. VISION 1, 6.
+- **Build:** the veil only in placement mode (or gone); plots with crop rows, soil and hedge borders from `terrain.ts`; buildable empties a soft chalk outline, not dashes.
+- **Accept:** lane against plots 3:1+ measured in shots; no full-field overlay outside placement mode (e2e on the computed alpha); key art re-shot; shots P and D at l27 and l34.
+- **Size:** 2
+
+## 689. [ ] The bugs from the 2026-11-25 05:30 critique, fixed as one batch
+*(planned 2026-11-25 05:30, lane A, plan1125a critique; check each on today's build first)*
+- Hedgerow l34: the level-up badge (`hedge-l34-2d-D` 226-302 x 55-80) straddles the top HUD bar, clipped; at P (`hedge-l34-2d-P` 265-375 x 213-255) it covers the radio mast (item 681 said never over the lane).
+- Portfolio D: '2 sessions, 4 changes in the last 24 hours' (282-541 x 728-745) with an almost empty 24 h track (1235-1300 x 768-783) beside '48 Build sessions a day' (215-375 x 850-875): check whether the shot build read a shallow git log; the 'Live: last shipped...' line (458-980 x 852-868) squeezed between two stats.
+- Cathnivore campaign D: Cath (740-920 x 500-900) covers Rivermead's and Shingle Bay's east edges by the '4' stop (665-720 x 555-615); chapter 1 shown twice (map ticket 48-305 x 770-885 and rail card 1030-1375 x 140-345).
+- Cathnivore setup D: the 'This week at the market' card (1002-1130 x 325-590) straddles the gap between the setup panel and Cath's stall post (~1040-1065).
+- NIGHT SHIFT class pick D: the stat deltas twice: dials (1000-1390 x 120-205) +4 aim, +7 nerve, then 'NERVE +7 / AIM +4' again under the rifle photo (998-1240 x 418-456).
+- Runnel D unsolved: Cath (430-490 x 600-860) about 260 px tall against item 670's 300 px; her bubble (385-525 x 510-580) butts the board's bottom-left tile at x 530.
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
+- **Size:** 1
