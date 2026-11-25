@@ -6569,7 +6569,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** picked producers 220 px+ tall at D; no element over the stall frame (e2e boxes); every step reachable by keyboard; P unchanged; shots P and D.
 - **Size:** 2
 
-## 694. [ ] Runnel D: Cath hosts at presence size from the rail
+## 694. [ ] Runnel D: Cath hosts at presence size from the rail *(lane A, in progress)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique; item 670's 300 px Cath was a logged deviation, item 689 closed her bubble by measurement)*
 - **Why:** `plan1125b/runnel-D`: Cath about 60x260 px (430-490 x 600-860), her face about 20 px, squeezed between board and frame; the rail under the almanac (16-346 x 600-900) is dead space (a sticky drawing and a tip); `runnel-solved-D` the same (440-530 x 510-860).
 - **Build:** Cath moves into the rail as a half-length figure (300 px+) reacting live (delighted when a field fills, worried at a spill, a wink on par), her bubble beside her, Bea's drawing pinned behind; the solve postcard's pose matches.
