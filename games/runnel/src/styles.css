@@ -5515,6 +5515,47 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .has-win-strip:not(.has-postcard) .rail-doodle { display: none; }
 }
 
+/* Plan item 694: at D Cath hosts from the rail's foot (main.ts moves her there where it has the room): half length, her
+   waist under the window's foot, her bubble left of her face, Bea's drawing pinned under the bubble, the tap hint at
+   the foot beside her. */
+.rail-host { display: none; }
+@media (min-width: 1100px) and (min-height: 640px) {
+  .app[data-rail-cath] .rail { position: relative; }
+  .rail-host:not([hidden]) {
+    display: block;
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    height: var(--rc-room, 280px);
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .rail-host .valley-cath:not([hidden]) {
+    left: auto;
+    right: -6px;
+    top: 0;
+    bottom: auto;
+    width: auto;
+    height: var(--rc-h, 300px);
+    aspect-ratio: 2 / 3;
+    filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--soil) 22%, transparent));
+  }
+  .app[data-rail-cath] .rail-doodle {
+    top: calc(100% + 12px + var(--rc-doodle-top, 120px));
+    right: auto;
+    left: 10px;
+    width: var(--rc-doodle-w, 170px);
+    box-sizing: border-box;
+    padding: 7px 7px 4px;
+    rotate: -3deg;
+  }
+  .app[data-rail-cath] .foot {
+    justify-content: flex-start;
+    padding-right: calc(100% - var(--rc-fig-left, 180px) - 10px);
+  }
+}
+
 /* Plan item 679: at D a daily's result is a paper postcard that lands on the field under the solved board, between Cath
    and Bea's garden: today's crop drawn large in a stamp frame at its left, the result beside it, the buttons along its
    foot. It drops in with a slight turn (about 900 ms) and a fade under reduced motion; Cath waves from the valley, so

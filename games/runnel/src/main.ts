@@ -895,6 +895,8 @@ function placeValleyCath(): void {
     return
   }
   cath.hidden = false
+  // Plan item 694: where the rail's foot has the room she hosts from there at half length, out of the valley.
+  if (placeRailCath(cath)) return
   // Plan item 430: full length on the bank at D (the layout may have just crossed from the phone's half figure).
   host.frame()
   // Plan item 268: she stands as large as the valley's corner allows (her face 60 px at 300 px tall), down to the old
@@ -950,6 +952,89 @@ function placeValleyCath(): void {
   if (document.getElementById('win-strip')?.hidden === false) placeStrip()
 }
 
+/** Plan item 694: at D Cath hosts from the rail's foot, at half length and 300 px+ tall (her face about 75 px), under
+ *  the almanac page: her bubble to the left of her face, Bea's drawing pinned under it, the tap hint at the foot
+ *  beside her. The valley figure and her bubble move into the rail's host box; where the foot lacks the room (a short
+ *  desktop, the month open, the result docked in the rail, the lesson) they go back to the valley as before. */
+const RAIL_CATH_MIN = 250
+function placeRailCath(cath: HTMLElement): boolean {
+  const app = document.querySelector<HTMLElement>('.app')
+  const rail = document.getElementById('rail')
+  const box = document.getElementById('rail-host')
+  const say = document.getElementById('valley-say')
+  const deco = document.querySelector<HTMLElement>('.farm-deco')
+  if (!app || !rail || !box || !say || !deco) return false
+  const r = rail.getBoundingClientRect()
+  const room = Math.floor(innerHeight - r.bottom - 12)
+  const docked = document.querySelector('.has-win-strip:not(.has-postcard)') !== null
+  if (document.body.classList.contains('in-lesson') || !r.height || docked || room < RAIL_CATH_MIN) {
+    if (app.dataset.railCath !== undefined) {
+      delete app.dataset.railCath
+      box.hidden = true
+      cath.style.removeProperty('--rc-h')
+      deco.prepend(cath)
+      deco.append(say)
+      say.hidden = true
+      sayKey = ''
+    }
+    return false
+  }
+  if (cath.parentElement !== box) {
+    box.append(cath, say)
+    sayKey = ''
+  }
+  box.hidden = false
+  app.dataset.railCath = ''
+  host.aim(null)
+  host.frame()
+  // Her waist cut sits just under the window's foot, so she leans in from below the page.
+  const h = Math.min(Math.round(room / 0.9), 400)
+  rail.style.setProperty('--rc-room', `${room}px`)
+  cath.style.setProperty('--rc-h', `${h}px`)
+  cath.dataset.cathW = String(Math.round((h * 2) / 3))
+  delete app.dataset.valleyCath
+  placeRailSay()
+  return true
+}
+
+/** Plan item 694: her line in the rail, a bubble left of her face with its tail to her cheek. */
+function placeRailSay(): void {
+  const app = document.querySelector<HTMLElement>('.app')
+  const cath = document.getElementById('valley-cath')
+  const say = document.getElementById('valley-say')
+  const box = document.getElementById('rail-host')
+  const rail = document.getElementById('rail')
+  const text = document.getElementById('host-line')?.textContent ?? ''
+  if (!app || !cath || !say || !box || !rail) return
+  if (!text) {
+    say.hidden = true
+    return
+  }
+  const b = box.getBoundingClientRect()
+  const fig = cath.getBoundingClientRect()
+  // (In the half framing (viewBox 40 20 320 480) her face spans about 0.3-0.7 of the width, 0.14-0.42 of the height.)
+  const face = { left: fig.left + fig.width * 0.3, top: fig.top + fig.height * 0.14, bottom: fig.top + fig.height * 0.42 }
+  say.textContent = text
+  say.hidden = false
+  const w = Math.max(140, Math.round(face.left - b.left - 14))
+  say.style.setProperty('--say-w', `${w}px`)
+  say.style.setProperty('--say-l', '0px')
+  say.style.setProperty('--say-t', '4px')
+  const sh = say.offsetHeight
+  const fy = (face.top + face.bottom) / 2 - b.top
+  const ty = Math.min(Math.max(fy - 4, 18), sh - 18)
+  const len = Math.max(face.left - b.left - w + 6, 12)
+  say.style.setProperty('--tail-x', `${w - 2}px`)
+  say.style.setProperty('--tail-y', `${ty}px`)
+  say.style.setProperty('--tail-len', `${len}px`)
+  say.style.setProperty('--tail-a', `${Math.atan2(fy - ty, len) || 0}rad`)
+  app.dataset.valleySay = ''
+  // Bea's drawing pinned under her line, and the tap hint at the foot beside her.
+  rail.style.setProperty('--rc-doodle-top', `${4 + sh + 16}px`)
+  rail.style.setProperty('--rc-doodle-w', `${Math.max(120, Math.min(w - 10, 190))}px`)
+  app.style.setProperty('--rc-fig-left', `${Math.round(fig.left - b.left)}px`)
+}
+
 /** Plan item 122: her pointing arm aims at the glowing tile: the lesson's target or a tip's pulse, else the
  *  spring. In the lesson she points at it all along; in a daily only once the water is flowing (item 70). */
 function aimValleyCath(cath: HTMLElement): void {
@@ -980,6 +1065,7 @@ function placeValleySay(): void {
   const stage = document.querySelector<HTMLElement>('.stage')
   const text = document.getElementById('host-line')?.textContent ?? ''
   if (!app || !cath || !say || !stage) return
+  if (app.dataset.railCath !== undefined) return placeRailSay()
   const off = () => {
     say.hidden = true
     // The phone's standing figure (item 165) keeps its own flag.
@@ -1514,6 +1600,8 @@ function showStrip(isDaily: boolean, streak: number): void {
   strip.root.hidden = false
   document.body.classList.add('has-win-strip')
   placeStrip()
+  // (Plan item 694: a result docked in the rail takes its foot, so she steps back to the valley)
+  if (document.querySelector('.app[data-rail-cath]') && !document.body.classList.contains('has-postcard')) scheduleValleyPlace()
   // her solve line steps clear of the strip (it sat under it, 2026-11-20), measured once the strip has slid in (not
   // as it starts: the search beside her held up the slide on a slow CI)
   if (getComputedStyle(strip.root).animationName === 'none') requestAnimationFrame(() => placeValleySay())
@@ -1569,13 +1657,19 @@ function placeStrip(): void {
   document.body.style.setProperty('--strip-h', `${Math.round(strip.root.offsetHeight) + (fits ? 34 : 0)}px`)
 }
 window.addEventListener('resize', placeStrip)
+// Plan item 694: the card's own height settles after it lands (its fonts and plant), and the stage keeps that height
+// clear: measured once at landing it kept 18 px too little, and the solved board's last row ran under it.
+if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => placeStrip()).observe(strip.root)
 
 function hideStrip(): void {
   strip.root.hidden = true
   strip.root.removeAttribute('data-postcard')
   document.body.classList.remove('has-win-strip', 'has-postcard')
   placeValleySay()
+  scheduleValleyPlace()
 }
+// Plan item 694: the month opened or folded moves the rail's foot, and her with it.
+document.getElementById('rail-more')?.addEventListener('toggle', () => scheduleValleyPlace())
 
 $<HTMLButtonElement>('strip-share').addEventListener('click', () => {
   ui.toast.textContent = ''

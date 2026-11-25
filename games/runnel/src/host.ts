@@ -88,7 +88,8 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
   let aimAlways = false
   // Plan item 70: Cath stands in the valley too, half length by the stream. She looks round when the water
   // reaches a new field, and waves at a solve.
-  const fullAtD = () => matchMedia('(min-width: 1100px) and (min-height: 640px)').matches
+  // (Plan item 694: not where she hosts from the rail's foot at half length.)
+  const fullAtD = () => matchMedia('(min-width: 1100px) and (min-height: 640px)').matches && document.querySelector('.app[data-rail-cath]') === null
   let framed: 'full' | 'half' | '' = ''
   // Plan item 458: on an upright phone the dock's portrait is her half figure (waist up, in the pose the valley figure
   // would take: pointing as the water runs, a cheer, a wave at the solve), standing at the board's foot-left over its
@@ -120,7 +121,7 @@ export function createHost(face: HTMLElement, line: HTMLElement, stage?: HTMLEle
     stage.dataset.aim = pointAt === undefined ? '' : Math.min(Math.max(pointAt, -85), 15).toFixed(1)
     stage.innerHTML =
       cathSvg({ framing, expression, pose: p, pointAt, outfit: chosenOutfit(), pin: chosenPin(), animate: true }) +
-      (framing === 'full' ? VALLEY_BANK : VALLEY_WALL)
+      (framing === 'full' ? VALLEY_BANK : stage.closest?.('.rail-host') ? '' : VALLEY_WALL)
   }
   const look = () => {
     if (!stage) return

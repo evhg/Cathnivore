@@ -75,7 +75,11 @@ test('at D under reduced motion her bubble is off her figure', async ({ page, ha
   await page.waitForTimeout(800)
   const o = await page.evaluate(() => {
     const s = document.getElementById('valley-say')!.getBoundingClientRect()
-    const f = document.getElementById('valley-cath')!.getBoundingClientRect()
+    const c = document.getElementById('valley-cath')!
+    let f = c.getBoundingClientRect()
+    // (plan item 694: from the rail's foot at half length her bubble sits beside her head inside her box's empty
+    // corner, so it is checked against her face and hair: 0.26-0.74 of the width, the top 0.46)
+    if (c.closest('.rail-host')) f = new DOMRect(f.left + f.width * 0.26, f.top, f.width * 0.48, f.height * 0.46)
     return Math.max(0, Math.min(s.right, f.right - 6) - Math.max(s.left, f.left + 6)) * Math.max(0, Math.min(s.bottom, f.bottom) - Math.max(s.top, f.top + 4))
   })
   expect(o).toBe(0)
@@ -161,8 +165,11 @@ test('on a phone her face follows the solve', async ({ page, hasTouch }) => {
 // Plan item 188 hid the half-length figure's cut at the hips behind a wall, then a footbridge (items 329, 351, 369),
 // which still read as a box over her hips. Plan item 430: at D she stands full length in the meadow, her boots on the
 // valley's grass with a few tufts in front of them; no board or wall crosses her.
+// (Plan item 694: where the rail's foot has room, 1440x900, she hosts from there at half length; on a short desktop
+// she stands in the valley as before.)
 test('at D she stands full length in the meadow, nothing across her hips', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the phone docks her under the board (item 407)')
+  await page.setViewportSize({ width: 1280, height: 800 })
   await page.clock.setFixedTime(new Date('2026-11-03T10:00:00Z'))
   await page.goto('/runnel/?nohelp')
   await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
