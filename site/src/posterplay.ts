@@ -126,8 +126,15 @@ const hedgerow: Loop = (g, t) => {
 }
 
 // Cathnivore: the four contested regions turn from the corporation's red to the co-op's green, one after
-// another, the way a good round plays.
-const REGIONS: Pt[] = [[362, 130], [580, 130], [680, 302], [580, 472]]
+// another, the way a good round plays. Plan item 695: the centres of today's key art's four held regions (Highmoor,
+// Saltmarsh, Kingsmarket, Rivermead: the ones with a count badge); the old centres were an earlier board's, so the
+// flip's outline crossed Brindle Hills' plate and read as 'Brindle Hi' on the /games/ card.
+const REGIONS: Pt[] = [[391, 128], [600, 128], [495, 302], [704, 302]]
+const REGION_R = 110
+// Every region's name plate (with its badge) in the art, kept clear of the flip so no name reads clipped.
+const PLATES: readonly [number, number, number, number][] = [
+  [338, 34, 140, 30], [538, 34, 138, 30], [226, 206, 166, 34], [423, 206, 170, 34], [634, 206, 150, 34], [346, 379, 126, 34], [530, 379, 158, 34],
+]
 function hex(g: CanvasRenderingContext2D, [cx, cy]: Pt, r: number): void {
   g.beginPath()
   for (let i = 0; i < 6; i++) {
@@ -143,15 +150,20 @@ const cathnivore: Loop = (g, t) => {
   const beat = 2.4
   const turn = Math.floor(t / beat) % (REGIONS.length + 1)
   const k = (t % beat) / beat
+  g.save()
+  g.beginPath()
+  g.rect(0, 0, ART_W, ART_H)
+  for (const [x, y, w, h] of PLATES) g.rect(x, y, w, h)
+  g.clip('evenodd')
   REGIONS.forEach((c, i) => {
     let amount = i < turn ? 1 : i === turn ? Math.min(1, k * 2.2) : 0
     if (turn === REGIONS.length) amount = 1 - k // all green, then the board resets
     if (amount <= 0) return
-    hex(g, c, 104)
+    hex(g, c, REGION_R)
     g.fillStyle = `rgba(118, 176, 86, ${0.32 * amount})`
     g.fill()
     g.strokeStyle = `rgba(74, 140, 60, ${amount})`
-    g.lineWidth = 9
+    g.lineWidth = 6
     g.stroke()
     if (i === turn && k < 0.6) {
       // The flip's ring of sparks.
@@ -165,6 +177,7 @@ const cathnivore: Loop = (g, t) => {
       }
     }
   })
+  g.restore()
 }
 
 // NIGHT SHIFT: rain sheets down through the street and the neon flickers.
