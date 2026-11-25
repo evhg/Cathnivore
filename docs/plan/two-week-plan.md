@@ -6495,14 +6495,14 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 
 Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, D 1440x900, every game; the NIGHT SHIFT D street caught its loading board at 91%: plan-shots now waits 400 s), one subagent critique against VISION.md, told to skip items 319, 543 and 678 and to check items 650-683 first.
 
-## 684. [ ] Hedgerow: the fleet drives the lane in single file, in 2D and 3D *(lane A, in progress)*
+## 684. [x] Hedgerow: the fleet drives the lane in single file, in 2D and 3D *(done 2026-11-25 06:08, lane A, b39799f3: always single file in 2D and 3D (two abreast put a packed lane over the plots); 2D slots are each sprite's drawn body x1.06 (`drawnLen`, sprites.ts; SLOT_LEN let trucks overlap a fifth); a column's head stands nose to tail behind the file's last vehicle (`ConvoyColumn.at`; it stood on the queue's leader 3-5 deep), the rest on its '+N' chip, none drawn behind the gate (3D JAM_3D 1, no staggered jam). Unit test: drawn bodies overlap 15% at most (fails on the old column); e2e hedgerow-single-file (l34 round 15, P and D: every drawn centre on a lane cell, chip = count - head); swarm spec's drawn floor 40 -> 30. The road reads under the queue in the l27/l34 shots. Deviation: chip says '+N', not '+N waiting' (room). Shots scratchpad s684 before/a1)*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique; builds on items 657 and 672, which don't hold at late rounds)*
 - **Why:** `plan1125a/hedge-l27-2d-D` 260-580 x 290-880: purple lorries overlap 3-5 deep with no road under them; `hedge-l27-3d-D` 175-660 x 260-820: ~30 vans carpet the fields either side of the lane; `hedge-l34-2d-D` 300-380 x 75-880 one solid column depot to depot (round 15, ~180 vehicles). The battle can't be read. VISION 1, 2.
 - **Build:** a minimum along-path gap between drawn vehicles; the overflow waits at the depot as a '+N waiting' chip on its sign instead of being drawn; the lane surface always drawn over the field and under the vehicles; 3D the same spacing rule with an instance cap per lane cell. The sim's numbers are unchanged (drawing only), or retune with the tuner if not.
 - **Accept:** a unit test on drawn positions: no two vehicle boxes overlap by more than 15%; e2e via `window.hedgerow` (sandbox, round 15): every drawn vehicle's centre on a lane cell, the chip's count right; 3D frame budget holds; shots P and D, l27 and l34, 2D and 3D.
 - **Size:** 3
 
-## 685. [ ] Cathnivore phone: Cath at the table, reacting
+## 685. [ ] Cathnivore phone: Cath at the table, reacting *(lane A, in progress)*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique)*
 - **Why:** `plan1125a/cath-game-P` 10-80 x 500-570: on the phone Cath is a 70 px flat round avatar beside the producers' lines (Mara and Tomas the same, 265-375 x 500-570); nothing shows her face answering a sale, a Squeeze or a liberation. At D she stands (345-470 x 480-760). VISION 3, 5.
 - **Build:** a `shared/cath` bust 120 px+ rising from the dialogue strip's left edge, five expressions on events (sale: delighted; Squeeze landing: worried; liberation: wink; region lost: determined; default: smirk), a 200 ms ease-out swap with a small bob, a fade under reduced motion.
