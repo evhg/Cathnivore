@@ -21,13 +21,15 @@ function rng(seed: number): () => number {
 
 /** The bed fills: each act's own ground colour (top, foot). */
 const FILL: Partial<Record<BedLook, [string, string]>> = {
-  // Glassy samphire: a bright yellow-green flush, reddening toward the foot.
-  samphire: ["rgba(118,178,128,0.74)", "rgba(104,152,116,0.78)"],
+  // Plan item 688: Saltmarsh's beds and margins are deep and near-opaque, so the pale sand lane reads 3:1 against them
+  // (the old 0.72-alpha pale fills sat at 1.35-1.9:1 and read as a tinted grid).
+  // Glassy samphire: a deep green flush, darker toward the foot.
+  samphire: ["rgba(78,120,70,0.95)", "rgba(66,104,62,0.96)"],
   // Sea-lavender: grey-green rosettes under a haze of mauve. Plan item 440: the bed itself is the rosettes' grey-green
   // (a mauve fill read as purple board tiles); the mauve is only the flower sprays, a step down in value and chroma.
-  lavender: ["rgba(150,156,146,0.72)", "rgba(128,136,124,0.76)"],
-  // Salt grazing: a short, blue-grey sward.
-  saltgrass: ["rgba(136,198,176,0.72)", "rgba(108,174,156,0.76)"],
+  lavender: ["rgba(100,106,96,0.95)", "rgba(86,92,84,0.96)"],
+  // Salt grazing: a short, deep sea-green sward.
+  saltgrass: ["rgba(62,114,94,0.95)", "rgba(52,98,82,0.96)"],
   // Hill oats: a green-gold crop in ear.
   oats: ["rgba(206,200,120,0.7)", "rgba(178,172,96,0.74)"],
   // Turnips: dark leafy rows on red-brown hill soil.
@@ -41,12 +43,12 @@ const FILL: Partial<Record<BedLook, [string, string]>> = {
   // A bluebell bank: a blue haze over green.
   // (green ground: a blue fill read as water, which can't be built on)
   bluebell: ["rgba(104,146,96,0.72)", "rgba(88,128,84,0.76)"],
-  // Sea kale: grey shingle with big glaucous leaves.
-  seakale: ["rgba(196,192,180,0.78)", "rgba(170,166,154,0.8)"],
+  // Sea kale: wet grey shingle with big glaucous leaves.
+  seakale: ["rgba(112,116,110,0.94)", "rgba(96,100,96,0.95)"],
   // Lazybeds: dark ridges of soil mulched with wrack.
   lazybed: ["rgba(104,84,62,0.82)", "rgba(86,70,52,0.86)"],
   // Thrift: short cliff turf studded with pink cushions.
-  thrift: ["rgba(128,166,104,0.7)", "rgba(110,148,92,0.74)"],
+  thrift: ["rgba(84,120,70,0.94)", "rgba(72,104,62,0.95)"],
   // Oilseed rape in flower: a hard chemical yellow.
   rape: ["rgba(238,214,58,0.82)", "rgba(220,192,40,0.86)"],
   // Sugar beet: glossy leaf rows on grey-brown soil.
@@ -78,6 +80,11 @@ const FILL: Partial<Record<BedLook, [string, string]>> = {
   // Watercress: dark green in clear running water.
   cress: ["rgba(100,150,66,0.76)", "rgba(82,130,56,0.8)"],
 };
+
+/** A kit bed's fill (top, foot), for tests that measure it against the lane. */
+export function kitBedFill(look: BedLook): [string, string] | undefined {
+  return FILL[look];
+}
 
 export function isKitBed(look: string): boolean {
   return look in FILL;
