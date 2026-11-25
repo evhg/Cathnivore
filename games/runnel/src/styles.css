@@ -5122,6 +5122,15 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 .join.wet .join-bed {
   fill: var(--water);
 }
+/* Plan item 687: a dry match's two lit stitches across the seam; once water runs through, the water says it. */
+.join-tick {
+  fill: var(--water-hi);
+  stroke: color-mix(in srgb, var(--groove) 60%, transparent);
+  stroke-width: 0.5;
+}
+.join.wet .join-tick {
+  display: none;
+}
 @keyframes join-in {
   to { opacity: 1; }
 }

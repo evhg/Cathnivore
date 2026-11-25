@@ -101,3 +101,40 @@ test('every hub is a six-spoked mill wheel, still until watered', async ({ page 
   expect(m.bars).toBe(0)
   expect(m.dryTurning).toBe(0)
 })
+
+// Plan item 687: an unsolved board you can trace. The mill wheel (and its plank rim) only on hubs, where three or more
+// channels meet; a turn that brings two dry ends together across an edge lights that seam at once.
+test('wheels only on hubs, and a turn into a match lights its seam', async ({ page }) => {
+  await page.goto('/runnel/?nohelp')
+  await expect(page.locator('#board polygon.tile').first()).toBeVisible()
+  const m = await page.evaluate(() => ({
+    wheels: document.querySelectorAll('.tiles > g.cell .mill-wheel').length,
+    hubs: document.querySelectorAll('.tiles > g.cell[data-ends="3"], .tiles > g.cell[data-ends="4"], .tiles > g.cell[data-ends="5"], .tiles > g.cell[data-ends="6"]').length,
+    rimsOff: [...document.querySelectorAll('.tiles > g.cell')].filter((c) => Number((c as HTMLElement).dataset.ends ?? 9) < 3 && c.querySelector('.hub-lip, .mill')).length,
+  }))
+  expect(m.wheels).toBeGreaterThan(0)
+  expect(m.wheels).toBeLessThanOrEqual(m.hubs)
+  expect(m.rimsOff).toBe(0)
+  // Turn playable tiles until one turn makes a new joined seam; it is there (with its lit stitches) within 250 ms.
+  const joins = () => page.evaluate(() => [...document.querySelectorAll('.joins .join')].map((j) => (j as SVGGElement).dataset.join!))
+  const cells = page.locator('.tiles > g.cell:not(.spring):not(.stone):not(.fixed)')
+  let lit = false
+  for (let i = 0; i < 6 && !lit; i++) {
+    const cell = cells.nth(i)
+    for (let k = 0; k < 6 && !lit; k++) {
+      const before = new Set(await joins())
+      await cell.locator('polygon.tile').click({ force: true })
+      const t0 = Date.now()
+      const fresh = await page.waitForFunction((had) => {
+        const now = [...document.querySelectorAll('.joins .join:not(.wet)')].filter((j) => !had.includes((j as SVGGElement).dataset.join!))
+        return now.length && now.every((j) => j.querySelectorAll('.join-tick').length === 2) ? now.length : 0
+      }, [...before], { timeout: 250, polling: 16 }).then(() => true).catch(() => false)
+      if (fresh) {
+        expect(Date.now() - t0).toBeLessThan(400)
+        lit = true
+      }
+      await page.waitForTimeout(350)
+    }
+  }
+  expect(lit).toBe(true)
+})
