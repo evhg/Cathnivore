@@ -97,3 +97,29 @@ test('choosing a chapter unfolds its ticket from the pin in 400-600 ms; reduced 
   await expect(page.locator('.cmp-ticket')).toHaveAttribute('data-chapter', 'growing-season')
   expect(await page.locator('.cmp-ticket').evaluate((e) => getComputedStyle(e).animationName)).toBe('cmp-fade')
 })
+
+// Plan item 696: a locked chapter in the rail is a sealed envelope with its wax 24 px or more: the seal on a tall
+// desktop's postcard print, the numbered seal on a short desktop's folded tab.
+for (const [w, h] of [
+  [1440, 900],
+  [1280, 800],
+] as const) {
+  test(`locked chapters carry a 24 px seal at ${w}x${h}`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+    await page.setViewportSize({ width: w, height: h })
+    await page.addInitScript((k) => localStorage.setItem(k, JSON.stringify({ version: 1, completed: [], tutorialDone: true })), KEY)
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Campaign' }).click()
+    const cards = page.locator('.cmp-stop-locked:not(.cmp-stop-next) .cmp-card')
+    await expect(cards).toHaveCount(5)
+    for (const card of await cards.all()) {
+      const size = await card.evaluate((el) => {
+        const seal = el.querySelector('.cmp-vignette.is-sealed .cmp-vig-seal')
+        if (seal && seal.getBoundingClientRect().width > 0) return Math.min(seal.getBoundingClientRect().width, seal.getBoundingClientRect().height)
+        const after = getComputedStyle(el, '::after')
+        return after.content === 'none' ? 0 : Math.min(parseFloat(after.width), parseFloat(after.height))
+      })
+      expect(size).toBeGreaterThanOrEqual(24)
+    }
+  })
+}

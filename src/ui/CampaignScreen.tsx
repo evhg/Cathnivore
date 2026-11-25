@@ -500,10 +500,10 @@ function ChapterVignette({ chapter, state, mini = false }: { chapter: Chapter; s
       {/* Plan item 279: a locked chapter's scene waits at dusk under the co-op's wax seal: its land in colour, its
           landmarks and stall in silhouette, a seal pressed with a leaf at its heart. */}
       {/* Item 435: the locked chapter is a letter not yet opened: the envelope's flap folds down over the scene to the
-          co-op's seal at its point. */}
+          co-op's seal at its point (plan item 696: the seal 26 px across on the rail's 108 px print, was 19). */}
       {locked && <path className="cmp-vig-flap" d={`M1 1 L${VIG_W / 2} 34 L${VIG_W - 1} 1 Z`} />}
       {locked && (
-        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2} 32) scale(0.82)`}>
+        <g className="cmp-vig-seal" transform={`translate(${VIG_W / 2} 33) scale(1.15)`}>
           <path
             className="cmp-vseal-wax"
             d={Array.from({ length: 12 }, (_, k) => {
@@ -858,6 +858,8 @@ export default function CampaignScreen({
               <Medallion n={i + 1} state={state} />
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}
+                // Plan item 696: a short desktop's sealed tab presses this number into its wax
+                data-no={i + 1}
                 onClick={() => start(chapter)}
                 // (through point(), so a stop's pending let-go can't clear the card the pointer has moved onto)
                 onPointerEnter={() => point(chapter.id)}
