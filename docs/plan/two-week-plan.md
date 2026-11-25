@@ -6502,7 +6502,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** a unit test on drawn positions: no two vehicle boxes overlap by more than 15%; e2e via `window.hedgerow` (sandbox, round 15): every drawn vehicle's centre on a lane cell, the chip's count right; 3D frame budget holds; shots P and D, l27 and l34, 2D and 3D.
 - **Size:** 3
 
-## 685. [ ] Cathnivore phone: Cath at the table, reacting *(lane A, in progress)*
+## 685. [x] Cathnivore phone: Cath at the table, reacting *(done 2026-11-25 06:18, lane A, a2439d3f: on a tall phone (830 px+) her counter seat is a half-length figure (`framing="half"`, 80x120 at 390x844, 8-88 x 451-571), rising over the board's foot from the counter's left end, clear of every region name and hand card; while a producer speaks she desaturates rather than going 55% see-through. New e2e in cath-beats (110 px+, no plate or card met, a Sell changes data-expression within 300 ms); table-cath's hex check skips the figure. Deviations: the existing expression map kept (sell wink, liberation delighted, a lost region worried; item 276's poses match it) and item 436's beats are the bob; short phones (under 830) keep the 52 px bust. Locally table-producers:117 at D fails on the base too. Shots scratchpad s685 (before, a1, a2 zoom, P375, P430))*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique)*
 - **Why:** `plan1125a/cath-game-P` 10-80 x 500-570: on the phone Cath is a 70 px flat round avatar beside the producers' lines (Mara and Tomas the same, 265-375 x 500-570); nothing shows her face answering a sale, a Squeeze or a liberation. At D she stands (345-470 x 480-760). VISION 3, 5.
 - **Build:** a `shared/cath` bust 120 px+ rising from the dialogue strip's left edge, five expressions on events (sale: delighted; Squeeze landing: worried; liberation: wink; region lost: determined; default: smirk), a 200 ms ease-out swap with a small bob, a fade under reduced motion.
@@ -6516,7 +6516,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** e2e: no control button intersects the viewmodel's screen bounds at 844x390 and 932x430; the glove mesh 4+ finger segments; the hint gone 4 s after the first input; `cathode-perf` phone budget holds; shots sideways P and D.
 - **Size:** 2
 
-## 687. [ ] Runnel: an unsolved board you can trace
+## 687. [ ] Runnel: an unsolved board you can trace *(lane A, in progress)*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique; follows items 675 and 683)*
 - **Why:** `plan1125a/runnel-D` 470-1330 x 40-880: about 30 tiles each carry the same 25-30 px brown mill wheel (item 675), the loudest repeated shape on the board, louder than the channels; channels are tan planks on tan or sage, and which ends meet across an edge can't be seen; `runnel-P` 5-385 x 270-640 the same at 14 px. The solved board is lovely. VISION 1, 3.
 - **Build:** the wheel only on hub tiles (3+ ends); channel beds darker than the soil; where two dry ends meet across an edge, a lit seam tick on that edge, so a tap shows progress before any water flows.
