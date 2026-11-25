@@ -1548,9 +1548,16 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
   .the-list:has(.mug:is(:hover, :focus)) { z-index: var(--z-pop); }
   /* Plan item 194: Cath's hand a step up the scale (at --fs-1 the italic serif read as 11 px). */
   /* Plan item 200: inset from the print's edge (the italic's overhang met the paper's edge at 4 px). */
+  /* Plan item 695: a polaroid's margin round Cath's hand (the last line sat 6 px off the print's foot, its sides 5 px). */
+  /* On a short screen (16:9) the List has no height to spare under the menu: the foot shrinks back toward 4 u. */
+  .mug {
+    --short-m: min(0px, 100svh - var(--u) * 1200); /* px-ok: zero */
+    padding-inline: calc(var(--u) * 5);
+    padding-bottom: clamp(var(--u) * 4, var(--u) * 16 + var(--short-m) / 4, var(--u) * 16);
+  }
   .rumour {
     display: block;
-    padding-inline: calc(var(--u) * 1.5) calc(var(--u) * 3);
+    padding-inline: calc(var(--u) * 3);
     font: italic 500 var(--fs-2) / 1.05 var(--font-voice);
     color: var(--card-ink);
     text-wrap: pretty; /* plan item 335: no one-word last line */
