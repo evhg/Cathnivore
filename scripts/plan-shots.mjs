@@ -130,7 +130,9 @@ const jobs = {
     // Plan item 673: at D the street is shot at full scale (as a desktop player sees it): a half-scale world drew the
     // rain as dark dashes over the lit windows, which no full-scale frame shows
     await p.goto(`${base}/nightshift/?play&class=ghost${s === 'D' ? '' : '&rs=0.5'}`)
-    await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 200000 }).catch(() => {})
+    // A full-scale street can take over 200 s to draw its first frames under SwiftShader (2026-11-25: the D shot
+    // caught the loading board at 91%), so wait up to 400 s.
+    await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 400000 }).catch(() => {})
     // Plan item 665: item 639 holds the weapon below the frame until her first input, and a critique read the
     // untouched arrival as 'nothing in hand': shoot the street as it plays, after an input.
     await p.evaluate(() => { if (window.cathode) window.cathode.input.forced = { reload: true } })
