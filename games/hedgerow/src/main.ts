@@ -4200,7 +4200,10 @@ function fire(x?: number, y?: number): void {
  *  head and flies to the Cath button (the phone's action bar or the desktop panel's), which bumps as it lands. Under
  *  reduced motion it fades in on the button instead. */
 function levelBadge(g: Game | null, level: number): void {
-  const btn = document.getElementById("btn-cath");
+  // Plan item 689: fly to the Cath control the player can see (the in-game Cath key, the phone's dock bust, else the
+  // menu's button); #btn-cath is hidden in a level, and its empty box sent the badge to the top-left over the HUD.
+  const shown = (el: HTMLElement | null): el is HTMLElement => !!el && el.getBoundingClientRect().width > 0;
+  const btn = [document.getElementById("btn-hero"), document.querySelector<HTMLElement>(".cath-dock-bust"), document.getElementById("btn-cath")].find(shown);
   if (!btn) return;
   const to = btn.getBoundingClientRect();
   const stage = ui.stage.getBoundingClientRect();
@@ -4217,6 +4220,14 @@ function levelBadge(g: Game | null, level: number): void {
   document.body.append(badge);
   // Plan item 682: kept whole on screen (at P Cath stood by the right edge and the badge rose half off it)
   const half = badge.offsetWidth / 2 + 8;
+  // Plan item 689: its rise (34 px) never reaches under the top HUD: when she stands near the top it starts beside
+  // her, on the side toward the screen's middle, instead of over her head
+  const hud = document.querySelector(".hud")?.getBoundingClientRect();
+  const minY = Math.max(hud && hud.height > 0 ? hud.bottom : 0, stage.top) + 8 + 34 + badge.offsetHeight / 2;
+  if (from.y < minY) {
+    from.y = minY;
+    if (her) from.x = stage.left + her.x + her.w / 2 + (from.x > window.innerWidth / 2 ? -1 : 1) * (her.w / 2 + half);
+  }
   from.x = Math.max(half, Math.min(window.innerWidth - half, from.x));
   badge.style.setProperty("left", `${Math.round(from.x)}px`);
   badge.style.setProperty("top", `${Math.round(from.y)}px`);

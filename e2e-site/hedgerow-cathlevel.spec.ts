@@ -99,8 +99,45 @@ test('a level-up badge flies from Cath to her button, no banner over the lane', 
   const t0 = Date.now()
   await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.heroUp())
   await expect(page.locator('.lvl-badge')).toHaveCount(1, { timeout: 2000 })
-  await expect(page.locator('#btn-cath.lvl-bump')).toHaveCount(1, { timeout: 2000 })
+  // plan item 689: the bump lands on a Cath control the player can see (#btn-cath is the menu's, hidden in a level)
+  await expect(page.locator('.lvl-bump')).toHaveCount(1, { timeout: 2000 })
+  await expect(page.locator('.lvl-bump')).toBeVisible()
   expect(Date.now() - t0).toBeLessThanOrEqual(1200 + 400)
   await expect(page.locator('#stage')).toHaveAttribute('data-hero-level', '2')
   expect(await page.locator('.banner.show').count()).toBe(0)
+})
+
+// Plan item 689: on level 34 she stands near the top of the field: the badge's rise stays below the top HUD and
+// flies toward a Cath control that is on screen (at P it flew to the hidden menu button's empty box, over the HUD).
+test('level 34: the level-up badge never rises under the top HUD', async ({ page }) => {
+  test.setTimeout(120_000)
+  const stars = Object.fromEntries(Array.from({ length: 40 }, (_, i) => [String(i + 1), 3]))
+  const tips = { build: true, hero: true, early: true, pie: true, spec: true, neighbours: true, rally: true }
+  await page.goto('/hedgerow/?sandbox=1&2d')
+  await page.evaluate(([s, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: s, seenBefore: { 34: true }, tips: t })), [stars, tips])
+  await page.goto('/hedgerow/?sandbox=1&2d&level=34')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 60_000 })
+  // sample the badge every frame of its flight: its top never above the HUD's bottom, and it ends nearer the bump
+  await page.evaluate(() => {
+    const w = window as unknown as { hedgerow: HG; __tops: number[]; __last: [number, number] }
+    w.__tops = []
+    const tick = () => {
+      const r = document.querySelector('.lvl-badge')?.getBoundingClientRect()
+      if (r) { w.__tops.push(r.top); w.__last = [r.left + r.width / 2, r.top + r.height / 2] }
+      if (w.__tops.length < 400) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+    // stand her on the field's top row (where the 05:30 critique caught the badge half under the HUD at D)
+    const h = (w.hedgerow.game() as unknown as { hero: { x: number; y: number; tx: number; ty: number } }).hero
+    h.y = h.ty = 0.6
+    requestAnimationFrame(() => requestAnimationFrame(() => w.hedgerow.heroUp()))
+  })
+  await expect(page.locator('.lvl-bump')).toHaveCount(1, { timeout: 3000 })
+  const hud = (await page.locator('.hud').boundingBox())!
+  const { tops, last } = await page.evaluate(() => { const w = window as unknown as { __tops: number[]; __last: [number, number] }; return { tops: w.__tops, last: w.__last } })
+  expect(tops.length).toBeGreaterThan(2)
+  expect(Math.min(...tops)).toBeGreaterThanOrEqual(hud.y + hud.height)
+  const bump = (await page.locator('.lvl-bump').boundingBox())!
+  expect(bump.width).toBeGreaterThan(0)
+  expect(Math.hypot(last[0] - (bump.x + bump.width / 2), last[1] - (bump.y + bump.height / 2))).toBeLessThan(120)
 })
