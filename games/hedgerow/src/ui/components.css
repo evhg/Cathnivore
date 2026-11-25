@@ -5036,6 +5036,10 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .panel .round-group:has(> .cath-plate:not([hidden])) .preview-chip {
     min-height: 0;
     height: 28px;
+    /* plan item 692: with Cath's plate in the column the convoy stays one compact row (sprite beside its count) */
+    flex-direction: row;
+    gap: 2px;
+    padding: 0 5px 0 2px;
   }
   .play .panel .round-group:has(> .cath-plate:not([hidden])) .preview-chip .chip-icon {
     width: 28px;
@@ -5201,9 +5205,11 @@ body:has(#dlg-pause[open]) .paused-note {
     flex: var(--share, 1) 0 auto;
     min-width: 0;
     max-width: none;
+    /* plan item 692: the vehicle's sprite at presence size (48 px) over its count, not a 28 px icon beside it */
+    flex-direction: column;
     justify-content: center;
-    gap: 2px;
-    padding: 0 5px 0 2px;
+    gap: 0;
+    padding: 2px 4px 6px;
     border-radius: 9px;
     background: var(--card);
     /* no ring: the panel is a ruled ledger (item 460), so a segment is marked only by its livery band */
@@ -5215,9 +5221,9 @@ body:has(#dlg-pause[open]) .paused-note {
   }
   .play .panel .ticket-chips.convoy .chip-icon {
     flex: none;
-    width: 28px;
-    height: 28px;
-    padding: 2px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
     box-shadow: none;
   }
   .play .panel .ticket-chips.convoy .chip-n {
