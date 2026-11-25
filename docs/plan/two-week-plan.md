@@ -6530,7 +6530,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** lane against plots 3:1+ measured in shots; no full-field overlay outside placement mode (e2e on the computed alpha); key art re-shot; shots P and D at l27 and l34.
 - **Size:** 2
 
-## 689. [ ] The bugs from the 2026-11-25 05:30 critique, fixed as one batch
+## 689. [ ] The bugs from the 2026-11-25 05:30 critique, fixed as one batch *(slice 1, lane A 06:35, 91c3d11c: portfolio D: the log was not shallow (the build fetches past the window; that night only lane A ran, 2-5 sessions are true); the fixed '48 Build sessions a day' now reads the track's own count ('Build sessions, last 24 hours'), new portfolio-studio test. **Left:** the 'Live: last shipped' line's squeeze, and the Hedgerow, Cathnivore, NIGHT SHIFT and Runnel items)*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique; check each on today's build first)*
 - Hedgerow l34: the level-up badge (`hedge-l34-2d-D` 226-302 x 55-80) straddles the top HUD bar, clipped; at P (`hedge-l34-2d-P` 265-375 x 213-255) it covers the radio mast (item 681 said never over the lane).
 - Portfolio D: '2 sessions, 4 changes in the last 24 hours' (282-541 x 728-745) with an almost empty 24 h track (1235-1300 x 768-783) beside '48 Build sessions a day' (215-375 x 850-875): check whether the shot build read a shallow git log; the 'Live: last shipped...' line (458-980 x 852-868) squeezed between two stats.
