@@ -813,8 +813,11 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-opt[aria-checked="true"]::after { background-size: 100% 100%; border-bottom-color: rgb(var(--accent-rgb, var(--blood-rgb)) / .55); }
 .cp-opt-body { display: grid; gap: calc(var(--u) * 12); min-width: 0; }
 .cp-opt-meter { display: flex; align-items: center; gap: calc(var(--u) * 10); font: 700 var(--fs-1)/1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .05em; text-transform: uppercase; }
-.cp-meter-k { color: var(--ink-3); }
-.cp-meter-v { color: var(--ink-2); }
+/* Plan item 700: the rows lie over the lamp's cone (plan1125c ns-play-D, Butcher and Gunslinger), where --ink-3 at the
+   13 px floor went soft: a step brighter, and a dark halo so the light behind can't take the words. */
+.cp-opt-meter { text-shadow: 0 0 calc(var(--u) * 6) rgb(0 0 0 / .85); }
+.cp-meter-k { color: var(--ink-2); }
+.cp-meter-v { color: var(--ink); }
 .cp-meter-segs { display: flex; gap: calc(var(--u) * 4); }
 .cp-seg { width: calc(var(--u) * 26); height: max(4px, calc(var(--u) * 7)); transform: skewX(-18deg); background: rgb(var(--ink-rgb) / .14); } /* px-ok */
 .cp-seg.is-on { background: var(--ink-2); }
