@@ -213,7 +213,8 @@ test('plan item 73: every stop is a landmark vignette, 44 px or larger, in its o
     }),
   )
   for (const w of wrap) {
-    expect(w.filter).toContain('sepia')
+    // (plan item 702: drained of colour now, item 596's sepia reversed; hedgerow-map-locked measures it in pixels)
+    expect(w.filter).toContain('grayscale')
     expect(w.sheen).toContain('gradient')
   }
   // Plan item 471: the seal is merged into the number tag (one Hollowell tag, 'H | 15')
@@ -420,11 +421,12 @@ for (const upTo of [3, 23]) {
     const open = await sat(upTo)
     const locked = await sat(upTo + 2)
     expect(open, `open ${upTo}`).toBeGreaterThan(0.3)
-    // Plan item 596: a locked landmark keeps its own colours (it was pencil line art) and is toned sepia under the
-    // cellophane, so the open stop still stands out in full colour.
-    expect(locked, `locked ${upTo + 2}`).toBeGreaterThan(0.15)
+    // Plan item 702 (was item 596's sepia-toned colours): a locked landmark keeps its own drawing but is drained of
+    // colour by its filter (its painted inks still carry hue: `locked` reads them before the filter), so the open
+    // stop alone stands in full colour. hedgerow-map-locked measures the drawn saturation in pixels.
+    expect(locked, `locked ${upTo + 2}`).toBeGreaterThan(0)
     const tone = await page.evaluate((l) => getComputedStyle(document.querySelector(`button.node[data-level="${l}"] .level-landmark`)!).filter, upTo + 2)
-    expect(tone).toContain('sepia')
+    expect(tone).toMatch(/grayscale\(0\.9/)
   })
 }
 

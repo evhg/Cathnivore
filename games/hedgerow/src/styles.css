@@ -6304,6 +6304,20 @@ img.act-scene {
   color: var(--plastic);
   box-shadow: 0 0 0 2px var(--plastic), 0 1px 0 2px color-mix(in srgb, var(--corp-ink) 35%, transparent);
 }
+/* Plan item 702: Hollowell's H tag is a padlock: a shackle rises from the tag over its H (item 471's padlock glyph
+   stays gone; the tag is the lock). */
+#screen-select .node:disabled .level-num.vignette .level-n::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  bottom: calc(100% - 1px);
+  width: 9px;
+  height: 7px;
+  border: 2px solid var(--corp);
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  pointer-events: none;
+}
 #screen-select .node:disabled .level-num.vignette .level-n::before {
   content: "H";
   padding-right: 3px;
@@ -6322,8 +6336,10 @@ img.act-scene {
    (items 124/314/372 drew it as grey line art, so a locked act read as a row of disabled buttons). Item 471's
    plastic coin, turf plinth and H tag stay; a sheen across the coin lays the wrap over the picture. It still wakes
    into full colour when it opens (item 73's vignette-wake). */
+/* Plan item 702: drained of colour now (saturation under 0.15), so the open and won stops carry the map's colour alone
+   and a locked act no longer reads as a row of playable glass orbs; it still wakes into colour when it opens. */
 #screen-select .node:disabled .level-num.vignette .level-landmark {
-  filter: sepia(.5) saturate(.9) contrast(.92) brightness(1.02);
+  filter: grayscale(.93) contrast(.9) brightness(1.03);
   opacity: 1;
 }
 #screen-select .node:disabled .level-num.vignette::after {
@@ -6340,7 +6356,7 @@ img.act-scene {
     radial-gradient(ellipse 80% 70% at 50% 40%, transparent 55%, color-mix(in srgb, var(--plastic-shade) 35%, transparent));
 }
 @media (prefers-color-scheme: dark) {
-  #screen-select .node:disabled .level-num.vignette .level-landmark { filter: sepia(.5) saturate(.75) brightness(.78); }
+  #screen-select .node:disabled .level-num.vignette .level-landmark { filter: grayscale(.93) brightness(.78); }
 }
 
 /* Plan item 611: on an upright phone her line no longer covers the tray. Open, the dock keeps her portrait where the
