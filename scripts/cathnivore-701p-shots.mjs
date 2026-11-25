@@ -4,7 +4,7 @@ import { chromium } from '@playwright/test'
 const [base, out, tag] = process.argv.slice(2)
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH ?? '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' })
 for (const [n, w, h] of [['P', 390, 844], ['P375', 375, 812], ['P430', 430, 932]]) {
-  const p = await (await b.newContext({ viewport: { width: w, height: h }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 })).newPage()
+  const p = await (await b.newContext({ viewport: { width: w, height: h }, hasTouch: true, isMobile: true, deviceScaleFactor: 1, colorScheme: process.env.SCHEME ?? 'light' })).newPage()
   await p.goto(base + '/?seed=7&e2eHandFan=1')
   await p.getByText('Quick Game').click()
   await p.locator('.setup-start').click()

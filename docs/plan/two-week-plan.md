@@ -6623,14 +6623,14 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
 
-## 701. [ ] Cathnivore: the hand of cards is a real hand *(lane A, in progress)*
+## 701. [x] Cathnivore: the hand of cards is a real hand *(done 2026-11-25 23:20 lane A: at D a hovered or keyboard-focused card is held up to read, 222-227 px tall at 1.8x from its foot (end cards grow inward), over the board's figures, its name about 25 px and pick line about 20 px as drawn, the board unmoved (e2e hand-lift, 1440x900 and 1280x800); at P the counter hand rests with Cath's lifted card whole at a snap start clear of the edge's fade, a card only partly in view face down and counted, and a '‹ n more' tab for cards swiped past the left (e2e phone-hand-whole at 390, 375, 430; phone-hand-targets updated). Shots scratchpad h701 light and dark)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/cath-game-D`: the cards (440-1330 x 765-885) are about 120 px tall, titles about 13 px, art cropped, 'Injunction' skewed as if half-dealt; `cath-game-P`: the row (0-390 x 635-775) shows 3 whole cards and 'Open Stall' is cut by the right edge (355-390). The player's main verb is the weakest-drawn object on the table.
 - **Build:** at D a fanned hand docked at the table's foot, each card's title band showing at rest, the focused/hovered card rising to full size above the fan (150-200 ms ease-out) and dropping back; at P a snap-scrolling hand of whole cards with a peek and a count tab instead of a cut card.
 - **Accept:** the focused card 220 px+ tall and wholly in view at 1440x900 and 1280x800 (e2e rect); titles 15 px+, body 13 px+, 4.5:1 on the card; at P no card cut by the viewport edge at rest after a snap (e2e); the board rect unchanged at D; shots P and D.
 - **Size:** 2
 
-## 702. [ ] Hedgerow: the act map shows progress
+## 702. [ ] Hedgerow: the act map shows progress *(lane A, in progress)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/hedge-menu-D`: the map (0-1120 x 60-900) sits under a milky haze and locked levels 32-40 are the same white glass orbs as playable ones; `hedge-menu-P`: a white column (300-460 x 340-1330 at 2x) washes out 'Sandbag Sunday' and 'Compulsory Purchase'.
 - **Build:** cleared nodes show their pressed stars; the next node raised and lit with Cath's pin; locked nodes desaturated, wax-sealed and padlocked; the haze only at the act's far edge.
