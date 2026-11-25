@@ -1,3 +1,4 @@
+import { wetVars } from './tileFaces'
 import '../../../shared/ui/base.css'
 import '../../../shared/ui/palette.css'
 import { drawShareCard, CARD_W, CARD_H, type CardResult } from './sharecard'
@@ -317,7 +318,7 @@ function paintValley(daily: string): void {
   slot.dataset.seed = seed
   slot.innerHTML = valleyLayers(seed, sky.weather, seasonOf(/^daily-/.test(seed) ? seed.slice(6) : today))
   const stage = slot.closest<HTMLElement>('.stage')
-  for (const [k, v] of Object.entries(lightVars(sceneLight(sky)))) stage?.style.setProperty(k, v)
+  for (const [k, v] of Object.entries({ ...lightVars(sceneLight(sky)), ...wetVars(sky.time) })) stage?.style.setProperty(k, v)
 }
 
 /** Plan item 70: Cath stands in the valley's bottom-left corner unless the board's tiles reach into it. */

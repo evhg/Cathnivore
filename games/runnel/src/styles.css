@@ -5164,12 +5164,13 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
   .stage .terrace-apron polygon { fill: color-mix(in srgb, var(--vl-fallow, var(--furrow)) 70%, var(--paper)); }
 }
 .stage .terrace-lip polygon { fill: var(--vl-hedge, var(--pasture-deep)); opacity: .9; }
-/* Plan item 516: a dry tile's ground is the valley's own field for the season and hour (half way from the board's
-   earth to the valley's fallow, wheat or meadow beside it), so the tiles and the poster are one palette. */
+/* Plan item 516: a dry tile's ground is the valley's own field for the season and hour, so the tiles and the poster
+   are one palette. Plan item 683: a channel keeps 80% of the board's earth and takes a fifth of the valley's field
+   (half of it washed the dusk channels down onto the plots); tileFaces.ts models it, tests/runnel-tilefaces checks. */
 @media (prefers-color-scheme: light) {
-  .stage .cell:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))); }
-  .stage .cell.ground-field:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))); }
-  .stage .cell.ground-meadow:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))); }
+  .stage .cell:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry) 80%, var(--vl-fallow, var(--dry))); }
+  .stage .cell.ground-field:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-field) 80%, var(--vl-wheat, var(--dry-field))); }
+  .stage .cell.ground-meadow:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--dry-meadow) 80%, var(--vl-meadow, var(--dry-meadow))); }
 }
 
 /* Plan item 537: while Cath's first-field lesson points at a tile, her bubble says how to play, so the footer hint
@@ -5443,13 +5444,14 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .cell.field:not(.reservoir) .tile { fill: color-mix(in oklab, var(--dry-field) 46%, var(--wet-field)); }
 .cell.field.wet:not(.reservoir) .tile { fill: color-mix(in oklab, var(--wet-field) 80%, var(--dry-field)); }
 /* (light: item 516's valley-ground rule names the tile's ground (5 classes), so a field on field or meadow ground lost
-   its plot face and matched its channel. Each dry plot is now its own ground with a third of the crop's green, 12+
-   from its channel, and a watered field the full green, 20+ from a dry plot, on every ground.) */
+   its plot face and matched its channel. Each dry plot is its ground half lit by the hour with 42% of the crop's
+   green, 12+ from every channel, and a watered field the crop's green deepened by the hour (--vl-wet, plan item 683),
+   20+ from a dry plot, in every season, hour and weather.) */
 @media (prefers-color-scheme: light) {
-  .stage .cell.field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))) 63%, var(--wet-field)); }
-  .stage .cell.field.ground-field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))) 63%, var(--wet-field)); }
-  .stage .cell.field.ground-meadow:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))) 63%, var(--wet-field)); }
-  .stage .cell.field.wet:not(.reservoir) .tile { fill: var(--wet-field); }
+  .stage .cell.field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))) 58%, var(--wet-field)); }
+  .stage .cell.field.ground-field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))) 58%, var(--wet-field)); }
+  .stage .cell.field.ground-meadow:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))) 58%, var(--wet-field)); }
+  .stage .cell.field.wet:not(.reservoir) .tile { fill: var(--vl-wet, var(--wet-field)); }
 }
 @media (prefers-color-scheme: dark) {
   /* (dark: a lighter touch of green, so the light channels keep 3:1 on it) */
