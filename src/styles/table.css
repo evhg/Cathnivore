@@ -3505,6 +3505,25 @@ html.no-animations .table-cath-line { animation: none; }
   }
   .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):is(:hover, :has(:focus-visible)) { --art-h: 72px; }
   .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):has(> button[data-tight]):is(:hover, :has(:focus-visible)) { --art-h: 64px; }
+  /* Plan item 701: the hovered or keyboard-focused card is picked up out of the hand and held up to read: it
+     straightens, rises from its foot to about 230 px tall (the 126 px face at 1.8x, so the art and the print grow
+     together and nothing reflows) over 180 ms, and drops back when the pointer leaves. Scaled from the card's
+     foot, so it never leaves the viewport's bottom; the fan clamps it inside the sides (--lift-x). */
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):is(:hover, :has(:focus-visible)) {
+    z-index: var(--z-hud);
+    transform-origin: 50% 100%;
+    transform: translateX(var(--lift-x, 0px)) translateY(-4px) scale(var(--lift-scale, 1.8));
+    transition: transform 180ms var(--ease-out), height 180ms var(--ease-out);
+    filter: drop-shadow(0 14px 22px rgb(var(--shadow-ink) / .38));
+  }
+  /* the end cards grow inward from their outer foot corner, so the held card stays inside the table's edges */
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):nth-child(-n + 2 of .action-item):is(:hover, :has(:focus-visible)) { transform-origin: 0% 100%; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):nth-last-child(-n + 2 of .action-item):is(:hover, :has(:focus-visible)) { transform-origin: 100% 100%; }
+  /* the hand itself rises over the board's figures (the producers at the table's foot) while a card is held */
+  .game-layout .table-hand:not([data-rows]):has(.action-item:not(.action-family):is(:hover, :has(:focus-visible))) { z-index: var(--z-hud); }
+}
+@media (min-width: 1240px) and (min-height: 760px) and (max-height: 820px) {
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family) { --lift-scale: 1.76; }
 }
 @media (min-width: 1240px) and (min-height: 760px) {
   /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
