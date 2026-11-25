@@ -13,6 +13,7 @@ for (const [vp, w, h] of [['P', 390, 844], ['D', 1440, 900], ['D2', 1280, 800], 
   await p.goto((process.env.URL || 'http://localhost:4199/'))
   await p.getByRole('button', { name: 'Campaign' }).click()
   await p.waitForSelector('.cmp-map')
+  if (process.env.REST) await p.mouse.move(4, h - 4)
   await p.waitForTimeout(700)
   await p.screenshot({ path: `${out}/${tag}-${name}-${vp}-${scheme}.png` })
   await ctx.close()

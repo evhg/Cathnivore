@@ -32,7 +32,9 @@ test('Cath speaks about the chapter under the pointer or focus', async ({ page }
     expect(art.x).toBeGreaterThanOrEqual(map.x)
     // Plan item 669: her bust's shoulders run on into the margin before the chapter rail, never onto it
     const rail = (await page.locator('.chapter-list').boundingBox())!
-    expect(art.x + art.width).toBeLessThanOrEqual(rail.x)
+    // (plan item 689: measured on her drawn body, not the figure's box with its empty margins)
+    const body = (await page.locator('.cmp-map-host .cmp-header-cath svg .cath-body').boundingBox())!
+    expect(body.x + body.width).toBeLessThanOrEqual(rail.x)
     expect(art.y + art.height).toBeLessThanOrEqual(map.y + map.height)
   }
   const size = await page.locator('.cmp-cath-line').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))

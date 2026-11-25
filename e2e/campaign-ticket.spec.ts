@@ -11,6 +11,11 @@ test('desktop campaign: the chapter ticket is pinned beside its stop and follows
   await page.getByText('Campaign', { exact: false }).first().click()
   await page.mouse.move(4, 896)
   const ticket = page.locator('.cmp-ticket')
+  // plan item 689: at rest the next chapter is open in the rail, so the atlas pins no second copy of it
+  await expect(page.locator('.cmp-stop[data-chapter="word-of-mouth"] .cmp-card')).toBeVisible()
+  await expect(ticket).toHaveCount(0)
+  // pointing at the next chapter's stop pins its ticket there
+  await page.locator('.cmp-pin[data-chapter="word-of-mouth"] .cmp-pin-disc').hover()
   await expect(ticket).toHaveAttribute('data-chapter', 'word-of-mouth')
   const near = async (id: string) =>
     page.evaluate((id) => {
@@ -40,7 +45,7 @@ test('desktop campaign: the chapter ticket is pinned beside its stop and follows
   await expect(page.locator('.cmp-ticket-play')).toHaveCount(0)
   // the bunting is tied to the map: the ticket's flag is marked, and a flag under the pointer moves the ticket
   await page.mouse.move(4, 896)
-  await expect(ticket).toHaveAttribute('data-chapter', 'word-of-mouth')
+  await expect(ticket).toHaveCount(0)
   await expect(page.locator('.cmp-pennant.is-chosen')).toHaveAttribute('data-chapter', 'word-of-mouth')
   await page.locator('.cmp-pennant').nth(3).hover()
   await expect(ticket).toHaveAttribute('data-chapter', await page.locator('.cmp-pennant').nth(3).getAttribute('data-chapter') as string)

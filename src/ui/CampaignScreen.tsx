@@ -647,8 +647,11 @@ export default function CampaignScreen({
 
   const ticketId = held ?? pointed ?? next?.id ?? chapters[chapters.length - 1]!.id
   const ticketAt = chapters.findIndex((c) => c.id === ticketId)
+  // Plan item 689: at rest the next chapter is already open in the rail (its card, goal and Play), so the atlas pins
+  // no second copy of it; pointing at any chapter (the next one too) pins its ticket by its stop.
+  const resting = !held && !pointed && ticketId === next?.id
   const ticket =
-    ticketAt >= 0 ? (
+    ticketAt >= 0 && !resting ? (
       <CampaignTicket
         chapter={chapters[ticketAt]!}
         index={ticketAt}
@@ -856,8 +859,12 @@ export default function CampaignScreen({
               <button
                 className={`cmp-card ${isDone ? 'chapter-completed' : locked ? 'chapter-locked' : ''}`}
                 onClick={() => start(chapter)}
-                onPointerEnter={() => setHovered(chapter.id)}
-                onPointerLeave={() => setHovered(null)}
+                // (through point(), so a stop's pending let-go can't clear the card the pointer has moved onto)
+                onPointerEnter={() => point(chapter.id)}
+                onPointerLeave={() => {
+                  window.clearTimeout(unpoint.current)
+                  setHovered(null)
+                }}
                 onFocus={() => setFocused(chapter.id)}
                 onBlur={() => setFocused(null)}
               >

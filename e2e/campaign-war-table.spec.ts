@@ -45,6 +45,10 @@ for (const [w, h] of [
       return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
     })
     expect(meets(face, t)).toBe(false)
+    // plan item 689: she stands out in the margin before the rail, her face centred past the sheet's east edge
+    // less 20 px, so her hair clears Rivermead's east corner and the leaf by stop 4
+    const sheetRight = await page.evaluate(() => document.querySelector('.campaign-screen > .cmp-map .cmp-sheet')!.getBoundingClientRect().right)
+    expect((face.left + face.right) / 2).toBeGreaterThanOrEqual(sheetRight - 20)
   })
 }
 
