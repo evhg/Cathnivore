@@ -4494,12 +4494,13 @@ html.no-animations .table-cath-line { animation: none; }
   .beas-drawing {
     top: auto;
     bottom: var(--sp-3);
-    left: 214px;
-    width: 72px;
+    /* item 695: in the gap between Cath's hem and the board's slanted lower-left rim (at 214 px it lay on the rim) */
+    left: 146px;
+    width: 64px;
     rotate: 7deg;
   }
   @media (max-width: 1400px) {
-    .beas-drawing { left: 202px; width: 56px; }
+    .beas-drawing { left: 140px; width: 52px; }
   }
 }
 

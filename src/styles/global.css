@@ -4569,10 +4569,11 @@ html.no-animations .setup .opening-preview :is(.piece-tray, .ev-heap, .ev-lanter
   .setup[data-phone-steps] .market-event { padding: 5px 12px; }
   .setup[data-phone-steps] .market-event h2 { display: inline; margin: 0; }
   .setup[data-phone-steps] .market-event-deal { display: inline; margin-left: 4px; }
-  /* Slice 3: the recommend pill rides the producers card's top edge (a tab), so the heading row is one line of type. */
+  /* Slice 3, revised by item 695: the recommend pill sits at the end of the heading row, inside the card (riding the
+     card's top edge as a tab read as a button dropped on the border). One line of type still. */
   .setup[data-phone-steps] .setup-producers { position: relative; }
-  .setup[data-phone-steps] .setup-producers-head { min-height: 0; }
-  .setup[data-phone-steps] .setup-producers .setup-recommend { position: absolute; top: -5px; right: 10px; box-shadow: 0 2px 4px color-mix(in srgb, var(--ink) 14%, transparent); }
+  .setup[data-phone-steps] .setup-producers-head { min-height: 0; align-items: center; }
+  .setup[data-phone-steps] .setup-producers .setup-recommend { flex: none; min-height: 26px; padding: 2px 10px; }
   .setup[data-phone-steps] .setup-dot { gap: 1px; }
   .setup[data-phone-steps] .setup-dot-n { width: 27px; height: 27px; }
   .setup[data-phone-steps] .setup-dots::before { top: 13.5px; }
