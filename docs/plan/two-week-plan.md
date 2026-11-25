@@ -6555,7 +6555,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** edge sharpness (Laplacian variance) of the P 3D shot within 20% of D's; no floating label over a tower's screen box (e2e); the depot plate wholly visible; perf in budget; shots P and D.
 - **Size:** 2
 
-## 692. [ ] Hedgerow D: the side panel a seed-packet rack that serves the field
+## 692. [ ] Hedgerow D: the side panel a seed-packet rack that serves the field *(lane A, in progress)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique)*
 - **Why:** `plan1125b/hedge-l27-2d-D`, `hedge-l34-2d-D` 1027-1425 x 85-710: ten dense tower tiles with 9 px captions, then a 'Coming up' table of tiny vehicle icons and numbers (1050-1410 x 590-700): it competes with the field (VISION 2).
 - **Build:** towers as seed packets in two rows, price and role legible, stats on hover/long-press; 'Next round' one designed card (big round number, the vehicle art, its trait stamps); 'Coming up' folded into a three-slot strip; Cath's token kept at the foot.
