@@ -4237,7 +4237,9 @@ function fire(x?: number, y?: number): void {
 function levelBadge(g: Game | null, level: number): void {
   // Plan item 689: fly to the Cath control the player can see (the in-game Cath key, the phone's dock bust, else the
   // menu's button); #btn-cath is hidden in a level, and its empty box sent the badge to the top-left over the HUD.
-  const shown = (el: HTMLElement | null): el is HTMLElement => !!el && el.getBoundingClientRect().width > 0;
+  // Plan item 698: the phone's rack chip keeps its box while hidden under her docked line, so visibility counts too
+  const shown = (el: HTMLElement | null): el is HTMLElement =>
+    !!el && el.getBoundingClientRect().width > 0 && getComputedStyle(el).visibility !== "hidden";
   const btn = [document.getElementById("btn-hero"), document.querySelector<HTMLElement>(".cath-dock-bust"), document.getElementById("btn-cath")].find(shown);
   if (!btn) return;
   const to = btn.getBoundingClientRect();
