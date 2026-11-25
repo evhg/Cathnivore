@@ -57,7 +57,7 @@ export function cardLines(storage: Pick<Storage, 'getItem'>, now: Date, runnelPa
         ? 'Story finished · Quick games against the bot'
         : chapters > 0
           ? `Story: chapter ${chapters + 1} of ${CHAPTER_COUNT} next`
-          : `${CHAPTER_COUNT} story chapters · Solo or co-op`,
+          : `${CHAPTER_COUNT} chapters · Solo or co-op`,
     resume: inGame ? (typeof cn.chapterId === 'string' ? 'Continue your chapter' : 'Continue your game') : '',
   }
 

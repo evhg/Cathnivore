@@ -2375,7 +2375,8 @@ body {
     z-index: var(--z-poster-logo);
     top: calc(var(--art-h) - 40px);
     left: 12px;
-    max-width: calc(100% - 24px);
+    /* item 695: Cath stands at one side of each poster; the tag stops short of her (full width it ran over her shoulder) */
+    max-width: calc(100% - 92px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -10,7 +10,7 @@ describe('games page card lines (plan item 13)', () => {
     const l = cardLines(store({}), now, 42)
     expect(l.runnel.status).toBe("Today's Runnel: 42 taps par")
     expect(l.hedgerow.status).toBe(`Today's daily: ${dailyRule(dayOf(now.getTime())).name}`)
-    expect(l.cathnivore.status).toBe('6 story chapters · Solo or co-op')
+    expect(l.cathnivore.status).toBe('6 chapters · Solo or co-op')
     expect(l.nightshift.status).toBe('Five names on The List')
     for (const g of Object.values(l)) expect(g.resume).toBe('')
   })

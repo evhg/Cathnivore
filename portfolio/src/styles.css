@@ -2062,7 +2062,12 @@ h1 {
 [data-game="portfolio"] { --game: var(--game-site); }
 @media (max-width: 1099.98px) { .studio-row::before { display: none; } }
 /* At D the rows carry their lane's letter, so the legend names only the games (one line with the title). */
-@media (min-width: 1100px) { .studio-key-lanes { display: none; } }
+@media (min-width: 1100px) {
+  .studio-key-lanes { display: none; }
+  /* item 695: the lane letters inside the page margin (they hung 8-20 px out past it); the hour marks keep the rows' measure */
+  .studio .studio-track { padding-left: 20px; }
+  .studio .studio-ticks { left: 20px; }
+}
 .studio-row::before {
   content: attr(data-lane);
   position: absolute;
@@ -2360,7 +2365,8 @@ h1 {
   .has-studio .studio-foot > .shipped {
     position: absolute;
     left: 50%;
-    bottom: 4px;
+    /* item 695: on the numbers' labels' baseline (at 4 px it rode 4 px above them) */
+    bottom: 0;
     width: max-content;
     max-width: calc(100% - 700px);
     text-wrap: balance;
