@@ -52,6 +52,8 @@ test('a solve leaves the board in view under a slim result strip', async ({ page
   const strip = page.locator('#win-strip')
   await expect(strip).toBeVisible({ timeout: 10_000 })
   await page.waitForTimeout(800)
+  // (plan item 679: at D the postcard drops in from above the field: measured once it has landed)
+  await page.waitForFunction(() => document.getElementById('win-strip')!.getAnimations().every((a) => a.playState === 'finished'), null, { timeout: 5000 })
   const m = await page.evaluate(() => {
     const bd = document.getElementById('board')!.getBoundingClientRect()
     const st = document.getElementById('win-strip')!.getBoundingClientRect()
@@ -171,7 +173,8 @@ test("the solve's result docks clear of Bea's garden and its new plant", async (
   await page.goto('/runnel/?shotwin&nohelp')
   await page.locator('#win-strip').waitFor({ state: 'visible', timeout: 20_000 })
   await page.waitForTimeout(400)
-  const m = await page.evaluate(() => {
+  // (plan item 679: the open result shrinks the stage, and the board re-fits above it a frame or more later under load)
+  const measure = () => page.evaluate(() => {
     const g = document.querySelector('.bea-garden')!.getBoundingClientRect()
     const s = document.getElementById('win-strip')!.getBoundingClientRect()
     const p = document.querySelector('.bea-crops .is-today svg')?.getBoundingClientRect()
@@ -181,6 +184,8 @@ test("the solve's result docks clear of Bea's garden and its new plant", async (
     const onBoard = innerWidth >= 1100 && cells.some((c) => s.left < c.right && s.right > c.left && s.top < c.bottom && s.bottom > c.top)
     return { meet, onBoard, plant: p ? Math.min(p.width, p.height) : 0, garden: g.width }
   })
+  await expect.poll(async () => (await measure()).onBoard, { timeout: 5000 }).toBe(false)
+  const m = await measure()
   test.skip(m.garden === 0, 'no valley garden at this size')
   expect(m.meet).toBe(false)
   expect(m.onBoard).toBe(false)
@@ -206,3 +211,39 @@ test('after a solve Bea stands by the new plant, large enough to read', async ({
   expect(m.onSign).toBe(false)
 })
 const innerWidthOf = (page: import('@playwright/test').Page) => page.viewportSize()!.width
+
+// Plan item 679: at D a daily's result is a postcard on the field under the solved board, not a rail card: whole inside
+// 1440x900 and 1280x800, today's crop 80 px or more, its buttons 44 px tall, nothing clipped, clear of Cath, Bea's
+// garden and the board's tiles; the rail keeps its almanac. On a phone it stays the strip.
+for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
+  test(`at ${vp.width}x${vp.height} the solve lands as a postcard on the field`, async ({ page }) => {
+    test.skip(page.viewportSize()!.width < 1100, 'the desktop valley')
+    await page.setViewportSize(vp)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/runnel/?shotwin&nohelp')
+    const card = page.locator('#win-strip[data-postcard]')
+    await card.waitFor({ state: 'visible', timeout: 20_000 })
+    await page.waitForTimeout(600)
+    const m = await page.evaluate(() => {
+      const r = (q: string) => document.querySelector(q)!.getBoundingClientRect()
+      const meet = (a: DOMRect, b: DOMRect) => b.width > 0 && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1
+      const s = r('#win-strip')
+      const el = document.getElementById('win-strip')!
+      const cells = [...document.querySelectorAll('.tiles > g.cell')].map((c) => c.getBoundingClientRect())
+      return {
+        inside: s.left >= 0 && s.top >= 0 && s.right <= innerWidth && s.bottom <= innerHeight,
+        clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1,
+        crop: Math.min(r('#strip-plant svg').width, r('#strip-plant svg').height),
+        buttons: Math.min(...[...el.querySelectorAll('.strip-actions .btn:not([hidden])')].map((b) => b.getBoundingClientRect().height)),
+        cath: meet(s, r('#valley-cath')),
+        garden: meet(s, r('.bea-garden')),
+        tiles: cells.some((c) => meet(s, c as DOMRect)),
+        inRail: s.left < r('#rail').right,
+        scroll: document.scrollingElement!.scrollHeight - innerHeight,
+      }
+    })
+    expect(m).toEqual({ inside: true, clipped: false, crop: m.crop, buttons: m.buttons, cath: false, garden: false, tiles: false, inRail: false, scroll: 0 })
+    expect(m.crop).toBeGreaterThanOrEqual(80)
+    expect(m.buttons).toBeGreaterThanOrEqual(44)
+  })
+}

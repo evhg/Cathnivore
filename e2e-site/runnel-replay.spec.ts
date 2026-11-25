@@ -11,6 +11,8 @@ test('Watch replays the solve on the board and ends where it was solved', async 
   await expect(watch).toBeVisible({ timeout: 10_000 })
   await expect(watch).toHaveAttribute('data-replay', '')
   await page.waitForTimeout(1200) // the strip's slide-in and the solve's bloom settle
+  // (plan item 679: at D the postcard's drop onto the field, 900 ms, done under load too)
+  await page.waitForFunction(() => document.getElementById('win-strip')!.getAnimations().every((a) => a.playState === 'finished'), null, { timeout: 5000 })
   const solved = await page.evaluate(() => [...document.querySelectorAll<SVGGElement>('#board .tiles > g.cell .piece')].map((p) => p.style.transform))
   const box = async (sel: string) => (await page.locator(sel).boundingBox())!
   const [strip0, board0] = [await box('#win-strip'), await box('#board')]

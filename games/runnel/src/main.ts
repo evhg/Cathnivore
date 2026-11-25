@@ -945,6 +945,8 @@ function placeValleyCath(): void {
   }
   aimValleyCath(cath)
   placeValleySay()
+  // Plan item 679: the postcard keeps clear of her as she settles (the open result shrinks the stage, and she moves)
+  if (document.getElementById('win-strip')?.hidden === false) placeStrip()
 }
 
 /** Plan item 122: her pointing arm aims at the glowing tile: the lesson's target or a tip's pulse, else the
@@ -1531,8 +1533,27 @@ function placeStrip(): void {
   const rail = document.getElementById('rail')
   const railBox = rail && rail.offsetParent ? rail.getBoundingClientRect() : null
   const desk = matchMedia('(min-width: 1100px) and (min-height: 640px)').matches
-  strip.root.toggleAttribute('data-dock-rail', !!(desk && railBox && railBox.width >= 260))
-  if (desk && railBox && railBox.width >= 260) {
+  // Plan item 679: at D a daily's result is a postcard that lands on the field under the solved board, between Cath
+  // (she waves from the valley) and Bea's garden, with today's crop drawn large; the rail stays the almanac.
+  const face = document.querySelector<HTMLElement>('#valley-cath:not([hidden])')?.getBoundingClientRect()
+  const postcard = !!(desk && r.width && garden?.width && !$<HTMLElement>('strip-plant').hidden)
+  const pcLeft = Math.max(r.left, face && face.width ? face.right + 16 : r.left)
+  const pcRight = garden?.width ? garden.left - 14 : r.right
+  // (once landed it stays a postcard while it is open: a passing measure while the stage re-fits under it, such as the
+  // garden or Cath between placements, must not swap it back to the rail card)
+  const fits = postcard && pcRight - pcLeft >= 440
+  if (!fits && desk && strip.root.hasAttribute('data-postcard')) return
+  strip.root.toggleAttribute('data-postcard', fits)
+  document.body.classList.toggle('has-postcard', fits)
+  strip.root.toggleAttribute('data-dock-rail', !fits && !!(desk && railBox && railBox.width >= 260))
+  if (fits) {
+    left = pcLeft
+    right = Math.min(pcRight, pcLeft + 640)
+    // (centred in the field between them when it has room to spare)
+    const spare = pcRight - pcLeft - (right - left)
+    left += spare / 2
+    right += spare / 2
+  } else if (desk && railBox && railBox.width >= 260) {
     left = railBox.left
     right = railBox.right
   } else if (r.width && garden?.width && desk && garden.left > left + 320) {
@@ -1543,13 +1564,15 @@ function placeStrip(): void {
   strip.root.style.setProperty('--strip-x', r.width ? `${Math.round((left + right) / 2)}px` : '')
   strip.root.style.setProperty('--strip-max', r.width ? `${Math.round(right - left)}px` : '')
   // Plan item 638: at D the stage keeps the strip's own height clear, so the solved board draws whole above it
-  document.body.style.setProperty('--strip-h', `${Math.round(strip.root.offsetHeight)}px`)
+  // (the postcard stands 16 px higher, inside the field's frame, and keeps a hand's gap under the tiles)
+  document.body.style.setProperty('--strip-h', `${Math.round(strip.root.offsetHeight) + (fits ? 34 : 0)}px`)
 }
 window.addEventListener('resize', placeStrip)
 
 function hideStrip(): void {
   strip.root.hidden = true
-  document.body.classList.remove('has-win-strip')
+  strip.root.removeAttribute('data-postcard')
+  document.body.classList.remove('has-win-strip', 'has-postcard')
   placeValleySay()
 }
 
