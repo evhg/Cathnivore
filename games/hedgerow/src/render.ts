@@ -1578,6 +1578,9 @@ export class Renderer {
     // Plan item 45: where the queue has a column, the badge rides its head (the column says how many wait).
     const rode = this.badged;
     rode.clear();
+    // Plan item 695: the towers' screen boxes (the cell and the sprite's height over it), for the badges to keep off.
+    this.towerBoxes = game.towers.map((tw) => ({ x: X(tw.col), y: Y(tw.row) - s * 0.55, w: s, h: s * 1.55 }));
+    this.badgeBoxes = [];
     for (const sw of swarms(game.enemies)) {
       const col = columnNear(this.lay, sw.lane, sw.dist, rode);
       if (col) {
@@ -1984,6 +1987,9 @@ export class Renderer {
   depotLanes = new Set<number>();
   /** Plan item 537: the 2D depots' boxes (main.ts places them over the canvas), for the name tag to keep off. */
   depotBoxes: Rect[] = [];
+  /** Plan item 695: the towers' boxes this frame, and the swarm badges drawn so far (e2e reads both). */
+  towerBoxes: Rect[] = [];
+  badgeBoxes: Rect[] = [];
   /** Plan item 403: lanes whose depot stands on the lane's mouth, and how far along the lane its queue starts (cells). */
   depotMouths = new Map<number, number>();
   private queueAge = 0;
@@ -2259,7 +2265,33 @@ export class Renderer {
       else if (d.x - w - 4 >= 4) x0 = d.x - w - 4;
       else y0 = d.y + d.h + 4;
     }
+    // Plan item 695: a badge over a tower hid it (l34 at P: '34 21 6 3' over the hedge row, '50 28 11 6' over the
+    // cannon). Try the spot as given, then steps up and down the lane, then sideways; keep the first clear of every
+    // tower (and of the depots and badges already placed); none clear keeps the original.
+    {
+      const hits = (bx: number, by: number) => {
+        const r = { x: bx, y: by, w, h: h * 1.3 };
+        const over = (b: Rect) => r.x < b.x + b.w && r.x + r.w > b.x && r.y < b.y + b.h && r.y + r.h > b.y;
+        return this.towerBoxes.some(over) || this.depotBoxes.some(over) || this.badgeBoxes.some(over);
+      };
+      if (hits(x0, y0)) {
+        const clampX = (v: number) => Math.max(4, Math.min(this.cssW - w - 4, v));
+        const tries: Array<[number, number]> = [];
+        for (const k of [1, 2, 3]) tries.push([x0, y0 - k * h * 0.7], [x0, y0 + k * h * 0.7]);
+        for (const k of [1, 2, 3]) tries.push([clampX(x0 + (k * w) / 3), y0], [clampX(x0 - (k * w) / 3), y0]);
+        for (const [tx, ty] of tries) {
+          if (ty < 4 || ty + h * 1.3 > this.cssH - 4) continue;
+          if (!hits(tx, ty)) {
+            x0 = tx;
+            y0 = ty;
+            break;
+          }
+        }
+      }
+      this.badgeBoxes.push({ x: x0, y: y0, w, h: h * 1.3 });
+    }
     x = Math.max(x0 + h * 0.4, Math.min(x0 + w - h * 0.4, x));
+    // the pointer still drops toward the queue, from wherever the badge settled
     y = y0 + h;
     ctx.beginPath();
     ctx.roundRect(x0, y0, w, h, h / 2);
