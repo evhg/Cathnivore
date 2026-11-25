@@ -49,7 +49,7 @@ test('desktop Setup: Cath at the stall reacts to the picks and the difficulty', 
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
   await page.getByText('Quick Game').click()
-  const cath = page.locator('.setup-cath-stand svg')
+  const cath = page.locator('.setup-cath-stand svg.cath')
   await expect(cath).toBeVisible()
   expect((await cath.boundingBox())!.height).toBeGreaterThanOrEqual(300) // plan item 239
   const says = page.locator('.setup-cath-says')

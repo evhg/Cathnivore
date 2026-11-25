@@ -13,6 +13,7 @@ import CathArt from './CathArt'
 import { SCREEN_POSE } from '../../shared/cath/screenposes'
 import { CATH_SKIN } from '../../shared/cath/cath'
 import Portrait from './portraits/Portrait'
+import Figure from './portraits/Figure'
 import { RoleArt } from './icons/ActionArt'
 import { RoleProducerContext } from './icons/artScene'
 import { pairLine, setupCath } from '../content/pairLines'
@@ -689,6 +690,15 @@ function SetupCath({ producers, difficulty, event }: { producers: readonly Produ
         “<span className="says-event">{event}</span> <span className="says-pick" aria-live="polite">{cath.line}</span>”
       </p>
       <CathArt framing="half" expression={cath.expression} pose={SCREEN_POSE['cathnivore:setup']} animate />
+      {/* Plan item 693: at D the picked pair stand at her stall's posts, half length at her scale, and greet the pick
+          (each keyed, so a new pick steps in). Decoration: the picker above names them. */}
+      <div className="setup-stall-pair" aria-hidden="true" data-count={producers.length}>
+        {producers.slice(0, 2).map((id, i) => (
+          <span key={id} className="stall-pair-fig" data-producer={id} data-side={i === 0 ? 'left' : 'right'}>
+            <Figure character={id} expression={producers.length === 2 ? 'delighted' : 'smirk'} />
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
