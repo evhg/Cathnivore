@@ -4,7 +4,7 @@ import { chromium } from '@playwright/test'
 const out = process.argv[2], vw = +process.argv[3], vh = +process.argv[4], rs = process.argv[5] ?? '1'
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
 const p = await b.newPage({ viewport: { width: vw, height: vh } })
-await p.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
+await p.addInitScript((q) => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: q })), process.env.Q ?? 'high')
 await p.goto(`http://localhost:4175/nightshift/?play&class=ghost&shot&rs=${rs}`)
 await p.waitForFunction(() => (window.cathode?.stats?.frames ?? 0) >= 3, null, { timeout: 300000 })
 await p.waitForTimeout(2000)
