@@ -726,6 +726,11 @@ test('each class shows her booking photo, 48 px or more', async ({ page, hasTouc
     expect(Math.min(w as number, h as number), JSON.stringify(sizes)).toBeGreaterThanOrEqual(48)
     expect(art).toBe(true)
   }
+  // Plan item 695: on a phone tab the file number is a corner tab, not a placard across her chin (the photo's lower half).
+  if (hasTouch) {
+    const plates = await mugs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); const p = e.querySelector('.cp-mug-plate')?.getBoundingClientRect(); return p ? (p.bottom - r.top) / r.height : 0 }))
+    for (const f of plates) expect(f, JSON.stringify(plates)).toBeLessThanOrEqual(0.4)
+  }
 })
 
 // Plan item 588: once the street is up, the five booking photos are stills of the 3D figure in each class's coat, kit,

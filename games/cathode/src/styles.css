@@ -3564,5 +3564,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-opt:has(.cp-opt-mug) .cp-opt-n { display: revert; }
   .cp-dot:has(.cp-dot-mug) .cp-dot-gun { display: none; }
   .cp-dot-mug { display: block; width: 48px; height: 54px; } /* px-ok: plan item 575, a photo of 48 px or more */
+  /* Plan item 695: on a 54 px photo the placard under her chin sat across it: the file number is a corner tab here. */
+  .cp-dot-mug .cp-mug-plate { top: 0; left: 0; bottom: auto; transform: none; padding: 0 calc(var(--u) * 3); border-bottom-right-radius: calc(var(--u) * 3); }
   .cp-dot.is-on .cp-dot-mug { filter: none; box-shadow: 0 0 0 calc(var(--u) * 3) var(--accent, var(--blood-hot)); }
 }
