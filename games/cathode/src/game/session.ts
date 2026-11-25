@@ -334,6 +334,8 @@ export interface Session {
   deaths?: number;
   /** C17 e2e: starts a last-man orbit on the nearest live enemy. */
   killcamTest?: () => boolean;
+  /** Plan item 673: puts a raindrop on the lens now; returns the live drop count. */
+  lensDrop?: () => number;
   /** C17 (S5.3): the kill-cam's state and the world's sim scale this frame. */
   killcamState?: () => { active: boolean; shot: string | null; ms: number; sinceImpact: number; xray: boolean; scale: number; returnMs: number };
   /** C17 (S6.5): Second Wind's state (phase, real ms in, charges left this checkpoint). */
@@ -1384,6 +1386,11 @@ export async function startSession(o: SessionOptions): Promise<Session> {
   vitals.noRegen = mods.includes("noregen");
   if (mods.includes("fog") && world.scene.fog instanceof THREE.FogExp2) world.scene.fog.density *= MOD_EFFECTS.fogDensity(mods);
   s.vitals = vitals;
+  /** Plan item 673: a raindrop on the lens now (`?shot` holds the street's rain clock); the live drop count. */
+  s.lensDrop = () => {
+    lens.drop();
+    return lens.drops;
+  };
   s.killcamState = () => ({ active: killcam.active, shot: killcam.shot, ms: killcam.ms, sinceImpact: killcam.sinceImpact, xray: killcam.xrayOn, scale: lastSimScale, returnMs: kcReturnMs });
   // C17 (S6.5): Second Wind, once per checkpoint (none on Hell Week; the Second Wind skill adds a charge, and its
   // value tops up the revive).
@@ -3609,6 +3616,9 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     arsenal.adsSlow = vitals.tier === "critical" || vitals.tier === "bleeding" ? 1.2 : 1;
     regenWash = Math.max(0, regenWash - fdt / 0.3);
     stimWash = Math.max(0, stimWash - fdt / 0.7);
+    // Plan item 673: out in the street's rain a drop lands on the lens now and then (not in a kill-cam or a
+    // takedown's camera, not dead, not in a frozen screenshot).
+    lens.rain(fdt, (inMarket || inPlaza) && !o.shot && !dead && !killcam.active && !td.active);
     lens.update(fdt);
     // Glove blood: she has it on her hands while she's wounded; it dries off over about 20 s once she's whole.
     const gloveFloor = vitals.tier === "bleeding" ? 0.55 : 0;
@@ -3621,7 +3631,7 @@ export async function startSession(o: SessionOptions): Promise<Session> {
     }
     world.setVitals?.(hurtV * k, hurtDir.x, hurtDir.y, woundShown * k);
     // Reduced motion: the vignette beats in strength only, the ring never closes on the beat (`still`).
-    world.setWounded?.({ pulse: pulseNow, regen: regenShown() * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe, water: lens.water, fx: fxLv.ca, still: trauma.reducedMotion });
+    world.setWounded?.({ pulse: pulseNow, regen: regenShown() * k, stim: stimWash * k, lens: lens.slots, wipe: lens.wipe, water: lens.water, waterK: lens.drops > 0 ? 1.4 : 0.35, fx: fxLv.ca, still: trauma.reducedMotion });
     hud.setWound(pulseNow, dead ? "fine" : vitals.tier);
   }
   /** A stim goes in (S6.3): a green-white edge wash, the heart slows 30 bpm over 2 s, she wipes the lens clean. */

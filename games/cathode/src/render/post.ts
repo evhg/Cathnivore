@@ -317,6 +317,8 @@ const GradeShader = {
     uLensWipe: { value: -1 },
     // Reduced violence (S6.4): the same slots render as grey rain on the lens, never blood.
     uLensWater: { value: 0 },
+    // Plan item 673: how hard the water bends the view (the title's soft 0.35; the street's raindrops more).
+    uWaterK: { value: 0.35 },
     uBloodTex: { value: null as THREE.Texture | null },
     // uBlur: the wound's radial smear is on (desktop high and ultra). uFxCa: the Damage effects setting's CA and
     // smear (1 Full and Reduced, 0 Minimal; S9.8).
@@ -371,6 +373,7 @@ const GradeShader = {
     uniform vec4 uLensRect[ 4 ];
     uniform float uLensWipe;
     uniform float uLensWater;
+    uniform float uWaterK;
     uniform sampler2D uBloodTex;
     uniform float uBlur;
     uniform float uFxCa;
@@ -445,6 +448,22 @@ const GradeShader = {
       float sr = sin( B.w );
       vec2 q = mat2( cr, -sr, sr, cr ) * s / ( 0.34 * L.w ) + 0.5;
       vec4 t = texture2D( uBloodTex, ( B.xy + clamp( q, 0.0, 1.0 ) ) * 0.5 );
+      // Plan item 673: the street's raindrops (water, uWaterK over 0.5) are round domes, not the splat atlas: a
+      // clear bead, a little longer below than above (it runs), whose slope bends the street through it, with
+      // one small glint up and left where the lamps catch it.
+      if ( uLensWater > 0.5 && uWaterK > 0.5 ) {
+        vec2 e = q - 0.5;
+        e.y *= e.y < 0.0 ? 0.75 : 1.0;
+        float R = 0.11;
+        float h = 1.0 - dot( e, e ) / ( R * R );
+        if ( h <= 0.0 ) t = vec4( 0.0, 0.5, 0.5, 0.0 );
+        else {
+          float sh = smoothstep( 0.0, 0.25, h );
+          vec2 sl = -e / R * 0.5 * sh;
+          float gl = 1.0 - smoothstep( 0.0, 0.035, length( e - vec2( -0.05, 0.06 ) ) );
+          t = vec4( 0.35 * sh, sl + 0.5, gl );
+        }
+      }
       float wm = uLensWipe < 0.0 ? 1.0 : smoothstep( uLensWipe * 1.2 - 0.16, uLensWipe * 1.2 - 0.04, vUv.x );
       film = max( film, t.r * L.z * wm );
       glint = max( glint, t.a * L.z * wm );
@@ -497,7 +516,7 @@ const GradeShader = {
         glint *= lensK;
         // Water (the title's rain on the lens) bends the street far less than blood and spreads no colour: a clear
         // drop, not a blob with a coloured fringe.
-        float wK = uLensWater > 0.5 ? 0.35 : 1.0;
+        float wK = uLensWater > 0.5 ? uWaterK : 1.0;
         fg *= wK;
         uv += fg * 0.022 * vec2( uRes.y / uRes.x, 1.0 );
         c = uv - 0.5;
@@ -625,8 +644,13 @@ const GradeShader = {
             float glw = length( fg );
             float tw = smoothstep( 0.02, 0.3, film );
             mapped = mix( mapped, mapped * 0.9 + vec3( 0.003, 0.004, 0.006 ), tw * 0.35 );
+            // A stronger drop (uWaterK over the title's 0.35, the street's rain) also catches more light at its rim.
+            float wRim = 1.0 + 2.0 * max( 0.0, uWaterK - 0.35 );
             mapped += vec3( 0.008, 0.01, 0.014 ) * smoothstep( 0.04, 0.2, glw ) * tw;
-            mapped += vec3( 0.42, 0.44, 0.47 ) * glint * tw * 0.3;
+            // The street's bead (plan item 673) has a thin dark meniscus at its edge, where the glass bends the
+            // light away, so it reads as a drop and not a grey disc.
+            if ( uWaterK > 0.5 ) mapped *= 1.0 - 0.45 * smoothstep( 0.38, 0.5, glw / uWaterK );
+            mapped += vec3( 0.42, 0.44, 0.47 ) * glint * tw * 0.3 * wRim;
           } else {
           vec3 T = exp( -film * vec3( 3.2, 15.0, 14.0 ) );
           vec3 tint = min( mapped, vec3( 0.4 ) ) * T + vec3( 0.022, 0.002, 0.003 ) * th;

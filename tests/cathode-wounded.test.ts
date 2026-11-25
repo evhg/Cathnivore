@@ -98,6 +98,52 @@ describe("CATHODE wounded loop (C7)", () => {
     expect(lens.active).toBe(1);
   });
 
+  it("lands a raindrop on the lens every 2.5-6 s out in the rain, as water, off the reticle, and gives way to a hit (plan 673)", () => {
+    const lens = new LensBlood();
+    const landed: { t: number; x: number; y: number; size: number }[] = [];
+    let seen = 0;
+    for (let f = 0; f < 60 * 40; f++) {
+      const before = lens.drops;
+      lens.rain(1 / 60, true);
+      lens.update(1 / 60);
+      if (lens.drops > before) {
+        const sl = lens.slots.find((s) => s.age >= 0 && s.age < 0.05)!;
+        landed.push({ t: f / 60, x: sl.x, y: sl.y, size: sl.size });
+      }
+      if (lens.drops > 0) {
+        seen++;
+        expect(lens.water).toBe(true);
+        expect(lens.active).toBe(0);
+      }
+    }
+    // About one every 4 s: 7-16 in 40 s, gaps of 2.5 s+, each small and clear of the middle where she aims.
+    expect(landed.length).toBeGreaterThanOrEqual(7);
+    expect(landed.length).toBeLessThanOrEqual(16);
+    for (let i = 1; i < landed.length; i++) expect(landed[i]!.t - landed[i - 1]!.t).toBeGreaterThanOrEqual(2.5 - 1e-6);
+    for (const d of landed) {
+      expect(d.size).toBeLessThanOrEqual(0.8);
+      expect(Math.abs(d.x - 0.5) >= 0.17 || Math.abs(d.y - 0.5) >= 0.17).toBe(true);
+    }
+    expect(seen).toBeGreaterThan(60 * 15);
+    // A hit clears the raindrops and lands as blood.
+    while (lens.drops === 0) {
+      lens.rain(1 / 60, true);
+      lens.update(1 / 60);
+    }
+    expect(lens.splat(1, 0, 100)).toBe(0);
+    expect(lens.drops).toBe(0);
+    expect(lens.water).toBe(false);
+    // No new raindrop while the blood is up.
+    for (let f = 0; f < 60; f++) lens.rain(0.1, true);
+    expect(lens.drops).toBe(0);
+    // Indoors (or with the lens off) none at all.
+    const dry = new LensBlood();
+    for (let f = 0; f < 600; f++) dry.rain(0.1, false);
+    dry.off = true;
+    for (let f = 0; f < 600; f++) dry.rain(0.1, true);
+    expect(dry.drops).toBe(0);
+  });
+
   it("places every splat afresh (offset, turn and size), so two never mirror or repeat", () => {
     const lens = new LensBlood();
     lens.splat(1, 0, 0);

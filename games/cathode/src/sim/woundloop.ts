@@ -187,9 +187,70 @@ export class LensBlood {
   /** No lens at all (Damage effects Reduced or Minimal, S9.8). */
   off = false;
   constructor(public reducedViolence = false) {}
-  /** The slots hold water, not blood (reduced violence). */
+  /** Plan item 673: which slots hold a raindrop (the street's rain on the lens), not a hit. */
+  private rainy = [false, false, false, false];
+  /** Seconds until the next raindrop lands on the lens. */
+  private rainIn = 1.5;
+  /** The raindrops' own seeded stream, so the rain never moves where a hit's blood lands. */
+  private rseed = 0x2f81d7a3;
+  private rrnd(): number {
+    let t = (this.rseed = (this.rseed + 0x6d2b79f5) | 0);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  /**
+   * The slots hold water, not blood: reduced violence, or (plan item 673) only raindrops on the glass. The
+   * shader has one mode for all four slots, so a hit clears the raindrops before its blood lands.
+   */
   get water(): boolean {
-    return this.reducedViolence;
+    if (this.reducedViolence) return true;
+    let rain = false;
+    for (let i = 0; i < 4; i++) {
+      if (this.slots[i]!.age < 0) continue;
+      if (!this.rainy[i]) return false;
+      rain = true;
+    }
+    return rain;
+  }
+  /** A raindrop now (screenshots and specs: `?shot` freezes the rain's clock). */
+  drop(): void {
+    this.rainIn = 0;
+    const off = this.off;
+    this.off = false;
+    this.rain(0, true);
+    this.off = off;
+  }
+  /** Live raindrops on the lens. */
+  get drops(): number {
+    return this.slots.filter((s, i) => s.age >= 0 && this.rainy[i]).length;
+  }
+  /**
+   * Plan item 673: out in the rain a drop lands on the lens every 2.5-6 s (seeded), small, anywhere on the glass
+   * but its very middle, then slides and fades as a hit's splat does. None while blood is on the glass (the slots
+   * would read it as blood), with the lens off, or when `on` is false (indoors, a cut-scene).
+   */
+  rain(dt: number, on: boolean): void {
+    if (!on || this.off) return;
+    this.rainIn -= dt;
+    if (this.rainIn > 0) return;
+    this.rainIn = 2.5 + this.rrnd() * 3.5;
+    if (this.slots.some((s, i) => s.age >= 0 && !this.rainy[i])) return;
+    const free = this.slots.map((s, i) => (s.age < 0 ? i : -1)).filter((i) => i >= 0);
+    if (!free.length) return;
+    const i = free[Math.floor(this.rrnd() * free.length)]!;
+    const s = this.slots[i]!;
+    // Off the middle third (where she aims): a drop on the glass, never over the reticle.
+    let x = 0.08 + this.rrnd() * 0.84;
+    const y = 0.12 + this.rrnd() * 0.8;
+    if (Math.abs(x - 0.5) < 0.17 && Math.abs(y - 0.5) < 0.17) x = x < 0.5 ? x - 0.17 : x + 0.17;
+    s.x = x;
+    s.y = y;
+    s.cell = Math.floor(this.rrnd() * 4);
+    s.size = 0.55 + this.rrnd() * 0.25;
+    s.rot = (this.rrnd() - 0.5) * 1.2;
+    s.age = 0;
+    this.rainy[i] = true;
   }
   /**
    * A splat toward screen direction (dx, dy) (+x right, +y up) at time `now` (s). Returns the slot used, or -1
@@ -198,6 +259,11 @@ export class LensBlood {
   splat(dx: number, dy: number, now: number, force = false): number {
     if (this.off) return -1;
     if (!force && now - this.last < WOUND.lensGapS) return -1;
+    // Raindrops make way for the blood (one shader mode for the four slots).
+    if (!this.reducedViolence)
+      this.slots.forEach((sl, i) => {
+        if (this.rainy[i]) sl.age = -1;
+      });
     let best = 0;
     let bestD = -Infinity;
     const l = Math.hypot(dx, dy) || 1;
@@ -218,6 +284,7 @@ export class LensBlood {
     s.y = ANCHORS[best]![1] + (this.rnd() - 0.5) * 0.18;
     s.cell = (best + this.n) % 4;
     s.age = 0;
+    this.rainy[best] = false;
     s.size = 0.75 + this.rnd() * 0.55;
     s.rot = (this.rnd() - 0.5) * 1.4;
     this.last = now;
@@ -225,10 +292,15 @@ export class LensBlood {
   }
   /** Starts the stim wipe (left to right over 500 ms). */
   startWipe(): void {
-    if (this.slots.some((s) => s.age >= 0)) this.wipe = 0;
+    if (this.active > 0) this.wipe = 0;
   }
   update(dt: number): void {
-    for (const s of this.slots) if (s.age >= 0) s.age = s.age + dt >= WOUND.lensLifeS ? -1 : s.age + dt;
+    // A raindrop runs a little longer than a splat (it slides, it doesn't dry): 1.25x its life.
+    this.slots.forEach((s, i) => {
+      if (s.age < 0) return;
+      const a = s.age + dt * (this.rainy[i] ? 0.8 : 1);
+      s.age = a >= WOUND.lensLifeS ? -1 : a;
+    });
     if (this.wipe >= 0) {
       this.wipe += dt / WOUND.wipeS;
       // Behind the front, the slot is wiped.
@@ -241,11 +313,13 @@ export class LensBlood {
   }
   clear(): void {
     for (const s of this.slots) s.age = -1;
+    this.rainy.fill(false);
     this.wipe = -1;
     this.last = -1e9;
   }
+  /** Live hits on the lens (raindrops not counted). */
   get active(): number {
-    return this.slots.filter((s) => s.age >= 0).length;
+    return this.slots.filter((s, i) => s.age >= 0 && !this.rainy[i]).length;
   }
 }
 

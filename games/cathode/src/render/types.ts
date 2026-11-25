@@ -138,7 +138,7 @@ export interface World {
    * C7 (S6.3, S6.4): the wounded loop's screen. `pulse` the heartbeat 0..1, `regen` and `stim` the two washes,
    * `lens` the four lens-blood slots (sim/woundloop.ts LensSlot; age < 0 is empty) and the stim wipe's front.
    */
-  setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number; rot?: number }>; wipe: number; water?: boolean; fx?: number; still?: boolean }): void;
+  setWounded?(o: { pulse: number; regen: number; stim: number; lens: ReadonlyArray<{ x: number; y: number; cell: number; age: number; size: number; rot?: number }>; wipe: number; water?: boolean; /** How hard water on the lens bends the view (0.35 the title's soft drops; plan item 673's street drops more). */ waterK?: number; fx?: number; still?: boolean }): void;
   /**
    * C8 (S6.6): the death grade. `death` 0..1 (colour out, red in, edges closing), `ink` 0..1 (blood ink from the
    * edges; `grey` under reduced violence), `glitch` 0..1 (the re-sync), `ca` the edge CA multiplier (1..3).
