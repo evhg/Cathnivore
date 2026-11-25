@@ -938,12 +938,6 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .cp-weapon .cp-label { margin: 0; }
 .cp-weapon-name { font: 800 var(--fs-4)/1.05 var(--font-ui); text-transform: uppercase; letter-spacing: -.005em; font-stretch: var(--wdth-head); }
 /* Plan item 400: her edge over the five classes' average, in the band under the case table. */
-.cp-edge { display: flex; gap: calc(var(--u) * 40); margin: calc(var(--u) * 2) 0 calc(var(--u) * 14); }
-.cp-edge div { display: grid; gap: calc(var(--u) * 4); }
-.cp-edge dt { font: 700 var(--fs-1)/1.2 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
-.cp-edge dd { margin: 0; display: flex; align-items: baseline; gap: calc(var(--u) * 10); }
-.cp-edge-lead { font: 700 var(--fs-3)/1 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--accent, var(--blood-hot)); }
-.cp-edge-of { font: 400 var(--fs-1)/1.2 var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink-2); }
 .cp-weapon-nums { display: flex; gap: calc(var(--u) * 40); margin: calc(var(--u) * 12) 0 0; }
 .cp-weapon-nums div { display: grid; gap: calc(var(--u) * 4); }
 .cp-weapon-nums dt { font: 700 var(--fs-1)/1.2 var(--font-ui); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); font-stretch: var(--wdth-label); }
@@ -1102,7 +1096,6 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .cp-attr-n { font-size: var(--fs-2); }
   .cp-weapon { margin-bottom: 4px; } /* px-ok */
   .cp-weapon-art { display: none; }
-  .cp-edge { display: none; } /* the dossier keeps its dials; the edge fills the desktop case band */
   .cp-sheet::before { inset: -8px -10px -6px -12px; } /* px-ok */
   .cp-weapon-name { font-size: var(--fs-2); }
   .cp-hold { padding: 10px 14px 12px; } /* px-ok */
@@ -1110,7 +1103,6 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 /* Phones held upright: one column (the names across the top), the commit pinned to the bottom. */
 @media (max-width: 700px) and (orientation: portrait) {
-  .cp-edge { display: none; } /* plan item 400: the dossier has its dials; the edge is the desktop case band's */
   .cp { grid-template-columns: minmax(0, 1fr); padding: max(20px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); overflow: auto; } /* px-ok */
   .cp-sheet { grid-column: 1; }
   /* Plan item 112: a sideways swipe across her steps the class (classpick.ts). Plan item 138: all five names fit
@@ -3443,7 +3435,6 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-casefile] .cp-tree[role="button"]:hover .cp-tree-name,
   .cp-sheet[data-casefile] .cp-tree[role="button"]:focus-visible .cp-tree-name { color: var(--stamp-red); border-color: var(--stamp-red); }
   /* The lead figures stamped in the case board's red (the hot red read 3:1 on the cream). */
-  .cp-sheet[data-casefile] .cp-edge-lead { color: var(--stamp-red); }
   .cp-sheet[data-casefile] .cp-tree-name { color: var(--card-ink); }
   .cp-sheet[data-casefile] .cp-tree-theme { color: var(--card-ink-2); }
 }
