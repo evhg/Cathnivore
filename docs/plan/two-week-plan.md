@@ -6587,14 +6587,14 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
 
-## 696. [ ] Cathnivore campaign D: Cath hosts from the rail, the map left clear *(lane A, in progress)*
+## 696. [x] Cathnivore campaign D: Cath hosts from the rail, the map left clear *(done 2026-11-25 21:15, lane A, 14a8888b and f4f17759: at D she hosts from her own column between the atlas and the rail (a 300 px half-length bust, her line over her head, the crates at her side), the atlas drawn to the rest of the width (sheet 696 px at 1440, 576 at 1280; it was 810 with her standing on Rivermead and Shingle Bay's east edges); the ticket a size smaller (210-272 px) so it finds a place clear of every name on the smaller sheet; locked chapters are sealed envelopes: the short desktop's tabs in kraft with the chapter number pressed into 26 px wax (the 'Chapter N' kicker dropped), the tall desktop's print seal 26 px (was 19). Deviation: Cath 300 px, not item 669's 360 (a taller bust needs a wider column and shrank the atlas further). war-table asserts her box right of the sheet and inside the window (fails on the old layout) and the seals 24 px+; ticket spec polls its settled place. P unchanged. Shots scratchpad s696 before/a5/a7, tk3; `scripts/cathnivore-696-shots.mjs`)*
 *(planned 2026-11-25 19:10, lane A, plan1125c critique; item 669 set the war table, this fixes what crept back)*
 - **Why:** `plan1125c/cath-campaign-D`: Cath (750-940 x 505-900) stands on the map frame and Rivermead/Shingle Bay's edge, cut by the viewport foot; her bubble (733-928 x 388-470) over Rivermead's east side; the Chapter 1 callout (48-305 x 768-885) covers Oakvale; chapters 2-6 (1030-1378 x 352-880) read as five like list cards.
 - **Build:** Cath at half length in the gap between map and chapter track (or above the track), fully in frame, never on the map; the selected chapter's callout pinned beside its numbered node with a leader, over no region name; locked chapters as sealed envelopes (wax seal, teaser line), the current one raised.
 - **Accept:** Cath's box doesn't intersect the map's box and ends inside the viewport (e2e at 1440x900 and 1280x800); the callout covers no region label (e2e rects); seal 24 px+; P unchanged; shots P and D.
 - **Size:** 2
 
-## 697. [ ] Runnel D solved: the payoff on the board, the card clear of it
+## 697. [ ] Runnel D solved: the payoff on the board, the card clear of it *(lane A, in progress)*
 *(planned 2026-11-25 19:10, lane A, plan1125c critique; item 679 staged the solve)*
 - **Why:** `plan1125c/runnel-solved-D`: the result card (470-1110 x 640-880) covers the board's southern tiles and the stream into Bea's garden; Bea (1300-1340 x 790-830) is about 30 px tall, so the garden payoff is lost.
 - **Build:** after the water's run to the garden, the card docks where it covers no tile (the left rail under the almanac where it has room, or under the board's foot), Bea scaled up waving with the day's vegetable at the garden gate.
