@@ -43,20 +43,24 @@ class ScenePass extends Pass {
   private readonly low: THREE.WebGLRenderTarget;
   private readonly quad: FullScreenQuad;
   private readonly blit: THREE.ShaderMaterial;
-  /** No MSAA (phone): FXAA runs on the low-resolution frame before the upscale, where a stair-step is one texel
-   *  wide, instead of after it, where the upscale has already made each step a block (C13 review). */
-  private readonly aa: { target: THREE.WebGLRenderTarget; quad: FullScreenQuad; mat: THREE.ShaderMaterial } | null;
+  /** FXAA runs on the low-resolution frame before the upscale, where a stair-step is one texel wide, instead of
+   *  after it, where the upscale has already made each step a block (C13 review). Plan item 673: on every preset,
+   *  not only the phone's: the low frame has no MSAA (see the constructor). */
+  private readonly aa: { target: THREE.WebGLRenderTarget; quad: FullScreenQuad; mat: THREE.ShaderMaterial };
 
   constructor(
     private readonly scene: THREE.Scene,
     private readonly camera: THREE.Camera,
     private readonly viewScene: THREE.Scene,
     private readonly viewCamera: THREE.Camera,
-    samples: number,
   ) {
     super();
     this.needsSwap = false;
-    this.low = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples });
+    // Plan item 673: the scaled-down world renders without MSAA on every preset. Resolving a multisampled half-float
+    // frame with the rain's thin, bright additive streaks in it drew them as dark dotted dashes over the lit facades
+    // (half scale, high preset: 153 pixels 45+ levels darker than the rain-free frame, 0 with this buffer
+    // single-sampled; scripts/cathode-673-rainlow.mjs). The full-scale path keeps the composer's MSAA.
+    this.low = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 0 });
     this.blit = new THREE.ShaderMaterial({
       uniforms: { tLow: { value: this.low.texture }, uTexel: { value: new THREE.Vector2(0.25, 0.25) }, uSharp: { value: 0.0 } },
       vertexShader: /* glsl */ `
@@ -80,7 +84,7 @@ class ScenePass extends Pass {
       depthWrite: false,
     });
     this.quad = new FullScreenQuad(this.blit);
-    if (samples === 0) {
+    {
       const mat = new THREE.ShaderMaterial({
         uniforms: THREE.UniformsUtils.clone(FXAAShader.uniforms),
         vertexShader: FXAAShader.vertexShader,
@@ -90,7 +94,7 @@ class ScenePass extends Pass {
       });
       const target = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType });
       this.aa = { target, quad: new FullScreenQuad(mat), mat };
-    } else this.aa = null;
+    }
   }
 
   setSize(width: number, height: number): void {
@@ -101,10 +105,8 @@ class ScenePass extends Pass {
     // The less the world is scaled, the more the upscale needs crispening (none at full scale). Kept gentle: a
     // strong unsharp mask re-draws every aliased edge as a hard stair (the C13 review's "pink jaggies").
     this.blit.uniforms.uSharp!.value = THREE.MathUtils.clamp((1 - this.worldScale) * 0.16, 0, 0.08);
-    if (this.aa) {
-      this.aa.target.setSize(w, h);
-      (this.aa.mat.uniforms.resolution!.value as THREE.Vector2).set(1 / w, 1 / h);
-    }
+    this.aa.target.setSize(w, h);
+    (this.aa.mat.uniforms.resolution!.value as THREE.Vector2).set(1 / w, 1 / h);
   }
 
   render(renderer: THREE.WebGLRenderer, _write: THREE.WebGLRenderTarget, read: THREE.WebGLRenderTarget): void {
@@ -114,12 +116,10 @@ class ScenePass extends Pass {
       renderer.setRenderTarget(this.low);
       renderer.clear(true, true, true);
       renderer.render(this.scene, this.camera);
-      if (this.aa) {
-        this.aa.mat.uniforms.tDiffuse!.value = this.low.texture;
-        renderer.setRenderTarget(this.aa.target);
-        this.aa.quad.render(renderer);
-        this.blit.uniforms.tLow!.value = this.aa.target.texture;
-      }
+      this.aa.mat.uniforms.tDiffuse!.value = this.low.texture;
+      renderer.setRenderTarget(this.aa.target);
+      this.aa.quad.render(renderer);
+      this.blit.uniforms.tLow!.value = this.aa.target.texture;
       renderer.setRenderTarget(read);
       renderer.clear(true, true, true);
       this.quad.render(renderer);
@@ -789,7 +789,7 @@ export function createPost(
     samples: quality === "phone" ? 0 : 4,
   });
   const composer = new EffectComposer(renderer, target);
-  const scenePass = new ScenePass(scene, camera, viewScene, viewCamera, quality === "phone" ? 0 : 4);
+  const scenePass = new ScenePass(scene, camera, viewScene, viewCamera);
   composer.addPass(scenePass);
   let gtao: GTAOPass | null = null;
   if (quality === "ultra") {
