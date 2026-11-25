@@ -6623,7 +6623,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
 
-## 701. [ ] Cathnivore: the hand of cards is a real hand
+## 701. [ ] Cathnivore: the hand of cards is a real hand *(lane A, in progress)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/cath-game-D`: the cards (440-1330 x 765-885) are about 120 px tall, titles about 13 px, art cropped, 'Injunction' skewed as if half-dealt; `cath-game-P`: the row (0-390 x 635-775) shows 3 whole cards and 'Open Stall' is cut by the right edge (355-390). The player's main verb is the weakest-drawn object on the table.
 - **Build:** at D a fanned hand docked at the table's foot, each card's title band showing at rest, the focused/hovered card rising to full size above the fan (150-200 ms ease-out) and dropping back; at P a snap-scrolling hand of whole cards with a peek and a count tab instead of a cut card.
