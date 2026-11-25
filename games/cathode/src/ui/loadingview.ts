@@ -144,13 +144,35 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
       .filter((r) => r.length > 1);
     if (!ring || !at) runs.splice(0, runs.length, [from, centre(goalCard.querySelector(".ld-pin"), true), centre(print.querySelector(".ld-pin"), true)].filter((p): p is [number, number] => !!p));
     // Slack: each run sags a little below the straight line, like a string pinned at both ends.
+    // Plan item 700: of a few slacks (a sag either side, or taut), the one that crosses fewest of the sheet's names
+    // (D's string lay over 'THE SOUTH ARCADE' on its way to the ring).
+    const o = root.getBoundingClientRect();
+    const names = [...sheet.querySelectorAll(".dmap-labels .dmap-t")].map((t) => t.getBoundingClientRect()).filter((r) => r.width > 0).map((r) => ({ x: r.left - o.left, y: r.top - o.top, w: r.width, h: r.height }));
+    const crossings = (px: number, py: number, qx: number, qy: number, x: number, y: number) => {
+      let n = 0;
+      for (let k = 1; k < 24; k++) {
+        const t = k / 24;
+        const u = 1 - t;
+        const sx = u * u * px + 2 * u * t * qx + t * t * x;
+        const sy = u * u * py + 2 * u * t * qy + t * t * y;
+        n += names.filter((b) => sx >= b.x - 2 && sx <= b.x + b.w + 2 && sy >= b.y - 2 && sy <= b.y + b.h + 2).length;
+      }
+      return n;
+    };
     let d = "";
     for (const pts of runs) pts.forEach(([x, y], i) => {
       if (!i) d += `${d ? " " : ""}M${x.toFixed(1)} ${y.toFixed(1)}`;
       else {
         const [px, py] = pts[i - 1]!;
-        const sag = Math.hypot(x - px, y - py) * 0.1;
-        d += ` Q${((px + x) / 2).toFixed(1)} ${((py + y) / 2 + sag).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
+        const len = Math.hypot(x - px, y - py);
+        const mx = (px + x) / 2;
+        const my = (py + y) / 2;
+        // the sag is downward; the others bow the string sideways off the straight line, normal to it
+        const nx = len ? -(y - py) / len : 0;
+        const ny = len ? (x - px) / len : 0;
+        const tries: Array<[number, number]> = [[mx, my + len * 0.1], ...[0.18, -0.18, 0.32, -0.32].map((f): [number, number] => [mx + nx * len * f, my + ny * len * f])];
+        const best = names.length ? tries.reduce((a, b) => (crossings(px, py, b[0], b[1], x, y) < crossings(px, py, a[0], a[1], x, y) ? b : a)) : tries[0]!;
+        d += ` Q${best[0].toFixed(1)} ${best[1].toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
       }
     });
     thread.setAttribute("d", d);
