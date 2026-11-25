@@ -6523,7 +6523,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** a unit test: wheels no more than hub tiles; channel against tile 3:1+ under all four skies (extend `runnel-contrast`); e2e rotates a tile into a match and sees the seam marker within 250 ms; shots P and D, unsolved and solved.
 - **Size:** 2
 
-## 688. [ ] Hedgerow 2D: a painted field, not a tinted grid
+## 688. [ ] Hedgerow 2D: a painted field, not a tinted grid *(lane A, in progress)*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique)*
 - **Why:** `plan1125a/hedge-l27-2d-P` 0-390 x 55-690: the field under a translucent green veil that flattens towers and lane; plots teal rectangles with dashed edges, an empty dashed box at 15-55 x 108-148; `hedge-l27-2d-D` 260-770 x 95-880 the same flat plots. 2D is the fallback and the tests' screen, and reads as a level editor beside the 3D. VISION 1, 6.
 - **Build:** the veil only in placement mode (or gone); plots with crop rows, soil and hedge borders from `terrain.ts`; buildable empties a soft chalk outline, not dashes.
