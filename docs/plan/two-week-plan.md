@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-25T10:14Z
 
 
 
@@ -6541,3 +6540,49 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - Runnel D unsolved: Cath (430-490 x 600-860) about 260 px tall against item 670's 300 px; her bubble (385-525 x 510-580) butts the board's bottom-left tile at x 530.
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 1
+
+## 690. [ ] NIGHT SHIFT: the case briefing is a staged case board, not a loading page
+*(planned 2026-11-25 10:40, lane A, plan1125b critique; shots at 2x for NIGHT SHIFT)*
+- **Why:** `plan1125b/ns-street-D`: the map (597-862 x 148-668) is a grey schematic of hatched blocks with an unlabelled dashed box (598-850 x 397-445); a lone '92%' (515-546 x 637-652); most of the frame empty black (0-580 x 0-120, 870-1440 x 640-900). VISION 4: big moments are choreographed.
+- **Build:** an ink-on-paper street map (stalls, canal, lamp marked); the red string draws itself Crisp -> objective -> Cath in about 800 ms, pins drop, Cath's line types in her italic voice; loading is a pencil route being drawn, no percentage; reduced motion shows the finished board.
+- **Accept:** no bare '%' text in the DOM; every map box labelled (e2e); objective, Cath and target each a pinned card 200 px+ wide at D; P a vertical stack of the three, nothing clipped; shots P and D.
+- **Size:** 2
+
+## 691. [ ] Hedgerow phone 3D: a crisp, readable battle
+*(planned 2026-11-25 10:40, lane A, plan1125b critique)*
+- **Why:** `plan1125b/hedge-l27-3d-P` 0-390 x 50-690: the whole board soft (depth of field or upscale), towers too, beside the sharp D shot; the fleet a purple tangle (40-260 x 290-560); 'Bridge up!' (145-225 x 283-300) over the windmill; the depot plate cut by the tray (190-230 x 685-700).
+- **Build:** on phones no DOF, device pixel ratio up to 2 (dynamic resolution may still pull it down), a tighter 3/4 camera fitting the lane; floating callouts dodge tower boxes; the depot plate pinned above the tray.
+- **Accept:** edge sharpness (Laplacian variance) of the P 3D shot within 20% of D's; no floating label over a tower's screen box (e2e); the depot plate wholly visible; perf in budget; shots P and D.
+- **Size:** 2
+
+## 692. [ ] Hedgerow D: the side panel a seed-packet rack that serves the field
+*(planned 2026-11-25 10:40, lane A, plan1125b critique)*
+- **Why:** `plan1125b/hedge-l27-2d-D`, `hedge-l34-2d-D` 1027-1425 x 85-710: ten dense tower tiles with 9 px captions, then a 'Coming up' table of tiny vehicle icons and numbers (1050-1410 x 590-700): it competes with the field (VISION 2).
+- **Build:** towers as seed packets in two rows, price and role legible, stats on hover/long-press; 'Next round' one designed card (big round number, the vehicle art, its trait stamps); 'Coming up' folded into a three-slot strip; Cath's token kept at the foot.
+- **Accept:** no panel text under 12 px (e2e computed sizes); the panel 26% or less of 1440; captions AA contrast; the round card's vehicle art 48 px+; P unchanged; shots D 2D and 3D, P.
+- **Size:** 2
+
+## 693. [ ] Cathnivore Quick Game setup at D: a staged market morning, not a form
+*(planned 2026-11-25 10:40, lane A, plan1125b critique; items 436/548 set today's stall and flyer)*
+- **Why:** `plan1125b/cath-setup-D`: the left column (100-365 x 110-750) packs three steps of small tiles, the Hard memo at 12 px; the picked producers are 150 px chips (270-635 x 125-220) with no presence; Cath's stall awning empty at 1052-1372 x 150-215.
+- **Build:** the chosen pair stand at the stall as half-length figures beside Cath, who reacts to the pick; the steps a three-tab ribbon over the board (as on phone); difficulty three stamped memos in a row; the week card hangs from the awning.
+- **Accept:** picked producers 220 px+ tall at D; no element over the stall frame (e2e boxes); every step reachable by keyboard; P unchanged; shots P and D.
+- **Size:** 2
+
+## 694. [ ] Runnel D: Cath hosts at presence size from the rail
+*(planned 2026-11-25 10:40, lane A, plan1125b critique; item 670's 300 px Cath was a logged deviation, item 689 closed her bubble by measurement)*
+- **Why:** `plan1125b/runnel-D`: Cath about 60x260 px (430-490 x 600-860), her face about 20 px, squeezed between board and frame; the rail under the almanac (16-346 x 600-900) is dead space (a sticky drawing and a tip); `runnel-solved-D` the same (440-530 x 510-860).
+- **Build:** Cath moves into the rail as a half-length figure (300 px+) reacting live (delighted when a field fills, worried at a spill, a wink on par), her bubble beside her, Bea's drawing pinned behind; the solve postcard's pose matches.
+- **Accept:** her face 60 px+ tall at D; her expression attribute changes after a watering tap and at the solve (e2e); nothing over the board frame; cross-fades only under reduced motion; shots D unsolved and solved, P unchanged.
+- **Size:** 2
+
+## 695. [ ] The bugs from the 2026-11-25 10:30 critique, fixed as one batch
+*(planned 2026-11-25 10:40, lane A, plan1125b critique; check each on today's build first; NIGHT SHIFT boxes at 2x)*
+- /games/ D: the Cathnivore card's title over the board art, 'Brindle Hi…' clipped (148-200 x 632-642); slanted tags over Cath (125-335 and 745-915 x 760-790).
+- Portfolio D: the timeline's lane letters outside the margin (80-92 x 768-806); stat digits and labels on different baselines (100-1340 x 845-875).
+- Cathnivore: title P the board over Cath's torso and waving arm (88-370 x 350-600); setup P 'Use recommended pair' on the Producers panel's border (208-362 x 598-626); game D 'Supply 1 Outlet' over 'Open Stall' (972-1135 x 765-870), the Sell card cut at the foot (345-500 x 870-890); game P '9+ more' over the third card (293-375 x 610-630); the MUM drawing over Hollowell's ring at P (10-62 x 130-175) and the board rim at D (548-620 x 695-750); campaign D Cath's bubble past the map's right edge (733-928 x 390-470).
+- Runnel: 'Cath's Week 0/3 · Solve 3 dailies (1/3)' disagrees with itself (D 60-302 x 177-202; item 677/682 listed it: find why it regressed); solved P her raised arms cut by the card top (30-110 x 640-660).
+- Hedgerow: menu D the bottom nodes ('The Mega-Dozer' 55-190 x 836-857) on the clipped hedge edge; menu P the river through 'The Ford' (145-220 x 535-556); l34 2D P fleet pills over tiles (108-260 x 105-130, 3-160 x 437-462 over the cannon); l34 2D D the level badge's 'stronger, tougher' about 6 px tall (860-930 x 248-258); l27 2D D the fleet pill over the lane and the scarecrow's base (448-640 x 692-720).
+- NIGHT SHIFT: street P 'Left thumb walks. Right thumb looks.' unbacked over a bright storefront (45-475 x 350-380); play P role thumbnails' number badges over Cath's chin (180-735 x 940-975), the thumbnails greyscale; play D her left hand through the rifle strap (620-700 x 340-400); title D The List's captions without padding (205-605 x 760-808).
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
+- **Size:** 2
