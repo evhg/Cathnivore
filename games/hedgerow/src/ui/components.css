@@ -5417,6 +5417,11 @@ body:has(#dlg-pause[open]) .paused-note {
   .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-body:has(.ticket-head > :is(.tag, .ticket-info)) {
     margin-top: -28px;
   }
+  /* Plan item 692: in the 26% panel a two-digit round and a stamp don't share the stub's line (the stamps covered the
+     '4' of round 14), so the stamps take the line under the number. */
+  .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-body:has(.ticket-head > .tag) {
+    margin-top: 0;
+  }
   .play .panel:not(.bench-tight) .round-group:has(> .cath-plate:not([hidden])) .ticket-head {
     justify-content: flex-end;
     min-height: 26px;
@@ -5701,6 +5706,8 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: nowrap;
     hyphens: manual;
     letter-spacing: -0.015em;
+    /* (plan item 692: the 26% panel's 83 px packet holds 'Seed Cannon' whole with no side padding) */
+    padding-inline: 0;
   }
 }
 /* (the price and 'For' tags narrower four to a row, so they stand beside the 56 px tower, not over it) */
@@ -5769,4 +5776,18 @@ body:has(#dlg-pause[open]) .paused-note {
   left: var(--clear-x);
   right: auto;
   width: var(--clear-w);
+}
+
+/* Plan item 692: the 2D panel is 26% of the window (374 px at 1440). Its four-to-a-row packets are 83 px, wide enough to
+   hold 'Seed Cannon' and 'Market Stall' on one line with no side padding, so a tight round keeps every band one line
+   high (a wrapped name made its band 14 px taller than the rest). 3D's narrower column (70 px bands) still wraps. */
+@media (min-width: 900px) and (min-height: 861px) {
+  .play .panel .tray-wrap .tray { container: hg-tray / inline-size; }
+}
+@container hg-tray (min-width: 340px) {
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-name {
+    padding-inline: 0;
+    white-space: nowrap;
+    letter-spacing: -0.015em;
+  }
 }

@@ -154,6 +154,7 @@ interface PieFlight {
 const FIELD_SHARE = 0.705;
 const PANEL_MIN = 320;
 const PANEL_MAX = 400;
+const PANEL_SHARE = 0.26;
 const STAGE_GAP = 14;
 /** Margin, in cells, beside a gate (room for its depot) and on a side with none. */
 const DEPOT_ROOM = 2.5;
@@ -406,7 +407,9 @@ export class Renderer {
     if (mL === EDGE_ROOM && mR === EDGE_ROOM) mL = mR = (cols / FIELD_SHARE - cols) / 2;
     const fit = Math.ceil(cell * (cols + mL + mR));
     this.frameLeft = mL / (mL + mR);
-    const panel = Math.max(PANEL_MIN, Math.min(PANEL_MAX, room - fit));
+    // Plan item 692: the panel serves the field: at most 26% of the window (400 px was 28% of 1440).
+    const cap = Math.max(PANEL_MIN, Math.min(PANEL_MAX, Math.floor(window.innerWidth * PANEL_SHARE)));
+    const panel = Math.max(PANEL_MIN, Math.min(cap, room - fit));
     // Plan item 641: the stage takes all the room the panel leaves (it was the field's fit, centred in felt): the act's
     // scenery runs on to the window's edge, the field where the depot margins put it.
     const w = Math.max(0, room - panel);
