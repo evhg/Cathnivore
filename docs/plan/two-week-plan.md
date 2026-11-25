@@ -6630,7 +6630,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** the focused card 220 px+ tall and wholly in view at 1440x900 and 1280x800 (e2e rect); titles 15 px+, body 13 px+, 4.5:1 on the card; at P no card cut by the viewport edge at rest after a snap (e2e); the board rect unchanged at D; shots P and D.
 - **Size:** 2
 
-## 702. [ ] Hedgerow: the act map shows progress *(lane A, in progress)*
+## 702. [ ] Hedgerow: the act map shows progress *(handed back 2026-11-25 23:35 by lane A after slice 1)* *(slice 1, lane A: locked stops' landmarks grayscale(.93) (item 596's sepia reversed; measured < 0.15 saturation from pixels against a won stop's > 0.25, e2e-site/hedgerow-map-locked), Hollowell's H tag wears a padlock shackle. Open: the milky haze over act 4 at D (scripts/hedgerow-702-shots.mjs, 30 won: a pale wash over y 130-430 behind the top row; not the trail's ::before, likely the act's ground or ambient layer), cleared stops' pressed stars, the haze at P.)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/hedge-menu-D`: the map (0-1120 x 60-900) sits under a milky haze and locked levels 32-40 are the same white glass orbs as playable ones; `hedge-menu-P`: a white column (300-460 x 340-1330 at 2x) washes out 'Sandbag Sunday' and 'Compulsory Purchase'.
 - **Build:** cleared nodes show their pressed stars; the next node raised and lit with Cath's pin; locked nodes desaturated, wax-sealed and padlocked; the haze only at the act's far edge.
