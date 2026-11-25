@@ -2301,3 +2301,64 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-root { --cluster-w: 10.5rem; }
 }
 /* px-ok:end */
+/* px-ok:begin: plan item 699, the touch keys in the case file's language (physical tap targets, as above) */
+/* A stamped ink ring: a hairline rim inside the disc's edge and a fainter second ring within it, like a rubber
+   stamp's, over a darker fill so the word holds on a lit sign. A used key keeps the rim, a step quieter. */
+.tbtn {
+  background-color: rgb(var(--shade-rgb) / .34);
+  box-shadow: inset 0 0 0 1.5px rgb(var(--ink-rgb) / .62), inset 0 0 0 4.5px rgb(var(--shade-rgb) / .2), inset 0 0 0 5.5px rgb(var(--ink-rgb) / .24);
+}
+.tbtn.used {
+  background-color: rgb(var(--shade-rgb) / .22);
+  box-shadow: inset 0 0 0 1.5px rgb(var(--ink-rgb) / .42), inset 0 0 0 4.5px transparent, inset 0 0 0 5.5px rgb(var(--ink-rgb) / .16);
+}
+/* FIRE's red index tab: a filing tab standing on the ring's top edge, the only red in the controls (it replaces
+   the stroke under the word). */
+.tbtn-fire::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 26px;
+  height: 9px;
+  translate: -50% 0;
+  border-radius: 3px 3px 0 0;
+  background: var(--stamp-red);
+  box-shadow: 0 -1px 0 rgb(var(--ink-rgb) / .35);
+}
+.tbtn-fire .tbtn-label::after { display: none; }
+/* px-ok:end */
+/* px-ok:begin: plan item 699, the phone lesson line as a note pinned to the case file */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 480px) {
+  /* A torn slip of the file's card paper, typed in its ink, a red pin through its top and a ragged foot, tilted a
+     degree as if pinned in a hurry: it slides in from the left over 200 ms (fades only, under reduced motion). */
+  .hud-teach {
+    padding: 10px 16px 14px;
+    background: var(--card-paper);
+    color: var(--card-ink);
+    font-weight: 600;
+    rotate: -1deg;
+    translate: -14px 0;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), 94% 100%, 86% calc(100% - 5px), 74% 100%, 61% calc(100% - 3px), 48% 100%, 37% calc(100% - 5px), 25% 100%, 13% calc(100% - 4px), 4% 100%, 0 calc(100% - 3px));
+    box-shadow: none;
+    filter: drop-shadow(0 3px 6px rgb(var(--shade-rgb) / .55));
+    transition: opacity 200ms var(--ease-out), translate 200ms var(--ease-out);
+  }
+  .hud-teach.on { translate: 0 0; }
+  .hud-teach::before { display: none; }
+  /* the pin: a red head on the slip's top edge */
+  .hud-teach::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 18px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--stamp-red);
+    box-shadow: inset -2px -2px 0 rgb(var(--shade-rgb) / .35), 0 1px 2px rgb(var(--shade-rgb) / .6);
+  }
+  .hud-teach { padding-top: 16px; }
+  :root.reduce-motion .hud-teach { translate: 0 0; transition: opacity 200ms linear; }
+}
+/* px-ok:end */
