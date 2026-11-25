@@ -6587,7 +6587,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
 
-## 696. [ ] Cathnivore campaign D: Cath hosts from the rail, the map left clear
+## 696. [ ] Cathnivore campaign D: Cath hosts from the rail, the map left clear *(lane A, in progress)*
 *(planned 2026-11-25 19:10, lane A, plan1125c critique; item 669 set the war table, this fixes what crept back)*
 - **Why:** `plan1125c/cath-campaign-D`: Cath (750-940 x 505-900) stands on the map frame and Rivermead/Shingle Bay's edge, cut by the viewport foot; her bubble (733-928 x 388-470) over Rivermead's east side; the Chapter 1 callout (48-305 x 768-885) covers Oakvale; chapters 2-6 (1030-1378 x 352-880) read as five like list cards.
 - **Build:** Cath at half length in the gap between map and chapter track (or above the track), fully in frame, never on the map; the selected chapter's callout pinned beside its numbered node with a leader, over no region name; locked chapters as sealed envelopes (wax seal, teaser line), the current one raised.
