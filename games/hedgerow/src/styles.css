@@ -4070,6 +4070,13 @@ img.act-scene {
     -webkit-mask-image: linear-gradient(180deg, black calc(100% - 96px - env(safe-area-inset-bottom)), transparent calc(100% - 70px - env(safe-area-inset-bottom)));
     mask-image: linear-gradient(180deg, black calc(100% - 96px - env(safe-area-inset-bottom)), transparent calc(100% - 70px - env(safe-area-inset-bottom)));
   }
+  /* Plan item 700: with the briefing card docked at the foot the fades (this mask and the tab bar's veil) start under
+     the card, so it isn't washed out too. */
+  #screen-select:has(.levels .level-card) .top-tools::before { content: none; }
+  #screen-select .levels:has(.level-card) {
+    -webkit-mask-image: linear-gradient(180deg, black calc(100% - 66px - env(safe-area-inset-bottom)), transparent calc(100% - 60px - env(safe-area-inset-bottom)));
+    mask-image: linear-gradient(180deg, black calc(100% - 66px - env(safe-area-inset-bottom)), transparent calc(100% - 60px - env(safe-area-inset-bottom)));
+  }
 }
 
 /* Workshop portrait: on a desktop the tower card leads with a bigger portrait (N6). */
@@ -5131,7 +5138,9 @@ img.act-scene {
   /* A bottom sheet: it peeks the level's name and Play; its grip pulls up the plate, Cath's line and the vehicles. */
   #screen-select .level-card {
     position: sticky;
-    bottom: 8px;
+    /* Plan item 700: 8 px over the tab bar (65 px tall), not 8 px over the list's 84 px foot padding, which left a
+       blank band of about 28 px between the card and the tabs at P. */
+    bottom: -11px;
     /* Plan item 324: the peek shows the field's plate beside the name, a glimpse of what you'll defend */
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas: "grip grip grip" "thumb body play";
