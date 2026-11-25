@@ -6601,7 +6601,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** the card's rect doesn't intersect any tile rect at 1440x900 and 1280x800 (e2e); Bea 70 px+ tall in the final frame; fades only under reduced motion; P unchanged; shots D unsolved and solved.
 - **Size:** 2
 
-## 698. [ ] Hedgerow phone: a full seed rack and Cath at hand
+## 698. [ ] Hedgerow phone: a full seed rack and Cath at hand *(lane A, in progress)*
 *(planned 2026-11-25 19:10, lane A, plan1125c critique)*
 - **Why:** `plan1125c/hedge-l27-2d-P`, `-l27-3d-P`, `-l34-2d-P` (2x): the tray's left part (20-180 x 1405-1545) is empty parchment, 3 of the unlocked seeds show, and no Cath control is in the bar (D has CATH LV 2 at 1055-1120 x 740-815).
 - **Build:** the phone tray a horizontally scrolling packet rack in the D rack's style (price stamps, lock tag for the next unlock, the next packet peeking at the right edge); a 56 px Cath portrait chip with her level at the bar's left, opening her abilities.
