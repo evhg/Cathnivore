@@ -560,7 +560,7 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: normal;
     text-wrap: balance;
   }
-  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img {
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img.tray-icon {
     width: 32px;
     height: 32px;
     margin: 4px 0 -8px;
@@ -572,7 +572,7 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: normal;
     text-wrap: balance;
   }
-  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img {
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img.tray-icon {
     width: 32px;
     height: 32px;
     margin: 4px 0 -8px;
@@ -4800,7 +4800,7 @@ body:has(#dlg-pause[open]) .paused-note {
     white-space: normal;
     text-wrap: balance;
   }
-  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img {
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-long-name] img.tray-icon {
     width: 32px;
     height: 32px;
     margin: 4px 0 -8px;
@@ -5648,6 +5648,15 @@ body:has(#dlg-pause[open]) .paused-note {
     border-radius: 10px 0 0 10px;
   }
   .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower .tray-stats { inset-block-start: 7px; }
+  /* Plan item 692: the tag hangs at the packet's right foot, so in the column's tight step (where the tower is
+     centred at 40 px) the tower steps to the left of it (the 'For' tag hid half the Scarecrow, Windmill and Duck Pond at the 26% panel). */
+  .play .panel.shop-tight .tray-wrap .tray:has(> .tray-tower:nth-child(10)) .tray-tower[data-answers] img.tray-icon {
+    align-self: flex-start;
+    width: clamp(32px, calc(100% - 42px), 40px);
+    height: auto;
+    aspect-ratio: 1;
+    margin-inline-start: 1px;
+  }
 }
 /* The spare cells' note is a sealed packet: kraft, crimped, a wax seal on its flap and the coming tower's shadow
    through the paper, beside 'More seeds at level N'. */
@@ -5659,6 +5668,9 @@ body:has(#dlg-pause[open]) .paused-note {
     text-align: start;
   }
   .play .tray-wrap .tray > .tray-later .tray-later-words { max-width: 9em; }
+  /* Plan item 692: four to a row the note keeps to the packets' height (its margins made the last row 18 px taller,
+     so Seed Cannon and Market Stall stood on deep empty bands). */
+  .play .tray-wrap .tray:has(> .tray-tower:nth-child(10)) > .tray-later { margin-block: 0; padding-block: 2px; }
   .tray-later-packet {
     position: relative;
     display: grid;

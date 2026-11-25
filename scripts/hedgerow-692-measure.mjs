@@ -1,0 +1,11 @@
+import { chromium } from '@playwright/test'
+const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
+const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 })
+await p.addInitScript(() => { localStorage.setItem('hedgerow:v1', JSON.stringify({ seenBefore: Object.fromEntries(Array.from({ length: 60 }, (_, i) => [i + 1, true])) })) })
+await p.goto(`http://localhost:4180/hedgerow/?${process.env.MODE ?? "2d"}&sandbox=1&level=${process.env.LV ?? 27}`)
+await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60_000 })
+await p.waitForTimeout(1500)
+if (process.env.OUT) await p.locator('.play .tray').first().screenshot({ path: process.env.OUT })
+const m = await p.evaluate(() => [...document.querySelectorAll('.tray-tower')].map(t => { const r=t.getBoundingClientRect(), i=t.querySelector('img.tray-icon').getBoundingClientRect(), a=t.querySelector('.tray-answers')?.getBoundingClientRect(); return `${t.dataset.kind} card ${r.width|0}x${r.height|0} img ${i.left-r.left|0},${i.top-r.top|0} ${i.width|0}x${i.height|0}` + (a?` tag ${a.left-r.left|0},${a.top-r.top|0} ${a.width|0}x${a.height|0}`:'') }))
+console.log(m.join('\n'))
+await b.close()

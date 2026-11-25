@@ -129,6 +129,8 @@ test('plan items 69 and 84: at D the whole roster fits the tray: no packet past 
     }, level)
     await page.goto(`${URL}&level=${level}`)
     await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 30000 })
+    // Plan item 692: measure with the webfont in (a fallback face's wider name read as cut, flaky on the base too).
+    await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(300)
     const r = await page.evaluate(() => {
       const t = document.querySelector('.tray')!.getBoundingClientRect()
