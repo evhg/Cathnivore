@@ -4224,7 +4224,7 @@ float reliefShade( vec2 uv ) {
   // beside her in the air.
   const GHOST_HOLD = V(0.33, -0.2, 0.17);
   // Plan item 449: her left hand on the rifle's sling where it crosses her chest (coatStrap's [0.42, 0.32] point, in the chest frame).
-  const GHOST_SLING = V(0.2, 0.02, 0.17);
+  const GHOST_SLING = V(0.2, 0.02, 0.2);
   // Plan item 449: out from her hip (x 0.26 -> 0.29, z 0.19 -> 0.21): the shotgun's stock sat 2.4 cm inside the coat.
   const BUTCHER_HOLD = V(0.29, 0.04, 0.21);
   // Plan item 449: the shoulder carry: her hand on the grip before her left breast, the barrel back past her shoulder
