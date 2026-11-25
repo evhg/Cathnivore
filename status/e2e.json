@@ -1,6 +1,6 @@
 {
   "workflow": "e2e",
-  "commit": "3c371ef786a1d2c0fc857ba014b41d8ef24bdbc0",
-  "success": true,
-  "time": "2026-11-25T18:44:10Z"
+  "commit": "d19bc8777deb3e349993931b3dd7ca195c59fb72",
+  "success": false,
+  "time": "2026-11-25T19:16:35Z"
 }
