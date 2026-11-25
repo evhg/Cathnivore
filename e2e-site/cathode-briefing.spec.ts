@@ -31,7 +31,7 @@ test('at D the briefing is three pinned cards and a labelled sheet, with no perc
   // every box drawn on the sheet that is not a block of buildings (the flyover deck, wings) carries a name over it
   const unnamed = await page.locator('#loading .ld-map svg').evaluate((svg) => {
     const texts = [...svg.querySelectorAll('.dmap-labels .dmap-t')].filter((t) => getComputedStyle(t).display !== 'none').map((t) => t.getBoundingClientRect())
-    return [...svg.querySelectorAll('.dmap-flyover, .dmap-wing')].filter((r) => {
+    return [...svg.querySelectorAll('.dmap-flyover, .dmap-wing, .dmap-walls')].filter((r) => {
       const b = r.getBoundingClientRect()
       return !texts.some((t) => t.left >= b.left - 1 && t.right <= b.right + 1 && t.top >= b.top - 1 && t.bottom <= b.bottom + 1)
     }).map((r) => r.getAttribute('class'))
@@ -58,4 +58,18 @@ test('on an upright phone the still, the objective and Cath stack down the scree
   for (const b of [still, obj, print]) expect(b.y + b.height).toBeLessThanOrEqual(name.y)
   // her line reads whole (typed in; a still frame shows all of it)
   await expect(page.locator('#loading .ld-lore')).toHaveAttribute('aria-label', /I mean to be there first/)
+})
+
+test('at D the clinic sheet names its walled floor too', async ({ page }) => {
+  test.setTimeout(180_000)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
+  await page.goto('/nightshift/?front=loading-travel&shot')
+  await expect(page.locator('#loading.has-map .ld-map svg')).toHaveCount(1, { timeout: 120_000 })
+  const t = page.locator('#loading .ld-walls-t')
+  await expect(t).toHaveText('THE CANDOR CLINIC')
+  const tb = (await t.boundingBox())!
+  const wb = (await page.locator('#loading .dmap-walls').boundingBox())!
+  expect(tb.x >= wb.x - 1 && tb.x + tb.width <= wb.x + wb.width + 1 && tb.y >= wb.y - 1 && tb.y + tb.height <= wb.y + wb.height + 1).toBe(true)
+  expect(tb.height).toBeGreaterThanOrEqual(60)
 })

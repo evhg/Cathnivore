@@ -19,6 +19,9 @@ const ROUTE: Record<string, { from: [number, number]; to: [number, number] | nul
   vault: { from: [0, 44], to: [0, -48] },
 };
 
+/** Plan item 690: the name inked down an indoor district's outline on the briefing's sheet. */
+const INDOORS: Record<string, string> = { clinic: "THE CANDOR CLINIC", plaza: "HOLLOWELL PLAZA", tower: "THE BOARD TOWER", vault: "THE HOLLOW VAULT" };
+
 const SEEN_KEY = "cathode.listSeen";
 
 /** How many names were struck the last time the list was shown (null on a first visit). */
@@ -173,12 +176,52 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     });
   // Plan item 690: every box on the sheet named. The flyover deck is drawn dashed over the street with no name of its own.
   function label(plan: SVGSVGElement): void {
-    const fly = plan.querySelector<SVGRectElement>(".dmap-flyover");
     const labels = plan.querySelector(".dmap-labels");
-    if (!fly || !labels) return;
-    const x = Number(fly.getAttribute("x")), y = Number(fly.getAttribute("y")), h = Number(fly.getAttribute("height"));
-    const t = svg("text", { x: (x + 1.2).toFixed(1), y: (y + h / 2 + 1).toFixed(1), "font-size": 2.4, class: "dmap-t dmap-t-zone ld-fly-t" }, labels);
-    t.textContent = "THE FLYOVER";
+    if (!labels) return;
+    const box = (r: Element) => ["x", "y", "width", "height"].map((k) => Number(r.getAttribute(k))) as [number, number, number, number];
+    const fly = plan.querySelector<SVGRectElement>(".dmap-flyover");
+    if (fly) {
+      const [x, y, , h] = box(fly);
+      const t = svg("text", { x: (x + 1.2).toFixed(1), y: (y + h / 2 + 1).toFixed(1), "font-size": 2.4, class: "dmap-t dmap-t-zone ld-fly-t" }, labels);
+      t.textContent = "THE FLYOVER";
+    }
+    // an indoor district's outline (one walled floor) named down its right wall (her route keeps to the left)
+    const walls = plan.querySelector(".dmap-walls");
+    if (walls) {
+      const [x, y, w, h] = box(walls);
+      const cx = x + w - 1.8;
+      const cy = y + h * 0.84;
+      const t = svg("text", { x: cx.toFixed(1), y: cy.toFixed(1), "font-size": 2.2, "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(90 ${cx.toFixed(1)} ${cy.toFixed(1)})`, class: "dmap-t dmap-t-zone ld-walls-t" }, labels);
+      t.textContent = INDOORS[district] ?? "THE BUILDING";
+    }
+    // the water: the tallest strip named down its length (the market's canal), the flooded road where it lies
+    const tall = [...plan.querySelectorAll(".dmap-water")].map(box).filter((b) => b[3] > b[2] * 3).sort((a, b) => b[3] - a[3])[0];
+    if (tall) {
+      const [x, y, w, h] = tall;
+      const cx = x + Math.min(w, 6) / 2;
+      const cy = y + h * 0.62;
+      const t = svg("text", { x: cx.toFixed(1), y: cy.toFixed(1), "font-size": 2.2, "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(90 ${cx.toFixed(1)} ${cy.toFixed(1)})`, class: "dmap-t dmap-t-zone ld-water-t" }, labels);
+      t.textContent = district === "market" ? "THE CANAL" : "THE RIVER";
+    }
+    for (const fl of plan.querySelectorAll(".dmap-flood")) {
+      const [x, y, w, h] = box(fl);
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      const t = svg("text", { x: cx.toFixed(1), y: cy.toFixed(1), "font-size": 2, "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(-90 ${cx.toFixed(1)} ${cy.toFixed(1)})`, class: "dmap-t dmap-t-zone ld-flood-t" }, labels);
+      t.textContent = "FLOODED";
+    }
+    // the street lamps along the quay, inked as small rayed rings (the ones she walks under on arrival)
+    const quay = plan.querySelector(".dmap-quay");
+    if (quay) {
+      const [x, y, w, h] = box(quay);
+      const lamps = svg("g", { class: "ld-lamps" }, plan);
+      plan.insertBefore(lamps, labels);
+      for (let z = y + 8; z < y + h - 4; z += 16) {
+        const lx = x + w * 0.3;
+        svg("circle", { cx: lx.toFixed(1), cy: z.toFixed(1), r: 0.55 }, lamps);
+        svg("path", { d: `M${(lx - 1.3).toFixed(1)} ${z.toFixed(1)}h0.5M${(lx + 0.8).toFixed(1)} ${z.toFixed(1)}h0.5M${lx.toFixed(1)} ${(z - 1.3).toFixed(1)}v0.5M${lx.toFixed(1)} ${(z + 0.8).toFixed(1)}v0.5` }, lamps);
+      }
+    }
   }
   // Plan item 690: the load is a pencil route drawn from where she arrives to the objective, along the street.
   let route: SVGPathElement | null = null;

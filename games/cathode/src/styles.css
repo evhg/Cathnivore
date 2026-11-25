@@ -347,6 +347,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 /* the load: a pencil line drawn along the street from where she arrives to the ring */
 .ld-route { fill: none; stroke: var(--card-ink); stroke-opacity: .8; stroke-width: .9; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .ld-untyped { visibility: hidden; }
+.ld-lamps { fill: none; stroke: var(--card-ink); stroke-width: .28; stroke-linecap: round; }
+.ld-lamps circle { fill: var(--card-paper); }
 .ld-pin.ld-pin-foot { display: none; top: auto; bottom: calc(var(--u) * -4); }
 /* The sheet: the map's own plan (districtmap.ts), sized by its height; it fades in once the chunk is there. */
 .ld-map { left: 41vw; top: calc(var(--safe-y) + 12vh); padding-bottom: calc(var(--u) * 10); --tilt: -1.5deg; opacity: 0; transition: opacity 400ms ease; }
