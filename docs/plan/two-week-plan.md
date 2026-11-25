@@ -6576,7 +6576,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** her face 60 px+ tall at D; her expression attribute changes after a watering tap and at the solve (e2e); nothing over the board frame; cross-fades only under reduced motion; shots D unsolved and solved, P unchanged.
 - **Size:** 2
 
-## 695. [ ] The bugs from the 2026-11-25 10:30 critique, fixed as one batch
+## 695. [ ] The bugs from the 2026-11-25 10:30 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique; check each on today's build first; NIGHT SHIFT boxes at 2x)*
 - /games/ D: the Cathnivore card's title over the board art, 'Brindle Hi…' clipped (148-200 x 632-642); slanted tags over Cath (125-335 and 745-915 x 760-790).
 - Portfolio D: the timeline's lane letters outside the margin (80-92 x 768-806); stat digits and labels on different baselines (100-1340 x 845-875).
