@@ -62,8 +62,34 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   const rule = el("div", "ld-rule", meter);
   const ink = el("span", "ld-ink", rule);
   el("span", "ld-trace", rule);
-  const pct = el("p", "ld-pct", meter, "0%");
-  el("p", "ld-lore", file, `“${card.lore}”`);
+  // Plan item 690: no percentage. The load is the pencil route drawn on the survey sheet (and the ink on this rule).
+  meter.setAttribute("role", "progressbar");
+  meter.setAttribute("aria-label", "Loading the case");
+  // Cath's line types in, in her italic voice; the untyped rest holds its place (hidden), so the lines never rewrap.
+  const lore = el("p", "ld-lore", file);
+  const said = `“${card.lore}”`;
+  lore.setAttribute("aria-label", said);
+  const typed = el("span", "ld-typed", lore);
+  const rest = el("span", "ld-untyped", lore, said);
+  rest.setAttribute("aria-hidden", "true");
+  typed.setAttribute("aria-hidden", "true");
+  const reduce = o.still || o.held !== undefined || matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.classList.contains("reduce-motion");
+  if (reduce) {
+    typed.textContent = said;
+    rest.textContent = "";
+  } else {
+    // about 1.6 s for the line, after the prints have landed
+    const per = Math.max(10, Math.min(24, 1600 / said.length));
+    let n = 0;
+    const type = () => {
+      if (closed) return;
+      n = Math.min(said.length, n + 1);
+      typed.textContent = said.slice(0, n);
+      rest.textContent = said.slice(n);
+      if (n < said.length) setTimeout(type, per);
+    };
+    setTimeout(type, 700);
+  }
   // Plan item 629: the briefing pinned over the frame. The next name's surveillance still, the district's survey
   // sheet (drawn by the map's own plan, a moment later: districtmap is loaded with the session), and Cath's
   // photograph from the title's street (front-poster, the 3D render, not the 2D bust). A red string runs from the
@@ -75,6 +101,14 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   still.innerHTML = mugshotSvg(next ? bustForBanner(next) ?? (/mind/i.test(next) ? "mind" : null) : null, next ? next.split(" ").pop()!.toUpperCase() : "CLOSED");
   el("figcaption", "", still, next ?? "The List");
   el("i", "ld-pin", still);
+  // (an upright phone stacks the objective under the still: the string leaves from a pin at its foot, not over the face)
+  el("i", "ld-pin ld-pin-foot", still);
+  // Plan item 690: the objective, a pinned card between the still and her photograph.
+  const goalCard = el("figure", "ld-obj", board);
+  el("p", "ld-obj-h", goalCard, "Objective");
+  el("p", "ld-obj-where", goalCard, card.objective.where);
+  el("p", "ld-obj-what", goalCard, card.objective.what);
+  el("i", "ld-pin", goalCard);
   const sheet = el("div", "ld-map", board);
   el("i", "ld-pin", sheet);
   const print = el("figure", "ld-print", board);
@@ -93,11 +127,20 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     return [r.left + r.width / 2 - o.left, r.top + r.height / 2 - o.top];
   };
   const restring = () => {
-    const pts = [centre(still.querySelector(".ld-pin"), true), centre(spots.goal), centre(spots.at), centre(print.querySelector(".ld-pin"), true)].filter((p): p is [number, number] => !!p);
+    const foot = still.querySelector(".ld-pin-foot")!;
+    const from = getComputedStyle(foot).display !== "none" ? centre(foot) : centre(still.querySelector(".ld-pin"), true);
+    const ring = centre(spots.goal);
+    const at = centre(spots.at);
+    // Plan item 690: two runs. Still -> objective card -> the ring on the sheet; then from her dot to her photograph.
+    // Between the ring and her dot the pencil route is the line (the load), so the string leaves that stretch to it.
+    const runs = [[from, centre(goalCard.querySelector(".ld-pin"), true), ring], [at, centre(print.querySelector(".ld-pin"), true)]]
+      .map((r) => r.filter((p): p is [number, number] => !!p))
+      .filter((r) => r.length > 1);
+    if (!ring || !at) runs.splice(0, runs.length, [from, centre(goalCard.querySelector(".ld-pin"), true), centre(print.querySelector(".ld-pin"), true)].filter((p): p is [number, number] => !!p));
     // Slack: each run sags a little below the straight line, like a string pinned at both ends.
     let d = "";
-    pts.forEach(([x, y], i) => {
-      if (!i) d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
+    for (const pts of runs) pts.forEach(([x, y], i) => {
+      if (!i) d += `${d ? " " : ""}M${x.toFixed(1)} ${y.toFixed(1)}`;
       else {
         const [px, py] = pts[i - 1]!;
         const sag = Math.hypot(x - px, y - py) * 0.1;
@@ -117,7 +160,10 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
       const plan = drawPlan({ district, at: { x: r.from[0], z: r.from[1] }, objective: r.to ? { x: r.to[0], z: r.to[1] } : null, jobsDone: [], colliders: [] });
       plan.removeAttribute("role");
       sheet.prepend(plan);
+      label(plan);
+      route = pencil(plan, r);
       legible(plan);
+      draw();
       spots = { at: plan.querySelector(".dmap-cath"), goal: plan.querySelector(".dmap-goal") };
       root.classList.add("has-map");
       restring();
@@ -125,6 +171,29 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     .catch(() => {
       // No sheet (the chunk failed): the string runs from the still to her photograph.
     });
+  // Plan item 690: every box on the sheet named. The flyover deck is drawn dashed over the street with no name of its own.
+  function label(plan: SVGSVGElement): void {
+    const fly = plan.querySelector<SVGRectElement>(".dmap-flyover");
+    const labels = plan.querySelector(".dmap-labels");
+    if (!fly || !labels) return;
+    const x = Number(fly.getAttribute("x")), y = Number(fly.getAttribute("y")), h = Number(fly.getAttribute("height"));
+    const t = svg("text", { x: (x + 1.2).toFixed(1), y: (y + h / 2 + 1).toFixed(1), "font-size": 2.4, class: "dmap-t dmap-t-zone ld-fly-t" }, labels);
+    t.textContent = "THE FLYOVER";
+  }
+  // Plan item 690: the load is a pencil route drawn from where she arrives to the objective, along the street.
+  let route: SVGPathElement | null = null;
+  function pencil(plan: SVGSVGElement, r: { from: [number, number]; to: [number, number] | null }): SVGPathElement | null {
+    if (!r.to) return null;
+    const [x0, z0] = r.from;
+    const [x1, z1] = r.to;
+    // a hand-drawn line: a gentle S that keeps to the road, not a ruler
+    const mz = (z0 + z1) / 2;
+    const d = `M${x0} ${z0 - 2.4} C${x0 + 1.6} ${mz + (z0 - mz) * 0.4} ${x1 - 1.6} ${mz - (mz - z1) * 0.4} ${x1} ${z1 + 2.8}`;
+    const g = plan.querySelector(".dmap-labels");
+    const p = svg("path", { d, class: "ld-route", pathLength: 1 }, plan);
+    if (g) plan.insertBefore(p, g);
+    return p as SVGPathElement;
+  }
   // Plan item 638: the survey sheet is drawn small here, so its labels read at 7-8 px: the loader keeps the names
   // that tell the route (the areas, the objective, Cath), each set to 13 px or more on screen, and
   // leaves the small print (landmarks, rooms, tips; they ran into the route at 13 px) to the full map.
@@ -159,7 +228,7 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   addEventListener("resize", restring);
   requestAnimationFrame(restring);
   // The prints drop into place over about a second: the string follows their pins until they land.
-  for (const e of [still, print, sheet]) e.addEventListener("animationend", restring);
+  for (const e of [still, goalCard, print, sheet]) e.addEventListener("animationend", restring);
   // (the sheet's labels sized once it has landed: measured mid-deal they came out at 11 px)
   sheet.addEventListener("animationend", () => {
     const plan = sheet.querySelector<SVGSVGElement>("svg");
@@ -194,8 +263,8 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   const waiters: Array<() => void> = [];
   const draw = () => {
     ink.style.setProperty("--p", `${(shown * 100).toFixed(2)}%`);
-    pct.textContent = `${Math.round(shown * 100)}%`;
-    strings.style.setProperty("--ld-left", (1 - shown).toFixed(4));
+    meter.setAttribute("aria-valuenow", String(Math.round(shown * 100)));
+    route?.style.setProperty("stroke-dashoffset", (1 - shown).toFixed(4));
   };
   const tick = () => {
     if (closed) return;

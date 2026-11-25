@@ -6,7 +6,7 @@ const out = process.env.OUT ?? 'e2e/screenshots'
 const tag = process.env.TAG ?? 'l629'
 const stages = (process.env.STAGES ?? 'loading,loading-travel,loading-office').split(',')
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
-for (const [vp, w, h] of [['P', 390, 844], ['D', 1440, 900], ['L', 844, 390]]) {
+for (const [vp, w, h] of [['P', 390, 844], ['D', 1440, 900], ['L', 844, 390]].filter(([v]) => (process.env.VPS ?? 'P,D,L').split(',').includes(v))) {
   const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 })
   await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'phone' })))
   const p = await ctx.newPage()

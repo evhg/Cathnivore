@@ -1031,7 +1031,7 @@ test('the case loader pins the still, the sheet and her photograph with nothing 
     }
     const photo = (await box('.ld-photo'))!
     if (w === 1440) expect(photo.height, 'her photograph at D').toBeGreaterThanOrEqual(280)
-    const parts = ['.ld-place', '.ld-name', '.ld-meter', '.ld-lore', '.ld-corner', '.ld-still', '.ld-map', '.ld-print']
+    const parts = ['.ld-place', '.ld-name', '.ld-meter', '.ld-lore', '.ld-corner', '.ld-still', '.ld-obj', '.ld-map', '.ld-print']
     const boxes: Array<[string, { x: number; y: number; width: number; height: number }]> = []
     for (const s of parts) {
       const b = await box(s)
@@ -1048,8 +1048,12 @@ test('the case loader pins the still, the sheet and her photograph with nothing 
         const hit = a.x < b.x + b.width - 1 && b.x < a.x + a.width - 1 && a.y < b.y + b.height - 1 && b.y < a.y + a.height - 1
         expect(hit, `${w}x${h}: ${sa} over ${sb}`).toBe(false)
       }
-    // The string is drawn to the held share (62%).
+    // Plan item 690: a still frame shows the whole string; the load is the pencil route, drawn to the held share (62%).
     const off = await page.locator('#loading .ld-string-red').evaluate((e) => Number(getComputedStyle(e).strokeDashoffset.replace('px', '')))
-    expect(off).toBeCloseTo(0.38, 2)
+    expect(off).toBeCloseTo(0, 2)
+    if (w === 1440) {
+      const left = await page.locator('#loading .ld-route').evaluate((e) => Number(getComputedStyle(e).strokeDashoffset.replace('px', '')))
+      expect(left).toBeCloseTo(0.38, 2)
+    }
   }
 })

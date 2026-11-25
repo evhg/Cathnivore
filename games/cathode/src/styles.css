@@ -233,20 +233,6 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 @keyframes ld-trace { from { transform: translateX(-100%); } to { transform: translateX(460%); } }
 /* The figure sits on the rule's end (C14 review: it floated off it, small and faint). */
-.ld-pct {
-  position: absolute;
-  right: 0;
-  bottom: calc(var(--u) * 12);
-  margin: 0;
-  min-width: 4ch;
-  text-align: right;
-  font: 700 var(--fs-2)/1 var(--font-ui);
-  font-stretch: var(--wdth-num);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: .02em;
-  color: var(--ink);
-  text-shadow: var(--hud-shadow);
-}
 .ld-lore {
   position: relative;
   margin: 0;
@@ -326,7 +312,7 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
    survey sheet with the route ringed (centre), Cath's photograph from the title's street (right), and a red string
    pinned through them that draws itself as the load runs. Prints are paper with a drop shadow and a slight tilt. */
 .ld-board { position: absolute; inset: 0; z-index: var(--z-lift); pointer-events: none; }
-.ld-still, .ld-print, .ld-map {
+.ld-still, .ld-print, .ld-map, .ld-obj {
   position: absolute;
   margin: 0;
   padding: calc(var(--u) * 10) calc(var(--u) * 10) 0;
@@ -345,6 +331,23 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 .ld-still { left: var(--ld-x); top: calc(var(--safe-y) + 9vh); width: 15vw; --tilt: -2.5deg; }
 .ld-still svg { display: block; width: 100%; height: auto; }
+/* Plan item 690: the objective, a pinned index card between the still and the sheet; the route's end in a line. */
+.ld-obj {
+  left: calc(var(--ld-x) + 15vw + 2.4vw);
+  top: calc(var(--safe-y) + 30vh);
+  width: max(15vw, 200px); /* px-ok: the card's floor, its line in three or four */
+  padding: calc(var(--u) * 20) calc(var(--u) * 18) calc(var(--u) * 18);
+  --tilt: 1.6deg;
+  color: var(--card-ink);
+}
+.ld-obj p { margin: 0; }
+.ld-obj-h { font: 800 var(--fs-1)/1.1 var(--font-ui); font-stretch: var(--wdth-label); letter-spacing: .06em; text-transform: uppercase; color: var(--blood); }
+.ld-obj-where { margin-top: calc(var(--u) * 8) !important; font: 700 var(--fs-2)/1.2 var(--font-ui); font-stretch: var(--wdth-head); text-transform: uppercase; letter-spacing: .02em; }
+.ld-obj-what { margin-top: calc(var(--u) * 8) !important; font: italic 400 var(--fs-2)/1.35 var(--font-voice); text-wrap: pretty; }
+/* the load: a pencil line drawn along the street from where she arrives to the ring */
+.ld-route { fill: none; stroke: var(--card-ink); stroke-opacity: .8; stroke-width: .9; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ld-untyped { visibility: hidden; }
+.ld-pin.ld-pin-foot { display: none; top: auto; bottom: calc(var(--u) * -4); }
 /* The sheet: the map's own plan (districtmap.ts), sized by its height; it fades in once the chunk is there. */
 .ld-map { left: 41vw; top: calc(var(--safe-y) + 12vh); padding-bottom: calc(var(--u) * 10); --tilt: -1.5deg; opacity: 0; transition: opacity 400ms ease; }
 .loading.has-map .ld-map { opacity: 1; }
@@ -371,20 +374,22 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 /* The prints are dealt onto the frame one after another (still, sheet, photograph), each dropping into its pin. */
 .ld-still { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 120ms both; }
-.ld-print { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 480ms both; }
-.ld-map { animation: ld-deal-move 460ms cubic-bezier(.2, .8, .25, 1) 300ms both; }
+.ld-print { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 560ms both; }
+.ld-obj { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 300ms both; }
+.ld-map { animation: ld-deal-move 460ms cubic-bezier(.2, .8, .25, 1) 420ms both; }
 @keyframes ld-deal { from { opacity: 0; transform: translateY(-4vh) rotate(calc(var(--tilt) * -2)) scale(1.04); } to { opacity: 1; } }
-.ld-string { animation: ld-string-in 240ms ease 940ms both; }
-@keyframes ld-string-in { from { opacity: 0; } }
+/* Plan item 690: once the pins are in, the string draws itself still -> objective -> sheet -> her, in 800 ms. */
+.ld-string path { animation: ld-string-in 800ms cubic-bezier(.5, 0, .3, 1) 1020ms both; }
+@keyframes ld-string-in { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes ld-deal-move { from { transform: translateY(-4vh) rotate(calc(var(--tilt) * -2)) scale(1.04); } }
-.loading.is-still :is(.ld-still, .ld-print, .ld-map, .ld-string) { animation: none; }
-:root.reduce-motion :is(.ld-still, .ld-print, .ld-map, .ld-string) { animation: none; }
-@media (prefers-reduced-motion: reduce) { :is(.ld-still, .ld-print, .ld-map, .ld-string) { animation: none; } }
+.loading.is-still :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; }
+:root.reduce-motion :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; }
+@media (prefers-reduced-motion: reduce) { :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; } }
 .ld-string { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: var(--z-lift-3); }
 .ld-string path { fill: none; stroke-linecap: round; }
 .ld-string-shade { stroke: rgb(var(--black-rgb) / .45); stroke-width: max(2px, calc(var(--u) * 4)); transform: translate(0, calc(var(--u) * 4)); } /* px-ok */
-.ld-string-red { stroke: var(--blood); stroke-width: max(1.5px, calc(var(--u) * 2.6)); stroke-dasharray: 1; stroke-dashoffset: var(--ld-left, 1); } /* px-ok */
-.ld-string-shade { stroke-dasharray: 1; stroke-dashoffset: var(--ld-left, 1); opacity: .5; }
+.ld-string-red { stroke: var(--blood); stroke-width: max(1.5px, calc(var(--u) * 2.6)); stroke-dasharray: 1; } /* px-ok */
+.ld-string-shade { stroke-dasharray: 1; opacity: .5; }
 /* A phone upright: the still and her photograph across the top, the string between them; The List under the still;
    the name and lore the full width below. The sheet stays on the map screen (M). */
 @media (max-width: 640px) and (orientation: portrait) {
@@ -392,15 +397,17 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   .ld-still { top: calc(var(--safe-y) + 5vh); width: 34vw; }
   .ld-print { right: var(--ld-x); top: calc(var(--safe-y) + 3vh); width: 42vw; }
   .ld-file { width: auto; right: var(--ld-x); }
-  .ld-corner { right: auto; left: var(--ld-x); bottom: auto; top: calc(var(--safe-y) + 5vh + 34vw * 1.2 + var(--u) * 80); text-align: left; }
-  .ld-list { justify-items: start; }
+  /* plan item 690: the objective card under the still, the string running down to it and up to her; The List under her */
+  .ld-pin.ld-pin-foot { display: block; }
+  .ld-obj { left: var(--ld-x); top: calc(var(--safe-y) + 5vh + 34vw * 1.3 + var(--u) * 26); width: 48vw; padding: calc(var(--u) * 14) calc(var(--u) * 14) calc(var(--u) * 14); }
+  .ld-corner { right: var(--ld-x); bottom: auto; top: calc(var(--safe-y) + 3vh + 42vw * 1.84 + var(--u) * 30); text-align: right; }
 }
 /* A phone held sideways: the name and lore keep the left half, The List the right corner. */
 @media (max-height: 430px) and (orientation: landscape) {
   .loading { --ld-y: max(14px, var(--safe-y)); } /* px-ok */
   .ld-file { width: 50vw; }
   .ld-meter { margin: calc(var(--u) * 20) 0 calc(var(--u) * 18); }
-  .ld-map { display: none; }
+  .ld-map, .ld-obj { display: none; }
   .ld-print { top: max(14px, var(--safe-y)); right: var(--ld-x); width: 13vw; } /* px-ok */
   .ld-still { left: auto; right: calc(var(--ld-x) + 13vw + 5vw); top: calc(max(14px, var(--safe-y)) + 4vh); width: 11vw; } /* px-ok */
 }

@@ -193,6 +193,17 @@ const LORE: Record<string, string> = {
   vaultBoss:
     "Under the river there is a vault, and in it whatever Candor built to think for it. Every name on my list answered to it. The water is cold down there. I stopped noticing a while ago.",
 };
+/**
+ * Plan item 690: the briefing's objective card, pinned between the next name's still and Cath's photograph: where
+ * the string runs to on the survey sheet, and what she is there to do, in a line.
+ */
+const OBJECTIVE: Record<string, { where: string; what: string }> = {
+  crispBoss: { where: "North Quay · the market office", what: "Reach Crisp’s office before his men collect at the fish market." },
+  vaneBoss: { where: "The Candor Clinic · the theatre", what: "Walk the wards down to Vane’s theatre and take her register." },
+  pellBoss: { where: "Hollowell Plaza · the stage", what: "Cross the rally to Pell’s stage before the speech ends." },
+  boardBoss: { where: "The Board Tower · the top floor", what: "Ride the lift to the boardroom. The Chair is waiting." },
+  vaultBoss: { where: "Under the river · the vault", what: "Go down to whatever Candor built to think for it." },
+};
 const CLOSED_LORE = "The list is closed. The rain hasn’t heard. I keep walking anyway: there is always another name.";
 /**
  * Plan item 69: the office load is the room between cases, not the next name's file (it showed Crisp's headline and
@@ -219,6 +230,8 @@ export interface LoadingCard {
   list: ReadonlyArray<{ name: string; done: boolean; next: boolean; fresh: boolean }>;
   /** Names not reached yet (counted, never shown). */
   sealed: number;
+  /** Plan item 690: the objective card (where, and what she is there to do). */
+  objective: { where: string; what: string };
   /** "travel" when she is moving between districts (the trace sweep along the rule). */
   motif: "arrive" | "travel";
 }
@@ -251,6 +264,12 @@ export function loadingCard(jobsDone: readonly string[], target: string | undefi
     lore: want === "office" ? officeLore(next) : next ? LORE[next.job]! : CLOSED_LORE,
     list,
     sealed: rows.filter((r) => r.redacted).length,
+    objective:
+      want === "office"
+        ? { where: "Cath’s office", what: next ? `Pick up ${next.name}’s card from the board, then back out into the rain.` : "Nothing pinned. Sit a while." }
+        : next
+          ? OBJECTIVE[next.job]!
+          : { where: "Hollowell, after", what: "No names left. Walk the streets anyway." },
     motif: o.travel ? "travel" : "arrive",
   };
 }
