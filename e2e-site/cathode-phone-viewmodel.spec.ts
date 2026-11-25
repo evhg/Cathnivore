@@ -92,7 +92,15 @@ test('desktop: the Pin is in her hand, 5% or more of the frame', async ({ page, 
     c.input.forced = { reload: true }
     return !c.arsenal.lowered
   }, null, { timeout: 60_000, polling: 1000 })
-  await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.arsenal.anim.dip < 0.05, null, { timeout: 60_000, polling: 500 })
+  const t0 = Date.now()
+  await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.arsenal.anim.dip < 0.05, null, { timeout: 60_000, polling: 500 }).catch(async (e) => {
+    const st = await page.evaluate(() => {
+      const c = (window as unknown as { cathode: C & Record<string, unknown> }).cathode
+      const a = c.arsenal as unknown as Record<string, unknown>
+      return { frames: c.stats.frames, dip: c.arsenal.anim.dip, lowered: a.lowered, raising: a.raising, reloading: a.reloading, boltLeft: a.boltLeft, hp: c.hp, paused: c.paused, pause: document.querySelector('.pause, .hud-pause')?.className, overlays: [...document.querySelectorAll('.coach, .case-board, .board, [class*=sheet]')].map((n) => n.className) }
+    })
+    throw new Error(`dip never settled after ${Date.now() - t0} ms: ${JSON.stringify(st)}\n${String(e)}`)
+  })
   const m = await page.evaluate(() => {
     const c = (window as unknown as { cathode: C }).cathode
     const cv = c.world.renderer.domElement
