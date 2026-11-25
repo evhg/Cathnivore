@@ -223,8 +223,9 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
     await page.goto('/runnel/?shotwin&nohelp')
     const card = page.locator('#win-strip[data-postcard]')
     await card.waitFor({ state: 'visible', timeout: 20_000 })
-    await page.waitForTimeout(600)
-    const m = await page.evaluate(() => {
+    // (polled: the card settles after it lands, its plant and fonts in, and the stage re-fits the board above it; on a
+    // loaded CI runner that took longer than a fixed 600 ms wait, and the board was measured mid re-fit)
+    const measure = () => page.evaluate(() => {
       const r = (q: string) => document.querySelector(q)!.getBoundingClientRect()
       const meet = (a: DOMRect, b: DOMRect) => b.width > 0 && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1
       const s = r('#win-strip')
@@ -242,7 +243,8 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
         scroll: document.scrollingElement!.scrollHeight - innerHeight,
       }
     })
-    expect(m).toEqual({ inside: true, clipped: false, crop: m.crop, buttons: m.buttons, cath: false, garden: false, tiles: false, inRail: false, scroll: 0 })
+    await expect.poll(async () => { const x = await measure(); return { ...x, crop: 0, buttons: 0 } }, { timeout: 8000 }).toEqual({ inside: true, clipped: false, crop: 0, buttons: 0, cath: false, garden: false, tiles: false, inRail: false, scroll: 0 })
+    const m = await measure()
     expect(m.crop).toBeGreaterThanOrEqual(80)
     expect(m.buttons).toBeGreaterThanOrEqual(44)
   })
