@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-25 18:55 UTC
+
 
 
 
@@ -6584,5 +6584,41 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - Runnel: 'Cath's Week 0/3 · Solve 3 dailies (1/3)' disagrees with itself (D 60-302 x 177-202; item 677/682 listed it: find why it regressed); solved P her raised arms cut by the card top (30-110 x 640-660).
 - Hedgerow: menu D the bottom nodes ('The Mega-Dozer' 55-190 x 836-857) on the clipped hedge edge; menu P the river through 'The Ford' (145-220 x 535-556); l34 2D P fleet pills over tiles (108-260 x 105-130, 3-160 x 437-462 over the cannon); l34 2D D the level badge's 'stronger, tougher' about 6 px tall (860-930 x 248-258); l27 2D D the fleet pill over the lane and the scarecrow's base (448-640 x 692-720).
 - NIGHT SHIFT: street P 'Left thumb walks. Right thumb looks.' unbacked over a bright storefront (45-475 x 350-380); play P role thumbnails' number badges over Cath's chin (180-735 x 940-975), the thumbnails greyscale; play D her left hand through the rifle strap (620-700 x 340-400); title D The List's captions without padding (205-605 x 760-808).
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
+- **Size:** 2
+
+## 696. [ ] Cathnivore campaign D: Cath hosts from the rail, the map left clear
+*(planned 2026-11-25 19:10, lane A, plan1125c critique; item 669 set the war table, this fixes what crept back)*
+- **Why:** `plan1125c/cath-campaign-D`: Cath (750-940 x 505-900) stands on the map frame and Rivermead/Shingle Bay's edge, cut by the viewport foot; her bubble (733-928 x 388-470) over Rivermead's east side; the Chapter 1 callout (48-305 x 768-885) covers Oakvale; chapters 2-6 (1030-1378 x 352-880) read as five like list cards.
+- **Build:** Cath at half length in the gap between map and chapter track (or above the track), fully in frame, never on the map; the selected chapter's callout pinned beside its numbered node with a leader, over no region name; locked chapters as sealed envelopes (wax seal, teaser line), the current one raised.
+- **Accept:** Cath's box doesn't intersect the map's box and ends inside the viewport (e2e at 1440x900 and 1280x800); the callout covers no region label (e2e rects); seal 24 px+; P unchanged; shots P and D.
+- **Size:** 2
+
+## 697. [ ] Runnel D solved: the payoff on the board, the card clear of it
+*(planned 2026-11-25 19:10, lane A, plan1125c critique; item 679 staged the solve)*
+- **Why:** `plan1125c/runnel-solved-D`: the result card (470-1110 x 640-880) covers the board's southern tiles and the stream into Bea's garden; Bea (1300-1340 x 790-830) is about 30 px tall, so the garden payoff is lost.
+- **Build:** after the water's run to the garden, the card docks where it covers no tile (the left rail under the almanac where it has room, or under the board's foot), Bea scaled up waving with the day's vegetable at the garden gate.
+- **Accept:** the card's rect doesn't intersect any tile rect at 1440x900 and 1280x800 (e2e); Bea 70 px+ tall in the final frame; fades only under reduced motion; P unchanged; shots D unsolved and solved.
+- **Size:** 2
+
+## 698. [ ] Hedgerow phone: a full seed rack and Cath at hand
+*(planned 2026-11-25 19:10, lane A, plan1125c critique)*
+- **Why:** `plan1125c/hedge-l27-2d-P`, `-l27-3d-P`, `-l34-2d-P` (2x): the tray's left part (20-180 x 1405-1545) is empty parchment, 3 of the unlocked seeds show, and no Cath control is in the bar (D has CATH LV 2 at 1055-1120 x 740-815).
+- **Build:** the phone tray a horizontally scrolling packet rack in the D rack's style (price stamps, lock tag for the next unlock, the next packet peeking at the right edge); a 56 px Cath portrait chip with her level at the bar's left, opening her abilities.
+- **Accept:** no empty strip over 24 CSS px in the tray; every unlocked seed reachable by swipe (e2e count); the Cath chip visible and opens her panel (e2e); D unchanged; shots P 2D and 3D.
+- **Size:** 2
+
+## 699. [ ] NIGHT SHIFT phone HUD in the case-file language
+*(planned 2026-11-25 19:10, lane A, plan1125c critique; item 686 placed the keys, this styles them)*
+- **Why:** `plan1125c/ns-street-P` (2x): AIM (1345-1470 x 380-505) and FIRE (1500-1665 x 485-650) are plain grey circles, the coach toast (0-560 x 320-405) a flat slab, the health readout (20-460 x 140-205) generic: none of it matches the title's paper-and-red-string look.
+- **Build:** keys in an ink-ring frame with a red index tab; coaching a pinned torn note sliding in over 200 ms; health a ledger strip with the display numeral; the objective chip a typed label.
+- **Accept:** touch targets 88 CSS px+; `tests/cathode-type.test.ts` and the CSS lint pass; contrast 4.5:1 over the brightest street frame; cathode-perf in budget; shots sideways P and D.
+- **Size:** 2
+
+## 700. [ ] The bugs from the 2026-11-25 19:05 critique, fixed as one batch
+*(planned 2026-11-25 19:10, lane A, plan1125c critique; check each on today's build first; Hedgerow and NIGHT SHIFT boxes at 2x)*
+- Cathnivore: setup D the pin captions ('Harvest Festival', 'Dry Spell', red 'This week') about 12 px, weak on gingham (125-360 x 715-745); game D Cath's musing light grey italic on cream, under AA (345-495 x 245-450).
+- Hedgerow: menu P the next node's label clipped behind the briefing card's top (260-460 x 1276-1292) and a blank band between card and tab bar (0-780 x 1505-1560); l34 2D D seed sublabels about 10 px (1065-1410 x 155-365) and the 'Lv 2 stronger, tougher' tag on the Radio Mast (858-980 x 222-268); l34 2D D hive, stall, depot and +1 coins piled on the path (300-680 x 730-885); l34 2D P '+1' badges over the Scarecrow (240-335 x 785-960), the queue pill over the top depot's road (215-515 x 212-262); l27 2D the queue pill over lorries (D 460-655 x 692-722, P 270-600 x 1050-1095).
+- NIGHT SHIFT: street D briefing quote stops at 'Tomas Reed owes' (75-510 x 695-745: typewriter caught mid-line, or cut?); the red string over 'THE SOUTH ARCADE' (598-718 x 268-288); play D RANGE/NOISE labels about 10-11 px grey on dark (130-430 x 236-645).
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
