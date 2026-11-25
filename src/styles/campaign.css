@@ -2085,6 +2085,37 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
 @media (min-width: 1100px) and (min-height: 640px) {
   .campaign.campaign-screen > .cmp-map { margin: 0; }
 }
+/* Plan item 696: she hosts from her own column between the atlas and the chapter rail, never standing on the sheet
+   (items 659-689 put her on its sea at the lower-right corner, over Rivermead's and Shingle Bay's east edges). The
+   column is her figure's width (a 2:3 half-length bust); the atlas takes the rest and is drawn to its width. */
+@media (min-width: 1100px) and (min-height: 640px) {
+  .campaign-screen > .cmp-map {
+    --cmp-host-h: clamp(300px, calc(100vh - 600px), 340px);
+    display: grid;
+    /* her figure box's empty right margin (the bust is about 60% of its width) hangs 24 px into the gap before the rail */
+    grid-template-columns: minmax(0, 1fr) calc(var(--cmp-host-h) * 2 / 3 - 24px);
+    column-gap: 12px;
+    align-items: end;
+  }
+  .campaign-screen > .cmp-map > .cmp-map-svg { grid-column: 1; grid-row: 1; align-self: center; }
+  .campaign-screen > .cmp-map > .cmp-map-host {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+    right: auto;
+    bottom: auto;
+    min-width: 0;
+    margin-right: -24px;
+  }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-header-cath { height: var(--cmp-host-h); }
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { width: auto; margin: 0; align-self: stretch; }
+  /* the crates stand at her side in the margin before the rail, not on the sheet */
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-host-stand > .produce-crates { left: auto; right: 2px; width: 88px; }
+  /* the ticket a size smaller to match the atlas drawn smaller (its 320 px found no place by stop 2 that left the
+     names round it whole) */
+  .campaign-screen .cmp-ticket { max-width: 272px; min-width: 210px; padding: 10px 12px 10px 14px; }
+  .campaign-screen .cmp-ticket-title { font-size: 1.15rem; }
+}
 /* Plan item 659: the bunting points at the map: the ticket's chapter flag drops and takes an ink edge. */
 @media (min-width: 1100px) {
   .cmp-pennant { cursor: pointer; }

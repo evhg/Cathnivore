@@ -18,7 +18,15 @@ for (const [w, h] of [
     await page.getByRole('button', { name: 'Campaign' }).click()
     await page.mouse.move(4, h - 4)
     const cath = (await page.locator('.cmp-map-host .cmp-header-cath').boundingBox())!
-    expect(cath.height).toBeGreaterThanOrEqual(360)
+    // plan item 696: a half-length bust 300 px or more in her own column (item 669's 360 px stood on the sheet)
+    expect(cath.height).toBeGreaterThanOrEqual(300)
+    // plan item 696: she hosts beside the atlas, never on it, and ends inside the window
+    const map = (await page.locator('.campaign-screen > .cmp-map > .cmp-map-svg').boundingBox())!
+    expect(cath.x).toBeGreaterThanOrEqual(map.x + map.width)
+    expect(cath.y + cath.height).toBeLessThanOrEqual(h)
+    expect(cath.x + cath.width).toBeLessThanOrEqual((await page.locator('.chapter-list').boundingBox())!.x)
+    const line = (await page.locator('.cmp-map-host .cmp-cath-line').boundingBox())!
+    expect(line.x).toBeGreaterThanOrEqual(map.x + map.width)
     // every chapter's ticket, in turn (pointed at from the bunting)
     const n = await page.locator('.cmp-pennant').count()
     for (let i = 0; i < n; i++) {

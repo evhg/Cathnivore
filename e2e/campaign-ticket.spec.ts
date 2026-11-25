@@ -28,11 +28,12 @@ test('desktop campaign: the chapter ticket is pinned beside its stop and follows
       const dist = (b: DOMRect) => Math.hypot(Math.max(b.left - px, 0, px - b.right), Math.max(b.top - py, 0, py - b.bottom))
       return { ticket: dist(t), play: play ? dist(play) : null, sheetW: sheet.width, inSheet: t.left >= sheet.left && t.right <= sheet.right }
     }, id)
+  // (plan item 696: polled, since the ticket re-places itself once its own size settles)
+  await expect.poll(async () => (await near('word-of-mouth')).play ?? Infinity).toBeLessThanOrEqual(200)
   const a = await near('word-of-mouth')
-  expect(a.play).not.toBeNull()
-  expect(a.play!).toBeLessThanOrEqual(200)
   expect(a.inSheet).toBe(true)
-  expect(a.sheetW).toBeGreaterThanOrEqual(800)
+  // (plan item 696: the atlas gives Cath her own column, so the sheet is 680 px+ at 1440, was 800)
+  expect(a.sheetW).toBeGreaterThanOrEqual(680)
   // Play on the ticket starts the chapter's own setup
   // pointing at chapter 3 in the rail moves the ticket to stop 3
   await page.locator('.cmp-stop[data-chapter="growing-season"] .cmp-card').hover()
