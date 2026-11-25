@@ -6541,7 +6541,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 1
 
-## 690. [ ] NIGHT SHIFT: the case briefing is a staged case board, not a loading page *(lane A, in progress)*
+## 690. [x] NIGHT SHIFT: the case briefing is a staged case board, not a loading page *(done 2026-11-25 12:25, lane A, d43c5a0e and 98f2739c; a pinned objective card 216 px at D between the still and the sheet, no percentage (the load is a pencil route drawn along the street on the sheet; the rule's ink stays), the flyover, canal, flooded road, quay lamps and an indoor floor named on the sheet, the string draws itself still -> objective -> ring and her dot -> her photo in 800 ms after the prints drop, her line types in; reduced motion and still frames show the finished board; P stacks still, objective under it and her photo, the string leaves the still from a foot pin. Deviation: a sideways phone hides the objective card (no room beside the name and lore). e2e-site/cathode-briefing.spec.ts; shots e2e/screenshots/ns690)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique; shots at 2x for NIGHT SHIFT)*
 - **Why:** `plan1125b/ns-street-D`: the map (597-862 x 148-668) is a grey schematic of hatched blocks with an unlabelled dashed box (598-850 x 397-445); a lone '92%' (515-546 x 637-652); most of the frame empty black (0-580 x 0-120, 870-1440 x 640-900). VISION 4: big moments are choreographed.
 - **Build:** an ink-on-paper street map (stalls, canal, lamp marked); the red string draws itself Crisp -> objective -> Cath in about 800 ms, pins drop, Cath's line types in her italic voice; loading is a pencil route being drawn, no percentage; reduced motion shows the finished board.
@@ -6562,7 +6562,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** no panel text under 12 px (e2e computed sizes); the panel 26% or less of 1440; captions AA contrast; the round card's vehicle art 48 px+; P unchanged; shots D 2D and 3D, P.
 - **Size:** 2
 
-## 693. [ ] Cathnivore Quick Game setup at D: a staged market morning, not a form
+## 693. [ ] Cathnivore Quick Game setup at D: a staged market morning, not a form *(lane A, in progress)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique; items 436/548 set today's stall and flyer)*
 - **Why:** `plan1125b/cath-setup-D`: the left column (100-365 x 110-750) packs three steps of small tiles, the Hard memo at 12 px; the picked producers are 150 px chips (270-635 x 125-220) with no presence; Cath's stall awning empty at 1052-1372 x 150-215.
 - **Build:** the chosen pair stand at the stall as half-length figures beside Cath, who reacts to the pick; the steps a three-tab ribbon over the board (as on phone); difficulty three stamped memos in a row; the week card hangs from the awning.
