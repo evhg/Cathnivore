@@ -4250,6 +4250,9 @@ html.no-animations .setup .setup-table .producer-card[data-seat] .pc-pick { anim
   .setup[data-steps] .setup-step > .pin-tin { display: block; margin: 14px 0 0; transform: rotate(-1deg); }
   .setup[data-steps] .pin-tin-head { font-size: var(--fs-caption); }
   .setup[data-steps] .pin-tin .pin-name, .setup[data-steps] .pin-tin .pin-when { font-size: var(--fs-caption); }
+  /* Plan item 700: the pins lie on the gingham cloth, so each caption is a little paper tag (its 13 px words were
+     grey-on-check at the 1440x900 critique). */
+  .setup[data-steps] .pin-tin .pin-name, .setup[data-steps] .pin-tin .pin-when { padding: 1px 6px; border-radius: 3px; background: var(--surface); box-shadow: 0 1px 0 var(--rule); }
   .setup[data-steps] .pin-tin svg { width: 44px; height: 44px; }
 
   /* The counter: a timber top she stands behind, its front panel carrying Start. */
