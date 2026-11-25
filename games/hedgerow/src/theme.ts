@@ -591,8 +591,13 @@ function paintOneLane(
   ctx.lineWidth = s * 0.96;
   strokePath(ctx, pts);
   ctx.restore();
+  // Plan item 688: a dark earth edge under the rim, so the track is outlined 3:1 against bright beds (Rivermead's
+  // meadow and swathe are as light as its lane).
+  ctx.strokeStyle = "rgba(46,34,18,0.62)";
+  ctx.lineWidth = s * 0.9;
+  strokePath(ctx, pts);
   ctx.strokeStyle = theme.dirt[0];
-  ctx.lineWidth = s * 0.86;
+  ctx.lineWidth = s * 0.84;
   strokePath(ctx, pts);
   ctx.strokeStyle = theme.dirt[1];
   ctx.lineWidth = s * 0.76;
