@@ -159,6 +159,18 @@ export function renderStudio(host: HTMLElement, log: StudioLog, opts: { reduced:
   const stage = el('div', 'studio-stage')
   stage.append(track, cards)
   const foot = el('div', 'studio-foot')
+  // Plan item 689: beside the track the sessions figure is the track's own (a fixed '48 a day' sat beside '2 sessions in
+  // the last 24 hours' while a lane was paused, and read as a contradiction).
+  const sessionStat = opts.stats?.querySelector<HTMLElement>('[data-stat="sessions"]')
+  if (sessionStat) {
+    const dt = sessionStat.querySelector('dt')
+    const n = sessionStat.querySelector<HTMLElement>('[data-count]')
+    if (dt) dt.textContent = 'Build sessions, last 24 hours'
+    if (n) {
+      n.dataset.count = String(sessions.length)
+      n.textContent = String(sessions.length)
+    }
+  }
   if (opts.stats) foot.append(opts.stats)
   // Plan item 638: the 'Live: last shipped' line rides in the numbers' row (between its two pairs at D), so it ends
   // above a 900 px fold instead of under it.

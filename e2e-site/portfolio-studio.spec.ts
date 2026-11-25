@@ -96,3 +96,19 @@ test('without a studio log the numbers row stays as it was', async ({ page }) =>
   await expect(page.locator('.hero > .stats [data-count]')).toHaveCount(4)
   await expect(page.locator('.hero')).not.toHaveClass(/has-studio/)
 })
+
+// Plan item 689: beside the track the sessions figure is the track's own count, not a fixed '48 a day'.
+test('the sessions figure matches the track', async ({ page }) => {
+  await page.goto('/')
+  const studio = page.locator('#studio')
+  test.skip(!(await studio.isVisible().catch(() => false)) && (await page.locator('#studio[hidden]').count()) > 0, 'no studio log in this build')
+  const sessions = await page.evaluate(async () => {
+    const r = await fetch('/studio.json')
+    const j = (await r.json()) as { sessions: Array<{ subjects: string[] }> }
+    return j.sessions.filter((s) => s.subjects.length > 0).length
+  })
+  const stat = page.locator('[data-stat="sessions"]')
+  await expect(stat.locator('dt')).toHaveText('Build sessions, last 24 hours')
+  await expect(stat.locator('[data-count]')).toHaveAttribute('data-count', String(sessions))
+  await expect(stat.locator('[data-count]')).toHaveText(String(sessions), { timeout: 5000 })
+})

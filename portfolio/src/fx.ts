@@ -119,7 +119,8 @@ export function counters(root: ParentNode, reduced: boolean): void {
         const dur = 900 + to * 25
         const step = (now: number) => {
           const k = Math.min(1, (now - t0) / dur)
-          el.textContent = String(Math.round(to * (1 - Math.pow(1 - k, 4))))
+          // plan item 689: read the target each frame (the studio log can set it after the count began)
+          el.textContent = String(Math.round(Number(el.dataset.count) * (1 - Math.pow(1 - k, 4))))
           if (k < 1) requestAnimationFrame(step)
         }
         el.textContent = '0'
