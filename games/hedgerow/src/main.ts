@@ -1240,7 +1240,9 @@ function startLevel(lv: Level, heroic = heroicMode, resume?: { game: Game; recor
   renderer.selected = null;
   renderer.heroSelected = false;
   renderer.aim = null;
-  renderer.cursor = { col: 0, row: 0 };
+  // Plan item 688: no keyboard cursor until a key moves it (an empty dashed box sat on the top-left plot of every
+  // level, on phones too); the first arrow press shows it at the top-left.
+  renderer.cursor = null;
   hideBubble();
   ui.intro.hidden = true;
   clearTimeout(introTimer);
@@ -7129,10 +7131,12 @@ ui.canvas.addEventListener("keydown", (e) => {
   const m = d[e.key];
   if (m) {
     e.preventDefault();
-    renderer.cursor = {
-      col: Math.min(g.level.cols - 1, Math.max(0, cur.col + m[0])),
-      row: Math.min(g.level.rows - 1, Math.max(0, cur.row + m[1])),
-    };
+    renderer.cursor = renderer.cursor
+      ? {
+          col: Math.min(g.level.cols - 1, Math.max(0, cur.col + m[0])),
+          row: Math.min(g.level.rows - 1, Math.max(0, cur.row + m[1])),
+        }
+      : { col: 0, row: 0 };
     if (aiming) renderer.aim = { x: renderer.cursor.col + 0.5, y: renderer.cursor.row + 0.5, r: pieRadius(g) };
     const lane = laneCellsOf(g.level).has(`${renderer.cursor.col},${renderer.cursor.row}`);
     const tw = towerAt(g, renderer.cursor.col, renderer.cursor.row);
