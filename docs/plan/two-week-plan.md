@@ -6615,7 +6615,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** touch targets 88 CSS px+; `tests/cathode-type.test.ts` and the CSS lint pass; contrast 4.5:1 over the brightest street frame; cathode-perf in budget; shots sideways P and D.
 - **Size:** 2
 
-## 700. [ ] The bugs from the 2026-11-25 19:05 critique, fixed as one batch
+## 700. [ ] The bugs from the 2026-11-25 19:05 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-25 19:10, lane A, plan1125c critique; check each on today's build first; Hedgerow and NIGHT SHIFT boxes at 2x)*
 - Cathnivore: setup D the pin captions ('Harvest Festival', 'Dry Spell', red 'This week') about 12 px, weak on gingham (125-360 x 715-745); game D Cath's musing light grey italic on cream, under AA (345-495 x 245-450).
 - Hedgerow: menu P the next node's label clipped behind the briefing card's top (260-460 x 1276-1292) and a blank band between card and tab bar (0-780 x 1505-1560); l34 2D D seed sublabels about 10 px (1065-1410 x 155-365) and the 'Lv 2 stronger, tougher' tag on the Radio Mast (858-980 x 222-268); l34 2D D hive, stall, depot and +1 coins piled on the path (300-680 x 730-885); l34 2D P '+1' badges over the Scarecrow (240-335 x 785-960), the queue pill over the top depot's road (215-515 x 212-262); l27 2D the queue pill over lorries (D 460-655 x 692-722, P 270-600 x 1050-1095).
