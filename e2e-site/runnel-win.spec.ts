@@ -203,10 +203,15 @@ test('after a solve Bea stands by the new plant, large enough to read', async ({
     const r = (q: string) => document.querySelector(q)?.getBoundingClientRect() ?? null
     const bea = r('.bea-runner'), plant = r('.bea-crops .is-today svg'), sign = r('.bea-garden .farm-sign'), g = r('.bea-garden')
     const meet = (a: DOMRect | null, b: DOMRect | null) => !!a && !!b && b.width > 0 && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
-    return { garden: g?.width ?? 0, h: bea?.height ?? 0, gap: bea && plant ? plant.left - bea.right : 999, onSign: meet(bea, sign) }
+    // plan item 697: her drawn figure (hair to boots), not her box with its can and margins
+    const parts = [...document.querySelectorAll('.bea-runner :is(.ga-hair, .ga-cardi, .ga-leg)')].map((e) => e.getBoundingClientRect())
+    const drawn = parts.length ? Math.max(...parts.map((b) => b.bottom)) - Math.min(...parts.map((b) => b.top)) : 0
+    return { garden: g?.width ?? 0, h: bea?.height ?? 0, drawn, gap: bea && plant ? plant.left - bea.right : 999, onSign: meet(bea, sign) }
   })
   test.skip(m.garden === 0, 'no valley garden at this size')
   expect(m.h).toBeGreaterThanOrEqual(innerWidthOf(page) >= 1100 ? 48 : 28)
+  // Plan item 697: at D the garden is the payoff: Bea 70 px or more as drawn (item 660's box drew her about 30)
+  if (innerWidthOf(page) >= 1100) expect(m.drawn).toBeGreaterThanOrEqual(70)
   expect(m.gap).toBeLessThanOrEqual(24)
   expect(m.onSign).toBe(false)
 })
