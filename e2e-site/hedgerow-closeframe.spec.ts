@@ -49,14 +49,16 @@ test('an upright phone opens on the whole field, and Closer pushes in on the lan
   expect(whole.verge!).toBeLessThanOrEqual(0.12)
   expect(whole.cath?.inside).toBe(true)
   expect(whole.cath!.h).toBeGreaterThanOrEqual(36)
-  // Item 439: no tray card shows cut by the tray's edge or under its More arrow.
+  // Item 439: no tray card shows cut by the tray's edge or under its More arrow. Item 698: a packet's tilt (a few px)
+  // isn't a cut, and the one next packet peeking under the arrow's fade is by design.
   const cut = await page.evaluate(() => {
     const tray = document.querySelector('.tray')!
     const tb = tray.getBoundingClientRect()
-    const lo = tb.left + (parseFloat(getComputedStyle(tray).paddingLeft) || 0) - 1
+    const lo = tb.left + (parseFloat(getComputedStyle(tray).paddingLeft) || 0) - 4
     const more = document.querySelector<HTMLElement>('.tray-more')
-    const hi = (more && !more.hidden ? more.getBoundingClientRect().left : tb.right) + 1
+    const hi = (more && !more.hidden ? more.getBoundingClientRect().left : tb.right) + 4
     return [...tray.children].filter((k) => {
+      if (k.classList.contains('tray-peek')) return false
       const b = k.getBoundingClientRect()
       return b.width > 0 && b.right > tb.left && b.left < tb.right && Number(getComputedStyle(k).opacity) > 0.5 && (b.left < lo || b.right > hi)
     }).length

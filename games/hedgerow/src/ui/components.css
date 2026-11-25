@@ -2658,6 +2658,57 @@ body:has(#dlg-pause[open]) .paused-note {
   padding-inline-start: 52px;
   scroll-padding-inline-start: 52px;
 }
+/* Plan item 698: on a phone Cath is at hand as a 56 px chip at the rack's left: her face in its brass rim, the
+   health ring round it, her level on a wax tab; it opens her post as her bar button does. */
+.play .tray-wrap > .ability.cath-chip {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: var(--z-raise-2);
+  display: grid;
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  min-height: 56px;
+  grid-template-rows: 56px;
+}
+.play .tray-wrap > .cath-chip .ability-face {
+  width: 50px;
+  height: 50px;
+}
+.play .tray-wrap > .cath-chip .ability-hp {
+  --ring: 56px;
+}
+.play .tray-wrap > .cath-chip .ability-label {
+  display: none;
+}
+.play .tray-wrap > .cath-chip::after {
+  content: "Lv " attr(data-level);
+  position: absolute;
+  right: -4px;
+  bottom: -2px;
+  z-index: var(--z-raise-2);
+  padding: 1px 5px;
+  border-radius: var(--r-pill);
+  background: var(--cath);
+  box-shadow: 0 0 0 1.5px var(--line);
+  color: var(--on-fill);
+  font: 850 var(--fs-label) / 1.2 var(--font-ui);
+  white-space: nowrap;
+}
+.play .tray-wrap:has(> .cath-chip) .tray {
+  padding-inline-start: 62px;
+  scroll-padding-inline-start: 62px;
+}
+/* her docked line (open, or folded to its portrait) already sits on this corner: the chip waits under it */
+.play:has(.cath-dock:not([hidden])) .tray-wrap > .cath-chip {
+  visibility: hidden;
+}
+/* Plan item 698: the next packet peeks under the More arrow's fade (not tappable until scrolled in). */
+.play .tray > .tray-peek {
+  pointer-events: none;
+}
 /* Plan item 166: the packet under the brass tab fades out beneath it rather than being cut by it. */
 .play .tray-wrap.more-shown .tray {
   -webkit-mask: linear-gradient(to left, transparent 0 26px, var(--ink) 64px);

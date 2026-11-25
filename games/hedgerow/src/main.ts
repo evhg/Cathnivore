@@ -1554,6 +1554,7 @@ function syncControls(): void {
     const text = isFleet(g.level) && h.level > 1 ? `Cath Lv ${h.level}` : "Cath";
     if (heroName.textContent !== text) heroName.textContent = text;
   }
+  if (ui.btnHero.dataset.level !== String(h.level)) ui.btnHero.dataset.level = String(h.level);
   const hpFrac = h.down > 0 ? 0 : h.hp / h.maxHp;
   ui.heroHp.style.setProperty("--p", hpFrac.toFixed(3));
   ui.heroHp.classList.toggle("low", hpFrac < 0.35);
@@ -3218,12 +3219,20 @@ function towerTray(p: HTMLElement, g: Game): void {
     wrap.classList.toggle("more-shown", !more.hidden);
     // Plan item 439: no card shows cut by the tray's edge or under the More arrow: a card that isn't wholly in
     // the window fades out until a scroll brings it all the way in (the arrow says there are more).
+    // Plan item 698: a packet's tilt (a degree or two) pushes its box a few px past its slot; that isn't a cut, and
+    // reading it as one hid the rack's first, whole packet (an empty strip at the phone tray's left). And the next
+    // packet under the More arrow peeks (the arrow's fade covers it) rather than leaving a blank gap before it.
     const tb = tray.getBoundingClientRect();
-    const lo = tb.left + (parseFloat(getComputedStyle(tray).paddingLeft) || 0) - 1;
-    const hi = (more.hidden ? tb.right : more.getBoundingClientRect().left) + 1;
+    const lo = tb.left + (parseFloat(getComputedStyle(tray).paddingLeft) || 0) - 4;
+    const hi = (more.hidden ? tb.right : more.getBoundingClientRect().left) + 4;
+    let peeked = false;
     for (const k of tray.children) {
       const b = k.getBoundingClientRect();
-      k.classList.toggle("tray-cut", over && b.width > 0 && (b.left < lo || b.right > hi));
+      const cut = over && b.width > 0 && (b.left < lo || b.right > hi);
+      const peek = cut && !peeked && !more.hidden && b.left >= lo && b.left < hi - 8;
+      if (peek) peeked = true;
+      k.classList.toggle("tray-cut", cut && !peek);
+      k.classList.toggle("tray-peek", peek);
     }
   };
   tray.addEventListener("scroll", sync, { passive: true });
@@ -3237,7 +3246,24 @@ function towerTray(p: HTMLElement, g: Game): void {
   mo.observe(p, { attributes: true, attributeFilter: ["class"] });
   wrap.append(tray, more);
   p.append(wrap);
+  placeCathChip(wrap);
 }
+
+/** Plan item 698: on a phone Cath's button (her face, health ring and level) is a 56 px chip at the rack's left,
+ *  not dropped from the bar for room; wider screens keep it first in the action bar. */
+const CHIP_QUERY = matchMedia("(max-width: 520px)");
+const HERO_HOME = ui.btnHero.parentElement;
+function placeCathChip(wrap: HTMLElement | null = document.querySelector<HTMLElement>(".play .tray-wrap")): void {
+  const btn = ui.btnHero;
+  if (CHIP_QUERY.matches && wrap) {
+    if (btn.parentElement !== wrap) wrap.prepend(btn);
+    btn.classList.add("cath-chip");
+  } else {
+    if (btn.parentElement !== HERO_HOME) HERO_HOME?.prepend(btn);
+    btn.classList.remove("cath-chip");
+  }
+}
+CHIP_QUERY.addEventListener("change", () => placeCathChip());
 
 /** Plan item 628: the rack's picked packet (lifted, its numbers showing), kept across the panel's redraws. */
 let pickedKind: TowerKind | null = null;

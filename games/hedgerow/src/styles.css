@@ -2502,8 +2502,8 @@ dialog.sheet.story #story-skip {
 }
 @media (max-width: 520px) {
   /* On a phone Cath is tapped on the field (and dragged to a new post between rounds), so her button makes
-     room for the abilities. */
-  #btn-hero {
+     room for the abilities in the bar; plan item 698 puts it at the rack's left as a chip instead. */
+  #btn-hero:not(.cath-chip) {
     display: none;
   }
 }
