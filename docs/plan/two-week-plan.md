@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-25T22:30Z
-
 
 
 
@@ -6622,5 +6620,43 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - Cathnivore: setup D the pin captions ('Harvest Festival', 'Dry Spell', red 'This week') about 12 px, weak on gingham (125-360 x 715-745); game D Cath's musing light grey italic on cream, under AA (345-495 x 245-450).
 - Hedgerow: menu P the next node's label clipped behind the briefing card's top (260-460 x 1276-1292) and a blank band between card and tab bar (0-780 x 1505-1560); l34 2D D seed sublabels about 10 px (1065-1410 x 155-365) and the 'Lv 2 stronger, tougher' tag on the Radio Mast (858-980 x 222-268); l34 2D D hive, stall, depot and +1 coins piled on the path (300-680 x 730-885); l34 2D P '+1' badges over the Scarecrow (240-335 x 785-960), the queue pill over the top depot's road (215-515 x 212-262); l27 2D the queue pill over lorries (D 460-655 x 692-722, P 270-600 x 1050-1095).
 - NIGHT SHIFT: street D briefing quote stops at 'Tomas Reed owes' (75-510 x 695-745: typewriter caught mid-line, or cut?); the red string over 'THE SOUTH ARCADE' (598-718 x 268-288); play D RANGE/NOISE labels about 10-11 px grey on dark (130-430 x 236-645).
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
+- **Size:** 2
+
+## 701. [ ] Cathnivore: the hand of cards is a real hand
+*(planned 2026-11-25 22:50, lane A, plan1125d critique)*
+- **Why:** `plan1125d/cath-game-D`: the cards (440-1330 x 765-885) are about 120 px tall, titles about 13 px, art cropped, 'Injunction' skewed as if half-dealt; `cath-game-P`: the row (0-390 x 635-775) shows 3 whole cards and 'Open Stall' is cut by the right edge (355-390). The player's main verb is the weakest-drawn object on the table.
+- **Build:** at D a fanned hand docked at the table's foot, each card's title band showing at rest, the focused/hovered card rising to full size above the fan (150-200 ms ease-out) and dropping back; at P a snap-scrolling hand of whole cards with a peek and a count tab instead of a cut card.
+- **Accept:** the focused card 220 px+ tall and wholly in view at 1440x900 and 1280x800 (e2e rect); titles 15 px+, body 13 px+, 4.5:1 on the card; at P no card cut by the viewport edge at rest after a snap (e2e); the board rect unchanged at D; shots P and D.
+- **Size:** 2
+
+## 702. [ ] Hedgerow: the act map shows progress
+*(planned 2026-11-25 22:50, lane A, plan1125d critique)*
+- **Why:** `plan1125d/hedge-menu-D`: the map (0-1120 x 60-900) sits under a milky haze and locked levels 32-40 are the same white glass orbs as playable ones; `hedge-menu-P`: a white column (300-460 x 340-1330 at 2x) washes out 'Sandbag Sunday' and 'Compulsory Purchase'.
+- **Build:** cleared nodes show their pressed stars; the next node raised and lit with Cath's pin; locked nodes desaturated, wax-sealed and padlocked; the haze only at the act's far edge.
+- **Accept:** locked nodes' saturation under 0.15 with a lock present (e2e per state); haze opacity over any node or label 0.15 or less; node labels 4.5:1; shots P and D.
+- **Size:** 2
+
+## 703. [ ] Hedgerow 3D: a convoy and light you can read
+*(planned 2026-11-25 22:50, lane A, plan1125d critique)*
+- **Why:** `plan1125d/hedge-l27-3d-D` (200-650 x 260-780): every vehicle is a purple box while the queue pill and 2D tell vans, lorries and cars apart; `hedge-l27-3d-P`: hard dark diagonal shadow bands from off-frame casters cross the field (560-780 x 560-1390 and 0-420 x 700-1000 at 2x).
+- **Build:** each vehicle type its own silhouette and livery matching the pill icons; shadow casters clipped to the field or the shadow camera fitted to it.
+- **Accept:** vehicle types' body hues differ by 40 degrees+ (sampled in sandbox); no off-frame shadow band wider than 40 CSS px below 0.5x the field's luminance; perf in budget; keyart-fresh (re-shoot); shots P and D in 3D.
+- **Size:** 2
+
+## 704. [ ] Runnel: a dry board that reads at a glance
+*(planned 2026-11-25 22:50, lane A, plan1125d critique)*
+- **Why:** `plan1125d/runnel-D` (520-1330 x 40-830) and `runnel-P` (5-385 x 270-610): dry channels are beige ridges on beige tiles, so the network can't be traced until solved; the field around the board (390-520 and 1220-1410 x 200-850) is an empty grey band.
+- **Build:** dry channels as dark carved grooves with a lit lip; field tiles keep their crop tint; the valley round the board gets fences, hedges and the day's light.
+- **Accept:** groove-to-tile contrast 3:1+ under every sky (e2e samples per sky); the board rect and the solved payoff unchanged; keyart-fresh (re-shoot); shots P and D, unsolved and solved.
+- **Size:** 2
+
+## 705. [ ] The bugs from the 2026-11-25 22:45 critique, fixed as one batch
+*(planned 2026-11-25 22:50, lane A, plan1125d critique; check each on today's build first; Hedgerow and NIGHT SHIFT phone boxes at 2x)*
+- Hedgerow: l34 2D 'Lv 2 stronger, tougher' in both frames (D 850-980 x 205-255; P 312-500 x 870-940 over the Scarecrow and the queue pill): item 700 closed it as a 900 ms flight, but the shots catch it every time.
+- Cathnivore: setup D the 'This week at the market' card over Cath's awning and sign (1003-1130 x 170-435), copy wrapping to 1-2 words a line; title P the board covers Cath from the chest down (88-372 x 350-597); setup P her hair crown cut by the top edge (40-135 x 0-20); campaign D Cath and her crates cut by the viewport foot (790-945 x 620-900) and an empty band above the atlas (40-740 x 120-200).
+- NIGHT SHIFT: street D the red string from the CATH marker crosses her face on the polaroid (1040-1200 x 115-560), and 'THE LIST' floats alone in an empty band (1290-1385 x 750-815); street P the viewmodel hand a featureless grey mitten (1130-1330 x 520-780; items 319/543's scope if it's the glove model).
+- Runnel: D a stray blue bar under the board's foot (740-785 x 852-860); solved D Cath's bust cut by the viewport foot (185-340 x 630-900).
+- Site: games P the two buttons crowd the stall counter's foot with no gap (20-370 x 487-540).
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
