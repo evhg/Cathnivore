@@ -8,7 +8,7 @@ import { kitFor, type BedLook } from "./fieldkit";
 /** Plan item 399: an act's kit names its three bed looks (Brindle's earth, stubble and clover by default). */
 export type PlotLook = BedLook | "puddle";
 
-/** Plan item 345: the build-mode plot outline, a cream stitch over a dark under-stroke (3:1+ on any crop). */
+/** Plan item 345: the build-mode plot outline, a cream chalk line (item 688: unbroken) over a dark under-stroke (3:1+ on any crop). */
 export const PLOT_STITCH = "rgba(255, 246, 214, 0.95)";
 export const PLOT_STITCH_UNDER = "rgba(48, 34, 18, 0.55)";
 

@@ -1834,7 +1834,7 @@ export class Renderer {
           ctx.lineWidth = w + 2;
           ctx.strokeStyle = PLOT_STITCH_UNDER;
           ctx.stroke();
-          ctx.setLineDash([s * 0.09, s * 0.06]);
+          // Plan item 688: a soft, unbroken chalk line (it was a dashed stitch, which read as a level editor's grid).
           ctx.lineWidth = w;
           ctx.strokeStyle = PLOT_STITCH;
           ctx.stroke();
