@@ -6548,7 +6548,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** no bare '%' text in the DOM; every map box labelled (e2e); objective, Cath and target each a pinned card 200 px+ wide at D; P a vertical stack of the three, nothing clipped; shots P and D.
 - **Size:** 2
 
-## 691. [ ] Hedgerow phone 3D: a crisp, readable battle
+## 691. [ ] Hedgerow phone 3D: a crisp, readable battle *(lane A, in progress)*
 *(planned 2026-11-25 10:40, lane A, plan1125b critique)*
 - **Why:** `plan1125b/hedge-l27-3d-P` 0-390 x 50-690: the whole board soft (depth of field or upscale), towers too, beside the sharp D shot; the fleet a purple tangle (40-260 x 290-560); 'Bridge up!' (145-225 x 283-300) over the windmill; the depot plate cut by the tray (190-230 x 685-700).
 - **Build:** on phones no DOF, device pixel ratio up to 2 (dynamic resolution may still pull it down), a tighter 3/4 camera fitting the lane; floating callouts dodge tower boxes; the depot plate pinned above the tray.
