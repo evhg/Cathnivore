@@ -37,11 +37,16 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
         const box = el.getBoundingClientRect()
         const edge = box.right
         let n = 0
+        let back = 0
         for (const c of Array.from(el.children)) {
           const r = c.getBoundingClientRect()
-          const skip = r.width === 0 || c.matches('[aria-hidden="true"], .action-head, [data-fan], [data-peek]')
+          // (Plan item 701: the counter's fan cards stand whole side by side since item 635, so one past the edge is
+          // counted and turns face down like any other; the lifted one is kept in view by Game.tsx's showLifted.)
+          const skip = r.width === 0 || c.matches('[aria-hidden="true"], .action-head, [data-peek]')
           const past = !skip && right && r.left + r.width / 2 > edge
           if (past) n++
+          // Plan item 701: and the cards swiped past the left edge, so the hand says it goes on that way too.
+          if (!skip && r.left + r.width / 2 < box.left) back++
           // (Plan item 405: the counter fan's cards are all in the dock, mid-lift too: never counted.)
           // Plan item 287: a card past the edge but still showing a sliver turns face down (the tab counts it), so
           // the edge never shows a cut card. Plan item 519: so does any card only partly in view, at either edge
@@ -49,12 +54,17 @@ export function useScrollCues(): (el: HTMLElement | null) => void {
           const cut = !skip && ((r.right > edge + 3 && r.left < edge) || (r.left < box.left - 3 && r.right > box.left))
           if (cut !== c.hasAttribute('data-cut-right')) c.toggleAttribute('data-cut-right', cut)
         }
+        const b = back > 9 ? '9+' : String(back)
+        if (back > 0) {
+          if (el.dataset.moreLeft !== b) el.dataset.moreLeft = b
+        } else if (el.dataset.moreLeft !== undefined) delete el.dataset.moreLeft
         const v = n > 9 ? '9+' : String(n)
         if (right) {
           if (el.dataset.moreRight !== v) el.dataset.moreRight = v
         } else if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
       } else {
         if (el.dataset.moreRight !== undefined) delete el.dataset.moreRight
+        if (el.dataset.moreLeft !== undefined) delete el.dataset.moreLeft
         for (const c of Array.from(el.querySelectorAll(':scope > [data-cut-right]'))) c.removeAttribute('data-cut-right')
       }
       const owner = el.parentElement

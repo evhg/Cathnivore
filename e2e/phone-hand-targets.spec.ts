@@ -29,6 +29,9 @@ test('phone: the held fan stands apart and its small controls take a 44 px finge
 
   // lift Sell (a tap on its strip), then probe its coins and its 'i' 20 px above and below their centres
   const sell = page.locator('.action-tray .action-item.action-sell')
+  // (plan item 701: the hand rests with Cath's lifted card whole, so Sell may lie a swipe to the left)
+  await sell.evaluate((e) => e.scrollIntoView({ inline: 'nearest', block: 'nearest' }))
+  await page.waitForTimeout(400)
   const box = (await sell.boundingBox())!
   await page.mouse.click(box.x + 8, box.y + 40)
   await expect(sell).toHaveAttribute('data-lifted', '')

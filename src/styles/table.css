@@ -6832,6 +6832,39 @@ html.no-animations .table-cath-figure { animation: none; }
   }
 }
 
+/* Plan item 701: the counter's hand rests with Cath's lifted card whole (Game.tsx showLifted), so cards can lie past
+   the left edge too: a tab like the right one's hangs from the lip at the left and counts them ('‹ 2'). */
+@media (max-width: 599.98px) and (min-height: 640px) and (orientation: portrait) {
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left])::after {
+    position: absolute;
+    top: -17px;
+    bottom: auto;
+    left: 8px;
+    translate: none;
+    z-index: var(--z-raised);
+    height: 18px;
+    padding: 0 9px 2px 8px;
+    display: grid;
+    place-items: center;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    background: var(--wheat);
+    box-shadow: 0 2px 3px rgb(var(--shadow-ink) / .3), inset 0 0 0 1px var(--wood-lo);
+    color: var(--ink-on-fixed-fill);
+    font: 700 var(--fs-small, .875rem)/1 var(--font-ui);
+    pointer-events: none;
+  }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='1'])::after { content: "\2039  1 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='2'])::after { content: "\2039  2 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='3'])::after { content: "\2039  3 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='4'])::after { content: "\2039  4 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='5'])::after { content: "\2039  5 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='6'])::after { content: "\2039  6 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='7'])::after { content: "\2039  7 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='8'])::after { content: "\2039  8 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='9'])::after { content: "\2039  9 more"; }
+  .action-tray .actions-well:has(> .actions[data-fan][data-more-left='9+'])::after { content: "\2039  9+ more"; }
+}
+
 /* Plan item 685: on a tall phone Cath is a half-length figure rising from the counter's left end (120 px, her head
    and shoulders over the board's foot, clear of the region names), not a 64 px avatar in a ring: the counter's
    bottom edge cuts her at the waist, and her face answers each sale, Squeeze and freed region. */

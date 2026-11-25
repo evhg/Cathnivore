@@ -37,7 +37,7 @@ test('the desktop hand card held up to read', async ({ page }, testInfo) => {
       expect(m.name, `${at}: name as drawn`).toBeGreaterThanOrEqual(15)
       expect(m.pick, `${at}: pick line as drawn`).toBeGreaterThanOrEqual(13)
       // the held card is on top where it stands: its centre hits the card, not a figure on the board
-      const top = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('.table-hand .action-item') !== null, [(m.left + m.right) / 2, m.top + m.h * 0.3])
+      const top = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.table-hand .action-item') != null, { x: (m.left + m.right) / 2, y: m.top + m.h * 0.3 })
       expect(top, `${at}: nothing drawn over the held card`).toBe(true)
       const after = (await board())!
       expect([after.x, after.y, after.width, after.height], `${at}: the board stays`).toEqual([before.x, before.y, before.width, before.height])

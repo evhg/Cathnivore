@@ -253,6 +253,40 @@ function layFan(row: HTMLElement, cards: HTMLElement[]) {
   })
 }
 
+// Plan item 701: the lifted card (Cath's pick, or the one tapped) rests wholly in view, clear of the right edge's fade,
+// at one of the row's snap starts so the mandatory snap doesn't push it back out. Geometry from the cards' layout
+// boxes (offsetLeft, the lifted width from --fan-w), not their tilted rects, and read once the fan's 180 ms settle ends.
+const FAN_FADE = 36
+function showLifted(row: HTMLElement, smooth: boolean) {
+  const card = row.querySelector<HTMLElement>(':scope > .action-item[data-lifted]')
+  if (!card) return
+  const pad = parseFloat(getComputedStyle(row).scrollPaddingInlineStart || '8') || 8
+  const w = parseFloat(card.style.getPropertyValue('--fan-w')) || card.offsetWidth
+  const left = card.offsetLeft
+  const right = left + w
+  const view = row.clientWidth
+  const at = row.scrollLeft
+  const fade = row.scrollWidth - (at + view) > 4 ? FAN_FADE : 0
+  if (left >= at + pad - 1 && right <= at + view - fade + 1) return
+  let to = left - pad
+  if (right > at + view - fade) {
+    // the first card start that brings its right edge inside the fade's line
+    const need = right - view + FAN_FADE
+    const starts = fanCards(row).map((c) => c.offsetLeft - pad).filter((x) => x >= need && x <= left - pad)
+    to = starts.length ? Math.min(...starts) : left - pad
+  }
+  row.scrollTo({ left: Math.max(0, to), behavior: smooth ? 'smooth' : 'auto' })
+}
+function showLiftedSoon(row: HTMLElement) {
+  const smooth = loadSettings().animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.setTimeout(() => {
+    if (!row.isConnected) return
+    showLifted(row, smooth)
+    // the cards' face-down state (useScrollCues) re-reads after a lift resized them without a scroll
+    row.dispatchEvent(new Event('scroll'))
+  }, smooth ? 200 : 0)
+}
+
 // Plan item 302: the phone's held fan covers every card's middle but the front one's, where Playwright aims its
 // clicks, so under webdriver the hand stays a plain swiped row unless `?e2eHandFan=1` (e2e/phone-hand-held.spec).
 function isE2EHandFanOff(): boolean {
@@ -1084,8 +1118,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       fanStateRef.current = state
       delete row.dataset.lift
       layFan(row, cards)
-      // a new turn's fan starts at its first card (the plain row had scrolled her card into view)
+      // a new turn's fan starts at its first card (the plain row had scrolled her card into view), as far along as
+      // her lifted card needs to stand whole (plan item 701)
       row.scrollTo({ left: 0, behavior: 'auto' })
+      showLiftedSoon(row)
       return
     }
     layFan(row, cards)
@@ -1116,6 +1152,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     const lift = (card: HTMLElement) => {
       row.dataset.lift = card.dataset.fan ?? ''
       layFan(row, fanCards(row))
+      showLiftedSoon(row)
     }
     const onDown = (e: PointerEvent) => {
       held = strip(e)
