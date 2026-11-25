@@ -6495,7 +6495,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 
 Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, D 1440x900, every game; the NIGHT SHIFT D street caught its loading board at 91%: plan-shots now waits 400 s), one subagent critique against VISION.md, told to skip items 319, 543 and 678 and to check items 650-683 first.
 
-## 684. [ ] Hedgerow: the fleet drives the lane in single file, in 2D and 3D
+## 684. [ ] Hedgerow: the fleet drives the lane in single file, in 2D and 3D *(lane A, in progress)*
 *(planned 2026-11-25 05:30, lane A, plan1125a critique; builds on items 657 and 672, which don't hold at late rounds)*
 - **Why:** `plan1125a/hedge-l27-2d-D` 260-580 x 290-880: purple lorries overlap 3-5 deep with no road under them; `hedge-l27-3d-D` 175-660 x 260-820: ~30 vans carpet the fields either side of the lane; `hedge-l34-2d-D` 300-380 x 75-880 one solid column depot to depot (round 15, ~180 vehicles). The battle can't be read. VISION 1, 2.
 - **Build:** a minimum along-path gap between drawn vehicles; the overflow waits at the depot as a '+N waiting' chip on its sign instead of being drawn; the lane surface always drawn over the field and under the vehicles; 3D the same spacing rule with an instance cap per lane cell. The sim's numbers are unchanged (drawing only), or retune with the tuner if not.
