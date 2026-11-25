@@ -120,7 +120,7 @@ describe('plan item 454: the live last-shipped line', () => {
     const { shippedLine } = await import('../portfolio/src/fx')
     expect(shippedLine(3 * 3600_000, 'abcdef0123', new Date('2026-11-16T15:40:00Z'))).toBe('Live: shipped 3 h ago, build abcdef0. Next build session in 11 min.')
     expect(shippedLine(60_000, undefined, new Date('2026-11-16T15:10:00Z'))).toBe('Live: shipped just now. Next build session in 11 min.')
-    expect(shippedLine(60_000, 'not-a-sha', new Date('2026-11-16T15:55:00Z'))).toMatch(/starts in 26 min\.$/)
+    expect(shippedLine(60_000, 'not-a-sha', new Date('2026-11-16T15:55:00Z'))).toMatch(/session in 26 min\.$/)
   })
 })
 
