@@ -3490,8 +3490,9 @@ body:has(#dlg-pause[open]) .paused-note {
     top: -11px;
     right: 14px;
     z-index: var(--z-raise);
-    min-height: 22px;
-    padding: 4px 12px 3px;
+    /* Plan item 716: 19 px, not 22: its foot stood 2 px onto the seed packets' tops (cards start 9 px into the tray). */
+    min-height: 19px;
+    padding: 4px 12px 1px;
     border: 0;
     border-radius: 10px 10px 0 0;
     box-shadow: 0 -2px 8px var(--black-a25);

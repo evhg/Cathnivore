@@ -58,6 +58,8 @@ test("on an upright phone the round grip straddles the tray's edge (or stands on
       intoLine: line && line.height ? Math.min(h.bottom - line.top, line.bottom - h.top) : null,
       more: wrap.classList.contains('more-shown'),
       mask: getComputedStyle(wrap.querySelector('.tray')!).maskImage,
+      // Plan item 716: the grip's foot against the seed packets' tops below it.
+      intoCards: Math.max(-99, ...[...wrap.querySelectorAll('.tray-tower')].map((c) => c.getBoundingClientRect()).filter((c) => c.right > h.left && c.left < h.right).map((c) => h.bottom - c.top)),
     }
   })
   if (m.onDock !== null) {
@@ -65,6 +67,9 @@ test("on an upright phone the round grip straddles the tray's edge (or stands on
     expect(m.above, "no higher than its own straddle, off the field's foot").toBeLessThanOrEqual(18)
     if (m.intoLine !== null) expect(m.intoLine, 'clear of the bubble').toBeLessThanOrEqual(1)
   }
-  else expect(m.above).toBeLessThanOrEqual(12)
+  else {
+    expect(m.above).toBeLessThanOrEqual(12)
+    expect(m.intoCards, 'clear of the packets').toBeLessThanOrEqual(0)
+  }
   if (m.more) expect(m.mask).toContain('gradient')
 })
