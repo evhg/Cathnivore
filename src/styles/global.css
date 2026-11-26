@@ -5392,3 +5392,27 @@ html.no-animations .end-cast, html.no-animations .end-cast-producer > svg { anim
   .setup[data-steps] .market-event[data-flyer] { margin-top: 118px; }
   .setup[data-steps] .setup-cath-says { margin-left: 92px; }
 }
+/* Plan item 710: the week's card hung 124 px wide off the awning's left end, over the board's frame and the stall's
+   post, its deal a column of six lines (the critique, three times running). It is a landscape notice now, hung under
+   the stall's board across the stall's width, the deal two lines; her bubble takes the stall's width under it and she
+   stands a step lower, so the notice, her bubble and her head don't meet. */
+@media (min-width: 1280px) {
+  .setup[data-steps] .market-event[data-flyer] {
+    justify-self: stretch;
+    width: auto;
+    margin: 100px 10px 0;
+    padding: 0 0 8px;
+    transform: rotate(-.6deg);
+    transform-origin: 50% 0;
+  }
+  .setup[data-steps] .market-event[data-flyer]::before { left: 14px; margin-left: 0; }
+  .setup[data-steps] .market-event[data-flyer] .market-event-eyebrow { margin: 0 0 4px; padding: 5px 10px 4px; }
+  .setup[data-steps] .market-event[data-flyer] .market-event-deal { padding: 0 12px; }
+  .setup[data-steps] .market-event-rule[data-stamp] { margin-top: 4px; padding: 3px 4px; }
+  .setup[data-steps] .setup-cath-says { margin-left: 0; }
+  .setup[data-steps] .setup-cath-stand { padding-top: 56px; }
+  .setup[data-steps] .setup-cath-stand .cath-art { margin-bottom: -62px; }
+}
+@media (min-width: 1280px) and (max-height: 860px) {
+  .setup[data-steps] .setup-cath-stand .cath-art { margin-bottom: -106px; }
+}
