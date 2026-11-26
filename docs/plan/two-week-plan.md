@@ -6746,7 +6746,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 
 Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, NIGHT SHIFT and Hedgerow at 2x; D 1440x900; every game), one subagent critique against VISION.md, told to skip today's done items and 319/543. Dropped: a Runnel solve finale (items 679, 697 and 630 already stage the payoff and dock the card; the one overlap left is in 721); the NIGHT SHIFT crowd and Hedgerow medallions are framed as gaps in items 57 and 314, not redone.
 
-## 717. [ ] Cathnivore: a market table that's alive
+## 717. [ ] Cathnivore: a market table that's alive *(lane A, in progress)*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique)*
 - **Why:** `cath-game-D` (board 505-1290 x 40-760) and `cath-game-P` (10-380 x 125-480): every region repeats the same stall and card icons, nobody walks, nothing moves, so the board reads as a sheet of stamps, not a market (VISION 2).
 - **Build:** 2-4 tiny shoppers per region (SVG, drawn with the board's ink) walking between its stalls; bunting and awnings that stir; a wisp of smoke over a farm. A region's life follows its state: busy and warm when freed, sparse and grey under Hollowell's squeeze. Under reduced motion they stand still.
