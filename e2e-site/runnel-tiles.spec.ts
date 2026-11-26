@@ -58,6 +58,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
           const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!
           const edges: number[] = []
           const chans: number[] = []
+          const lits: number[] = []
           for (const g of document.querySelectorAll<SVGGElement>('#board .tiles > g.cell:not(.stone):not(.wet)')) {
             const t = g.querySelector<SVGPolygonElement>('.tile')!
             const bb = t.getBoundingClientRect()
@@ -80,6 +81,7 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
             // A channel: along its bed, the strongest pixel across it against the tile's fill.
             // A bridge's lower channel runs under its plank by design: a tile is judged by its best-reading channel.
             let tileBest = 0
+            let litBest = 0
             for (const bed of g.querySelectorAll<SVGLineElement>('.groove-bed')) {
               // The bed's box centre is the ditch's midpoint whatever the piece's CSS rotation (getScreenCTM leaves
               // that rotation out), so the ditch runs from the tile's centre through it to the edge.
@@ -95,20 +97,34 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
               const m = bed.getScreenCTM()!
               const reach = Math.max(4, Math.ceil((25.2 / 2) * Math.hypot(m.a, m.b)) + 1)
               const along: number[] = []
+              const lift: number[] = []
               for (let f = 0.35; f <= 0.8; f += 0.05) {
                 let best = 0
-                for (let o = -reach; o <= reach; o++) best = Math.max(best, cr(L(F, p0.x + dx * f - (dy / dl) * o, p0.y + dy * f + (dx / dl) * o), fill))
+                let top = 0
+                for (let o = -reach; o <= reach; o++) {
+                  const l = L(F, p0.x + dx * f - (dy / dl) * o, p0.y + dy * f + (dx / dl) * o)
+                  best = Math.max(best, cr(l, fill))
+                  top = Math.max(top, l)
+                }
                 along.push(best)
+                lift.push(top / fill)
               }
               tileBest = Math.max(tileBest, med(along))
+              litBest = Math.max(litBest, med(lift))
             }
-            if (g.querySelector('.groove-bed')) chans.push(tileBest)
+            if (g.querySelector('.groove-bed')) {
+              chans.push(tileBest)
+              lits.push(litBest)
+            }
           }
-          return { n: edges.length, edge: Math.min(...edges), chan: Math.min(...chans) }
+          return { n: edges.length, edge: Math.min(...edges), chan: Math.min(...chans), lit: med(lits) }
         }, [full, bare, plain] as const)
         expect(r.n, sky).toBeGreaterThan(5)
         expect(r.edge, `tile edge vs valley, ${sky}`).toBeGreaterThanOrEqual(edgeMin)
         expect(r.chan, `channel vs tile, ${sky}`).toBeGreaterThanOrEqual(3)
+        // Plan item 704: a dry ditch reads carved, not a raised plank: its sunlit wall is lit above the tile's face
+        // (median 1.19-1.33x on 17 Nov's board; the dulled wall it replaced sat below the face)
+        if (scheme === 'light') expect(r.lit, `lit wall vs tile face, ${sky}`).toBeGreaterThanOrEqual(1.1)
       }
     })
   }
