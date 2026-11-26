@@ -6670,14 +6670,14 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 - **Accept:** in l27 and l34 at P and D no queue pill rect overlaps a vehicle or tower rect at round start and mid-wave (e2e); no two floats within 120 CSS px of each other; float text 14 CSS px+ at 4.5:1 on its halo; level tests unchanged; shots P and D mid-wave.
 - **Size:** 2
 
-## 707. [ ] Hedgerow 2D: a convoy of vehicles, not purple capsules *(lane A, in progress)*
+## 707. [x] Hedgerow 2D: a convoy of vehicles, not purple capsules *(done 2026-11-26 06:25, lane A, 46fc3312 + 1d585e26: the six lane rungs drawn from above on every run (FLEET_TOP: scooter 3.45, lorry 2.73, pickup 2.22, high-roof van 1.82, van 1.45, hatchback 1.19 length:width), no text on bodies; 7 CSS px between bodies, a bend pass and a shared-road pass ease vehicles back, the queue waits in the depot's column until clear of its plate. Unit hedgerow-fleet-top (ratios 20%+, hues 40+ degrees, the white van by lightness); e2e hedgerow-convoy-gap (l27, P and D: 0 overlaps, 0 on the depot). Trait tags stay the property tints (no body text left to move). l34's shared bottom road still packs at peak (15-20 box overlaps at t9), not in this item's acceptance. Shots scratchpad b707 (before), a707c/e (after))*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique; item 703 is the 3D half)*
 - **Why:** `plan1126a/hedge-l27-2d-P` (2x): the lorries are near-identical purple capsules with tiny '4h' tags, bumper to bumper (40-100 x 580-840, 225-275 x 860-1110), running into the depot (390-490 x 1100-1320) so depot and queue merge; `hedge-l27-2d-D` 410-560 x 560-800.
 - **Build:** a top-down sprite per vehicle class (cab, body, wheels, livery stripe) matching the queue pill icons, each class its own outline; a 6 CSS px gap kept between vehicles and the queue held short of the depot's footprint; trait tags as a small badge, not text on the body.
 - **Accept:** each class's sprite bounds differ by 20%+ in aspect ratio from every other (unit test); no vehicle rect overlaps another or the depot rect in l27 round 15 (e2e); body hues of the classes 40 degrees+ apart; shots P and D.
 - **Size:** 2
 
-## 708. [ ] Cathnivore game D: Hollowell a glossy corporate presence, the HUD a ledger
+## 708. [ ] Cathnivore game D: Hollowell a glossy corporate presence, the HUD a ledger *(lane A, in progress)*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique)*
 - **Why:** `plan1126a/cath-game-D`: Hollowell is a round portrait (540-640 x 15-125) wedged against a cramped HUD (335-540 x 15-85) with 9-10 px labels; its quarterly plan (1140-1340 x 20-250) reads as a stock blue form. VISION asks for the corporations glossy, plastic, over-lit and clinical, a staged foil to the paper world.
 - **Build:** the portrait and the Squeeze/Expand/Scout plan one glossy 'Quarterly Plan' slab (plastic gradient, specular edge, Hollowell logotype, portrait 120 px+); the Round/Trust/Land/Rift readings a paper ledger strip; an armed Squeeze slides the slab in with no overshoot and a sterile blip.
