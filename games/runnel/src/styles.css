@@ -5462,21 +5462,21 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 /* Plan item 646 slice 2: each kind of tile reads as itself: a field (a channel's end, where the crop grows) is a
    planted plot, its face tinted the crop's green (light enough that its channel keeps 3:1); the spring is a stone well-head, pale stone; channels keep
    the ground they cross. */
-.cell.field:not(.reservoir) .tile { fill: color-mix(in oklab, var(--dry-field) 46%, var(--wet-field)); }
+.cell.field:not(.reservoir) .tile { fill: color-mix(in oklab, var(--dry-field) 58%, var(--parched)); }
 .cell.field.wet:not(.reservoir) .tile { fill: color-mix(in oklab, var(--wet-field) 80%, var(--dry-field)); }
 /* (light: item 516's valley-ground rule names the tile's ground (5 classes), so a field on field or meadow ground lost
    its plot face and matched its channel. Each dry plot is its ground half lit by the hour with 42% of the crop's
    green, 12+ from every channel, and a watered field the crop's green deepened by the hour (--vl-wet, plan item 683),
    20+ from a dry plot, in every season, hour and weather.) */
 @media (prefers-color-scheme: light) {
-  .stage .cell.field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))) 58%, var(--wet-field)); }
-  .stage .cell.field.ground-field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))) 58%, var(--wet-field)); }
-  .stage .cell.field.ground-meadow:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))) 58%, var(--wet-field)); }
+  .stage .cell.field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry) 50%, var(--vl-fallow, var(--dry))) 58%, var(--parched)); }
+  .stage .cell.field.ground-field:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-field) 50%, var(--vl-wheat, var(--dry-field))) 58%, var(--parched)); }
+  .stage .cell.field.ground-meadow:not(.reservoir):not(.wet, .stone) .tile { fill: color-mix(in oklab, color-mix(in srgb, var(--dry-meadow) 50%, var(--vl-meadow, var(--dry-meadow))) 58%, var(--parched)); }
   .stage .cell.field.wet:not(.reservoir) .tile { fill: var(--vl-wet, var(--wet-field)); }
 }
 @media (prefers-color-scheme: dark) {
   /* (dark: a lighter touch of green, so the light channels keep 3:1 on it) */
-  :root:not([data-theme="light"]) .cell.field:not(.reservoir):not(.wet) .tile { fill: color-mix(in oklab, var(--dry-field) 86%, var(--wet-field)); }
+  :root:not([data-theme="light"]) .cell.field:not(.reservoir):not(.wet) .tile { fill: color-mix(in oklab, var(--dry-field) 70%, var(--parched)); }
 }
 .cell.spring .tile { fill: color-mix(in oklab, var(--water) 68%, var(--paper)); }
 /* (the glint's loop matches its new dash, so it runs seamlessly; still under reduced motion) */
@@ -5634,3 +5634,26 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 @media (min-width: 1100px) and (min-height: 640px) {
   .win-strip[data-postcard] .strip-say { display: block; margin: 2px 0 4px; font-size: var(--fs-voice); color: var(--water); }
 }
+
+/* Plan item 711: a field waiting for water reads parched: its plot a sun-baked clay (no crop green until the water
+   comes), crazed all over, its seedling drooped and browned; the water closes the cracks and greens it (the rules
+   above). Reduced motion swaps the states without the fade. */
+.mud-cracks {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tile-rim) 60%, var(--parched));
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 380ms ease var(--delay, 0ms);
+}
+.cell.wet .mud-cracks { opacity: 0; }
+.wilt {
+  stroke: color-mix(in srgb, var(--tile-rim) 45%, var(--parched));
+  stroke-width: 2.6;
+  transform-box: fill-box;
+  transform-origin: 30% 100%;
+  scale: 1.6;
+}
+@media (prefers-reduced-motion: reduce) { .mud-cracks, .wilt { transition: none; } }

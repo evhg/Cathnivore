@@ -584,6 +584,9 @@ export class Board {
   private drawField(root: SVGGElement, index: number): void {
     const pool = cropsForSeed(this.puzzle.seed)
     const crop = pool[hashString(`${this.puzzle.seed}:${index}`) % pool.length]!
+    // Plan item 711: a dry plot is parched clay, crazed all over (a plate in the middle, spokes to the rim and a ring
+    // between them); the water closes the cracks as the crop comes up. Under the plot, inside the tile's own rim.
+    if (!this.puzzle.cells[index]?.reservoir) el('path', { class: 'mud-cracks', d: mudCracks(`${this.puzzle.seed}:${index}`), 'clip-path': 'url(#tile-clip)' }, root)
     const g = el('g', { class: 'field-plot' }, root)
     el('ellipse', { cx: 0, cy: 6, rx: S * 0.42, ry: S * 0.3, class: 'mound' }, g)
     for (const dx of [-11, 0, 11]) el('line', { x1: dx - 3, y1: -2, x2: dx + 3, y2: 14, class: 'furrow' }, g)
@@ -730,7 +733,9 @@ export class Board {
     const prevWet = initial ? new Set<number>() : this.flow.wet
     let minNewDepth = Infinity
     for (const i of flow.wet) if (!prevWet.has(i)) minNewDepth = Math.min(minNewDepth, flow.depth.get(i)!)
-    const settle = turned.size && !this.reducedMotion ? TURN_MS : 0
+    // Plan item 711: the water sets off as the turn is half done (it waited for the whole turn), so a joining tap shows
+    // water within 300 ms on a phone.
+    const settle = turned.size && !this.reducedMotion ? TURN_MS / 2 : 0
 
     this.puzzle.cells.forEach((cell, i) => {
       const view = this.views[i]!
@@ -886,6 +891,51 @@ function fieldCracks(key: string): string {
         const f = t + (rnd() < 0.5 ? -0.9 : 0.9)
         d += `l${(Math.cos(f) * S * 0.14).toFixed(1)} ${(Math.sin(f) * S * 0.14).toFixed(1)}M${x.toFixed(1)} ${y.toFixed(1)}`
       }
+    }
+  }
+  return d
+}
+
+/** Plan item 711: a parched plot's craquelure, seeded by the cell: an irregular plate round the middle, a spoke from
+ *  each of its corners out past the rim, and a broken ring at 0.75 joining neighbouring spokes (clear of 0.6, where
+ *  runnel-tiles reads the tile's own fill). */
+function mudCracks(key: string): string {
+  let h = hashString(`mud:${key}`) || 3
+  const rnd = () => {
+    h ^= h << 13
+    h ^= h >>> 17
+    h ^= h << 5
+    return ((h >>> 0) % 1000) / 1000
+  }
+  const n = 6
+  const base = rnd() * Math.PI * 2
+  const inner: Array<[number, number]> = []
+  const ring: Array<[number, number]> = []
+  let d = ''
+  for (let k = 0; k < n; k++) {
+    const a = base + (k / n) * Math.PI * 2 + (rnd() - 0.5) * 0.5
+    const r0 = S * (0.24 + rnd() * 0.08)
+    inner.push([Math.cos(a) * r0, Math.sin(a) * r0])
+    const b = a + (rnd() - 0.5) * 0.35
+    const r1 = S * (0.74 + rnd() * 0.06)
+    ring.push([Math.cos(b) * r1, Math.sin(b) * r1])
+  }
+  const f = (p: [number, number]) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`
+  d += `M${f(inner[0]!)}`
+  for (let k = 1; k <= n; k++) d += `L${f(inner[k % n]!)}`
+  for (let k = 0; k < n; k++) {
+    const [ix, iy] = inner[k]!
+    const [rx, ry] = ring[k]!
+    // a kinked spoke out from the plate to the ring and on past the rim
+    const mx = (ix + rx) / 2 + (rnd() - 0.5) * 4
+    const my = (iy + ry) / 2 + (rnd() - 0.5) * 4
+    d += `M${f([ix, iy])}L${f([mx, my])}L${f([rx, ry])}L${f([rx * 1.35, ry * 1.35])}`
+    // the ring: most neighbours joined, with a kink; one or two gaps so it reads as cracking, not a drawn hexagon
+    if (rnd() < 0.8) {
+      const [nx, ny] = ring[(k + 1) % n]!
+      const a = Math.atan2((ry + ny) / 2, (rx + nx) / 2)
+      const r = S * (0.7 + rnd() * 0.1)
+      d += `M${f([rx, ry])}L${f([Math.cos(a) * r, Math.sin(a) * r])}L${f([nx, ny])}`
     }
   }
   return d
