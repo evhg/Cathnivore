@@ -1409,6 +1409,34 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     if (wrap) ro.observe(wrap)
     return () => ro.disconnect()
   }, [deskTableCath, phoneTableCath, state.config.producers])
+  // Item 708 grew Pell to 120 px in the cloth's top-left; on a chapter's board a region's name plate can stand there
+  // (Word of Mouth's Highmoor at 1440x900: 'Hig' under his frame). He steps down a size at a time until clear of
+  // every plate, the CSS size where none meets him.
+  useLayoutEffect(() => {
+    if (!deskTableCath) return
+    const fit = () => {
+      const rival = document.querySelector<HTMLElement>('.table-head.with-table-cath .rival')
+      const frame = rival?.querySelector('.rival-frame')
+      if (!rival || !frame) return
+      rival.style.removeProperty('--pell')
+      const plates = [...document.querySelectorAll('.map-wrap .region-plaque')].map((p) => p.getBoundingClientRect()).filter((r) => r.width > 0)
+      const meets = () => {
+        const f = frame.getBoundingClientRect()
+        return plates.some((p) => f.left < p.right + 4 && p.left - 4 < f.right && f.top < p.bottom + 4 && p.top - 4 < f.bottom)
+      }
+      const base = frame.getBoundingClientRect().width
+      for (const s of [base, 104, 92, 80].filter((s) => s <= base)) {
+        if (s !== base) rival.style.setProperty('--pell', `${s}px`)
+        if (!meets()) return
+      }
+    }
+    fit()
+    const ro = new ResizeObserver(fit)
+    const wrap = document.querySelector('.map-wrap')
+    if (wrap) ro.observe(wrap)
+    void document.fonts?.ready.then(fit)
+    return () => ro.disconnect()
+  }, [deskTableCath])
   // SPEC 4.6: "a human may undo any action taken in their current turn ... undo never reveals hidden
   // information [because refills happen at cleanup]. Any action that reveals hidden information ... is
   // marked irreversible, and undo cannot go back past it. The AI never undoes." So the stack is cleared

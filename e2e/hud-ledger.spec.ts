@@ -56,3 +56,25 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(axe.violations.flatMap((v) => v.nodes.map((n) => `${n.target.join(' ')}: ${n.any[0]?.message ?? ''}`))).toEqual([])
   })
 }
+
+// On a chapter's board a region's name plate can stand in the cloth's top-left (Word of Mouth's Highmoor at
+// 1440x900 ran under his 120 px frame): Pell steps down a size until clear of every plate, never under 80 px.
+test('Pell keeps clear of a chapter\'s name plates at 1440x900', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'the big desktop table')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=2')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await page.getByRole('button', { name: /^Word of Mouth/ }).click()
+  const solo = page.getByRole('button', { name: /^Solo/ })
+  if (await solo.isVisible().catch(() => false)) await solo.click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.locator('[data-seal-card]').waitFor({ timeout: 60_000 })
+  await page.locator('.rival-frame').waitFor()
+  await expect.poll(async () => page.evaluate(() => {
+    const f = document.querySelector('.rival-frame')!.getBoundingClientRect()
+    const plates = [...document.querySelectorAll('.map-wrap .region-plaque')].map((p) => p.getBoundingClientRect())
+    return plates.filter((p) => f.left < p.right && p.left < f.right && f.top < p.bottom && p.top < f.bottom).length
+  })).toBe(0)
+  const size = await page.locator('.rival-frame').evaluate((e) => e.getBoundingClientRect().width)
+  expect(size).toBeGreaterThanOrEqual(80)
+})
