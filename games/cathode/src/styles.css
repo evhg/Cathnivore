@@ -3359,6 +3359,24 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-sheet[data-casefile][data-dossier] .cp-avg { box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-paper) 80%, transparent); } /* px-ok */
 }
 
+/* Plan item 709: on an upright phone the lit gun leaves the sheet and lies large across the foot of her stage,
+   right of her, over the subtitle's line (--sub-b, set by placeSub): no mat or print border there, only its
+   shadow on the street. The sheet's weapon row is then one line, the name and its three numbers. A tap on the gun
+   still test-fires. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp .cp-sheet[data-casefile][data-dossier] .cp-weapon-art.cp-case {
+    position: fixed; z-index: var(--z-lift); right: 8px; bottom: calc(var(--sub-b, 400px) + 48px); left: auto; /* px-ok */
+    width: min(64vw, 256px); height: 116px; margin: 0; /* px-ok */
+    background: none; box-shadow: none; transform: rotate(-4deg); overflow: visible;
+  }
+  .cp .cp-sheet[data-dossier] .cp-case.is-lit .cp-gun { object-fit: contain; object-position: 50% 50%; transform: none; filter: brightness(1.5) contrast(1.12) drop-shadow(0 0 8px rgb(var(--black-rgb) / .85)); } /* px-ok */
+  .cp .cp-sheet[data-dossier] .cp-case::after { left: 12%; right: 12%; top: 76%; height: 18%; }
+  .cp .cp-sheet[data-dossier] .cp-weapon { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; white-space: nowrap; } /* px-ok */
+  .cp .cp-sheet[data-dossier] .cp-weapon .cp-label { display: none; }
+  .cp .cp-sheet[data-dossier] .cp-weapon-nums { gap: 12px; margin: 0 0 0 auto; } /* px-ok */
+  .cp .cp-sheet[data-dossier] .cp-weapon-nums div:not(.cp-testfire-slot) { display: flex; flex-direction: row-reverse; align-items: baseline; gap: 4px; } /* px-ok */
+}
+
 /* Plan item 340: the menu hint's parts never break inside ('TOMAS REED · THE HARBOUR · A DEBT TAG'). */
 .mh-part { white-space: nowrap; }
 
@@ -3599,7 +3617,7 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-dots { column-gap: max(8px, calc(var(--u) * 4)); justify-content: space-between; } /* px-ok: 8 px between tabs */
   /* Plan item 709: the trees one line of stamps, opening on a tap to what each does (the sheet was a dense form). */
   .cp-sheet[data-dossier] .cp-trees-wrap { display: flex; align-items: center; gap: 8px; margin-top: 6px; } /* px-ok */
-  .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-trees { display: flex; flex-wrap: nowrap; gap: 6px; margin: 0; min-width: 0; } /* px-ok */
+  .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-trees { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; min-width: 0; } /* px-ok: a third stamp that won't fit beside the toggle (Wirewitch's DAEMON) takes a second line rather than running under it */
   .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-tree { display: block; }
   .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-tree-theme { display: none; }
   .cp-sheet[data-dossier].cp-trees-open .cp-trees-wrap { flex-direction: column-reverse; align-items: stretch; }
