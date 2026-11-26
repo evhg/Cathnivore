@@ -6715,7 +6715,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** at 844x390 and 1440x900 the viewmodel inside the right 30% and bottom 55%, never over the crosshair or objective tag; `scripts/cathode-perf.mjs` within budget (run alone); shots L and D.
 - **Size:** 2
 
-## 713. [ ] Hedgerow: Cath has presence in the battle
+## 713. [ ] Hedgerow: Cath has presence in the battle *(lane A, in progress)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique; item 681's level-up badge stays)*
 - **Why:** `hedge-l34-2d-D` (895-945 x 280-370), `hedge-l27-2d-D` (665-710 x 380-460), `hedge-l27-3d-D` (780-835 x 280-395): a small static figure lost among towers, no reactions or lines in battle.
 - **Build:** her token about 1.6x with an idle loop and a cast pose; a corner bark with her portrait on a leak, a boss, a combo, Pie or Rally (one per 8 s at most); a 600-900 ms staged ability moment.
