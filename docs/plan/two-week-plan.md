@@ -6630,7 +6630,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** the focused card 220 px+ tall and wholly in view at 1440x900 and 1280x800 (e2e rect); titles 15 px+, body 13 px+, 4.5:1 on the card; at P no card cut by the viewport edge at rest after a snap (e2e); the board rect unchanged at D; shots P and D.
 - **Size:** 2
 
-## 702. [ ] Hedgerow: the act map shows progress *(lane A, in progress)* *(slice 1, lane A: locked stops' landmarks grayscale(.93) (item 596's sepia reversed; measured < 0.15 saturation from pixels against a won stop's > 0.25, e2e-site/hedgerow-map-locked), Hollowell's H tag wears a padlock shackle. Open: the milky haze over act 4 at D (scripts/hedgerow-702-shots.mjs, 30 won: a pale wash over y 130-430 behind the top row; not the trail's ::before, likely the act's ground or ambient layer), cleared stops' pressed stars, the haze at P.)*
+## 702. [x] Hedgerow: the act map shows progress *(done 2026-11-26 00:20, lane A: slice 1 locked stops grey (< 0.15 saturation) and padlocked; slice 2 (404aa1cf) Rivermead banner crop under its haze, backdrop the fields' tone, water-meadow patch deepened, locked mist 0.15 peak (e2e); slice 3 (09ca0f8f) won stars pressed, missing ghosted (e2e); act 4 labels 7.1:1+ at P and D; next stop lit with Cath's pin as before)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/hedge-menu-D`: the map (0-1120 x 60-900) sits under a milky haze and locked levels 32-40 are the same white glass orbs as playable ones; `hedge-menu-P`: a white column (300-460 x 340-1330 at 2x) washes out 'Sandbag Sunday' and 'Compulsory Purchase'.
 - **Build:** cleared nodes show their pressed stars; the next node raised and lit with Cath's pin; locked nodes desaturated, wax-sealed and padlocked; the haze only at the act's far edge.
@@ -6644,7 +6644,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** vehicle types' body hues differ by 40 degrees+ (sampled in sandbox); no off-frame shadow band wider than 40 CSS px below 0.5x the field's luminance; perf in budget; keyart-fresh (re-shoot); shots P and D in 3D.
 - **Size:** 2
 
-## 704. [ ] Runnel: a dry board that reads at a glance
+## 704. [ ] Runnel: a dry board that reads at a glance *(lane A, in progress)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/runnel-D` (520-1330 x 40-830) and `runnel-P` (5-385 x 270-610): dry channels are beige ridges on beige tiles, so the network can't be traced until solved; the field around the board (390-520 and 1220-1410 x 200-850) is an empty grey band.
 - **Build:** dry channels as dark carved grooves with a lit lip; field tiles keep their crop tint; the valley round the board gets fences, hedges and the day's light.
