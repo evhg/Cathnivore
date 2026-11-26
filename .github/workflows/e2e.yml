@@ -33,7 +33,14 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # The runner's apt index can go stale (a security pocket 404s, 2026-11-26): refresh and retry before giving up.
+      - run: |
+          for i in 1 2 3; do
+            npx playwright install --with-deps chromium && exit 0
+            sudo apt-get update -q || true
+            sleep $((i * 10))
+          done
+          exit 1
       # Full Chromium, as the sessions run it (/opt/pw-browsers/chromium), not Playwright's default headless shell:
       # the shell lays out and answers hover/pointer queries differently (the first runs failed only here).
       - run: echo "PLAYWRIGHT_CHROMIUM_PATH=$(node -e "console.log(require('playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
@@ -88,7 +95,14 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # The runner's apt index can go stale (a security pocket 404s, 2026-11-26): refresh and retry before giving up.
+      - run: |
+          for i in 1 2 3; do
+            npx playwright install --with-deps chromium && exit 0
+            sudo apt-get update -q || true
+            sleep $((i * 10))
+          done
+          exit 1
       # Full Chromium, as the sessions run it (/opt/pw-browsers/chromium), not Playwright's default headless shell:
       # the shell lays out and answers hover/pointer queries differently (the first runs failed only here).
       - run: echo "PLAYWRIGHT_CHROMIUM_PATH=$(node -e "console.log(require('playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
