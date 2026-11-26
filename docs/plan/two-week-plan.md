@@ -6753,7 +6753,7 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - **Accept:** 2+ figures per region at P and D; no figure over a counter, badge or hit target (e2e); frame time 16.7 ms or less at D with 4x CPU throttle; reduced motion still; existing board specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 718. [ ] Portfolio phone: the prints play, and Cath names the one playing
+## 718. [ ] Portfolio phone: the prints play, and Cath names the one playing *(lane A, in progress)*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique; item 715 did this at D only)*
 - **Why:** `portfolio-P`: the four prints (12-385 x 552-844) are still frames and NIGHT SHIFT's reads nearly black; item 715's tour, where the loops play in turn and Cath points, stops at the desktop.
 - **Build:** on a phone the print in view plays its loop in turn (item 145's canvas loops), Cath's line names it, and a tap still opens the game. NIGHT SHIFT's print takes a lit frame of its street, not the dark one.
