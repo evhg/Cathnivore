@@ -6637,7 +6637,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** locked nodes' saturation under 0.15 with a lock present (e2e per state); haze opacity over any node or label 0.15 or less; node labels 4.5:1; shots P and D.
 - **Size:** 2
 
-## 703. [ ] Hedgerow 3D: a convoy and light you can read
+## 703. [ ] Hedgerow 3D: a convoy and light you can read *(lane A, in progress)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/hedge-l27-3d-D` (200-650 x 260-780): every vehicle is a purple box while the queue pill and 2D tell vans, lorries and cars apart; `hedge-l27-3d-P`: hard dark diagonal shadow bands from off-frame casters cross the field (560-780 x 560-1390 and 0-420 x 700-1000 at 2x).
 - **Build:** each vehicle type its own silhouette and livery matching the pill icons; shadow casters clipped to the field or the shadow camera fitted to it.
