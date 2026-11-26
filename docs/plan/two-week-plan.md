@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane A, 2026-11-26 14:24 UTC
+
 
 
 
@@ -6729,7 +6731,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** at 390x844 no hex clipped, full names 12 px+, no label over a counter or another label (e2e); D unchanged; shots P and D.
 - **Size:** 2
 
-## 715. [ ] Portfolio: the games move, and Cath points at them *(lane A, in progress)*
+## 715. [x] Portfolio: the games move, and Cath points at them *(done 2026-11-26 14:24, lane A: at D the wall tours until someone points: the prints play their loops in turn (item 145's canvas loops) and Cath turns to the one playing, points and names it; the first point or focus ends the tour and item 454's hover rule holds; loops rest after 20 s idle and never under reduced motion. Decided: no animated webp: the canvas loops already move each print with no download (LCP and the weight gate untouched); at P the prints already play in turn and item 680 measured the fold. poster-play, portfolio-present pass. Shot e2e/screenshots/p715)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique; item 680 measured the phone fold)*
 - **Why:** `portfolio-D`: four flat stills (632-1232 x 150-540); Cath (1290-1385 x 180-545) stands in black space and points at nothing.
 - **Build:** each tile plays a 3-5 s loop (animated webp 400 KB or less, poster fallback) on hover or in view; Cath turns toward the hovered tile and her line names that game.
