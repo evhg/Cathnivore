@@ -68,3 +68,25 @@ test('a won chapter stamps the seals it kept, in order, matching what the campai
   const recorded = await page.evaluate(() => JSON.parse(localStorage.getItem('cathnivore:campaign:v1') ?? '{}').seals?.['word-of-mouth'] ?? [])
   expect(stamped).toEqual(['win', 'hard', 'feat'].filter((s) => recorded.includes(s)))
 })
+
+// CI E2E red on 312b609a (tutorial desktop): at 1440x900 item 708's ledger took the cloth's top-left, where the seal
+// card sat, so the card covered the readings and took the Menu key's click; it hangs under the ledger now. On an
+// upright phone the card stood at the wrap's foot, under Cath's dock, hidden whole; it stands above the dock now.
+for (const [w, h] of [[1440, 900], [390, 844], [375, 667]] as const) {
+  test(`at ${w}x${h} the seal card is on top, clear of the ledger, and the Menu key takes a click`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'one browser sets each size')
+    await page.setViewportSize({ width: w, height: h })
+    await startChapter(page, 'Word of Mouth', 2)
+    await expect(seals(page)).toHaveCount(3, { timeout: 60_000 })
+    const m = await page.evaluate(() => {
+      const box = (s: string) => { const b = document.querySelector(s)!.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom } }
+      const card = box('[data-seal-card] > summary')
+      const top = document.elementFromPoint((card.l + card.r) / 2, (card.t + card.b) / 2)?.closest('[data-seal-card]') !== null
+      return { card, top, ledger: box('.market-board') }
+    })
+    const meet = (a: typeof m.card, b: typeof m.card) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b
+    expect(m.top, 'the seal card is the top element at its centre').toBe(true)
+    expect(meet(m.card, m.ledger), 'seal card and ledger').toBe(false)
+    await page.getByRole('button', { name: 'Menu' }).click({ trial: true, timeout: 5_000 })
+  })
+}

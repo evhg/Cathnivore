@@ -6193,6 +6193,9 @@ html.no-animations .wrap-peel { display: none; }
   .seal-card .seal-row { gap: 0; }
   .seal-card .seal-row .seal { width: 24px; height: 24px; }
   .seal-card .seal-list { position: absolute; right: 0; bottom: calc(100% + 6px); margin: 0; }
+  /* Where Cath's dock is the table's foot (an upright phone), the card stands above it: at the wrap's foot the dock
+     (52-80 px) hid it whole and took its taps. */
+  .map-wrap:has(> .cath-dock) .seal-card { bottom: calc(var(--seal-dock, 80px) + var(--sp-2)); }
 }
 /* Plan item 477: the won chapter's kept seals stamp onto the end screen in turn; the missed ones stay pale. */
 .end-seals { display: flex; gap: 10px; margin: var(--sp-2) 0 0; }
@@ -6947,11 +6950,14 @@ html.no-animations .table-cath-figure { animation: none; }
     letter-spacing: .08em;
     text-transform: uppercase;
   }
-  .game:has(.table-head.with-table-cath) .market-board .board-num { font: 700 1.375rem/1 var(--font-display); }
+  .game:has(.table-head.with-table-cath) .market-board .board-num { font: 700 1.375rem/1 var(--font-num); font-variant-numeric: tabular-nums lining-nums; }
   .game:has(.table-head.with-table-cath) .market-board .board-of { font-size: .8125rem; }
   .game:has(.table-head.with-table-cath) .market-board .board-menu { grid-column: 2; grid-row: 1; align-self: start; color: var(--ink-on-fixed-fill); }
 
   .game:has(.table-head.with-table-cath) .table-head .rival { --pell: 120px; left: 178px; }
   .game:has(.table-head.with-table-cath) .table-head .rival-plate { translate: -50% 0; }
   .game:has(.table-head.with-table-cath) .event-ticket { top: 146px; }
+  /* A chapter's seal card hangs under the ledger, not over its readings and the menu key (CI E2E red, tutorial
+     desktop: its summary took the Menu click at 1440x900). */
+  .game:has(.table-head.with-table-cath) .seal-card { top: 152px; rotate: -1deg; }
 }
