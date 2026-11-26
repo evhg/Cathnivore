@@ -14,7 +14,9 @@ import { buildEnemy, buildRung, enemyLift, enemyScale } from "./models";
 const TINTS: Array<[number, THREE.Color]> = [
   [P.stealth, new THREE.Color(0.8, 1.0, 0.78)],
   [P.plated, new THREE.Color(0.72, 0.78, 0.86)],
-  [P.sealed, new THREE.Color(0.78, 0.58, 1.0)],
+  // Plan item 703: a light lilac (was 0.78, 0.58, 1): the strong one turned the navy lorries the sprinters' purple, so a
+  // sealed round (l27's 'Sealed lorries') read as one fleet of purple boxes; the property's icon rides above them
+  [P.sealed, new THREE.Color(0.93, 0.86, 1.0)],
   [P.reefer, new THREE.Color(0.8, 0.96, 1.0)],
   [P.wrapped, new THREE.Color(0.88, 0.97, 1.0)],
   [P.reinforced, new THREE.Color(1.0, 0.88, 0.45)],
