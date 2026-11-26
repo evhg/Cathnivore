@@ -243,7 +243,7 @@ export const RUNGS: Partial<Record<EnemyKind, RungSpec>> = {
   courier: { shell: 1, children: [], speed: 0.9, colour: "#5ec0a8", look: "An e-scooter courier with a parcel box. One tap and it's gone." },
   hatchback: { shell: 1, children: ["courier"], speed: 1.2, colour: "#e8b23a", look: "A little yellow hatchback. Pop it and a courier scoots out." },
   van: { shell: 1, children: ["hatchback"], speed: 1.5, colour: "#f4f6f8", look: "The white delivery van. Pop it and a hatchback carries on." },
-  pickup: { shell: 1, children: ["van"], speed: 2.3, colour: "#4a7fc4", look: "An open pickup, quick on the straights. Under it, a van." },
+  pickup: { shell: 1, children: ["van"], speed: 2.3, colour: "#4f9a3c", look: "A green open pickup, quick on the straights. Under it, a van." },
   sprinter: { shell: 1, children: ["pickup"], speed: 2.6, colour: "#8a4fd0", look: 'A violet "Same-Day" rush van, the fastest thing on the lane. Under it, a pickup.' },
   lorry: { shell: 1, children: ["sprinter", "sprinter"], speed: 1.6, colour: "#24345e", look: "A navy box lorry. Pop the box and two Same-Day vans burst out." },
   drone: { shell: 1, children: [], speed: 1.8, colour: "#cfd6de", look: "A delivery drone. It flies: only towers that hit the air can reach it." },

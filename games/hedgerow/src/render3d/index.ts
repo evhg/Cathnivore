@@ -64,6 +64,8 @@ import { clearUnder, shadowUpright } from "./upright";
 import { Doorstep3D } from "./doorstep";
 import type { DoorstepView } from "../doorstepart";
 import { driverFace } from "../fleetfaces";
+/** Plan item 703: the share of the sun a shadow takes at noon (1 a black-hard shadow); 0.68 at morning and dusk. */
+const SHADOW_NOON = 0.8;
 
 interface TowerView {
   obj: THREE.Group;
@@ -436,6 +438,7 @@ export class Renderer3D {
     this.sun.castShadow = true;
     this.sun.shadow.bias = -0.0006;
     this.sun.shadow.normalBias = 0.02;
+    this.sun.shadow.intensity = SHADOW_NOON;
     this.dynamic.add(this.sparks.points, this.puffs.points, this.debris.mesh);
     this.fx = new Transients(this.dynamic);
     this.floaters = new Floaters(overlay);
@@ -791,6 +794,11 @@ export class Renderer3D {
     // lost and only a light softening at the ends of the day is kept: the long shadows and warmth carry the hour.
     const sinRatio = Math.sin((b.el * Math.PI) / 180) / Math.max(0.15, Math.sin(el));
     this.sun.intensity = b.sunI * sinRatio * (1 - 0.06 * low * low);
+    // Plan item 703: that raised key also deepened every shadow: at round 15 of 30 on a phone the lorries', hedges'
+    // and towers' 1.8x shadows fell under half the lit field's light, hard dark bands that hid the convoy (6% of the
+    // field, runs 76 px wide). The shadow keeps some light, more so as the sun sinks: under 0.6% of the field below
+    // half after, the long shadows still drawn (scratchpad s703 ratio masks).
+    this.sun.shadow.intensity = SHADOW_NOON - 0.12 * low * low;
     this.hemi.color.copy(b.hemi).lerp(DUSK_FILL, 0.35 * warm);
     this.hemi.groundColor.copy(b.hemiG).lerp(DUSK_BOUNCE, 0.3 * warm);
     this.renderer.toneMappingExposure = b.exposure * (1 - 0.06 * warm);

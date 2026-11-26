@@ -5,6 +5,7 @@ import { newGame } from "../games/hedgerow/src/engine";
 import { LEVELS } from "../games/hedgerow/src/levels";
 import { Crops } from "../games/hedgerow/src/render3d/crops";
 import { buildEnemy, buildRung } from "../games/hedgerow/src/render3d/models";
+import { RUNGS } from "../games/hedgerow/src/fleet";
 
 // Plan item 539: the 3D fleet is modelled, not blocked out (each road vehicle four or more wheels and two or more
 // materials), and a bed grows in several plant shapes rather than one wallpapered cabbage.
@@ -42,5 +43,36 @@ describe("Hedgerow 3D crops (plan item 539)", () => {
     const crops = new Crops(level, () => 0, canvas, true);
     crops.sync(newGame(level), 0, 1);
     expect(crops.shapesShown()).toBeGreaterThanOrEqual(3);
+  });
+});
+
+// Plan item 703: the convoy's classes tell apart by colour as well as shape: each chromatic body (the Round Book's
+// rungs from the courier to the transporter, which the queue pills, the 2D sprites and the 3D models all paint in
+// RUNGS' colour) sits 40 degrees of hue or more from every other. The pickup was blue, 9 degrees from the navy lorry.
+describe("Hedgerow convoy body hues (plan item 703)", () => {
+  const CHAIN: EnemyKind[] = ["courier", "hatchback", "pickup", "sprinter", "lorry", "transporter"];
+  const hue = (hex: string) => {
+    const hsl = { h: 0, s: 0, l: 0 };
+    new THREE.Color(hex).getHSL(hsl, THREE.SRGBColorSpace);
+    return hsl.h * 360;
+  };
+  it("each pair of classes 40 degrees of hue apart", () => {
+    for (const a of CHAIN)
+      for (const b of CHAIN) {
+        if (a >= b) continue;
+        const d = Math.abs(hue(RUNGS[a]!.colour) - hue(RUNGS[b]!.colour));
+        expect(Math.min(d, 360 - d), `${a} vs ${b}`).toBeGreaterThanOrEqual(40);
+      }
+  });
+  it("the 3D model wears its class's colour", () => {
+    for (const kind of CHAIN) {
+      const want = RUNGS[kind]!.colour.slice(1);
+      const got = new Set<string>();
+      buildRung(kind)!.traverse((o) => {
+        const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+        if (m?.color) got.add(m.color.getHexString(THREE.SRGBColorSpace));
+      });
+      expect([...got], kind).toContain(want);
+    }
   });
 });

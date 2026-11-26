@@ -2048,7 +2048,7 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       vehicle(ctx, 0, 0, s, tt, { len: 0.46, h: 0.24, body: "#e8b23a", stripe: "#2b2b30", wheels: 2 });
       break;
     case "pickup": {
-      vehicle(ctx, 0, 0, s, tt, { len: 0.6, h: 0.2, body: "#4a7fc4", stripe: "#f4f6f8", wheels: 2 });
+      vehicle(ctx, 0, 0, s, tt, { len: 0.6, h: 0.2, body: "#4f9a3c", stripe: "#f4f6f8", wheels: 2 });
       if (fromAbove) rr(ctx, -s * 0.22, -s * 0.06, s * 0.14, s * 0.12, s * 0.01, "#c79a62");
       else rr(ctx, -s * 0.2, -s * 0.36, s * 0.13, s * 0.1, s * 0.01, "#c79a62");
       break;
@@ -2115,7 +2115,7 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       // From above, the top deck's two cars nose to tail on the rack.
       const cars = fromAbove
         ? ([[-0.42, -0.07, "#f4f6f8"], [-0.12, -0.07, "#e8b23a"]] as const)
-        : ([[-0.3, -0.3, "#e8b23a"], [0.02, -0.3, "#4a7fc4"], [-0.3, -0.52, "#f4f6f8"], [0.02, -0.52, "#e8b23a"]] as const);
+        : ([[-0.3, -0.3, "#e8b23a"], [0.02, -0.3, "#4f9a3c"], [-0.3, -0.52, "#f4f6f8"], [0.02, -0.52, "#e8b23a"]] as const);
       for (const [x, y, c] of cars) rr(ctx, x * s, y * s, s * 0.26, s * (fromAbove ? 0.14 : 0.12), s * 0.03, c);
       break;
     }
