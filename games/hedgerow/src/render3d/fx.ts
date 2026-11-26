@@ -478,15 +478,18 @@ export class Floaters {
   }
 
   /** Plan item 691: a screen offset that keeps a label of size lw x lh centred at (x, y) off every box: up or down the
-   * screen in growing steps, then sideways; none clear keeps it where it rose. */
-  static dodge(x: number, y: number, lw: number, lh: number, boxes: ReadonlyArray<{ x: number; y: number; w: number; h: number }>, w: number, h: number): { x: number; y: number } {
+   * screen in growing steps, then sideways; none clear keeps it where it rose. `rise` (px) is how far the label
+   * climbs the screen over its life: the whole climb keeps off the boxes (one dodged under a tower rose back into
+   * it, CI E2E red on 5773e1e6: hedgerow-phone-crisp). */
+  static dodge(x: number, y: number, lw: number, lh: number, boxes: ReadonlyArray<{ x: number; y: number; w: number; h: number }>, w: number, h: number, rise = 0): { x: number; y: number } {
+    const up = Math.max(0, rise);
     const hits = (cx: number, cy: number) =>
-      boxes.some((b) => cx - lw / 2 < b.x + b.w && cx + lw / 2 > b.x && cy - lh / 2 < b.y + b.h && cy + lh / 2 > b.y);
-    const inside = (cx: number, cy: number) => cx - lw / 2 >= 2 && cx + lw / 2 <= w - 2 && cy - lh / 2 >= 2 && cy + lh / 2 <= h - 2;
+      boxes.some((b) => cx - lw / 2 < b.x + b.w && cx + lw / 2 > b.x && cy - lh / 2 - up < b.y + b.h && cy + lh / 2 > b.y);
+    const inside = (cx: number, cy: number) => cx - lw / 2 >= 2 && cx + lw / 2 <= w - 2 && cy - lh / 2 - up >= 2 && cy + lh / 2 <= h - 2;
     if (!hits(x, y)) return { x: 0, y: 0 };
     // Held inside the frame first (a tower at the edge put half the label past it, so no step counted as clear).
     const x0 = Math.min(Math.max(x, lw / 2 + 2), w - lw / 2 - 2);
-    const y0 = Math.min(Math.max(y, lh / 2 + 2), h - lh / 2 - 2);
+    const y0 = Math.min(Math.max(y, lh / 2 + up + 2), h - lh / 2 - 2);
     const step = Math.max(8, lh * 0.6);
     for (let k = 0; k <= 12; k++)
       for (const [dx, dy] of [[0, -k * step], [0, k * step], [-k * step, 0], [k * step, 0]] as const)
@@ -504,8 +507,11 @@ export class Floaters {
       let y = (-this.v.y * 0.5 + 0.5) * h;
       if (!it.off) {
         boxes ??= this.avoid?.() ?? [];
+        // The climb still to come, in screen px: where the label stands at the end of its life.
+        this.v.copy(it.pos).setY(it.pos.y + (it.life - it.age) * 0.6).project(camera);
+        const rise = y - (-this.v.y * 0.5 + 0.5) * h;
         // 1.05: the pop's peak scale; 8 px of air round it.
-        it.off = boxes.length ? Floaters.dodge(x, y, it.el.offsetWidth * 1.05 + 8, it.el.offsetHeight * 1.05 + 8, boxes, w, h) : { x: 0, y: 0 };
+        it.off = boxes.length ? Floaters.dodge(x, y, it.el.offsetWidth * 1.05 + 8, it.el.offsetHeight * 1.05 + 8, boxes, w, h, rise) : { x: 0, y: 0 };
       }
       x += it.off.x;
       y += it.off.y;
