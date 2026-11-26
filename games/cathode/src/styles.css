@@ -350,6 +350,26 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .ld-lamps { fill: none; stroke: var(--card-ink); stroke-width: .28; stroke-linecap: round; }
 .ld-lamps circle { fill: var(--card-paper); }
 .ld-pin.ld-pin-foot { display: none; top: auto; bottom: calc(var(--u) * -4); }
+/* Plan item 705: the string's end on her print at D, in the caption band's left corner (under the photograph) */
+.ld-pin.ld-pin-side { display: none; left: calc(var(--u) * 18); top: auto; bottom: calc(var(--u) * 12); }
+/* Plan item 705: at D The List is a paper slip pinned under her photograph (JS sets its top from the print), dark ink
+   on the slip; the phone layouts keep it as type over the frame */
+@media (min-width: 641px) and (min-height: 431px) {
+  .ld-corner {
+    bottom: auto;
+    right: calc(var(--ld-x) + 3vw + 1vw);
+    min-width: 12vw;
+    padding: calc(var(--u) * 16) calc(var(--u) * 20) calc(var(--u) * 16);
+    background: var(--print-paper);
+    box-shadow: 0 calc(var(--u) * 10) calc(var(--u) * 24) rgb(var(--black-rgb) / .55);
+    transform: rotate(-1.6deg);
+  }
+  .ld-corner .ld-list-h { margin-bottom: calc(var(--u) * 8); color: var(--blood); }
+  .ld-corner .ld-list li { color: var(--card-ink); text-shadow: none; }
+  .ld-corner .ld-list li.is-done, .ld-corner .ld-list li.is-more { color: color-mix(in srgb, var(--card-ink) 55%, transparent); }
+}
+.ld-corner > .ld-pin { display: none; }
+@media (min-width: 641px) and (min-height: 431px) { .ld-corner > .ld-pin, .ld-pin.ld-pin-side { display: block; } }
 /* The sheet: the map's own plan (districtmap.ts), sized by its height; it fades in once the chunk is there. */
 .ld-map { left: 41vw; top: calc(var(--safe-y) + 12vh); padding-bottom: calc(var(--u) * 10); --tilt: -1.5deg; opacity: 0; transition: opacity 400ms ease; }
 .loading.has-map .ld-map { opacity: 1; }

@@ -40,6 +40,17 @@ test('at D the briefing is three pinned cards and a labelled sheet, with no perc
   // the load is the pencil route on the sheet (drawn as far as the held share), and the string runs through the pins
   expect(await page.locator('#loading .ld-route').count()).toBe(1)
   expect(await page.locator('#loading .ld-string-red').getAttribute('d')).toMatch(/M.*Q.*M.*Q/)
+  // Plan item 705: the string ends under her photograph (into the print's top pin it ran across her face), and The List
+  // is a slip pinned under the print, not type alone in the corner
+  const d = (await page.locator('#loading .ld-string-red').getAttribute('d'))!
+  const end = d.trim().split(/\s+/).slice(-2).map(Number)
+  const photo = (await page.locator('#loading .ld-photo').boundingBox())!
+  expect(end[1]!, 'the string ends below her photograph').toBeGreaterThanOrEqual(photo.y + photo.height - 2)
+  const print = (await page.locator('#loading .ld-print').boundingBox())!
+  const list = (await page.locator('#loading .ld-corner').boundingBox())!
+  expect(list.y - (print.y + print.height), 'The List pinned under her print').toBeLessThanOrEqual(60)
+  expect(list.y).toBeGreaterThanOrEqual(print.y + print.height)
+  await expect(page.locator('#loading .ld-corner .ld-pin')).toBeVisible()
 })
 
 test('on an upright phone the still, the objective and Cath stack down the screen, none clipped', async ({ page }) => {

@@ -121,6 +121,9 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   el("div", "ld-photo", print);
   el("figcaption", "", print, "Cath");
   el("i", "ld-pin", print);
+  // Plan item 705: at D the string comes in to a pin in the caption's corner, under her photograph (into the top pin it
+  // ran up across her face)
+  el("i", "ld-pin ld-pin-side", print);
   const strings = svg("svg", { class: "ld-string" }, board);
   const shadow = svg("path", { class: "ld-string-shade", pathLength: 1 }, strings);
   const thread = svg("path", { class: "ld-string-red", pathLength: 1 }, strings);
@@ -139,7 +142,9 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     const at = centre(spots.at);
     // Plan item 690: two runs. Still -> objective card -> the ring on the sheet; then from her dot to her photograph.
     // Between the ring and her dot the pencil route is the line (the load), so the string leaves that stretch to it.
-    const runs = [[from, centre(goalCard.querySelector(".ld-pin"), true), ring], [at, centre(print.querySelector(".ld-pin"), true)]]
+    const side = print.querySelector(".ld-pin-side")!;
+    const her = getComputedStyle(side).display !== "none" ? centre(side) : centre(print.querySelector(".ld-pin"), true);
+    const runs = [[from, centre(goalCard.querySelector(".ld-pin"), true), ring], [at, her]]
       .map((r) => r.filter((p): p is [number, number] => !!p))
       .filter((r) => r.length > 1);
     if (!ring || !at) runs.splice(0, runs.length, [from, centre(goalCard.querySelector(".ld-pin"), true), centre(print.querySelector(".ld-pin"), true)].filter((p): p is [number, number] => !!p));
@@ -311,6 +316,20 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
     if (r.done) li.setAttribute("aria-label", `${r.name}, dealt with`);
   }
   if (card.sealed) el("li", "is-more", ol, `${card.sealed} more ${card.sealed === 1 ? "name" : "names"}`);
+  // Plan item 705: at D The List is a slip pinned under her photograph (alone in the corner it floated in an empty band)
+  el("i", "ld-pin", corner);
+  const pinList = () => {
+    if (getComputedStyle(corner).position !== "absolute" || !matchMedia("(min-width: 641px) and (min-height: 431px)").matches) {
+      corner.style.removeProperty("top");
+      return;
+    }
+    const o = root.getBoundingClientRect();
+    const pr = print.getBoundingClientRect();
+    if (pr.height) corner.style.setProperty("top", `${Math.round(pr.bottom - o.top + Math.max(16, pr.width * 0.08))}px`);
+  };
+  addEventListener("resize", pinList);
+  requestAnimationFrame(pinList);
+  print.addEventListener("animationend", pinList);
   const ready = el("p", "ld-ready", root, "Press any key");
   ready.hidden = true;
 
