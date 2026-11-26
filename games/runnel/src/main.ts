@@ -1372,7 +1372,10 @@ function render(): void {
 
   const flow = computeFlow(puzzle.cells)
   const playable = puzzle.cells.filter((c) => c.kind !== 'stone').length
-  ui.progress.style.setProperty('--progress', String(flow.wet.size / playable))
+  // Plan item 705: the spring is wet before the first tap, so progress counts the water past it: an untouched board
+  // shows an empty track, not a lone blue dot under its foot.
+  const springs = puzzle.cells.filter((c) => c.kind === 'spring').length
+  ui.progress.style.setProperty('--progress', String(Math.max(0, flow.wet.size - springs) / Math.max(1, playable - springs)))
   ui.progress.classList.toggle('done', flow.solved)
   // Plan item 308: a solved board greens the valley's fields over, in a wave (styles.css).
   document.getElementById('valley-paint')?.toggleAttribute('data-greened', flow.solved)
