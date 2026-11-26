@@ -415,6 +415,14 @@ h3 {
   }
 }
 
+/* Plan item 714: a board row too tight for its full names steps its plates down (Map.tsx `fitPlaques`, which sets
+   `data-compact` only while the names still read at 12 px on screen) before any name is shortened. */
+@media (max-width: 1023px) {
+  svg.map[data-compact='1'] .region-name { font-size: 1.09375rem; } /* 17.5 board units */
+  svg.map[data-compact='2'] .region-name { font-size: 1.03125rem; } /* 16.5 */
+  svg.map[data-compact='3'] .region-name { font-size: 0.96875rem; } /* 15.5 */
+}
+
 /* Plan item 550: a region's one status, on its name banner's end: a leaf on green when free, else the count of
    Hollowell's pieces, on paper while contested and on Hollowell's own orange once it holds the land. */
 .region-status-disc { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5px; }

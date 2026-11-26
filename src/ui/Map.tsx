@@ -1812,6 +1812,21 @@ function EnemyTurnLayer({ view, layout, fit }: { view: EnemyTurnView; layout: La
   )
 }
 
+/** Plan item 714: the board-unit sizes `svg.map[data-compact='1'|'2'|'3'] .region-name` sets (global.css), largest first. */
+const COMPACT_STEPS = [17.5, 16.5, 15.5]
+/** A name's font size on screen in px (its rendered height over its line box), or in board units with `units`. */
+function namePx(t: SVGTextElement, units = false): number {
+  const u = parseFloat(getComputedStyle(t).fontSize) || 0
+  if (units) return u
+  const m = t.getScreenCTM?.()
+  // the board's scale (a CSS transform on a parent shows in the box, not the CTM): a plate as drawn against its width
+  const plate = t.closest('.region-sign')?.querySelector('.region-plaque')
+  const pw = Number(plate?.getAttribute('width'))
+  const box = plate?.getBoundingClientRect()
+  const k = box && pw > 0 && box.width > 0 ? box.width / pw : m ? Math.hypot(m.a, m.b) : 0
+  return u * k
+}
+
 // Sizes each region's plaque to its name as actually set (attributes only: CSP allows no style attributes).
 /** Plan item 682: fits the plates, and where a row can't hold its full names with whole discs inside the board (a
  *  phone's middle row: Brindle Hills, Kingsmarket and Rivermead at 390 px, a disc at half size and Rivermead's under
@@ -1826,9 +1841,32 @@ function fitPlaques(svg: SVGSVGElement) {
     setName(t, t.getAttribute('data-full'))
     t.removeAttribute('data-shortened')
   }
-  for (let tries = 0; tries < 4; tries++) {
+  svg.removeAttribute('data-compact')
+  // Plan item 714: a row too tight for its full names first sets every plate a step smaller (`data-compact`, CSS),
+  // as long as the names still read at 12 px or more on screen; only then does a name give way to its short one (the
+  // phone game read 'Brindle' and 'Kings' while the cards said 'Brindle Hills').
+  let compact = 0
+  for (let tries = 0; tries < 4 + COMPACT_STEPS.length; tries++) {
     const tight = fitPlaquesOnce(svg)
     if (!tight) return
+    const fullRow = names.some((t) => tight.includes(t.closest('.region-sign')!) && t.getAttribute('data-short') && !t.hasAttribute('data-shortened'))
+    if (fullRow && compact >= 0 && compact < COMPACT_STEPS.length) {
+      // px per board unit, from a name as set now: a step goes on only while the names still read at 12 px
+      const units = namePx(names[0]!, true)
+      const k = namePx(names[0]!) / (units || 1)
+      const step = COMPACT_STEPS[compact]!
+      if (step < units && k * step >= 12) {
+        svg.setAttribute('data-compact', String(++compact))
+        continue
+      }
+    }
+    if (compact > 0) {
+      // no step that still reads holds the full names: back to the full size, and short names from there
+      svg.removeAttribute('data-compact')
+      compact = -1
+      continue
+    }
+    compact = -1
     const row = names.filter((t) => t.closest('.region-sign') && tight.includes(t.closest('.region-sign')!) && t.getAttribute('data-short') && !t.hasAttribute('data-shortened'))
     if (row.length === 0) return
     // the longest of its neighbours' names first, its own last: a short plate in the row's middle (Kings) pulls its
