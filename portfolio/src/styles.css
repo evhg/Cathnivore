@@ -2355,6 +2355,26 @@ h1 {
     white-space: nowrap;
   }
   .show-strip { gap: var(--sp-4); }
+  /* Plan item 718: NIGHT SHIFT's print is a lit street, not a black tile: the neon's spill over the image (pink from
+     the signs on the right, the cyan screen above, the wet road's sheen at the foot), screened on so the darks lift
+     and her black coat in the middle stays black (a flat brightness lift washed it out, item 203). */
+  .show-strip .show-c { position: relative; }
+  .show-strip .show-c::after {
+    content: "";
+    position: absolute;
+    inset: 5px 5px auto;
+    aspect-ratio: 4 / 3; /* the phone print's crop (its img above) */
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background:
+      radial-gradient(45% 50% at 100% 12%, color-mix(in srgb, var(--game-cathnivore) 55%, transparent), transparent 80%),
+      radial-gradient(80% 45% at 70% 0%, color-mix(in srgb, var(--game-runnel) 46%, transparent), transparent 80%),
+      radial-gradient(70% 40% at 30% 100%, color-mix(in srgb, var(--game-nightshift) 30%, transparent), transparent 100%),
+      radial-gradient(45% 65% at 0% 30%, color-mix(in srgb, var(--accent-gold) 36%, transparent), transparent 80%);
+  }
+  /* her bubble names the print playing (main.ts phoneSay) */
+  .hero .show-say[data-names] .show-say-short,
+  .hero .show-say[data-names] .show-say-short::after { border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent); }
 }
 
 /* Plan item 638: in the studio's numbers row the live line sits between the two pairs from 1280 px (it hung under

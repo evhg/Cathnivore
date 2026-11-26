@@ -6753,7 +6753,7 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - **Accept:** 2+ figures per region at P and D; no figure over a counter, badge or hit target (e2e); frame time 16.7 ms or less at D with 4x CPU throttle; reduced motion still; existing board specs pass; shots P and D, light and dark.
 - **Size:** 2
 
-## 718. [ ] Portfolio phone: the prints play, and Cath names the one playing *(lane A, in progress)*
+## 718. [x] Portfolio phone: the prints play, and Cath names the one playing *(done 2026-11-26 17:12, lane A: on a phone the prints already played in turn (item 454); now her bubble names the one playing in a short line ('Runnel: today's water puzzle.'), follows the turn, and rests on her line when none plays. NIGHT SHIFT's phone print takes the neon's spill (pink from the signs, the cyan screen, the gold lamp, a violet sheen at the foot, screened so her black coat stays black): mean luminance 0.100 -> 0.131 at 2x (0.12+ at 1x, e2e poster-play). D unchanged. No new download, so LCP and the weight gate untouched. poster-play, portfolio-present 16 passed, --retries=0. Shots scratchpad s718)*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique; item 715 did this at D only)*
 - **Why:** `portfolio-P`: the four prints (12-385 x 552-844) are still frames and NIGHT SHIFT's reads nearly black; item 715's tour, where the loops play in turn and Cath points, stops at the desktop.
 - **Build:** on a phone the print in view plays its loop in turn (item 145's canvas loops), Cath's line names it, and a tap still opens the game. NIGHT SHIFT's print takes a lit frame of its street, not the dark one.

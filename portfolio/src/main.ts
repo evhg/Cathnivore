@@ -66,6 +66,7 @@ startPosterPlay(
     hoverOnly: () => wall.matches && !touring,
     onPlay: (e) => {
       if (touring && wall.matches) present?.(e?.poster ?? null)
+      if (!wall.matches) phoneSay(e?.game ?? null)
     },
   },
 )
@@ -119,6 +120,27 @@ function presentWork(cath: HTMLElement, cards: HTMLElement[], endTour: () => voi
   }
   wall.addEventListener('change', () => face(null))
   return face
+}
+
+/** Plan item 718: on a phone the prints play in turn and her bubble names the one playing, in a short line; back to
+ *  her resting line when none plays (out of view, idle, a hidden tab). */
+function phoneSay(game: string | null): void {
+  const box = document.querySelector<HTMLElement>('#show-say')
+  const short = box?.querySelector<HTMLElement>('.show-say-short')
+  if (!box || !short) return
+  short.dataset.rest ??= short.textContent ?? ''
+  const line = game ? SHORT_LINES[game] : undefined
+  short.textContent = line ?? short.dataset.rest
+  if (line && game) box.dataset.names = game
+  else delete box.dataset.names
+}
+
+/** Plan item 718: her phone line per print, short enough for the bubble over her head. */
+const SHORT_LINES: Record<string, string> = {
+  cathnivore: 'Cathnivore: hold my market!',
+  runnel: "Runnel: today's water puzzle.",
+  nightshift: 'NIGHT SHIFT: me, after dark.',
+  hedgerow: 'Hedgerow: save the farm!',
 }
 
 /** Plan item 454: her one line per print, in her voice. */
