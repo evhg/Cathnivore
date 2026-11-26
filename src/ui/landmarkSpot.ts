@@ -134,7 +134,7 @@ export const DRESSING_BOX: Record<'glut' | 'festival', Box> = {
   festival: { x0: -34.6, y0: -6, x1: 34.6, y1: 9 },
 }
 
-function scaled(b: Box, p: { x: number; y: number }, k: number): Box {
+export function scaled(b: Box, p: { x: number; y: number }, k: number): Box {
   return { x0: p.x + b.x0 * k, y0: p.y + b.y0 * k, x1: p.x + b.x1 * k, y1: p.y + b.y1 * k }
 }
 

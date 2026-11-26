@@ -6961,3 +6961,53 @@ html.no-animations .table-cath-figure { animation: none; }
      desktop: its summary took the Menu click at 1440x900). */
   .game:has(.table-head.with-table-cath) .seal-card { top: 152px; rotate: -1deg; }
 }
+
+/* Plan item 717: the market's shoppers (RegionFolk.tsx). Each strolls to the far end of its walk, browses, turns and
+   strolls back; three paces so a board's people never move in step. Freed land's are in the players' warm colours;
+   held land's few go grey under the wrap. Paused while the tab is hidden, still under reduced motion. */
+.region-folk .folk-shadow { fill: var(--ink); opacity: .2; }
+.region-folk .folk-legs { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
+.region-folk .folk-coat { stroke: var(--ink); stroke-width: .8; stroke-linejoin: round; fill: var(--clay); }
+.region-folk .folk-coat[data-tone="1"] { fill: var(--sea); }
+.region-folk .folk-coat[data-tone="2"] { fill: var(--pasture); }
+.region-folk .folk-coat[data-tone="3"] { fill: var(--wheat); }
+.region-folk .folk-coat[data-tone="4"] { fill: color-mix(in srgb, var(--clay) 55%, var(--sea)); }
+.region-folk .folk-head { stroke: var(--ink); stroke-width: .7; fill: color-mix(in srgb, var(--wheat) 45%, var(--paper-hi)); }
+.region-folk .folk-head[data-skin="1"] { fill: color-mix(in srgb, var(--wheat) 55%, var(--soil)); }
+.region-folk .folk-head[data-skin="2"] { fill: color-mix(in srgb, var(--soil) 75%, var(--ink)); }
+.region-folk .folk-basket { fill: var(--wheat); stroke: var(--ink); stroke-width: .6; stroke-linejoin: round; }
+.region-folk .folk-hat { fill: var(--ink); stroke: var(--ink); stroke-width: .9; stroke-linecap: round; }
+.region-folk[data-control="held"] .folk-coat,
+.region-folk[data-control="held"] .folk-basket { fill: color-mix(in srgb, var(--ink) 28%, var(--paper)); }
+.region-folk[data-control="held"] { opacity: .8; }
+.region-folk .folk-face { transform-box: fill-box; transform-origin: 50% 100%; }
+.region-folk .folk-face[data-dir="l"] { scale: -1 1; }
+.folk-walk { animation: folk-walk 13s ease-in-out infinite; }
+.folk-walk .folk-face[data-dir] { animation: folk-turn 13s step-end infinite; }
+.folk-walk .folk-face[data-dir="l"] { animation-name: folk-turn-l; }
+.folk-walk[data-pace="1"], .folk-walk[data-pace="1"] .folk-face[data-dir] { animation-duration: 16s; animation-delay: -5s; }
+.folk-walk[data-pace="2"], .folk-walk[data-pace="2"] .folk-face[data-dir] { animation-duration: 11s; animation-delay: -8s; }
+@keyframes folk-walk {
+  0%, 10% { translate: 0 0; }
+  44%, 60% { translate: var(--wx) var(--wy); }
+  94%, 100% { translate: 0 0; }
+}
+@keyframes folk-turn { 0% { scale: 1 1; } 52% { scale: -1 1; } }
+@keyframes folk-turn-l { 0% { scale: -1 1; } 52% { scale: 1 1; } }
+/* The awnings (the producers' stalls and freed ground's) stir: the cloth hangs from its top edge and lifts a little at
+   the lip; staggered so a row of stalls doesn't flap in step. */
+.awning-stir { transform-box: fill-box; transform-origin: 50% 0; animation: awning-stir 3.8s ease-in-out infinite alternate; }
+.free-stall:nth-child(2n) .awning-stir, .stall-piece:nth-child(2n) .awning-stir { animation-duration: 4.6s; animation-delay: -1.7s; }
+.free-stall:nth-child(3n) .awning-stir, .region-hex:nth-child(3n) .awning-stir { animation-delay: -2.9s; }
+@keyframes awning-stir {
+  from { transform: skewX(-2deg); }
+  to { transform: skewX(1.5deg) scaleY(1.05); }
+}
+html[data-tab-hidden] .awning-stir { animation-play-state: paused; }
+html.no-animations .awning-stir { animation: none; }
+@media (prefers-reduced-motion: reduce) { .awning-stir { animation: none; } }
+html[data-tab-hidden] .folk-walk, html[data-tab-hidden] .folk-walk .folk-face[data-dir] { animation-play-state: paused; }
+html.no-animations .folk-walk, html.no-animations .folk-walk .folk-face[data-dir] { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .folk-walk, .folk-walk .folk-face[data-dir] { animation: none; }
+}

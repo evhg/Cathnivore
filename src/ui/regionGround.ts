@@ -105,12 +105,12 @@ export function inHex(x: number, y: number, r: number): boolean {
   return Math.abs(x) <= (Math.sqrt(3) / 2) * r && Math.abs(y) <= r - Math.abs(x) / Math.sqrt(3)
 }
 
-function rectInHex(b: PieceRect, r: number): boolean {
+export function rectInHex(b: PieceRect, r: number): boolean {
   return inHex(b.x0, b.y0, r) && inHex(b.x1, b.y0, r) && inHex(b.x0, b.y1, r) && inHex(b.x1, b.y1, r)
 }
 
 /** A small seeded generator (mulberry32) from the region's id, so a tile's ground never changes between renders. */
-function rng(id: string): () => number {
+export function rng(id: string): () => number {
   let h = 2166136261
   for (const ch of id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619)
   let t = h >>> 0

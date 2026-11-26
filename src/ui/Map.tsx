@@ -4,9 +4,11 @@ import { Landmark } from './Landmark'
 import { playCues } from '../platform/sound'
 import { atTheEdge, gripStage, regionControl, squeezedLastTurn, type GripStage } from './grip'
 import { COUNT_FROM, ENEMY_Y, outletStage, type OutletStage, PRODUCER_H, PRODUCER_W, PRODUCER_Y, STACK_H, STACK_W, pieceLayout, type PieceRect } from './pieceLayout'
-import { BOARD_LANDMARKS, boxAt, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot } from './landmarkSpot'
+import { BOARD_LANDMARKS, boxAt, DRESSING_BOX, dressingSpot, LANDMARK_ART_H, landmarkMinScale, pickSpot, scaled } from './landmarkSpot'
 import { regionGround } from './regionGround'
 import RegionGroundArt from './RegionGroundArt'
+import RegionFolk from './RegionFolk'
+import { folkScale, regionFolk } from './regionFolk'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement } from 'react'
 import { REGIONS, SHORT_NAMES, regionMatchesPressureSlot, regionType } from '../content/map'
 import { LAYOUTS, placedLayout, type Layout } from '../content/layouts'
@@ -521,7 +523,7 @@ export function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face
           </g>
         ))}
         {/* the awning: stripes of their colour and paper, a darker valance scalloped along its lip */}
-        <g className="stall-awning">
+        <g className="stall-awning awning-stir">
           <polygon points={`${cx - hw + 1.2 * s},${top} ${cx + hw - 1.2 * s},${top} ${cx + aw},${lip} ${cx - aw},${lip}`} fill="var(--paper)" stroke="var(--ink)" strokeWidth={0.8} strokeLinejoin="round" />
           {Array.from({ length: stripes }, (_, i) =>
             i % 2 ? null : (
@@ -1122,6 +1124,15 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
           const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
           return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, control)
         })()
+        // Plan item 717: the region's shoppers, clear of the pieces, the landmark, the event's dressing and the stalls.
+        const folk = (() => {
+          if (!tray) return []
+          const taken = [...tray.rects]
+          if (spot) taken.push({ kind: 'badge', ...boxAt(spot, spot.scale) })
+          if (dress && (marketEvent === 'glut' || marketEvent === 'festival')) taken.push({ kind: 'badge', ...scaled(DRESSING_BOX[marketEvent], dress, dress.scale) })
+          if (r.liberated) taken.push(...LIFE_RECTS)
+          return regionFolk(id, taken, ground, control, folkScale(hexPx ?? 90))
+        })()
         return (
           <g
             key={id}
@@ -1217,6 +1228,9 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             </g>
             <g transform={`translate(${x}, ${y})`} pointerEvents="none" className="terrain-art land-layer">
               <TerrainArt type={def.type} id={id} />
+            </g>
+            <g transform={`translate(${x}, ${y})`}>
+              <RegionFolk folk={folk} control={control} seed={id.length} />
             </g>
             {/* Plan item 525: the land keeps its colour; Hollowell's hold sits on it as plastic. Held ground (dug in) is
                 wrapped tight, with a cold spot pool over-lighting it; contested ground with his Outlets on it carries a

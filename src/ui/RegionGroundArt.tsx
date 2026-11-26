@@ -32,9 +32,12 @@ const ART: Record<GroundKind, ReactElement> = {
       <circle cx={-1} cy={1} r={1.9} fill="var(--wheat)" stroke="var(--ink)" strokeWidth={0.6} />
       <circle cx={3} cy={1.2} r={1.9} fill="var(--pasture)" stroke="var(--ink)" strokeWidth={0.6} />
       <circle cx={6.6} cy={1.4} r={1.6} fill="var(--clay)" stroke="var(--ink)" strokeWidth={0.6} />
-      <path d="M-10.5,-3 L-8,-9.5 H8 L10.5,-3 Z" fill="var(--paper-hi, var(--paper))" {...ink} strokeWidth={1} />
-      <path d="M-6.3,-9.5 L-7.4,-3 H-4.4 L-3.8,-9.5 Z M-1.3,-9.5 L-1.5,-3 H1.5 L1.3,-9.5 Z M3.8,-9.5 L4.4,-3 H7.4 L6.3,-9.5 Z" fill="var(--clay)" />
-      <path d="M-10.5,-3 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0" fill="var(--clay)" {...ink} strokeWidth={0.8} />
+      {/* Plan item 717: the awning stirs in the breeze (styles: .awning-stir). */}
+      <g className="awning-stir">
+        <path d="M-10.5,-3 L-8,-9.5 H8 L10.5,-3 Z" fill="var(--paper-hi, var(--paper))" {...ink} strokeWidth={1} />
+        <path d="M-6.3,-9.5 L-7.4,-3 H-4.4 L-3.8,-9.5 Z M-1.3,-9.5 L-1.5,-3 H1.5 L1.3,-9.5 Z M3.8,-9.5 L4.4,-3 H7.4 L6.3,-9.5 Z" fill="var(--clay)" />
+        <path d="M-10.5,-3 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0 q1.3,1.8 2.6,0" fill="var(--clay)" {...ink} strokeWidth={0.8} />
+      </g>
     </g>
   ),
   reeds: (
