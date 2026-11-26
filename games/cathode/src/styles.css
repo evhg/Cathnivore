@@ -3365,9 +3365,12 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
    still test-fires. */
 @media (max-width: 700px) and (orientation: portrait) {
   .cp .cp-sheet[data-casefile][data-dossier] .cp-weapon-art.cp-case {
-    position: fixed; z-index: var(--z-lift); right: 8px; bottom: calc(var(--sub-b, 400px) + 48px); left: auto; /* px-ok */
-    width: min(64vw, 256px); height: 116px; margin: 0; /* px-ok */
-    background: none; box-shadow: none; transform: rotate(-4deg); overflow: visible;
+    /* Plan item 716: propped upright against the wall in the strip right of her, muzzle up (lying across the stage it
+       crossed the Ghost's skirt and hand): a 230x64 box turned -84deg stands about 87 px wide and 236 tall, its centre
+       47 px in from the screen's right edge, its foot 8 px over the subtitle's line */
+    position: fixed; z-index: var(--z-lift); right: -68px; bottom: calc(var(--sub-b, 400px) + 48px + 94px); left: auto; /* px-ok */
+    width: 230px; height: 64px; margin: 0; /* px-ok */
+    background: none; box-shadow: none; transform: rotate(-84deg); overflow: visible;
   }
   .cp .cp-sheet[data-dossier] .cp-case.is-lit .cp-gun { object-fit: contain; object-position: 50% 50%; transform: none; filter: brightness(1.5) contrast(1.12) drop-shadow(0 0 8px rgb(var(--black-rgb) / .85)); } /* px-ok */
   .cp .cp-sheet[data-dossier] .cp-case::after { left: 12%; right: 12%; top: 76%; height: 18%; }

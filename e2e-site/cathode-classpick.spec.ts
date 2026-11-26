@@ -811,6 +811,7 @@ test('upright phone: the picked role, its gun and the hold in view; tabs 44 px a
       name: r(document.querySelector('.cp-dot.is-on .cp-dot-name')),
       gun: r(document.querySelector('.cp-weapon-art')),
       row: r(document.querySelector('.cp-weapon')),
+      body: (window as unknown as { cathodeFront: { scene(): { figureBox(body?: boolean): { left: number; right: number } } } }).cathodeFront.scene().figureBox(true),
       hold: r(document.querySelector('.cp-hold')),
       scroll: document.scrollingElement!.scrollTop,
       mugFilter: getComputedStyle(document.querySelector('.cp-dot:not(.is-on) .cp-dot-mug')!).filter,
@@ -827,6 +828,8 @@ test('upright phone: the picked role, its gun and the hold in view; tabs 44 px a
   expect(m.gun.bottom - m.gun.top, 'the gun large').toBeGreaterThanOrEqual(90)
   expect(m.gun.left >= 0 && m.gun.right <= 390, 'the gun inside the screen').toBe(true)
   expect(m.row.bottom - m.row.top, 'the weapon row one line').toBeLessThanOrEqual(30)
+  // Plan item 716: propped upright beside her, never across her (its turned box may graze her edge by its corner)
+  expect(m.gun.left, 'the gun clear of her figure').toBeGreaterThanOrEqual(m.body.right - 12)
   expect(m.tabs).toHaveLength(5)
   for (const t of m.tabs) {
     expect(t.right - t.left, 'tab width').toBeGreaterThanOrEqual(44)
