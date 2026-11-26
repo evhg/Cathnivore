@@ -27,9 +27,12 @@
      plank), so a groove waiting for water reads as a channel; the water runs deep blue against the sand. */
   /* Plan item 466: the bed stays item 421's pale sand (its water must read 3:1 against it, which needs a bed
      luminance of about 0.54); the sunlit wall is dulled instead, so the cut reads below the tile's face. */
-  --groove-bed: #dcc493;
+  /* Plan item 704: a dry ditch reads carved, not a raised plank: its sunlit wall is lit above the tile's face
+     (it was dulled to the face's own tone, so the pale band read as a ridge beside the dark wall), and the sandy floor
+     a step below the face (about the least luminance that keeps every season's water 3:1 on it). */
+  --groove-bed: #d9c08e;
   --groove-bed-wet: #3a2a1a;
-  --bank-sun: #b9aa8a;
+  --bank-sun: #f2e2b6;
   --bank-shade: #2c2720;
   --pebble: #cfc4b0;
   --basin: #a89f90;
