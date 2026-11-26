@@ -64,6 +64,7 @@ import {
   heroSize,
   HERO_SCALE,
   drawTower,
+  towerReach,
   enemyLift,
   enemyScale,
   drawnLen,
@@ -80,7 +81,7 @@ import { driverFace } from "./fleetfaces";
 /** Plan item 322: a tower on the field is drawn this much over its cell's size. */
 // Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
 // 1.56, the item's 1.3x, neighbours on adjacent plots overlapped and the top row met the frame).
-const FIELD_TOWER = 1.4;
+export const FIELD_TOWER = 1.4;
 
 interface Shot {
   kind: TowerKind;
@@ -1730,7 +1731,13 @@ export class Renderer {
     const rode = this.badged;
     rode.clear();
     // Plan item 695: the towers' screen boxes (the cell and the sprite's height over it), for the badges to keep off.
-    this.towerBoxes = game.towers.map((tw) => ({ x: X(tw.col), y: Y(tw.row) - s * 0.55, w: s, h: s * 1.55 }));
+    // Plan item 721: as tall as its sprite draws (the windmill's sails, the mast's tip), not a flat 1.05 cells over its centre.
+    this.towerBoxes = game.towers.map((tw) => {
+      const r = towerReach(tw.kind, tw.tier, tw.path);
+      const up = Math.max(1.05, r.up * FIELD_TOWER) * s;
+      const half = Math.max(0.5, r.half * FIELD_TOWER) * s;
+      return { x: X(tw.col + 0.5) - half, y: Y(tw.row + 0.5) - up, w: half * 2, h: s * 0.5 + up };
+    });
     this.badgeBoxes = [];
     // Plan item 700: and the vehicles drawn on the lanes (l27's '181 103 51 9' sat on the lorries it counted).
     this.vehicleBoxes = [];

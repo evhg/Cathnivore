@@ -231,6 +231,49 @@ function drawPlinth(ctx: C, tier: 1 | 2 | 3, x: number, base: number, s: number)
   ctx.restore();
 }
 
+/**
+ * Plan item 721: how far a tower's sprite reaches above the point it is drawn at, in its drawn size (the windmill's sails at
+ * the top of their turn, the mast's tip). Measured once per kind and tier by drawing it offscreen over a few moments
+ * of its idle; the badges and Cath's line keep clear of it (a box 1.05 cells up let them meet the sails and the mast).
+ */
+const reachCache = new Map<string, { up: number; half: number }>();
+export function towerReach(kind: TowerKind, tier: number, path?: readonly number[]): { up: number; half: number } {
+  const key = `${kind}:${towerTier({ tier, ...(path ? { path } : {}) })}:${path?.join(",") ?? ""}`;
+  const known = reachCache.get(key);
+  if (known) return known;
+  let reach = { up: 0.75, half: 0.5 };
+  try {
+    const S = 64;
+    const W = S * 3;
+    const H = S * 4;
+    const cv = typeof document !== "undefined" ? document.createElement("canvas") : null;
+    const ctx = cv?.getContext("2d", { willReadFrequently: true });
+    if (cv && ctx) {
+      cv.width = W;
+      cv.height = H;
+      const cy = S * 3;
+      let top = cy;
+      let side = 0;
+      for (let i = 0; i < 8; i++) {
+        ctx.clearRect(0, 0, W, H);
+        drawTower(ctx, { kind, tier, spec: null, fired: 9, dazed: false, bare: true, ...(path ? { path } : {}) }, W / 2, cy, S, i * 0.41);
+        const px = ctx.getImageData(0, 0, W, H).data;
+        for (let y = 0; y < H; y++)
+          for (let x = 0; x < W; x++)
+            if (px[(y * W + x) * 4 + 3]! > 40) {
+              top = Math.min(top, y);
+              side = Math.max(side, Math.abs(x + 0.5 - W / 2));
+            }
+      }
+      reach = { up: (cy - top) / S + 0.03, half: side / S + 0.03 };
+    }
+  } catch {
+    // no canvas (tests): about a tower's usual size
+  }
+  reachCache.set(key, reach);
+  return reach;
+}
+
 export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: number, t: number): void {
   const base = y + s * 0.3;
   const tier = towerTier(look);
