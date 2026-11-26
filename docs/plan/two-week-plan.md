@@ -6722,7 +6722,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** her figure 64 px+ tall at 1440x900 and 48 CSS px+ at 390x844 (2D and 3D); the bark never over the lane, the seed rack or Go (e2e at P and D); reduced motion fades only; shots P and D.
 - **Size:** 2
 
-## 714. [ ] Cathnivore phone: the whole board with full region names
+## 714. [ ] Cathnivore phone: the whole board with full region names *(lane A, in progress)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique; item 710 closed Brindle at x 8 as the board filling the width; this is the names)*
 - **Why:** `cath-game-P`: Brindle's hex at the left edge (0-20 x 245-380), labels cut to 'Kings', 'Salt…'; `cath-title-P` the same ('Moor', 'Salt', 'Oak', 'River', 95-375 x 360-590), while cards name 'Brindle Hills' in full.
 - **Build:** the phone board fitted inside a 16 px gutter, full region names on curved banners; double-tap zoom to about 1.6x with a recentre chip.
