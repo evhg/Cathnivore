@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { adoptMeshes, collapse, FIN, fistGrip, GunKit } from "./gunkit";
+import { adoptMeshes, collapse, FIN, fistGrip, GunKit, type Finish } from "./gunkit";
 import { KESTREL_DOT, buildKestrel } from "./kestrel";
 import { POSES, type HandPose } from "./hands";
 import { ARSENAL, isHero, type FlashKind, type HeroModel } from "./feel/arsenal";
@@ -150,21 +150,39 @@ function buildPin(phone = false): GunRig {
   // nothing; there it comes up and in, the gloved fist on the frame and clear of the AIM and FIRE buttons.
   // Plan item 673: at D too the fist sat at the frame's foot (its fingers cut, the baton 4.6% of the frame): a little up
   // and in, so the gloved fist holds it in the frame.
-  const r = rig(phone ? new THREE.Vector3(0.17, -0.165, -0.38) : new THREE.Vector3(0.185, -0.178, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+  const r = rig(phone ? new THREE.Vector3(0.19, -0.165, -0.38) : new THREE.Vector3(0.185, -0.178, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
   const b = new THREE.Group();
-  b.add(at(cyl(0.017, 0.16, M.rubber, 18), 0, 0, 0.0));
-  for (let i = 0; i < 7; i++) b.add(at(cyl(0.0185, 0.004, M.rubber, 18), 0, 0, -0.07 + i * 0.022));
-  b.add(at(cyl(0.019, 0.02, M.brass, 18), 0, 0, 0.09));
-  b.add(at(cyl(0.013, 0.2, M.steel, 16), 0, 0, -0.18));
+  // Plan item 712: the Pin as an old, cared-for tool, not a silver tube. The grip is a leather wrap wound in a helix
+  // (a raised tape edge every 1.4 cm), the steel is brushed along its length and worn bright at its edges, a darker
+  // blued collar marks each telescoping joint, and the brass cap is polished by her palm.
+  const tag = <T extends THREE.Mesh>(m: T, surf: Finish): T => ((m.userData.surf = surf), m);
+  const wrap: Finish = { color: 0x1c1714, metal: 0, rough: 0.62, sheen: 0.3, coat: 0.1, band: "leather", scale: 2.4, wear: 0.6 };
+  const steel: Finish = { color: 0x7e848c, metal: 1, rough: 0.34, coat: 0.35, band: "brushed", scale: 1.5, wear: 1 };
+  const collar: Finish = { color: 0x24272c, metal: 1, rough: 0.3, coat: 0.6, band: "brushed", wear: 1 };
+  b.add(at(tag(cyl(0.017, 0.16, M.rubber, 18), wrap), 0, 0, 0.0));
+  const helix: THREE.Vector3[] = [];
+  for (let i = 0; i <= 160; i++) {
+    const t = i / 160;
+    const a = t * Math.PI * 2 * 11;
+    helix.push(new THREE.Vector3(Math.cos(a) * 0.017, Math.sin(a) * 0.017, -0.075 + t * 0.15));
+  }
+  b.add(tag(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helix), 264, 0.0016, 5), M.rubber), { ...wrap, color: 0x2a221c, wear: 1 }));
+  b.add(at(tag(cyl(0.019, 0.02, M.brass, 18), FIN.brass), 0, 0, 0.09));
+  b.add(at(tag(cyl(0.0185, 0.008, M.brass, 18), FIN.brass), 0, 0, -0.084));
+  b.add(at(tag(cyl(0.013, 0.2, M.steel, 16), steel), 0, 0, -0.18));
+  b.add(at(tag(cyl(0.0148, 0.012, M.steel, 16), collar), 0, 0, -0.272));
   b.add(at(box(0.003, 0.0035, 0.19, M.rim, 0.001), 0.0112, 0.0065, -0.18));
   b.add(at(box(0.0025, 0.003, 0.19, M.rim, 0.001), 0.0085, 0.0045, -0.37));
-  b.add(at(cyl(0.01, 0.2, M.steel, 16), 0, 0, -0.37));
-  b.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.014, 14, 10), M.steel), 0, 0, -0.475));
-  b.rotation.x = 1.0; // held up over the shoulder, ready to swing
+  b.add(at(tag(cyl(0.01, 0.2, M.steel, 16), steel), 0, 0, -0.37));
+  b.add(at(tag(cyl(0.0118, 0.01, M.steel, 16), collar), 0, 0, -0.465));
+  b.add(at(tag(new THREE.Mesh(new THREE.SphereGeometry(0.014, 14, 10), M.steel), steel), 0, 0, -0.475));
+  // Plan item 712: held forward and leaning out to the right, ready to swing (it stood upright over her shoulder, the
+  // tip at the top of the frame): the whole Pin now sits in the right third and the lower half of the view.
+  b.rotation.set(0.45, -0.6, 0);
   b.position.set(0, 0.02, 0);
   r.root.add(b);
   r.action = b;
-  r.muzzle.position.set(0, 0.42, -0.26); // the ball end: the swing trail follows it
+  r.muzzle.position.copy(new THREE.Vector3(0, 0, -0.475).applyEuler(b.rotation).add(b.position)); // the ball end: the swing trail follows it
   attachHands(r, [0, 0, 0.02], null, 0, b);
   return r;
 }

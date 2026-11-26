@@ -733,7 +733,9 @@ export function adoptMeshes(root: THREE.Object3D, movers: THREE.Object3D[], phon
     const mat = mesh.material as THREE.MeshStandardMaterial;
     const ei = (mat.emissiveIntensity ?? 0) * Math.max(mat.emissive?.r ?? 0, mat.emissive?.g ?? 0, mat.emissive?.b ?? 0);
     let surf: Surface;
-    if (ei > 0.5) surf = { emit: mat.emissive.getHex(), intensity: mat.emissiveIntensity };
+    // A mesh may name its kit surface outright (plan item 712: the Pin's worn steel and wrapped grip).
+    if (mesh.userData.surf) surf = mesh.userData.surf as Surface;
+    else if (ei > 0.5) surf = { emit: mat.emissive.getHex(), intensity: mat.emissiveIntensity };
     else {
       const metal = mat.metalness ?? 0;
       surf = { color: mat.color.getHex(), metal, rough: mat.roughness ?? 0.6, coat: metal > 0.5 ? 0.6 : 0, band: metal > 0.5 ? "brushed" : mat.roughness > 0.8 ? "nylon" : "grain" };

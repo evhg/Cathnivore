@@ -11,7 +11,7 @@ const q = new URLSearchParams(location.search);
 const phone = q.get("phone") === "1";
 // Pose overrides for tuning: tR/tL = thumb euler, tcR/tcL = thumb curls, cR/cL = finger curls, wR/wL = wrap.
 const nums = (k: string) => q.get(k)?.split(",").map(Number);
-for (const [side, name] of [["R", "pistolR"], ["L", "pistolL"]] as const) {
+for (const [side, name] of [["R", "pistolR"], ["L", "pistolL"], ["F", "fist"]] as const) {
   const p = POSES[name]!;
   const t = nums(`t${side}`);
   if (t) p.thumb = t as [number, number, number];

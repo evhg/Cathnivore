@@ -64,7 +64,9 @@ export const POSES: Record<string, HandPose> = {
   /** C5: the support hand over the slide's rear for a rack or a press-check (fingers curled over the top). */
   rackL: { curl: [1.1, 1.15, 1.2, 1.25], wrap: 0.25, thumb: [-0.5, 0.1, 0.45], thumbCurl: [0.3, 0.25] },
   /** A fist round a handle (batons, the sledge, the blade). */
-  fist: { curl: [1.35, 1.4, 1.45, 1.5], wrap: 0.45, thumb: [-1.1, 0.3, 0.6], thumbCurl: [0.6, 0.5] },
+  // Plan item 712: the thumb closes over the fingers round the handle (at [-1.1, 0.3, 0.6] it stood up off the grip
+  // like a hook, the critique's 'grey blob').
+  fist: { curl: [1.35, 1.4, 1.45, 1.5], wrap: 0.45, thumb: [-0.5, -0.9, 1.4], thumbCurl: [1.4, 1.2] },
 };
 
 interface ArmBones {
