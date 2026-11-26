@@ -6677,7 +6677,7 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 - **Accept:** each class's sprite bounds differ by 20%+ in aspect ratio from every other (unit test); no vehicle rect overlaps another or the depot rect in l27 round 15 (e2e); body hues of the classes 40 degrees+ apart; shots P and D.
 - **Size:** 2
 
-## 708. [ ] Cathnivore game D: Hollowell a glossy corporate presence, the HUD a ledger *(lane A, in progress)*
+## 708. [ ] Cathnivore game D: Hollowell a glossy corporate presence, the HUD a ledger *(measured 2026-11-26 06:35 by lane A, handed back: at 1440x900 the board (`.market-board`) is 334-540 x 16-87, labels already 12.5 px, figures 17 px (need 22); the Rival portrait 98 px at 540-638 x 18-116 (need 120); the plan (`.plan-strip`) 1136-1342 x 20-228 and its tab 1138-1341 x 235-256. The HUD's look is item 366's chalk slate (`src/styles/table.css` ~5600-5625, the 1240px+ two-row grid ~5578); the plaque tab is Game.tsx ~3910. Before shot scratchpad b708)*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique)*
 - **Why:** `plan1126a/cath-game-D`: Hollowell is a round portrait (540-640 x 15-125) wedged against a cramped HUD (335-540 x 15-85) with 9-10 px labels; its quarterly plan (1140-1340 x 20-250) reads as a stock blue form. VISION asks for the corporations glossy, plastic, over-lit and clinical, a staged foil to the paper world.
 - **Build:** the portrait and the Squeeze/Expand/Scout plan one glossy 'Quarterly Plan' slab (plastic gradient, specular edge, Hollowell logotype, portrait 120 px+); the Round/Trust/Land/Rift readings a paper ledger strip; an armed Squeeze slides the slab in with no overshoot and a sterile blip.
