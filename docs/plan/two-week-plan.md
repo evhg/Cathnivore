@@ -6708,7 +6708,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** at P and D the connected path shows water within 300 ms of a tap (e2e); a watered field's face differs from a dry one's by 3:1 or a 20+ ΔE hue; reduced motion shows the state without animation; runnel-tiles still passes; the solved look unchanged; shots P and D.
 - **Size:** 3
 
-## 712. [ ] NIGHT SHIFT: Cath's first-person hands and baton read as hers *(lane A, in progress)*
+## 712. [x] NIGHT SHIFT: Cath's first-person hands and baton read as hers *(done 2026-11-26 lane A: wound leather grip, brushed edge-worn steel, collars, brass ferrule; held forward-right: D x 1080-1290 of 1440, top y 420 of 900; L x 1195-1340 of 1688, top 47%; thumb closed on the grip; the gloves, stitching, trench cuff per class, sway, bob and swing were already there; cathode-perf within budget alone; shots L and D)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique)*
 - **Why:** `plan1126b/ns-street-P` (sideways, 2x): the baton (1030-1290 x 65-780) an untextured silver cylinder over a sixth of the screen; the hand (1130-1500 x 520-780) a grey blob; no glove or trench cuff.
 - **Build:** a gloved hand with stitching and her trench cuff (per class outfit), a baton with a grip wrap and worn steel; idle sway, walk bob, a swing; kept in the bottom-right third.
