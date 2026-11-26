@@ -150,7 +150,7 @@ function buildPin(phone = false): GunRig {
   // nothing; there it comes up and in, the gloved fist on the frame and clear of the AIM and FIRE buttons.
   // Plan item 673: at D too the fist sat at the frame's foot (its fingers cut, the baton 4.6% of the frame): a little up
   // and in, so the gloved fist holds it in the frame.
-  const r = rig(phone ? new THREE.Vector3(0.19, -0.165, -0.38) : new THREE.Vector3(0.185, -0.178, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+  const r = rig(phone ? new THREE.Vector3(0.16, -0.17, -0.38) : new THREE.Vector3(0.185, -0.178, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
   const b = new THREE.Group();
   // Plan item 712: the Pin as an old, cared-for tool, not a silver tube. The grip is a leather wrap wound in a helix
   // (a raised tape edge every 1.4 cm), the steel is brushed along its length and worn bright at its edges, a darker
@@ -178,7 +178,9 @@ function buildPin(phone = false): GunRig {
   b.add(at(tag(new THREE.Mesh(new THREE.SphereGeometry(0.014, 14, 10), M.steel), steel), 0, 0, -0.475));
   // Plan item 712: held forward and leaning out to the right, ready to swing (it stood upright over her shoulder, the
   // tip at the top of the frame): the whole Pin now sits in the right third and the lower half of the view.
-  b.rotation.set(0.45, -0.6, 0);
+  // On a phone held sideways the full lean swung the ball end under the FIRE key (1.2% of it held steel), so there it
+  // leans out half as far and the fist sits 1 cm further in.
+  b.rotation.set(0.45, phone ? -0.3 : -0.6, 0);
   b.position.set(0, 0.02, 0);
   r.root.add(b);
   r.action = b;
