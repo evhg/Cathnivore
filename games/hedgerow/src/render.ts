@@ -2321,20 +2321,24 @@ export class Renderer {
     const level = game.level;
     const pad = 3;
     const hit = (a: Rect, b: Rect) => a.x < b.x + b.w + pad && a.x + a.w + pad > b.x && a.y < b.y + b.h + pad && a.y + a.h + pad > b.y;
+    // Where two lanes share a road (l34), the second lane's vehicles also keep off the first's.
+    const first: Rect[] = [];
     for (const lane of [undefined, 1] as const) {
       const on = game.enemies
         .filter((e) => (e.lane ?? undefined) === lane && this.lay.slots.has(e.id))
         .sort((a, b) => this.lay.slots.get(b.id)!.dist - this.lay.slots.get(a.id)!.dist || a.id - b.id);
       const ahead: Rect[] = [];
+      const other = lane ? first : [];
       for (const e of on) {
         const sl = this.lay.slots.get(e.id)!;
         const d0 = sl.dist;
         let box = this.vehicleBox(level, e, X, Y, s);
-        while (ahead.slice(-2).some((b) => hit(box, b)) && sl.dist > Math.max(0, d0 - 1)) {
+        while ((ahead.slice(-2).some((b) => hit(box, b)) || other.some((b) => hit(box, b))) && sl.dist > Math.max(0, d0 - 1)) {
           sl.dist = Math.max(0, sl.dist - 0.04);
           box = this.vehicleBox(level, e, X, Y, s);
         }
         ahead.push(box);
+        if (!lane) first.push(box);
       }
     }
   }
