@@ -51,20 +51,31 @@ if (top) {
 
 // Plan item 145: the hero's game prints play. Plan item 454: at D (a pointer that hovers) only the print pointed at or
 // focused plays, and Cath turns to it, points, and names it; on a phone they play in turn.
+// Plan item 715: until a print is first pointed at or focused, the desktop wall tours: the prints play in turn and
+// Cath presents each (the wall read as four stills with Cath pointing at nothing); from then on, item 454's rule.
 const wall = matchMedia('(min-width: 1100px) and (hover: hover)')
 const showCards = [...document.querySelectorAll<HTMLAnchorElement>('.hero-show .show-card')]
+let touring = true
+let present: ((card: HTMLElement | null) => void) | null = null
 startPosterPlay(
   showCards.flatMap((card) => {
     const game = (['cathnivore', 'runnel', 'hedgerow', 'nightshift'] as const).find((id) => card.dataset.game === id)
     return game ? [{ poster: card, art: card, game }] : []
   }),
-  { hoverOnly: () => wall.matches },
+  {
+    hoverOnly: () => wall.matches && !touring,
+    onPlay: (e) => {
+      if (touring && wall.matches) present?.(e?.poster ?? null)
+    },
+  },
 )
-if (heroCath) presentWork(heroCath, showCards)
+if (heroCath) present = presentWork(heroCath, showCards, () => (touring = false))
 void shipped(document.querySelector<HTMLElement>('#shipped-text'))
 void studio(document.querySelector<HTMLElement>('#studio'))
 
-function presentWork(cath: HTMLElement, cards: HTMLElement[]): void {
+/** Wires Cath to the wall; returns how the tour presents a print (null: back to rest). `endTour` runs on the first
+ *  point or focus on a print. */
+function presentWork(cath: HTMLElement, cards: HTMLElement[], endTour: () => void): (card: HTMLElement | null) => void {
   const say = document.querySelector<HTMLElement>('#show-say .show-say-text')
   const rest = say?.textContent ?? ''
   const resting = cath.innerHTML
@@ -96,8 +107,8 @@ function presentWork(cath: HTMLElement, cards: HTMLElement[]): void {
     document.querySelector('#show-say')?.setAttribute('data-game', game)
   }
   for (const card of cards) {
-    card.addEventListener('pointerenter', () => face(card))
-    card.addEventListener('focusin', () => face(card))
+    card.addEventListener('pointerenter', () => (endTour(), face(card)))
+    card.addEventListener('focusin', () => (endTour(), face(card)))
     // A short grace so moving between two prints doesn't flick her back to rest in between.
     const leave = () => {
       clearTimeout(leaveTimer)
@@ -107,6 +118,7 @@ function presentWork(cath: HTMLElement, cards: HTMLElement[]): void {
     card.addEventListener('focusout', leave)
   }
   wall.addEventListener('change', () => face(null))
+  return face
 }
 
 /** Plan item 454: her one line per print, in her voice. */

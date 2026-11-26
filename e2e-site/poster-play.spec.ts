@@ -43,9 +43,9 @@ test('no poster plays off-screen', async ({ page }) => {
 test('the portfolio prints play one at a time', async ({ page }) => {
   await page.goto('/')
   if (page.viewportSize()!.width >= 1100) {
-    // Plan item 454: at D a print plays only while it is pointed at or focused.
-    await page.waitForTimeout(3000)
-    await expect(playing(page)).toHaveCount(0)
+    // Plan item 715: until a print is pointed at, the wall tours: one plays at a time, in turn.
+    await expect(playing(page)).toHaveCount(1, { timeout: 8000 })
+    // Plan item 454: from the first point on, a print plays only while it is pointed at or focused.
     await page.locator('.show-b').hover()
     await expect(page.locator('.show-b')).toHaveAttribute('data-playing', 'runnel')
     await page.mouse.move(5, 880)

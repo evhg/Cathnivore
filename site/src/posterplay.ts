@@ -236,7 +236,11 @@ export type PosterEntry = {
 }
 
 /** Starts the poster loops. Returns a stop function (used by tests and page teardown). */
-export function startPosterPlay(entries: PosterEntry[], opts: { turn?: number; delay?: number; idle?: number; hoverOnly?: () => boolean } = {}): () => void {
+export function startPosterPlay(
+  entries: PosterEntry[],
+  /** `onPlay`: told whenever the poster playing changes (null when none plays), so a host can present it. */
+  opts: { turn?: number; delay?: number; idle?: number; hoverOnly?: () => boolean; onPlay?: (e: PosterEntry | null) => void } = {},
+): () => void {
   if (!entries.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return () => {}
   const turnMs = opts.turn ?? 5200
   // Like the portfolio's field (critique 2026-11-03), the loops rest when nobody is there, so the page goes idle.
@@ -277,6 +281,7 @@ export function startPosterPlay(entries: PosterEntry[], opts: { turn?: number; d
       canvases.get(playing)?.canvas.classList.remove('on')
     }
     playing = next
+    opts.onPlay?.(next)
     if (next) {
       const g = ctxFor(next)
       if (!g) return setPlaying(null)

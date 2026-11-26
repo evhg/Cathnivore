@@ -20,7 +20,11 @@ test('Cath presents the print you point at', async ({ page }) => {
   expect(geo.scroll).toBeLessThanOrEqual(0)
 
   const say = page.locator('#show-say .show-say-text')
-  await expect(say).toContainText('Pick one')
+  // Plan item 715: before anyone points, she presents the print that plays in its turn, and names it
+  const touring = (await page.locator('[data-playing]').getAttribute('data-playing', { timeout: 8000 }))!
+  await expect(page.locator('#hero-cath')).toHaveAttribute('data-facing', touring)
+  await expect(page.locator('#hero-cath svg.cath')).toHaveClass(/cath-pose-point/)
+  await expect(say).not.toContainText('Pick one')
   await page.locator('.show-c').hover()
   await expect(page.locator('#hero-cath')).toHaveAttribute('data-facing', 'nightshift')
   await expect(say).toHaveText(/^NIGHT SHIFT:/)
