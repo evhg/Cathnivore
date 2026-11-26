@@ -6767,7 +6767,7 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - **Accept:** 6+ people visible from the spawn at 844x390 and 1440x900 (count from `window.cathode`); they scatter within 1 s of a shot (e2e); `scripts/cathode-perf.mjs` within budget (run alone); shots L and D.
 - **Size:** 2
 
-## 720. [ ] Hedgerow map: progress you can read on the stops
+## 720. [ ] Hedgerow map: progress you can read on the stops *(lane A, in progress)*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique; item 314's painted medallions stay)*
 - **Why:** `hedge-menu-D` (stops 285-1060 x 320-440 and 710-830) and `hedge-menu-P`: the stops ahead are identical glass domes; only 'Next' differs; a cleared stop shows no stars, and the lane doesn't show how far you've come.
 - **Build:** a cleared stop wears its 1-3 stars and a strip of bunting; the lane is painted in up to Next and pale beyond; a locked stop stays item 314's sepia print, with its unlock line on tap.
