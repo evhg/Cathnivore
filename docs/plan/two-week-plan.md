@@ -6715,7 +6715,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** at 844x390 and 1440x900 the viewmodel inside the right 30% and bottom 55%, never over the crosshair or objective tag; `scripts/cathode-perf.mjs` within budget (run alone); shots L and D.
 - **Size:** 2
 
-## 713. [ ] Hedgerow: Cath has presence in the battle *(lane A, in progress)*
+## 713. [x] Hedgerow: Cath has presence in the battle *(done 2026-11-26 13:25, lane A, 9ff4bb3b: mid-round she speaks a line with her 52 px portrait (44 on a phone) in a corner of the field on a leak, a boss, a combo (5 knocks in 1.5 s), her Pie, her Rally or the neighbours, at most one every 8 s for 2.6 s, off the lane, rack, Go, plates and banners (bark.ts slides it along the edge, then the side); her one-time tip bubble outranks it. Rally and the neighbours are a cast: arms up over a 0.8 s gold burst (a fading glow only under reduced motion; her cheer in 3D). 2D she breathes and shifts her weight at rest and keeps 50 px of figure (phone l34 45 -> 50). Measured: 2D D 78-86 px, P 50-56; 3D D 137-149, P 58-64. Deviation: no 1.6x token (at D she'd cover plots; she already clears 64/48). Unit hedgerow-bark; e2e hedgerow-bark (l27, l34, P, D, reduced motion); key art re-shot. Shots scratchpad s713)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique; item 681's level-up badge stays)*
 - **Why:** `hedge-l34-2d-D` (895-945 x 280-370), `hedge-l27-2d-D` (665-710 x 380-460), `hedge-l27-3d-D` (780-835 x 280-395): a small static figure lost among towers, no reactions or lines in battle.
 - **Build:** her token about 1.6x with an idle loop and a cast pose; a corner bark with her portrait on a leak, a boss, a combo, Pie or Rally (one per 8 s at most); a 600-900 ms staged ability moment.
@@ -6736,7 +6736,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** LCP under 2.5 s and the weight gate passes; reduced motion shows posters; at P all four tiles or three and a peek within 844 px; shots P and D.
 - **Size:** 2
 
-## 716. [ ] The bugs from the 2026-11-26 11:40 critique, fixed as one batch
+## 716. [ ] The bugs from the 2026-11-26 11:40 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique; check each on today's build first)*
 - Cathnivore: game D the hand strip (345-1330 x 775-890) overlapping and cut at the bottom ('Market Day Banner' at y 875); the Market tab's count badge clipped (1403-1428 x 8-28); campaign D Cath cut by the bottom (790-930 x 820-900) with an empty column above her (745-1000 x 130-500).
 - NIGHT SHIFT: role pick P, item 709's stage gun crosses the Ghost's skirt and hand (2x 275-725 x 700-775): place it clear of her figure box (`scene().figureBox()`), or behind her lower edge.
