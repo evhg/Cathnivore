@@ -79,7 +79,9 @@ test('phone hero: Cath behind her stall', async ({ page }) => {
     const top = r.top + parseFloat(before.top)
     const bottom = r.bottom - parseFloat(after.bottom)
     const cta = [...document.querySelectorAll('.cta-row > *')].map((e) => e.getBoundingClientRect().bottom)
+    const ctaTop = Math.min(...[...document.querySelectorAll('.cta-row > *')].map((e) => e.getBoundingClientRect().top))
     return {
+      gap: ctaTop - bottom,
       h: r.height,
       span: bottom - top,
       counter: after.content,
@@ -93,5 +95,7 @@ test('phone hero: Cath behind her stall', async ({ page }) => {
   expect(m.counter).toContain('FRESH')
   expect(m.span).toBeLessThanOrEqual(360)
   expect(m.ctaBottom).toBeLessThanOrEqual(844)
+  // plan item 705: the buttons stand clear of the counter's foot (they met it with no gap)
+  expect(m.gap).toBeGreaterThanOrEqual(10)
   expect(m.postersAwning).toBe('none')
 })

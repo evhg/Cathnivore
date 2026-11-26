@@ -2321,7 +2321,8 @@ body {
     scroll-snap-align: start;
   }
   .hero-game-art { grid-column: 1 / -1; aspect-ratio: 16 / 8.2; }
-  .stall-hero .hero-text > .cta-row { margin-top: 12px; }
+  /* plan item 705: the counter (the stall's ::after) hangs 16px below its box, so the buttons stand 14px clear of its foot */
+  .stall-hero .hero-text > .cta-row { margin-top: 30px; }
   .hero-game-cath { width: 22%; }
   /* plan item 677: half length on a phone's card (data-framing-phone), as large as the others' figures */
   .hero-game-runnel .hero-game-cath { width: 24%; }
