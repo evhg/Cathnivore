@@ -78,7 +78,7 @@ test('sideways phone: her weapon is in hand, lower right, and answers FIRE', asy
 // Plan item 673: at D too her gloved fist holds the Pin in the frame (its fist sat at the frame's foot, the baton 4.6%).
 test('desktop: the Pin is in her hand, 5% or more of the frame', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop layout')
-  test.setTimeout(400_000)
+  test.setTimeout(600_000)
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/nightshift/')
   await page.evaluate(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full', quality: 'high' })))
@@ -92,8 +92,17 @@ test('desktop: the Pin is in her hand, 5% or more of the frame', async ({ page, 
     c.input.forced = { reload: true }
     return !c.arsenal.lowered
   }, null, { timeout: 60_000, polling: 1000 })
+  // The dip damps a little each drawn frame, so wait on frames, not seconds: on a loaded CI runner this 1440x900
+  // high-quality street draws one frame in five seconds or more (12 frames in all on 82447b03, the dip at 0.011 when
+  // the 60 s wait gave up with no lower, raise, reload or bolt timer holding it). Give it up to 40 frames.
   const t0 = Date.now()
-  await page.waitForFunction(() => (window as unknown as { cathode: C }).cathode.arsenal.anim.dip < 0.05, null, { timeout: 60_000, polling: 500 }).catch(async (e) => {
+  const f0 = await page.evaluate(() => (window as unknown as { cathode: C }).cathode.stats.frames)
+  await page.waitForFunction((f) => {
+    const c = (window as unknown as { cathode: C }).cathode
+    if (c.arsenal.anim.dip < 0.05) return true
+    if (c.stats.frames - f > 40) throw new Error(`dip ${c.arsenal.anim.dip} after 40 frames`)
+    return false
+  }, f0, { timeout: 240_000, polling: 500 }).catch(async (e) => {
     const st = await page.evaluate(() => {
       const c = (window as unknown as { cathode: C & Record<string, unknown> }).cathode
       const a = c.arsenal as unknown as Record<string, unknown>
