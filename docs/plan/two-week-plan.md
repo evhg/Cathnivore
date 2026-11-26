@@ -6809,7 +6809,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** no native-looking select (e2e); streak and solved as graphics with aria labels; WCAG AA text; shots D, and P where the sheet opens.
 - **Size:** 2
 
-## 726. [ ] The bugs from the 2026-11-26 19:30 critique, fixed as one batch *(lane A, in progress)*
+## 726. [ ] The bugs from the 2026-11-26 19:30 critique, fixed as one batch
 - Hedgerow l27 2D D: the seed counter (1062-1190 x 20-56) shows its coin and no number.
 - Hedgerow l27 3D P: the '86 TO GO' depot sign cut by the left edge (0-95 x 455-480).
 - Hedgerow l27 3D D: '+51', '+20' and 'Bridge up!' pale gold on gold/white models: an outline or dark backing.
