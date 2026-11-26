@@ -6691,7 +6691,7 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 - **Accept:** at 390x844 the role name, its gun and the CTA in view without scrolling (e2e); role tabs 44 CSS px+ with 8 px+ between; the picked thumbnail 3:1+ against the rest; D unchanged; shots P (portrait and sideways) and D.
 - **Size:** 2
 
-## 710. [ ] The bugs from the 2026-11-26 03:05 critique, fixed as one batch
+## 710. [ ] The bugs from the 2026-11-26 03:05 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique; check each on today's build first; Hedgerow and NIGHT SHIFT phone boxes at 2x)*
 - Cathnivore: setup D the 'This week at the market' card (1003-1130 x 172-432) over the board frame and the stall's left edge, its copy squeezed into a 100 px column of 6 lines (third critique running: give it an e2e rect check this time); game P the 'MUM' drawing (10-62 x 130-175) over the Highmoor hex, Brindle's left edge at the viewport edge (x 8).
 - Hedgerow: l27 P the fourth seed packet (Radio Mast, 575-680 x 1420-1550) cut by the More arrow to 'Radio M' with its price half hidden; l27 3D the depot clipped by the frame edge (D 15-180 x 400-530, P 0-60 x 880-990; may fold into 703's framing).
