@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-26 02:56 UTC
+
 
 
 
@@ -6447,7 +6447,7 @@ Progress (lane B, 2026-11-19 02:50, slices 1-2, `2c24709`, `86ee3f0`): each towe
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shot P and D.
 - **Size:** 1
 
-## 678. [ ] NIGHT SHIFT phone title: Cath is the poster, not under the umbrella and the List *(lane B, in progress)*
+## 678. [ ] NIGHT SHIFT phone title: Cath is the poster, not under the umbrella and the List *(lane B claim of 2026-11-23 handed back 2026-11-26 03:05 by lane A: no lane B session since)*
 *(planned 2026-11-23 10:00, lane B, plan1123d critique; check against item 652 first: this may be a regression of its phone framing)*
 - **Why:** `plan1123d/ns-title-P` (2x): the focus is an empty umbrella canopy (180-780 x 720-1080) and a cut 'HOLLOW' sign (280-780 x 520-780); her head starts at y≈1090 and THE LIST (20-745 x 1380-1615) lies over her collar and coat, her face about 8% of the frame. At D the same scene works (her figure 880-1180). VISION: Cath the face of every game.
 - **Build:** the phone poster (`scripts/cathode-poster.mjs`) framed on her head to waist, the umbrella a sliver framing her top right, the menu card beside her, The List a 2-row tray below her waist (or a swiped strip) that never covers her.
@@ -6637,7 +6637,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** locked nodes' saturation under 0.15 with a lock present (e2e per state); haze opacity over any node or label 0.15 or less; node labels 4.5:1; shots P and D.
 - **Size:** 2
 
-## 703. [ ] Hedgerow 3D: a convoy and light you can read *(handed back 2026-11-26 02:45 by lane A after slice 1)* *(slice 1, lane A: the 'purple boxes' were round 15's sealed round: the sealed tint (0.78, 0.58, 1) multiplied over every body turned the navy lorries the sprinters' purple; now a light lilac (0.93, 0.86, 1), so lorries read blue and hatchbacks yellow beside the purple 24h sprinters (shots scratchpad h703 before / a). Open: the hue-sampling check in sandbox, each type's silhouette, and the off-frame shadow bands at P.)*
+## 703. [ ] Hedgerow 3D: a convoy and light you can read *(lane A, in progress)* *(slice 1, lane A: the 'purple boxes' were round 15's sealed round: the sealed tint (0.78, 0.58, 1) multiplied over every body turned the navy lorries the sprinters' purple; now a light lilac (0.93, 0.86, 1), so lorries read blue and hatchbacks yellow beside the purple 24h sprinters (shots scratchpad h703 before / a). Open: the hue-sampling check in sandbox, each type's silhouette, and the off-frame shadow bands at P.)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/hedge-l27-3d-D` (200-650 x 260-780): every vehicle is a purple box while the queue pill and 2D tell vans, lorries and cars apart; `hedge-l27-3d-P`: hard dark diagonal shadow bands from off-frame casters cross the field (560-780 x 560-1390 and 0-420 x 700-1000 at 2x).
 - **Build:** each vehicle type its own silhouette and livery matching the pill icons; shadow casters clipped to the field or the shadow camera fitted to it.
@@ -6658,5 +6658,43 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - NIGHT SHIFT: street D the red string from the CATH marker crosses her face on the polaroid (1040-1200 x 115-560), and 'THE LIST' floats alone in an empty band (1290-1385 x 750-815); street P the viewmodel hand a featureless grey mitten (1130-1330 x 520-780; items 319/543's scope if it's the glove model).
 - Runnel: D a stray blue bar under the board's foot (740-785 x 852-860); solved D Cath's bust cut by the viewport foot (185-340 x 630-900).
 - Site: games P the two buttons crowd the stall counter's foot with no gap (20-370 x 487-540).
+- **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
+- **Size:** 2
+
+Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, D 1440x900, every game), one subagent critique against VISION.md, told to skip items 319, 543, 678 and 703 and to check items 680-705 first; checked again here. Dropped as already closed by measurement: game D's musing (item 700, 5.9:1), campaign D's crates at her bust's foot (item 705, by design), l34 D seed sublabels (item 700, 13 px). Lane B's claim on 678 dates from 2026-11-23 with no lane B session since: handed back.
+
+## 706. [ ] Hedgerow 2D: a battle you can read at a glance
+*(planned 2026-11-26 03:05, lane A, plan1126a critique)*
+- **Why:** `plan1126a/hedge-l34-2d-P` (2x): three queue pills sit on the battle itself (215-530 x 210-260, 8-320 x 432-480, 8-320 x 968-1012) over lorries, the windmill's ring and the hive; coin floats (+37, +71, +83, +4) pile up at 100-480 x 960-1140 over vehicles, hive, stall and pond. `hedge-l34-2d-D` the same knot at 320-680 x 740-880; `hedge-l27-2d-P` '+58' on the Scarecrow's hat (405-470 x 860-890).
+- **Build:** each lane's queue pill docked at its lane mouth in the field margin or board edge, never over the path or a tower; gain floats from one tower within 400 ms merged into one number over its head, gone in 700 ms; floats and badges take priority-ordered free slots, stepping aside rather than covering a vehicle.
+- **Accept:** in l27 and l34 at P and D no queue pill rect overlaps a vehicle or tower rect at round start and mid-wave (e2e); no two floats within 120 CSS px of each other; float text 14 CSS px+ at 4.5:1 on its halo; level tests unchanged; shots P and D mid-wave.
+- **Size:** 2
+
+## 707. [ ] Hedgerow 2D: a convoy of vehicles, not purple capsules
+*(planned 2026-11-26 03:05, lane A, plan1126a critique; item 703 is the 3D half)*
+- **Why:** `plan1126a/hedge-l27-2d-P` (2x): the lorries are near-identical purple capsules with tiny '4h' tags, bumper to bumper (40-100 x 580-840, 225-275 x 860-1110), running into the depot (390-490 x 1100-1320) so depot and queue merge; `hedge-l27-2d-D` 410-560 x 560-800.
+- **Build:** a top-down sprite per vehicle class (cab, body, wheels, livery stripe) matching the queue pill icons, each class its own outline; a 6 CSS px gap kept between vehicles and the queue held short of the depot's footprint; trait tags as a small badge, not text on the body.
+- **Accept:** each class's sprite bounds differ by 20%+ in aspect ratio from every other (unit test); no vehicle rect overlaps another or the depot rect in l27 round 15 (e2e); body hues of the classes 40 degrees+ apart; shots P and D.
+- **Size:** 2
+
+## 708. [ ] Cathnivore game D: Hollowell a glossy corporate presence, the HUD a ledger
+*(planned 2026-11-26 03:05, lane A, plan1126a critique)*
+- **Why:** `plan1126a/cath-game-D`: Hollowell is a round portrait (540-640 x 15-125) wedged against a cramped HUD (335-540 x 15-85) with 9-10 px labels; its quarterly plan (1140-1340 x 20-250) reads as a stock blue form. VISION asks for the corporations glossy, plastic, over-lit and clinical, a staged foil to the paper world.
+- **Build:** the portrait and the Squeeze/Expand/Scout plan one glossy 'Quarterly Plan' slab (plastic gradient, specular edge, Hollowell logotype, portrait 120 px+); the Round/Trust/Land/Rift readings a paper ledger strip; an armed Squeeze slides the slab in with no overshoot and a sterile blip.
+- **Accept:** HUD labels 12 CSS px+, figures 22 CSS px+; portrait 120 px+ at 1440x900; slab, HUD and hex rects don't overlap (e2e); slab text 4.5:1+; P unchanged; shots D and P.
+- **Size:** 2
+
+## 709. [ ] NIGHT SHIFT phone role pick: a case-file carousel, not a photo over a stat form
+*(planned 2026-11-26 03:05, lane A, plan1126a critique; not item 678's title, nor 319/543's model)*
+- **Why:** `plan1126a/ns-play-P` (2x): the top (0-780 x 130-850) is a dim figure with an empty right half; the five roles are small greyscale mugshots (30-750 x 865-1010) with names nearly touching (GUNSLINGER/WIREWITCH 310-610 x 980-1005); the bottom third (22-758 x 1155-1688) a dense stat sheet. The desktop pick is staged; the phone one is a form.
+- **Build:** a horizontal snap carousel of role cards, each with its gun drawn large across the figure's foot; the stat sheet four dials and one line, expanding on tap; the roster thumbnails in colour with a red rule under the picked one.
+- **Accept:** at 390x844 the role name, its gun and the CTA in view without scrolling (e2e); role tabs 44 CSS px+ with 8 px+ between; the picked thumbnail 3:1+ against the rest; D unchanged; shots P (portrait and sideways) and D.
+- **Size:** 2
+
+## 710. [ ] The bugs from the 2026-11-26 03:05 critique, fixed as one batch
+*(planned 2026-11-26 03:05, lane A, plan1126a critique; check each on today's build first; Hedgerow and NIGHT SHIFT phone boxes at 2x)*
+- Cathnivore: setup D the 'This week at the market' card (1003-1130 x 172-432) over the board frame and the stall's left edge, its copy squeezed into a 100 px column of 6 lines (third critique running: give it an e2e rect check this time); game P the 'MUM' drawing (10-62 x 130-175) over the Highmoor hex, Brindle's left edge at the viewport edge (x 8).
+- Hedgerow: l27 P the fourth seed packet (Radio Mast, 575-680 x 1420-1550) cut by the More arrow to 'Radio M' with its price half hidden; l27 3D the depot clipped by the frame edge (D 15-180 x 400-530, P 0-60 x 880-990; may fold into 703's framing).
+- NIGHT SHIFT: title P the LUNA neon's outline ghosting round The Ledger card (25-330 x 1010-1130).
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
 - **Size:** 2
