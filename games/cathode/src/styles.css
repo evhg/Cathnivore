@@ -3590,4 +3590,11 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   /* Plan item 695: on a 54 px photo the placard under her chin sat across it: the file number is a corner tab here. */
   .cp-dot-mug .cp-mug-plate { top: 0; left: 0; bottom: auto; transform: none; padding: 0 calc(var(--u) * 3); border-bottom-right-radius: calc(var(--u) * 3); }
   .cp-dot.is-on .cp-dot-mug { filter: none; box-shadow: 0 0 0 calc(var(--u) * 3) var(--accent, var(--blood-hot)); }
+  /* Plan item 709: the roster in colour, the others dimmed (five grey mugshots read as one), and a red rule under the
+     picked one that stands 3:1 and more against the others' faint rule. */
+  .cp-dot-mug { filter: saturate(.75) brightness(.62); }
+  .cp-dot:hover .cp-dot-mug { filter: saturate(.9) brightness(.8); }
+  .cp-dot { border-bottom-color: rgb(var(--ink-rgb) / .12); }
+  .cp-dot.is-on { border-bottom: calc(var(--u) * 6) solid var(--blood-hot); }
+  .cp-dots { column-gap: max(8px, calc(var(--u) * 4)); justify-content: space-between; } /* px-ok: 8 px between tabs */
 }

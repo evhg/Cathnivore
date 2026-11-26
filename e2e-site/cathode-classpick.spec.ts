@@ -769,3 +769,60 @@ test('the booking photos are 3D stills of her, five different looks', async ({ p
   expect(diff).toHaveLength(10)
   for (const d of diff) expect(d, JSON.stringify(diff)).toBeGreaterThanOrEqual(0.15)
 })
+
+// Plan item 709: at 390x844 the role's name, its gun and the hold bar are in view without scrolling; the role tabs are
+// 44 px+ with 8 px+ between; the roster is in colour, and the red rule under the picked tab stands 3:1+ against the
+// others' rule.
+test('upright phone: the picked role, its gun and the hold in view; tabs 44 px apart by 8; the picked rule 3:1', async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, 'the upright phone pick')
+  test.setTimeout(300_000)
+  await fresh(page, hasTouch)
+  await page.goto('/nightshift/?front=classpick&shot&t=8&class=gunslinger&rs=0.5')
+  await page.waitForFunction(() => (window as unknown as Front).cathodeFront?.ready === true, null, { timeout: 150_000 })
+  const m = await page.evaluate(() => {
+    const r = (e: Element | null) => { const b = e!.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom } }
+    const tabs = [...document.querySelectorAll('.cp-dot')].map(r)
+    return {
+      tabs,
+      name: r(document.querySelector('.cp-dot.is-on .cp-dot-name')),
+      gun: r(document.querySelector('.cp-weapon-art')),
+      hold: r(document.querySelector('.cp-hold')),
+      scroll: document.scrollingElement!.scrollTop,
+      mugFilter: getComputedStyle(document.querySelector('.cp-dot:not(.is-on) .cp-dot-mug')!).filter,
+    }
+  })
+  expect(m.scroll).toBe(0)
+  for (const b of [m.name, m.gun, m.hold]) {
+    expect(b.top).toBeGreaterThanOrEqual(0)
+    expect(b.bottom).toBeLessThanOrEqual(844)
+  }
+  expect(m.tabs).toHaveLength(5)
+  for (const t of m.tabs) {
+    expect(t.right - t.left, 'tab width').toBeGreaterThanOrEqual(44)
+    expect(t.bottom - t.top, 'tab height').toBeGreaterThanOrEqual(44)
+  }
+  for (let i = 1; i < m.tabs.length; i++) expect(m.tabs[i]!.left - m.tabs[i - 1]!.right, 'gap between tabs').toBeGreaterThanOrEqual(8)
+  expect(m.mugFilter, 'the roster in colour').not.toContain('grayscale')
+  // The rule under each tab, read from pixels: its bottom 2 px row.
+  const lum = async (b: Box) => {
+    const png = (await page.screenshot({ clip: { x: b.left + 4, y: b.bottom - 3, width: b.right - b.left - 8, height: 2 } })).toString('base64')
+    return page.evaluate(async (png) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${png}`
+      await img.decode()
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const x = c.getContext('2d')!
+      x.drawImage(img, 0, 0)
+      const d = x.getImageData(0, 0, c.width, c.height).data
+      const lin = (v: number) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }
+      let t = 0
+      for (let i = 0; i < d.length; i += 4) t += 0.2126 * lin(d[i]!) + 0.7152 * lin(d[i + 1]!) + 0.0722 * lin(d[i + 2]!)
+      return t / (d.length / 4)
+    }, png)
+  }
+  const picked = await lum(m.tabs[2]!)
+  const others = await Promise.all([0, 1, 3, 4].map((i) => lum(m.tabs[i]!)))
+  for (const o of others) expect((Math.max(picked, o) + 0.05) / (Math.min(picked, o) + 0.05), 'picked rule against another').toBeGreaterThanOrEqual(3)
+})
