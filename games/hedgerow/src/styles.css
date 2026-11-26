@@ -334,7 +334,9 @@ button {
   overflow: visible;
 }
 /* Plan item 274: a locked stop stands in a drift of morning mist that the stop before it has to clear: two soft
-   paper-white banks low across its coin, slowly drifting (still under reduced motion). */
+   paper-white banks low across its coin, slowly drifting (still under reduced motion). Plan item 702: thinned to a
+   0.15 peak: at 0.82 the banks stacked into a white column down a phone's map and milked the stops' names; the grey
+   landmark and the padlock now say 'locked'. */
 .stop:has(> .node:disabled)::before {
   content: "";
   position: absolute;
@@ -346,9 +348,9 @@ button {
   translate: -50% -42%;
   pointer-events: none;
   background:
-    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 82%, transparent), transparent) 0 60% / 64% 62% no-repeat,
-    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 74%, transparent), transparent) 100% 40% / 60% 56% no-repeat,
-    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 50%, transparent), transparent) 50% 100% / 100% 50% no-repeat;
+    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 15%, transparent), transparent) 0 60% / 64% 62% no-repeat,
+    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 13%, transparent), transparent) 100% 40% / 60% 56% no-repeat,
+    radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, #fff 70%, var(--paper)) 9%, transparent), transparent) 50% 100% / 100% 50% no-repeat;
   animation: mist-drift 9s ease-in-out infinite alternate;
 }
 @keyframes mist-drift {

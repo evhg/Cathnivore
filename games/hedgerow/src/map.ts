@@ -858,11 +858,13 @@ function rivermead(b: Brush): string {
   o += land(far, b.lin([[0, "#97adbd"], [1, "#b0c2c2"]]));
   for (const x of [40, 52, 420, 436, 450]) o += poplar(x, far(x) + 8, 22, SPRING_FAR, lx);
   o += hedge(b, 70, 140, 200, 141, 2.5, SPRING_FAR) + hedge(b, 280, 141, 410, 139, 2.5, SPRING_FAR);
-  o += haze(b, 134, 20, "#eef0e6", 0.55);
+  // Plan item 702: the haze and the meadow's light thinned (0.55 and 0.45 milked the map's act-4 banner, whose crop is
+  // this band; the far land still sits back behind it)
+  o += haze(b, 134, 20, "#eef0e6", 0.3);
   const mid = roll(b, 148, 4, 1.8);
   const midD = landD(mid);
   o += `<path d="${midD}" fill="${b.lin([[0, "#a2c682"], [1, "#78a65a"]])}"/>`;
-  o += clipTo(b, midD, soft(b, [[110, 176, 130, 22], [380, 206, 130, 24]], "#fff3c0", 0.45) + soft(b, [[440, 164, 90, 14]], "#2f4a28", 0.3) +
+  o += clipTo(b, midD, soft(b, [[110, 176, 130, 22], [380, 206, 130, 24]], "#fff3c0", 0.22) + soft(b, [[440, 164, 90, 14]], "#2f4a28", 0.3) +
     hatch(b, 150, -10, 490, mid, 100, 3, "#5f8a40", 0.7, 0.5, 0.2) + hatch(b, 90, -10, 490, mid, 100, 3, "#cde49a", 0.6, 0.5, 0.2));
   // flood pools mirroring the sky
   const pool = b.lin([[0, "#f6efdc"], [0.5, "#c9d6dc"], [1, "#8fa8bc"]]);
@@ -1356,8 +1358,9 @@ function kingsmarket(b: Brush): string {
 }
 
 const ACTS: ((b: Brush) => string)[] = [brindle, highmoor, saltmarsh, rivermead, oakvale, shingleBay, theRift, theBallot, theMerger, kingsmarket];
-/** The canvas y where each act's banner crop starts, and the vignette tint for each act. */
-const BANNER_TOP = [88, 70, 80, 116, 52, 60, 76, 80, 46, 56];
+/** The canvas y where each act's banner crop starts, and the vignette tint for each act. Rivermead's starts under its
+ *  hazy far land (plan item 702: from 116 the D crop was blue-grey haze down to the bridge). */
+const BANNER_TOP = [88, 70, 80, 134, 52, 60, 76, 80, 46, 56];
 const TINT = ["#2a1a10", "#1e1828", "#2a2010", "#18202a", "#1a200c", "#10141e", "#1e0e20", "#1e180c", "#1a1e26", "#05040e"];
 
 /**
@@ -1403,7 +1406,8 @@ const GROUND: Ground[] = [
   { base: "#e9e5c6", patches: ["#d4dea4", "#eadb9e", "#c6d896"], hedge: "#55743a", leaf: "#7d9c4f" },
   { base: "#e4ddcb", patches: ["#d2c7a4", "#dccab3", "#c4c79e"], hedge: "#6e6650", leaf: "#8f8a66" },
   { base: "#dfe4c6", patches: ["#c6d8a4", "#e2d6a8", "#a9cfc0"], hedge: "#66784c", leaf: "#8a9c66" },
-  { base: "#e4ebcd", patches: ["#cde0ab", "#e6e0ad", "#c0dbc2"], hedge: "#4f7a3c", leaf: "#78a355" },
+  // Plan item 702: Rivermead's water meadow was #c0dbc2, which the richer() lift made a near-white mint (a pale column down the phone map)
+  { base: "#e4ebcd", patches: ["#cde0ab", "#e6e0ad", "#aac9a8"], hedge: "#4f7a3c", leaf: "#78a355" },
   { base: "#dfe5c5", patches: ["#c4d69c", "#d8d399", "#b6cb91"], hedge: "#41612f", leaf: "#678a43" },
   { base: "#efe3c6", patches: ["#e3cf9c", "#ecd9b4", "#b9d0b0"], hedge: "#7a7058", leaf: "#a09878" },
   { base: "#e4d6c4", patches: ["#d6b99a", "#dcc6a0", "#c3c193"], hedge: "#5e4e40", leaf: "#85725e" },
@@ -1507,7 +1511,13 @@ function LAND_FEATURES(i: number): string {
 /** Plan item 663: an act's plain ground colour (the patchwork's base), for the band behind its banner. */
 export function groundBase(n: number): string {
   const i = (((n - 1) % GROUND.length) + GROUND.length) % GROUND.length;
-  return richer(GROUND[i]!.base, 2.6);
+  const g = GROUND[i]!;
+  // Plan item 702: the banner's backdrop is the fields' own mean tone (the base under its patches at about the
+  // opacity they're laid), not the bare base: the base alone is far paler than the painted fields, and over the act's
+  // top row it read as a milky haze (Rivermead's at D).
+  const patches = g.patches.map((c) => rgbOf(richer(c, 2.8)));
+  const mean = hexOf([0, 1, 2].map((j) => patches.reduce((a, v) => a + v[j]!, 0) / patches.length));
+  return mixHex(richer(g.base, 2.6), mean, 0.7);
 }
 
 export function groundSvg(n: number, won: boolean[] = [], wt = 1): string {

@@ -56,3 +56,21 @@ test('a locked stop is drained of colour and padlocked', async ({ page }) => {
   })
   expect(shackle, "Hollowell's tag wears a padlock shackle").toBe(true)
 })
+
+// Plan item 702: no haze over a stop or its name above 0.15: the locked stops' mist banks (0.82 before, stacking into
+// a white column down a phone's map) peak at 0.15 or less.
+test("a locked stop's mist is a breath, 0.15 or less", async ({ page }) => {
+  await page.goto('/hedgerow/?2d')
+  await page.evaluate(() => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i <= 30; i++) stars[i] = 3
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 21: true, 27: true }, tips: { all: true } }))
+  })
+  await page.goto('/hedgerow/?2d')
+  const stop = page.locator('#screen-select .stop:has(> .node:disabled[data-level="33"])')
+  await stop.scrollIntoViewIfNeeded()
+  const bg = await stop.evaluate((e) => getComputedStyle(e, '::before').backgroundImage)
+  const alphas = [...bg.matchAll(/\/ ([\d.]+)\)/g)].map((m) => Number(m[1]))
+  expect(alphas.length, bg).toBeGreaterThan(0)
+  expect(Math.max(...alphas), bg).toBeLessThanOrEqual(0.15)
+})
