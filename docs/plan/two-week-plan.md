@@ -6701,7 +6701,7 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 
 Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 at 2x, D 1440x900, every game), one subagent critique against VISION.md, told to skip 319/543 and items 679-710. Dropped: Hedgerow 'Radio M' peek (item 698, by design); Runnel channel contrast is already held at 3:1 by runnel-tiles, so 711 is about live water and dry fields, not the troughs alone. Check each against today's build first.
 
-## 711. [ ] Runnel: the unsolved board is alive: water runs as you tap, dry fields look dry
+## 711. [ ] Runnel: the unsolved board is alive: water runs as you tap, dry fields look dry *(lane A, in progress)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique)*
 - **Why:** `plan1126b/runnel-D` (board 465-1330 x 40-830) and `runnel-P` (5-385 x 265-600): 37 hexes in one tan; no water except at the source (840-960 x 370-490); dry and watered fields look alike. The solved shot is vivid, so the minutes of play are the dullest part. VISION 2-3.
 - **Build:** after each tap water runs from the source along every connected channel (about 250 ms a tile); a dry field reads cracked and wilted and perks up when water reaches it; pinned tiles carry a clear stake.
