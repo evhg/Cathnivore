@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-26T19:18Z
 
 
 
@@ -6782,4 +6781,42 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - Runnel: solved D the outflow channel (about 985 x 580-640) runs under the result card.
 - NIGHT SHIFT: briefing map 'THE CANAL' over the hatch (765-795 x 410-485), 'FLOODED' on the route line (728-745 x 300-360).
 - **Accept:** each fixed or closed with a measurement; touched specs pass; shots P and D.
+- **Size:** 2
+
+Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, NIGHT SHIFT and Hedgerow at 2x; D 1440x900; every game), one subagent critique against VISION.md, told to skip 700-721 and 319/543. Dropped: Hedgerow map nodes as dioramas (item 720 and the map-diorama spec cover the stops; judge them in 726's shots first). The critique still sees 543's pale hair strands at the title (P 350-372 x 400-560, D 900-935 x 400-560).
+
+## 722. [ ] Cathnivore: every card has painted art
+- **Why:** `cath-game-D`: the 'Saving for' card's picture (35-300 x 385-505) is a flat grey sketch; the hand (345-1325 x 775-890) has small vague vignettes and ~13 px titles. The cards sit a tier below the table (VISION point 6).
+- **Build:** one SVG illustration per improvement and action card in the region tiles' ink-and-flat-colour style, used in the hand, 'Saving for', the Market and the card zoom; a framed art window, a Fraunces title 16 px+, the cost a chip inside its own card.
+- **Accept:** unit: every card id has art; e2e: hand titles 15 px+ at P, 16+ at D; no cost chip crosses a neighbour card; the hand's bottom on screen at D; shots P and D.
+- **Size:** 3
+
+## 723. [ ] Runnel: the route readable on the dry board
+- **Why:** a gap on items 704/711: `runnel-D` (470-1330 x 40-830) the tiles are one tan with thin channels, the route can't be traced before water runs; at P (5-385 x 265-630) the board is texture.
+- **Build:** channels cut as darker earth trenches about 2.5x wider with a lit bank; each field's crop shown wilted in muted colour; a tile's connecting ends notched at its edges.
+- **Accept:** trench-to-tile luminance contrast 3:1+ measured from shot pixels; channel 6 px+ at P; a crop glyph on every field in the dry state (count = fields); runnel-tiles still passes; shots P and D.
+- **Size:** 2
+
+## 724. [ ] NIGHT SHIFT: shopfronts with lettering you can read, and lit passers-by
+- **Why:** a gap on item 719: `ns-street-P` the neon signs are blurred blocks (~320-335 x 115-140, 525-545 x 115-160), the near people unlit silhouettes (300-345 x 180-270).
+- **Build:** shop signs lettered on canvas (noodle bar, pawn, LUNA, the hotel katakana) on emissive planes, reflected in the road; a rim from the nearest lamp on the street's people.
+- **Accept:** 8+ signs within 40 m of the spawn, each with text 10 px+ tall at D; the near people's mean luminance 1.5x today's (measured from a live frame); cathode-perf within budget run alone; live shots (frames > 1) L and D.
+- **Size:** 3
+
+## 725. [ ] Runnel D: the rail becomes Bea's almanac page
+- **Why:** `runnel-D` the left rail (15-345 x 225-595) is form controls: three empty '0' circles, a select-like 'The month' bar, a pill counter (VISION point 1: designed, not laid out).
+- **Build:** one illustrated almanac page: a weather vignette, the streak as Bea's pressed flowers, the month a small calendar of the week's boards with their crops; Cath and her bubble stay below.
+- **Accept:** no native-looking select (e2e); streak and solved as graphics with aria labels; WCAG AA text; shots D, and P where the sheet opens.
+- **Size:** 2
+
+## 726. [ ] The bugs from the 2026-11-26 19:30 critique, fixed as one batch
+- Hedgerow l27 2D D: the seed counter (1062-1190 x 20-56) shows its coin and no number.
+- Hedgerow l27 3D P: the '86 TO GO' depot sign cut by the left edge (0-95 x 455-480).
+- Hedgerow l27 3D D: '+51', '+20' and 'Bridge up!' pale gold on gold/white models: an outline or dark backing.
+- Cathnivore P title (90-330 x 365-515) and setup (75-305 x 343): region names still shortened ('Moor', 'Kings', 'Brindle'); item 714 reached the game board only.
+- Cathnivore game P: Bea's 'MUM' drawing on Hollowell's portrait and the Highmoor label (10-60 x 128-185).
+- Cathnivore game D: the hand runs off the bottom (345-1325 x 775-900); Sell's 1/2/3 chips and Buy's cost cross neighbour cards.
+- NIGHT SHIFT street L: the 'Left thumb walks' note covers the left third under HP (10-260 x 165-218); 'DRAG TO AIM' (728-808 x 72-88) unbacked over lamps.
+- Portfolio P: the game tile grid's side gutter about 10 px, not 16.
+- **Accept:** each closed by a fix with a spec assertion, or by measurement/decision logged; shots P and D.
 - **Size:** 2
