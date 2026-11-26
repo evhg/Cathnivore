@@ -6670,7 +6670,7 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 - **Accept:** in l27 and l34 at P and D no queue pill rect overlaps a vehicle or tower rect at round start and mid-wave (e2e); no two floats within 120 CSS px of each other; float text 14 CSS px+ at 4.5:1 on its halo; level tests unchanged; shots P and D mid-wave.
 - **Size:** 2
 
-## 707. [ ] Hedgerow 2D: a convoy of vehicles, not purple capsules
+## 707. [ ] Hedgerow 2D: a convoy of vehicles, not purple capsules *(lane A, in progress)*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique; item 703 is the 3D half)*
 - **Why:** `plan1126a/hedge-l27-2d-P` (2x): the lorries are near-identical purple capsules with tiny '4h' tags, bumper to bumper (40-100 x 580-840, 225-275 x 860-1110), running into the depot (390-490 x 1100-1320) so depot and queue merge; `hedge-l27-2d-D` 410-560 x 560-800.
 - **Build:** a top-down sprite per vehicle class (cab, body, wheels, livery stripe) matching the queue pill icons, each class its own outline; a 6 CSS px gap kept between vehicles and the queue held short of the depot's footprint; trait tags as a small badge, not text on the body.
