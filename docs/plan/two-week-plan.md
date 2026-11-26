@@ -1,5 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-26 15:18
+
 
 
 
@@ -6741,5 +6741,44 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - Cathnivore: game D the hand strip (345-1330 x 775-890) overlapping and cut at the bottom ('Market Day Banner' at y 875); the Market tab's count badge clipped (1403-1428 x 8-28); campaign D Cath cut by the bottom (790-930 x 820-900) with an empty column above her (745-1000 x 130-500).
 - NIGHT SHIFT: role pick P, item 709's stage gun crosses the Ghost's skirt and hand (2x 275-725 x 700-775): place it clear of her figure box (`scene().figureBox()`), or behind her lower edge.
 - Hedgerow: menu P 'Silt and Ruts' half under the briefing sheet (2x 115-460 x 1280-1330); l27 P the 'NEXT: ROUND 15' tab over the seed cards' tops (2x 445-735 x 1380-1422).
+- **Accept:** each fixed or closed with a measurement; touched specs pass; shots P and D.
+- **Size:** 2
+
+Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, NIGHT SHIFT and Hedgerow at 2x; D 1440x900; every game), one subagent critique against VISION.md, told to skip today's done items and 319/543. Dropped: a Runnel solve finale (items 679, 697 and 630 already stage the payoff and dock the card; the one overlap left is in 721); the NIGHT SHIFT crowd and Hedgerow medallions are framed as gaps in items 57 and 314, not redone.
+
+## 717. [ ] Cathnivore: a market table that's alive
+*(planned 2026-11-26 15:35, lane A, plan1126c critique)*
+- **Why:** `cath-game-D` (board 505-1290 x 40-760) and `cath-game-P` (10-380 x 125-480): every region repeats the same stall and card icons, nobody walks, nothing moves, so the board reads as a sheet of stamps, not a market (VISION 2).
+- **Build:** 2-4 tiny shoppers per region (SVG, drawn with the board's ink) walking between its stalls; bunting and awnings that stir; a wisp of smoke over a farm. A region's life follows its state: busy and warm when freed, sparse and grey under Hollowell's squeeze. Under reduced motion they stand still.
+- **Accept:** 2+ figures per region at P and D; no figure over a counter, badge or hit target (e2e); frame time 16.7 ms or less at D with 4x CPU throttle; reduced motion still; existing board specs pass; shots P and D, light and dark.
+- **Size:** 2
+
+## 718. [ ] Portfolio phone: the prints play, and Cath names the one playing
+*(planned 2026-11-26 15:35, lane A, plan1126c critique; item 715 did this at D only)*
+- **Why:** `portfolio-P`: the four prints (12-385 x 552-844) are still frames and NIGHT SHIFT's reads nearly black; item 715's tour, where the loops play in turn and Cath points, stops at the desktop.
+- **Build:** on a phone the print in view plays its loop in turn (item 145's canvas loops), Cath's line names it, and a tap still opens the game. NIGHT SHIFT's print takes a lit frame of its street, not the dark one.
+- **Accept:** at 390x844 one print plays at a time while in view; nothing plays under reduced motion or after 20 s with no input; LCP under 2.5 s and the weight gate pass; NIGHT SHIFT's print has a mean luminance of 0.12 or more; shots P and D.
+- **Size:** 1
+
+## 719. [ ] NIGHT SHIFT: the street lived in from the first frame
+*(planned 2026-11-26 15:35, lane A, plan1126c critique; item 57 built the crowd, check where it stands first)*
+- **Why:** `ns-street-P` (sideways): one silhouette in view (about 315-330 x 185-270 CSS); the stall awning (580-835 x 145-190) has no vendor, stock or customers; the lower half is empty wet road.
+- **Build:** from the spawn point the street's people are in view: vendors behind stalls with stock, walkers under umbrellas, someone at the noodle bar, kept within item 57's population and LOD. Steam from vents and a puddle that splashes.
+- **Accept:** 6+ people visible from the spawn at 844x390 and 1440x900 (count from `window.cathode`); they scatter within 1 s of a shot (e2e); `scripts/cathode-perf.mjs` within budget (run alone); shots L and D.
+- **Size:** 2
+
+## 720. [ ] Hedgerow map: progress you can read on the stops
+*(planned 2026-11-26 15:35, lane A, plan1126c critique; item 314's painted medallions stay)*
+- **Why:** `hedge-menu-D` (stops 285-1060 x 320-440 and 710-830) and `hedge-menu-P`: the stops ahead are identical glass domes; only 'Next' differs; a cleared stop shows no stars, and the lane doesn't show how far you've come.
+- **Build:** a cleared stop wears its 1-3 stars and a strip of bunting; the lane is painted in up to Next and pale beyond; a locked stop stays item 314's sepia print, with its unlock line on tap.
+- **Accept:** three states as `data-state` (done/next/locked) asserted in e2e; stars 12 CSS px+ at 390x844; labels AA; shots P and D of a fresh act and a half-cleared one.
+- **Size:** 1
+
+## 721. [ ] The bugs from the 2026-11-26 15:35 critique, fixed as one batch
+*(planned 2026-11-26 15:35, lane A, plan1126c critique; check each on today's build first)*
+- Cathnivore: title P board names cut ('Moor', 'Salt', 'Brindle', 'Kings', 'River', 'Oak', 90-330 x 360-515) where item 714's board shows them in full; game D Cath's light grey italic line on cream (350-490 x 255-445): measure, AA or darker ink; campaign P chip 1 shows a clipped '3' at its left edge (14-22 x 583-597).
+- Hedgerow: l27 3D P the depot and its '86 TO GO' cut at the left edge (CSS 0-95 x 435-480); l34 2D D the wave pill (388-600 x 85-115) over the windmill's sails, Cath's bubble (815-1030 x 83-147) over the radio mast's top.
+- Runnel: solved D the outflow channel (about 985 x 580-640) runs under the result card.
+- NIGHT SHIFT: briefing map 'THE CANAL' over the hatch (765-795 x 410-485), 'FLOODED' on the route line (728-745 x 300-360).
 - **Accept:** each fixed or closed with a measurement; touched specs pass; shots P and D.
 - **Size:** 2
