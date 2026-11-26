@@ -95,6 +95,10 @@ function market(): { people: Authored[]; exits: Array<[number, number]> } {
     { role: "shelter", path: [[-4.65, 48.0]], yaw: 2.3 },
     { role: "walker", path: [[2.45, 37], [2.45, 55]] },
   );
+  // The lit stall at her right (render/level.ts, plan item 639: stall(49.6), the first one she sees) has its fishmonger
+  // behind the counter and a customer at the front, on every tier: the sideways phone's first frame showed its tarp
+  // and fish with nobody there.
+  people.push({ role: "vendor", path: [[5.75, 49.2]], yaw: E }, { role: "shopper", path: [[3.75, 50.1]], yaw: W });
   // Sheltering in doorways on the west facades and under the flyover.
   for (const [x, z, k] of [[-9.55, 52.5, 0], [-9.55, 39.5, 1], [-9.55, 16, 0], [-6.9, 11.5, 1], [-6.9, 0.2, 0], [-9.55, -38, 1]] as const)
     people.push({ role: "shelter", path: [[x, z]], yaw: x < -9 ? W : W + 0.6, phoneOut: k === 1 });

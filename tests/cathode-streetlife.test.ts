@@ -34,8 +34,8 @@ describe("NIGHT SHIFT street life (plan item 57)", () => {
       expect(walkers(ph)).toBeGreaterThanOrEqual(Math.floor(walkers(hi) * 0.4));
     }
     const m = streetLife("market", "high");
-    expect(m.agents.length).toBe(43);
-    expect(streetLife("market", "phone").agents.length).toBe(28);
+    expect(m.agents.length).toBe(45);
+    expect(streetLife("market", "phone").agents.length).toBe(30);
     for (const role of ["walker", "vendor", "shelter", "shopper", "cyclist", "courier"]) expect(m.agents.some((a) => a.role === role)).toBe(true);
     // Indoors, no street.
     expect(streetLife("clinic", "high").agents).toEqual([]);
@@ -145,8 +145,21 @@ describe("NIGHT SHIFT street life (plan item 57)", () => {
     const mean = () => near.reduce((n, { s }) => n + Math.hypot(s.x - cath.x, s.z - cath.z), 0) / near.length;
     const m0 = mean();
     hearShot(plan, st, cath.x, cath.z);
-    run(plan, st, 3, () => 3);
+    // Plan item 719: within a second everyone round her has reacted: vendors down behind their counters, the rest
+    // running (or already in at a doorway beside them), and the crowd round her is further off than it was.
+    run(plan, st, 1, () => 1);
+    for (const { s, i } of near) expect(plan.agents[i]!.role === "vendor" ? ["duck"] : ["flee", "gone"], `${plan.agents[i]!.role} ${i}`).toContain(s.mood);
     expect(mean()).toBeGreaterThan(m0);
+    run(plan, st, 2, () => 3);
+    expect(mean()).toBeGreaterThan(m0);
+  });
+
+  it("plan item 719: the first stall she sees is staffed and has a customer, on every tier", () => {
+    for (const tier of ["phone", "high"] as const) {
+      const a = streetLife("market", tier).agents;
+      expect(a.some((p) => p.role === "vendor" && Math.abs(p.path[0]![1] - 49.6) < 1.6 && p.path[0]![0] > 5.3)).toBe(true);
+      expect(a.some((p) => p.role === "shopper" && Math.abs(p.path[0]![1] - 49.6) < 1.6 && p.path[0]![0] < 4.3)).toBe(true);
+    }
   });
 
   it("the Plaza rally's standers scatter too: duck, run for the square's exits, come back a minute after", () => {

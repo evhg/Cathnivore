@@ -39,14 +39,27 @@ test.describe('NIGHT SHIFT street life (plan item 57)', () => {
           const v = cam.position.clone().set(s.x, s.y + 1.2, s.z).project(cam)
           if (v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1) onScreen++
         }
+        // Plan item 719: and near enough to read (on screen within 20 m), the first stall's vendor among them.
+        let close = 0
+        let vendor = 0
+        for (const s of people) {
+          if (s.mood === 'gone' || Math.hypot(s.x - c.player.pos.x, s.z - c.player.pos.z) > 20) continue
+          const v = cam.position.clone().set(s.x, s.y + 1.2, s.z).project(cam)
+          if (v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1) {
+            close++
+            if (s.role === 'vendor') vendor++
+          }
+        }
         const near = people.filter((s) => Math.hypot(s.x - c.player.pos.x, s.z - c.player.pos.z) < 30)
         const mean = near.reduce((n, s) => n + Math.hypot(s.x - c.player.pos.x, s.z - c.player.pos.z), 0) / Math.max(1, near.length)
-        return { onScreen, mean, near: near.length, scared: people.filter((s) => s.mood === 'duck' || s.mood === 'flee' || s.mood === 'gone').length }
+        return { onScreen, close, vendor, mean, near: near.length, scared: people.filter((s) => s.mood === 'duck' || s.mood === 'flee' || s.mood === 'gone').length }
       })
 
     const calm = await census()
     expect(calm.onScreen).toBeGreaterThanOrEqual(12)
     expect(calm.near).toBeGreaterThanOrEqual(8)
+    expect(calm.close).toBeGreaterThanOrEqual(6)
+    expect(calm.vendor).toBeGreaterThanOrEqual(1)
     expect(calm.scared).toBe(0)
     // The rain on them: umbrella drips and footstep splashes are drawing (high tier).
     await expect
@@ -65,6 +78,34 @@ test.describe('NIGHT SHIFT street life (plan item 57)', () => {
     // Polled, not read once after 3 s of wall clock: on a loaded CI runner SwiftShader can draw no frame in those 3 s,
     // and the street, which moves by the sim's clock, read an exact tie (18.05 > 18.05, E2E red 2026-11-16).
     await expect.poll(async () => (await census()).mean, { timeout: 30_000 }).toBeGreaterThan(calm.mean)
+    expect(errors).toEqual([])
+    await ctx.close()
+  })
+
+  test('at L on the phone tier, 6+ people near enough to read from the market spawn, the first stall staffed (plan item 719)', async ({ ownBrowser: browser, hasTouch, baseURL }) => {
+    test.skip(hasTouch, 'one run is enough: the phone tier is forced here')
+    test.setTimeout(400_000)
+    const ctx = await browser.newContext({ baseURL, viewport: { width: 844, height: 390 } })
+    await ctx.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
+    const page = await ctx.newPage()
+    const errors: string[] = []
+    page.on('pageerror', (e) => errors.push(String(e)))
+    await page.goto('/nightshift/?play&class=gunslinger&district=market&rs=0.5&quality=phone')
+    await page.waitForFunction(() => ((window as unknown as { cathode?: C }).cathode?.stats.frames ?? 0) >= 3, null, { timeout: 240_000 })
+    const close = await page.evaluate(() => {
+      const c = (window as unknown as { cathode: C }).cathode
+      const cam = c.world.camera
+      const roles: string[] = []
+      for (const s of c.world.street?.snapshot() ?? []) {
+        if (s.mood === 'gone' || Math.hypot(s.x - c.player.pos.x, s.z - c.player.pos.z) > 20) continue
+        const v = cam.position.clone().set(s.x, s.y + 1.2, s.z).project(cam)
+        if (v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1) roles.push(s.role)
+      }
+      return roles
+    })
+    expect(close.length).toBeGreaterThanOrEqual(6)
+    expect(close).toContain('vendor')
+    expect(close).toContain('shopper')
     expect(errors).toEqual([])
     await ctx.close()
   })
