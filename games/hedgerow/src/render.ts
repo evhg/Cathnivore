@@ -47,7 +47,7 @@ import { LIVE_PIECES, drawMarginLife, lastMargin, type Placed } from "./margins"
 import { cropOf, occupiedPlots, ripeCount, shownCrops } from "./growth";
 import { drawCrop } from "./cropart";
 import { swarms, type Swarm } from "./swarm";
-import { columnNear, layOutField, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
+import { layOutField, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "./convoy";
 import { gateQueue, type GateQueue } from "./gatequeue";
 import { FarmFolk, type Folk } from "./farmfolk";
 import { drawFolk } from "./folkart";
@@ -835,14 +835,14 @@ export class Renderer {
       const box = (cx: number, cy: number): Rect => ({ x: X(cx) - w / 2, y: Y(cy) - h / 2, w, h });
       if (!g.placed) {
         // Where it first shows: the spot as given, else the nearest of a few steps up and aside that covers no vehicle,
-        // no other tower, no badge, and stands GAIN_MERGE_PX clear of the other numbers.
+        // no other tower, no badge, no barn, and stands GAIN_MERGE_PX clear of the other numbers.
         g.placed = true;
         const towers = game.towers.filter((tw) => tw.id !== g.tower).map((tw) => ({ x: X(tw.col), y: Y(tw.row) - s * 0.55, w: s, h: s * 1.55 }));
         const others = this.gains.filter((o) => o !== g && o.placed);
         const clear = (dx: number, dy: number) => {
           const b = box(g.x + dx, g.y + dy);
           if (b.x < 2 || b.y < 2 || b.x + b.w > this.cssW - 2 || b.y + b.h > this.cssH - 2) return false;
-          if (this.vehicleBoxes.some((v) => overlaps(b, v)) || towers.some((v) => overlaps(b, v)) || this.badgeBoxes.some((v) => overlaps(b, v))) return false;
+          if ([this.vehicleBoxes, towers, this.badgeBoxes, this.barnBoxes].some((boxes) => boxes.some((v) => overlaps(b, v)))) return false;
           return others.every((o) => Math.hypot(X(o.x + o.dx) - X(g.x + dx), Y(o.y + o.dy) - Y(g.y + dy)) >= GAIN_MERGE_PX);
         };
         const steps: Array<[number, number]> = [[0, 0], [0, -0.5], [0, -1], [-0.9, -0.4], [0.9, -0.4], [-1.3, 0], [1.3, 0], [0, -1.6], [0, 0.8], [-1.2, -1.2], [1.2, -1.2]];
@@ -1677,26 +1677,22 @@ export class Renderer {
     this.laneR = s * 0.4;
     // and the barns (a badge docked over l34's farmhouse at P hid it)
     this.barnBoxes = (level.barns ?? []).map(([c, r]) => ({ x: X(c), y: Y(r) - s * 0.3, w: s, h: s * 1.3 }));
-    for (const sw of swarms(game.enemies)) {
-      const col = columnNear(this.lay, sw.lane, sw.dist, rode);
-      if (col) {
-        rode.add(col);
-        const p = enemyPoint(level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
-        const layers = Math.max(1, Math.min(8, Math.ceil(col.count / 6)));
-        this.swarmBadge(ctx, sw, X(p.x), Y(p.y + 0.2) - s * (0.75 + layers * 0.16), s);
-        continue;
-      }
-      const p = enemyPoint(level, sw);
-      // Plan item 69: a queue that bends round the lane piles several cells tall; the badge sits above its
-      // topmost vehicle (within two cells of the middle) rather than on the pile, its pointer still on the queue.
-      let top = Y(p.y + 0.2) - s * 0.95;
-      for (const e of game.enemies) {
-        if ((e.lane ?? undefined) !== (sw.lane ?? undefined) || this.lay.inColumn.has(e.id)) continue;
-        const q = this.placeEnemy(level, e);
-        if (Math.hypot(q.x - p.x, q.y - p.y) > 2) continue;
-        top = Math.min(top, Y(q.y + 0.2) - s * (0.5 * enemyScale(e.kind) + enemyLift(e.kind) + 0.35));
-      }
-      this.swarmBadge(ctx, sw, X(p.x), Math.max(s * 0.6, top), s);
+    // Plan item 706: one badge a lane, docked by its mouth (the depot), counting every pack on that lane: a badge per
+    // pack (item 10) put seven pills over l34's late field at P. Its columns keep their own '+N' chips.
+    const byLane = new Map<number, Swarm[]>();
+    for (const sw of swarms(game.enemies)) byLane.set(sw.lane ?? 0, [...(byLane.get(sw.lane ?? 0) ?? []), sw]);
+    for (const [lane, packs] of byLane) {
+      const tally = new Map<EnemyKind, number>();
+      for (const sw of packs) for (const k of sw.kinds) tally.set(k.kind, (tally.get(k.kind) ?? 0) + k.n);
+      const merged: Swarm = {
+        count: packs.reduce((n, sw) => n + sw.count, 0),
+        dist: packs[0]!.dist,
+        ...(lane ? { lane: 1 as const } : {}),
+        kinds: [...tally].map(([kind, n]) => ({ kind, n })).sort((p, q) => q.n - p.n),
+      };
+      const path = lane && level.path2 ? level.path2 : level.path;
+      const mouth = pointAt(path, 0.6);
+      this.swarmBadge(ctx, merged, X(mouth.x), Y(mouth.y) - s * 0.1, s);
     }
 
     // Boss moves: a red crackle from the boss to each tower it knocked out.
