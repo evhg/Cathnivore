@@ -904,7 +904,8 @@ export class Renderer3D {
       this.w < 600 && this.h > this.w && gate
         ? { zoom: 1.6, ...this.gateLook(gate[0] + 0.5, gate[1] + 0.5, cols, rows, 1.6) }
         : null;
-    this.openFramePending = !!this.openFrame;
+    // Plan item 710: every view fits once the depots stand (a desktop's depot could stand off the side too).
+    this.openFramePending = true;
   }
 
   /** Where the close frame looks: towards the field's middle from the gate, as far as keeps the gate (and its
@@ -928,29 +929,32 @@ export class Renderer3D {
     const f = this.openFrame;
     const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[0];
     this.dropToDepots();
-    if (!f || !d) return;
+    this.widenToDepots();
+    if (!d) return;
     const box = new THREE.Box3().setFromObject(d);
     if (box.isEmpty()) return;
     const c = box.getCenter(new THREE.Vector3());
-    const look = new THREE.Vector3();
-    const p = new THREE.Vector3();
-    for (let i = 0; i < 40; i++) {
-      look.set(f.x, this.camTarget.y, f.z);
-      this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / f.zoom).add(look);
-      this.camera.lookAt(look);
-      this.camera.updateMatrixWorld();
-      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-      for (let k = 0; k < 8; k++) {
-        p.set(k & 1 ? box.max.x : box.min.x, k & 2 ? box.max.y : box.min.y, k & 4 ? box.max.z : box.min.z).project(this.camera);
-        x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+    if (f) {
+      const look = new THREE.Vector3();
+      const p = new THREE.Vector3();
+      for (let i = 0; i < 40; i++) {
+        look.set(f.x, this.camTarget.y, f.z);
+        this.camera.position.copy(this.camBase).sub(this.camTarget).multiplyScalar(1 / f.zoom).add(look);
+        this.camera.lookAt(look);
+        this.camera.updateMatrixWorld();
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (let k = 0; k < 8; k++) {
+          p.set(k & 1 ? box.max.x : box.min.x, k & 2 ? box.max.y : box.min.y, k & 4 ? box.max.z : box.min.z).project(this.camera);
+          x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+        }
+        const seen = (Math.max(0, Math.min(1, x1) - Math.max(-1, x0)) * Math.max(0, Math.min(1, y1) - Math.max(-1, y0))) / Math.max(1e-6, (x1 - x0) * (y1 - y0));
+        if (seen >= 0.8) break;
+        const dx = c.x - f.x, dz = c.z - f.z;
+        const len = Math.hypot(dx, dz);
+        if (len < 0.3) break;
+        f.x += (dx / len) * 0.25;
+        f.z += (dz / len) * 0.25;
       }
-      const seen = (Math.max(0, Math.min(1, x1) - Math.max(-1, x0)) * Math.max(0, Math.min(1, y1) - Math.max(-1, y0))) / Math.max(1e-6, (x1 - x0) * (y1 - y0));
-      if (seen >= 0.8) break;
-      const dx = c.x - f.x, dz = c.z - f.z;
-      const len = Math.hypot(dx, dz);
-      if (len < 0.3) break;
-      f.x += (dx / len) * 0.25;
-      f.z += (dz / len) * 0.25;
     }
     this.homePanX = this.leanToDepot(box);
     // The search moved the camera: put it back on the view the player has (item 439: the whole field by default).
@@ -1012,6 +1016,48 @@ export class Renderer3D {
     this.camera.lookAt(this.camTarget);
     this.camera.updateMatrixWorld();
   }
+  /** Plan item 710: a gate on the field's side edge put its depot past the canvas's side (level 27: D 205 px wide at
+   *  x -36, P 72 px wide at x -37) where the lean (item 486) had no field margin to spend. The fitted view steps
+   *  back by the least that lets the lean bring every depot whole inside the canvas, 6 px clear of its sides. */
+  private widenToDepots(): void {
+    const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
+    const boxes = depots.map((o) => new THREE.Box3().setFromObject(o)).filter((b) => !b.isEmpty());
+    if (!boxes.length) return;
+    const w = this.w;
+    const cols = this.fieldSize.x, rows = this.fieldSize.y;
+    const tgt = this.camTarget.clone();
+    const off = this.camBase.clone().sub(tgt);
+    const edge: Array<[number, number, number]> = [];
+    for (const z of [0, rows]) for (const x of [0, cols]) edge.push([x, this.height(Math.min(cols - 0.5, Math.max(0.5, x)), Math.min(rows - 0.5, Math.max(0.5, z))), z]);
+    const sx = (x: number, y: number, z: number) => (this.v1.set(x, y, z).project(this.camera).x * 0.5 + 0.5) * w;
+    const fits = (): boolean => {
+      const fx = edge.map(([x, y, z]) => sx(x, y, z));
+      let spareL = Math.min(...fx) - 6, spareR = w - 6 - Math.max(...fx);
+      for (const b of boxes) {
+        let d0 = Infinity, d1 = -Infinity;
+        for (let k = 0; k < 8; k++) {
+          const x = sx(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z);
+          d0 = Math.min(d0, x); d1 = Math.max(d1, x);
+        }
+        // A lean one way spends the other side's margin; two depots off opposite sides can't both lean.
+        if (d0 < 6) { const need = 6 - d0; if (need > spareR) return false; spareR -= need; spareL += need; }
+        if (d1 > w - 6) { const need = d1 - (w - 6); if (need > spareL) return false; spareL -= need; spareR += need; }
+      }
+      return true;
+    };
+    for (let s = 1; s <= 1.3001; s += 0.004) {
+      this.camera.position.copy(off).multiplyScalar(s).add(tgt);
+      this.camera.lookAt(tgt);
+      this.camera.updateMatrixWorld();
+      if (fits()) {
+        if (s > 1) this.camBase.copy(off).multiplyScalar(s).add(tgt);
+        break;
+      }
+    }
+    this.camera.position.copy(this.camBase);
+    this.camera.lookAt(this.camTarget);
+    this.camera.updateMatrixWorld();
+  }
   /** Plan item 486: the whole-field view's sideways lean (world x) that brings the depot's `box` furthest into frame
    *  while the field's edge columns keep 6 px inside the canvas; 0 when the depot is already in. */
   private leanToDepot(box: THREE.Box3): number {
@@ -1026,7 +1072,11 @@ export class Renderer3D {
     for (const z of [0, rows]) for (const x of [0, cols]) edge.push([x, this.height(Math.min(cols - 0.5, Math.max(0.5, x)), Math.min(rows - 0.5, Math.max(0.5, z))), z]);
     const fx = xs(edge);
     const spareL = Math.min(...fx) - 6, spareR = w - 6 - Math.max(...fx);
-    const dx = xs([[box.min.x, box.min.y, (box.min.z + box.max.z) / 2], [box.max.x, box.min.y, (box.min.z + box.max.z) / 2]]);
+    // Plan item 710: every corner, roof and all (its base at mid-depth read level 27's depot inside at D while its
+    // near roof stood 36 px past the canvas's left edge).
+    const corners: Array<[number, number, number]> = [];
+    for (let k = 0; k < 8; k++) corners.push([k & 1 ? box.max.x : box.min.x, k & 2 ? box.max.y : box.min.y, k & 4 ? box.max.z : box.min.z]);
+    const dx = xs(corners);
     const d0 = Math.min(...dx), d1 = Math.max(...dx);
     const inside = (Math.max(0, Math.min(w, d1) - Math.max(0, d0))) / Math.max(1, d1 - d0);
     // Plan item 622: lean until it stands whole (was: half in, which left level 21's depot cut by the frame at D),
@@ -2189,7 +2239,9 @@ export class Renderer3D {
     this.syncSwarms(game);
     this.syncTowerMarks(game, dt);
     this.placeDepots(game);
-    if (this.openFramePending) this.fitOpenFrame();
+    // Plan item 710: once the depots stand where placeDepots put them (it waits for the camera to settle; fitting
+    // before that measured the depot at its first spot, and level 27's at D then stood 36 px off the canvas).
+    if (this.openFramePending && this.depotKey === `${game.level.id}:${this.canvas.clientWidth}x${this.canvas.clientHeight}`) this.fitOpenFrame();
     this.settleFar(game);
     this.syncDepotShutters(game, dt);
     this.syncQueue(game);
