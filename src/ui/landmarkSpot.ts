@@ -105,15 +105,25 @@ const GRID: ReadonlyArray<{ x: number; y: number }> = (() => {
   return out.sort((a, b) => Math.hypot(b.x, b.y) - Math.hypot(a.x, a.y) || a.x - b.x || a.y - b.y)
 })()
 const CANDIDATES = [...SPOTS, ...GRID]
+/** Gate 7 (2026-11-26): at each scale, the candidates whose box lies inside the hex, in CANDIDATES' order. That test
+ *  doesn't depend on the pieces, so it is worked once, not on every tile of every board render. */
+const INSIDE_AT = new Map<number, ReadonlyArray<{ x: number; y: number; box: Box }>>()
+function insideAt(scale: number): ReadonlyArray<{ x: number; y: number; box: Box }> {
+  let list = INSIDE_AT.get(scale)
+  if (!list) {
+    list = CANDIDATES.map((s) => ({ ...s, box: boxAt(s, scale) })).filter((c) => boxInside(c.box))
+    INSIDE_AT.set(scale, list)
+  }
+  return list
+}
 
 /** The same choice against measured boxes (tile units round the hex centre): Map.tsx refines with the real pieces.
  *  `minScale` (plan item 341) refuses a landmark drawn smaller than that. */
 export function pickSpot(taken: readonly Box[], minScale = 0): { x: number; y: number; scale: number } | null {
   for (const scale of LANDMARK_SCALES) {
     if (scale < minScale - 1e-9) break
-    for (const s of CANDIDATES) {
-      const b = boxAt(s, scale)
-      if (boxInside(b) && !taken.some((t) => overlaps(b, t))) return { ...s, scale }
+    for (const c of insideAt(scale)) {
+      if (!taken.some((t) => overlaps(c.box, t))) return { x: c.x, y: c.y, scale }
     }
   }
   return null

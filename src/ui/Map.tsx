@@ -246,6 +246,24 @@ function RegionTextureDefs() {
   )
 }
 
+/** Gate 7 (2026-11-26): one portrait per producer and face on the board, framed as a stall's window shows it
+ *  (ProducerMini's old nested svg), for the stalls' <use>s. */
+function portraitSymbolId(uid: string, pid: ProducerId, face: ProducerFace | undefined): string {
+  return `${uid}-pp-${pid}-${face ?? 'neutral'}`
+}
+function PortraitSymbols({ uid, keys }: { uid: string; keys: Array<[ProducerId, ProducerFace | undefined]> }) {
+  if (keys.length === 0) return null
+  return (
+    <defs>
+      {keys.map(([pid, face]) => (
+        <symbol key={`${pid}-${face ?? 'neutral'}`} id={portraitSymbolId(uid, pid, face)} viewBox="14 12 72 90">
+          <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
+        </symbol>
+      ))}
+    </defs>
+  )
+}
+
 // STYLE.md 6's exact game pieces, drawn as small self-contained SVG groups so `Map` can place one per
 // slot in the enemy-piece row / Stall row without repeating their geometry inline.
 
@@ -477,7 +495,7 @@ function EnemyStack({ kind, n, scale, ornaments, cy = ENEMY_Y }: { kind: 'outlet
  * their round base. It grows as their engine does: a second stall on the region stacks a crate on the counter, a
  * third a second crate (the `pile-copy` pieces), so a held region reads as a busy stall from across the table.
  */
-export function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = PRODUCER_Y }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace; py?: number }) {
+export function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face, py = PRODUCER_Y, portrait }: { pid: ProducerId; n: number; scale: number; countR: number; clip: string; showInitial: boolean; face?: ProducerFace; py?: number; portrait?: string }) {
   const colour = `var(--p-${pid})`
   const w = PRODUCER_W * s
   const cx = w / 2
@@ -511,9 +529,15 @@ export function ProducerMini({ pid, n, scale: s, countR, clip, showInitial, face
         <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} fill="var(--paper)" />
         <rect x={winL} y={lip - s} width={winW} height={counter - lip + s} fill={colour} opacity={0.22} />
         <g clipPath={`url(#${clip})`}>
-          <svg x={winL - 0.6 * s} y={lip - 3.8 * s} width={winW + 1.2 * s} height={(winW + 1.2 * s) * 1.25} viewBox="14 12 72 90" aria-hidden="true">
-            <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
-          </svg>
+          {portrait ? (
+            // Gate 7 (2026-11-26): the board draws each producer's face once (`PortraitSymbols`) and every stall
+            // shows it through a <use>, not ~90 nodes of portrait per stall (half the title board's DOM).
+            <use href={`#${portrait}`} x={winL - 0.6 * s} y={lip - 3.8 * s} width={winW + 1.2 * s} height={(winW + 1.2 * s) * 1.25} />
+          ) : (
+            <svg x={winL - 0.6 * s} y={lip - 3.8 * s} width={winW + 1.2 * s} height={(winW + 1.2 * s) * 1.25} viewBox="14 12 72 90" aria-hidden="true">
+              <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
+            </svg>
+          )}
         </g>
         {/* two turned posts, kraft with a lit edge and a grain line */}
         {[cx - hw, cx + hw - post].map((x, i) => (
@@ -1037,6 +1061,12 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     // hexPx: a measured board re-renders each status disc's size and estimated place, so it's fitted again.
   }, [active.length, hexPx, shortNames])
 
+  // every producer with a stall on the board, in the face this moment gives them (a superset of the stalls drawn)
+  const portraitKeys = (() => {
+    const seen = new Set<ProducerId>()
+    for (const id of active) for (const [pid, n] of Object.entries(state.regions[id].stalls)) if ((n ?? 0) > 0) seen.add(pid as ProducerId)
+    return [...seen].sort().map((pid): [ProducerId, ProducerFace | undefined] => [pid, faces?.[pid]])
+  })()
   const svgProps = {
     'data-zoom': zoomCenter ? inspected ?? undefined : undefined,
     'data-aiming': aiming ? '' : undefined,
@@ -1054,6 +1084,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
   return (
     <svg ref={svgRef} {...svgProps}>
       <RegionTextureDefs />
+      <PortraitSymbols uid={uid} keys={portraitKeys} />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {/* Plan item 413: the seven tiles sit on one die-cut board, a printed cardboard plate a little proud of them with
           its own thickness and shadow, so the board reads as one object on the cloth, not loose tiles. The edge layer
@@ -1414,7 +1445,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                       const [pid, n] = stalls[rect.i ?? 0]!
                       return (
                         <g key={pid} className="piece-slot" transform={`translate(${x + rect.x0} ${y})`} data-piece="stall" data-count={n} data-silhouette="standee">
-                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} face={faces?.[pid]} py={tray.producerY} />
+                          <ProducerMini pid={pid} n={n} scale={s} countR={tray.countR} clip={`${uid}-pin-${id}-${pid}`} showInitial={colourBlindPatterns} face={faces?.[pid]} py={tray.producerY} portrait={portraitSymbolId(uid, pid, faces?.[pid])} />
                         </g>
                       )
                     }

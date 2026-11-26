@@ -127,6 +127,18 @@ export function rng(id: string): () => number {
  * Kinds come round in the region's order, so the first (its signature) is the most common.
  */
 export function regionGround(id: string, type: RegionType, tray: readonly PieceRect[], control?: 'held' | 'contested' | 'free'): GroundMark[] {
+  // Gate 7 (2026-11-26): the board re-renders on every beat of a turn; a tile's ground only changes with its pieces.
+  const key = `${id}|${type}|${control ?? ''}|${tray.map((r) => `${r.kind}${r.x0},${r.y0},${r.x1},${r.y1}`).join(';')}`
+  const hit = GROUND_CACHE.get(key)
+  if (hit) return hit
+  const marks = placeGround(id, type, tray, control)
+  if (GROUND_CACHE.size > 256) GROUND_CACHE.clear()
+  GROUND_CACHE.set(key, marks)
+  return marks
+}
+const GROUND_CACHE = new Map<string, GroundMark[]>()
+
+function placeGround(id: string, type: RegionType, tray: readonly PieceRect[], control?: 'held' | 'contested' | 'free'): GroundMark[] {
   const kinds = groundKinds(id, type)
   const rand = rng(id)
   const marks: GroundMark[] = []

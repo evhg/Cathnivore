@@ -21,8 +21,12 @@ test('the active producer reacts to the turn', async ({ page }) => {
     // Plan item 374: on a desktop table the active producer stands half length; their face is on the seat.
     const standing = await page.locator('.table-producers-desk .table-producer[data-active]:not([data-unseated])').getAttribute('data-expression', { timeout: 50 }).catch(() => null)
     if (standing) seen.add(standing)
-    // The board's miniatures react with them: the art drawn inside a standee swaps its face.
-    for (const f of await page.locator('.producer-mini svg.producer-art').evaluateAll((els) => els.map((e) => e.getAttribute('data-face')))) if (f && f !== 'neutral') board.add(f)
+    // The board's miniatures react with them: the art drawn inside a standee swaps its face (since gate 7's 2026-11-26
+    // cut, a <use> of the board's one portrait per producer and face).
+    const drawn = await page.locator('.producer-mini use').evaluateAll((els) =>
+      els.map((e) => document.querySelector(`${e.getAttribute('href')} svg.producer-art`)?.getAttribute('data-face') ?? null),
+    )
+    for (const f of drawn) if (f && f !== 'neutral') board.add(f)
     await page.waitForTimeout(60)
   }
   expect(seen.has('worried') || seen.has('delighted'), `faces seen: ${[...seen].join(', ')}`).toBe(true)
