@@ -6644,14 +6644,14 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 - **Accept:** vehicle types' body hues differ by 40 degrees+ (sampled in sandbox); no off-frame shadow band wider than 40 CSS px below 0.5x the field's luminance; perf in budget; keyart-fresh (re-shoot); shots P and D in 3D.
 - **Size:** 2
 
-## 704. [ ] Runnel: a dry board that reads at a glance *(lane A, in progress)* *(slice 1, lane A: a dry ditch reads carved: --bank-sun lit above the face (#f2e2b6), --groove-bed a step below (#d9c08e, the least that keeps every season's water 3:1); runnel-tiles now also asserts the lit wall at 1.1x+ the face in light under every sky (median 1.19-1.33; fails on the old wall), channel 3:1 was already asserted there. Open: the valley round the board (fences, hedges, the day's light; valley.ts is a key-art source: re-shoot runnel), solved shots.)*
+## 704. [x] Runnel: a dry board that reads at a glance *(done 2026-11-26 01:10, lane A: slice 1 (2d203b4e) dry ditch carved, lit wall 1.1x+ the face under every sky, water 3:1 on the floor (runnel-tiles); slice 2 (0c18ee4d) the valley's edge shade takes the day's sky in play (D left margin 146 -> 161 mean), the spring tile 68% water (b1861236); board rect and solved payoff unchanged, valley.ts untouched so no key-art re-shoot; the valley already carries hedges, oaks and Bea's fence, so no new fence art; shots P/D unsolved and solved in scratchpad r-spring)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique)*
 - **Why:** `plan1125d/runnel-D` (520-1330 x 40-830) and `runnel-P` (5-385 x 270-610): dry channels are beige ridges on beige tiles, so the network can't be traced until solved; the field around the board (390-520 and 1220-1410 x 200-850) is an empty grey band.
 - **Build:** dry channels as dark carved grooves with a lit lip; field tiles keep their crop tint; the valley round the board gets fences, hedges and the day's light.
 - **Accept:** groove-to-tile contrast 3:1+ under every sky (e2e samples per sky); the board rect and the solved payoff unchanged; keyart-fresh (re-shoot); shots P and D, unsolved and solved.
 - **Size:** 2
 
-## 705. [ ] The bugs from the 2026-11-25 22:45 critique, fixed as one batch
+## 705. [ ] The bugs from the 2026-11-25 22:45 critique, fixed as one batch *(lane A, in progress)*
 *(planned 2026-11-25 22:50, lane A, plan1125d critique; check each on today's build first; Hedgerow and NIGHT SHIFT phone boxes at 2x)*
 - Hedgerow: l34 2D 'Lv 2 stronger, tougher' in both frames (D 850-980 x 205-255; P 312-500 x 870-940 over the Scarecrow and the queue pill): item 700 closed it as a 900 ms flight, but the shots catch it every time.
 - Cathnivore: setup D the 'This week at the market' card over Cath's awning and sign (1003-1130 x 170-435), copy wrapping to 1-2 words a line; title P the board covers Cath from the chest down (88-372 x 350-597); setup P her hair crown cut by the top edge (40-135 x 0-20); campaign D Cath and her crates cut by the viewport foot (790-945 x 620-900) and an empty band above the atlas (40-740 x 120-200).
