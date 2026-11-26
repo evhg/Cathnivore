@@ -1,14 +1,17 @@
 // Plan item 683: the light scheme's tile faces under every sky, as styles.css mixes them, so a dry plot reads apart
 // from a watered field (OKLab ΔE x100 20+) and from every channel on the board (12+) in each season, hour and weather.
 // A channel keeps most of its season's ground (TILE_GROUND of it, the rest the hour's valley field), a dry plot is
-// its ground half lit by the hour with a share of the crop's green (never darker than item 646's, so runnel-tiles'
+// its ground half lit by the hour with a share of sun-baked clay (plan item 711; never darker than item 646's, so runnel-tiles'
 // ditch keeps 3:1 on it), and a watered field deepens as the light goes (`--vl-wet`, set beside the valley's vars).
 import type { TimeOfDay } from './sky'
 
 /** A channel tile's share of its season's ground (the rest is the hour's valley field). styles.css: 80%. */
 export const TILE_GROUND = 0.8
-/** A dry plot's share of its hour-lit ground (the rest is the crop's green, --wet-field). styles.css: 58%. */
+/** A dry plot's share of its hour-lit ground (the rest is sun-baked clay, --parched: plan item 711; it was the crop's
+ *  green, so a dry field looked watered). styles.css: 58%. */
 export const PLOT_GROUND = 0.58
+/** Plan item 711: the light scheme's parched clay (tokens.css --parched), at the old green's luminance so the ditch keeps 3:1. */
+export const PLOT_TINT = '#ba462c'
 /** The light scheme's watered field, deepened by the hour: the crop's #4f7e33 with OKLab L 0.045 lower (and chroma
  *  4.5% less) by day, 0.05 at golden hour and 0.085 at dusk (scripts/runnel-683-search3.ts' least, plus a margin). */
 export const WET_FACE: Record<TimeOfDay, string> = { morning: '#447029', noon: '#447029', golden: '#436f28', dusk: '#3a6420' }
@@ -35,12 +38,12 @@ export const deltaE = (a: V3, b: V3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2
 export interface Grounds { field: string; fallow: string; meadow: string }
 
 /** The faces styles.css draws (OKLab): each ground's channel and dry plot, and the watered field. */
-export function tileFaces(season: Grounds, hour: Grounds, time: TimeOfDay, wetField = '#4f7e33') {
+export function tileFaces(season: Grounds, hour: Grounds, time: TimeOfDay, plotTint = PLOT_TINT) {
   const kinds = ['field', 'fallow', 'meadow'] as const
   const srgb = (k: (typeof kinds)[number], g: number) => mix(hex(season[k]), hex(hour[k]), g)
   return {
     channels: kinds.map((k) => oklab(srgb(k, TILE_GROUND))),
-    plots: kinds.map((k) => mix(oklab(srgb(k, 0.5)), oklab(wetField), PLOT_GROUND)),
+    plots: kinds.map((k) => mix(oklab(srgb(k, 0.5)), oklab(plotTint), PLOT_GROUND)),
     wet: oklab(WET_FACE[time]),
   }
 }

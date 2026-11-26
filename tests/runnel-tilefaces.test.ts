@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { sceneLight } from '../games/runnel/src/valley'
-import { PLOT_GROUND, TILE_GROUND, WET_FACE, deltaE, tileFaces } from '../games/runnel/src/tileFaces'
+import { PLOT_GROUND, PLOT_TINT, TILE_GROUND, WET_FACE, deltaE, tileFaces } from '../games/runnel/src/tileFaces'
 
 // Plan item 683: in the light scheme a dry plot reads apart from a watered field (ΔE 20+) and from every channel on
 // the board (12+, any ground's, not only its own) in all 4 seasons x 4 hours x 4 weathers; the grounds come from
@@ -37,9 +37,10 @@ describe('Runnel tile faces under every sky (plan item 683)', () => {
     const g = `${Math.round(TILE_GROUND * 100)}%`
     for (const [k, v] of [['dry', 'fallow'], ['dry-field', 'wheat'], ['dry-meadow', 'meadow']])
       expect(css).toContain(`:not(.wet, .stone) .tile { fill: color-mix(in srgb, var(--${k}) ${g}, var(--vl-${v}, var(--${k}))); }`)
-    expect(css.match(new RegExp(`50%, var\\(--vl-[a-z]+, var\\(--[a-z-]+\\)\\)\\) ${Math.round(PLOT_GROUND * 100)}%, var\\(--wet-field\\)\\)`, 'g'))).toHaveLength(3)
+    expect(css.match(new RegExp(`50%, var\\(--vl-[a-z]+, var\\(--[a-z-]+\\)\\)\\) ${Math.round(PLOT_GROUND * 100)}%, var\\(--parched\\)\\)`, 'g'))).toHaveLength(3)
     expect(css).toContain('.stage .cell.field.wet:not(.reservoir) .tile { fill: var(--vl-wet, var(--wet-field)); }')
     expect(base('wet-field')).toBe('#4f7e33')
+    expect(base('parched')).toBe(PLOT_TINT)
     for (const c of Object.values(WET_FACE)) expect(c).toMatch(/^#[0-9a-f]{6}$/)
   })
 })
