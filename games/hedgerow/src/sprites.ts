@@ -1489,6 +1489,119 @@ export interface EnemyLook {
   heading?: "up" | "down";
 }
 
+/**
+ * Plan item 707: the Fleet's lane rungs are drawn from above on every run, one silhouette a class: its length and
+ * width (wheels included) as shares of its scale. Each class's length-to-width ratio is 20%+ from every other's
+ * (a scooter, a long box lorry, a pickup, a high-roof van, a delivery van, a stubby hatchback), so a column reads as
+ * a convoy of different vehicles, not a row of capsules. Body colours are the rungs' own (RUNGS[k].colour).
+ */
+export const FLEET_TOP: Partial<Record<EnemyKind, { len: number; wid: number; body: string }>> = {
+  courier: { len: 0.5, wid: 0.145, body: "#5ec0a8" },
+  lorry: { len: 0.82, wid: 0.3, body: "#24345e" },
+  pickup: { len: 0.6, wid: 0.27, body: "#4f9a3c" },
+  sprinter: { len: 0.62, wid: 0.34, body: "#8a4fd0" },
+  van: { len: 0.48, wid: 0.33, body: "#f4f6f8" },
+  hatchback: { len: 0.38, wid: 0.32, body: "#e8b23a" },
+};
+
+/** Plan item 707: tyres at the body's corners, inside the class's width (`n` axles). */
+function topWheels(ctx: C, L: number, W: number, n: number, s: number): void {
+  ctx.fillStyle = "#2a2522";
+  for (let i = 0; i < n; i++) {
+    const wx = -L / 2 + L * (n === 2 ? (i ? 0.78 : 0.2) : 0.14 + (i * 0.7) / (n - 1));
+    for (const side of [-1, 1]) ctx.fillRect(wx - s * 0.04, side > 0 ? W / 2 - s * 0.05 : -W / 2, s * 0.08, s * 0.05);
+  }
+}
+
+/** Plan item 707: a glazed panel (windscreen or rear window) across the body at x, w wide. */
+function glass(ctx: C, x: number, w: number, W: number): void {
+  ctx.fillStyle = "#a9d4e6";
+  ctx.beginPath();
+  ctx.roundRect(x, -W * 0.36, w, W * 0.72, Math.min(w, W) * 0.25);
+  ctx.fill();
+  ctx.stroke();
+}
+
+/** Plan item 707: a Fleet rung from above, nose to +x, centred on (0, 0); `s` is its drawn scale. */
+function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
+  const f = FLEET_TOP[kind]!;
+  const L = s * f.len;
+  const W = s * f.wid;
+  const x0 = -L / 2;
+  const bw = W * 0.86;
+  switch (kind) {
+    case "courier": {
+      // The scooter's deck and front wheel, the bars across, a parcel box behind the rider, the rider's helmet.
+      rr(ctx, x0 + L * 0.05, -s * 0.025, L * 0.9, s * 0.05, s * 0.02, "#2b2b30");
+      ctx.beginPath();
+      ctx.moveTo(x0 + L * 0.86, -W / 2);
+      ctx.lineTo(x0 + L * 0.86, W / 2);
+      ctx.stroke();
+      rr(ctx, x0, -W * 0.42, L * 0.3, W * 0.84, s * 0.015, "#c79a62");
+      rr(ctx, x0 + L * 0.34, -W * 0.4, L * 0.3, W * 0.8, s * 0.03, f.body);
+      blob(ctx, x0 + L * 0.58, 0, W * 0.34, "#3a3a3a");
+      return;
+    }
+    case "hatchback": {
+      topWheels(ctx, L, W, 2, s);
+      rr(ctx, x0, -bw / 2, L, bw, s * 0.1, f.body);
+      // Bonnet, windscreen, a dark roof, the rear screen: a stubby car, all glass and roof.
+      glass(ctx, x0 + L * 0.58, L * 0.14, bw);
+      rr(ctx, x0 + L * 0.24, -bw * 0.34, L * 0.34, bw * 0.68, s * 0.04, "#2b2b30");
+      glass(ctx, x0 + L * 0.1, L * 0.12, bw);
+      break;
+    }
+    case "van": {
+      topWheels(ctx, L, W, 2, s);
+      rr(ctx, x0, -bw / 2, L, bw, s * 0.05, f.body);
+      glass(ctx, x0 + L * 0.74, L * 0.1, bw);
+      // The load roof, a teal stripe down each side of it (the delivery livery).
+      ctx.fillStyle = "#1f8a8a";
+      for (const side of [-1, 1]) ctx.fillRect(x0 + L * 0.06, side * bw * 0.3 - bw * 0.06, L * 0.62, bw * 0.12);
+      break;
+    }
+    case "sprinter": {
+      topWheels(ctx, L, W, 2, s);
+      rr(ctx, x0, -bw / 2, L, bw, s * 0.05, f.body);
+      // A short bonnet, the windscreen, then the long raised roof pod and its amber light bar (the 'Same-Day' van).
+      rr(ctx, x0 + L * 0.86, -bw * 0.34, L * 0.14, bw * 0.68, s * 0.03, "#6d3aa8");
+      glass(ctx, x0 + L * 0.74, L * 0.1, bw);
+      rr(ctx, x0 + L * 0.05, -bw * 0.34, L * 0.62, bw * 0.68, s * 0.03, "#a676e0");
+      rr(ctx, x0 + L * 0.6, -bw * 0.3, L * 0.06, bw * 0.6, s * 0.01, "#ffd23f");
+      break;
+    }
+    case "pickup": {
+      topWheels(ctx, L, W, 2, s);
+      rr(ctx, x0, -bw / 2, L, bw, s * 0.04, f.body);
+      // The cab up front (roof and windscreen), the open bed behind with a crate in it.
+      glass(ctx, x0 + L * 0.68, L * 0.08, bw);
+      rr(ctx, x0 + L * 0.5, -bw * 0.36, L * 0.18, bw * 0.72, s * 0.03, "#3c7a2d");
+      rr(ctx, x0 + L * 0.04, -bw * 0.34, L * 0.42, bw * 0.68, s * 0.01, "#2f3a2a");
+      rr(ctx, x0 + L * 0.1, -bw * 0.24, L * 0.18, bw * 0.48, s * 0.01, "#c79a62");
+      break;
+    }
+    case "lorry": {
+      topWheels(ctx, L, W, 3, s);
+      // A white cab with its screen, a gap, then the long navy box with a blue rail down each side.
+      rr(ctx, x0 + L * 0.8, -bw * 0.46, L * 0.2, bw * 0.92, s * 0.04, "#e9ecef");
+      glass(ctx, x0 + L * 0.9, L * 0.05, bw);
+      rr(ctx, x0, -bw / 2, L * 0.77, bw, s * 0.03, f.body);
+      ctx.fillStyle = "#5ab0ff";
+      for (const side of [-1, 1]) ctx.fillRect(x0 + L * 0.03, side * bw * 0.36 - bw * 0.05, L * 0.71, bw * 0.1);
+      break;
+    }
+  }
+  if (kind !== "lorry") {
+    ctx.fillStyle = "#fff2a8";
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(-x0 - s * 0.02, side * bw * 0.3, s * 0.02, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  shine(ctx, x0 + L * 0.12, -bw * 0.4, L * 0.3, bw * 0.12);
+}
+
 /** How big each enemy is drawn, relative to a van. */
 /**
  * Plan item 285: the small vehicles' side-view lengths (cells), so the shortest reads 44 px long at D (28 on a phone).
@@ -1521,6 +1634,9 @@ const RIG_LEN: Partial<Record<EnemyKind, number>> = { lorry: 0.98, steel: 0.98, 
 export const ROAD_GAP = 1.06;
 /** Plan item 684: a vehicle's drawn length along the lane, in cells (its body, or a slot for the small fliers). */
 export function drawnLen(k: EnemyKind): number {
+  // Plan item 707: a Fleet rung's slot is its from-above length.
+  const top = FLEET_TOP[k];
+  if (top) return top.len * enemyScale(k);
   return Math.max(SLOT_LEN, VEHICLE_LEN[k] ?? 0, RIG_LEN[k] ?? 0) * enemyScale(k);
 }
 export function enemyScale(kind: EnemyKind): number {
@@ -1889,7 +2005,13 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   // Plan item 285: up or down the lane a vehicle is seen from above, nose along the lane, centred over its ground
   // point (the side view stands on it).
   fromAbove = !!look.heading && TOP_DOWN.has(kind);
-  if (fromAbove) {
+  const fleet = FLEET_TOP[kind] !== undefined;
+  if (fleet && !look.heading) {
+    // Plan item 707: a Fleet rung on a level run is seen from above too, nose along its travel.
+    ctx.translate(-look.facing * kb, -s * 0.2);
+    ctx.rotate(look.facing < 0 ? Math.PI : 0);
+    ctx.scale(1 + q * 0.16, 1 - q * 0.2);
+  } else if (fromAbove) {
     ctx.translate(0, -s * 0.2 + (look.heading === "down" ? -kb : kb));
     ctx.rotate(look.heading === "down" ? Math.PI / 2 : -Math.PI / 2);
     ctx.scale(1 + q * 0.16, 1 - q * 0.2);
@@ -1903,7 +2025,8 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   ctx.strokeStyle = INK;
   ctx.lineJoin = "round";
   const topView = fromAbove ? TOP_VIEW[kind] : undefined;
-  if (topView) topView(ctx, s, tt);
+  if (fleet) fleetTop(ctx, kind, s);
+  else if (topView) topView(ctx, s, tt);
   else
   switch (kind) {
     case "van":

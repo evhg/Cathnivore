@@ -891,8 +891,9 @@ if (SANDBOX)
     convoy: () => (renderer as { convoyStats?: (g?: Game) => unknown } | null)?.convoyStats?.(game ?? undefined) ?? null,
     // Plan item 706: the 2D field's pooled gain numbers, swarm badges, vehicles and towers as drawn (CSS px).
     field2d: () => {
-      const r = renderer as { gainRects?: () => unknown; badgeBoxes?: unknown; vehicleBoxes?: unknown; towerBoxes?: unknown } | null
-      return r?.gainRects ? { gains: r.gainRects(), badges: r.badgeBoxes, vehicles: r.vehicleBoxes, towers: r.towerBoxes } : null
+      const r = renderer as { gainRects?: () => unknown; badgeBoxes?: unknown; vehicleBoxes?: unknown; towerBoxes?: unknown; depotBoxes?: unknown } | null
+      // Plan item 707: and the depots' plates, for the convoy to keep clear of.
+      return r?.gainRects ? { gains: r.gainRects(), badges: r.badgeBoxes, vehicles: r.vehicleBoxes, towers: r.towerBoxes, depots: r.depotBoxes } : null
     },
     // Plan item 410: the 3D fleet's and depot's main roughness against the farm's (null in 2D).
     materialLook: () => (renderer && is3D(renderer) ? renderer.materialLook() : null),

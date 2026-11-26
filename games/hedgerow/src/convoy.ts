@@ -76,7 +76,7 @@ export function columnNear(lay: Convoy, lane: 1 | undefined, dist: number, skip?
  * Lays out the vehicles on each lane, front-most first. `wide(lane)` says whether that lane takes two abreast.
  * Deterministic: ties on `dist` break by id.
  */
-export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined) => boolean = () => false): Convoy {
+export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined) => boolean = () => false, start: (lane: 1 | undefined) => number = () => 0): Convoy {
   const slots = new Map<number, ConvoySlot>();
   const inColumn = new Map<number, number>();
   const columnOf = new Map<number, ConvoyColumn>();
@@ -84,6 +84,8 @@ export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined)
   for (const lane of [undefined, 1] as const) {
     const on = units.filter((u) => (u.lane ?? undefined) === lane).sort((a, b) => b.dist - a.dist || a.id - b.id);
     const two = wide(lane);
+    // Plan item 707: where a vehicle is first drawn clear of the depot (cells): before that it waits in the column.
+    const from = start(lane);
     // The tail of each file: where its last vehicle was drawn and how long it is.
     const tail = two ? [{ d: Infinity, len: 0 }, { d: Infinity, len: 0 }] : [{ d: Infinity, len: 0 }];
     let col: ConvoyColumn | null = null;
@@ -100,14 +102,14 @@ export function convoy(units: readonly ConvoyUnit[], wide: (lane: 1 | undefined)
       });
       // Plan item 657: a place behind the lane's start would be drawn clamped onto the gate, every such vehicle on
       // one spot (the heap on the depot's pier), so those join the column too.
-      if (u.dist - bestD > MAX_LAG || bestD < 0) {
+      if (u.dist - bestD > MAX_LAG || bestD < from) {
         // Plan item 657: a queue further back (the depot's, behind an ambush's burst mid-lane) gets its own column,
         // so one queue's overflow is never drawn at the other's place.
         if (!col || col.dist - u.dist > MAX_LAG) {
           col = { ...(lane ? { lane } : {}), dist: u.dist, count: 0 };
           // Plan item 684: its head is drawn in the file, a vehicle's length behind the last one (it stood on the
           // queue's leader before, 3-5 deep); the vehicles after it queue behind it.
-          if (bestD >= 0) {
+          if (bestD >= from) {
             col.at = bestD;
             tail[best] = { d: bestD, len: u.len };
           }
@@ -153,6 +155,6 @@ export function placeOnLane(level: Pick<Level, "path" | "path2">, e: { id: numbe
  * The layout for a field this frame. Plan item 684: always single file (two abreast put a packed lane's vehicles over
  * the plots either side, 3-5 deep); what can't be shown waits in a column, counted on its chip.
  */
-export function layOutField(enemies: readonly { id: number; dist: number; lane?: 1; kind: string }[], len: (kind: string) => number): Convoy {
-  return convoy(enemies.map((e) => ({ id: e.id, dist: e.dist, ...(e.lane ? { lane: e.lane } : {}), len: len(e.kind) })));
+export function layOutField(enemies: readonly { id: number; dist: number; lane?: 1; kind: string }[], len: (kind: string) => number, start?: (lane: 1 | undefined) => number): Convoy {
+  return convoy(enemies.map((e) => ({ id: e.id, dist: e.dist, ...(e.lane ? { lane: e.lane } : {}), len: len(e.kind) })), undefined, start);
 }

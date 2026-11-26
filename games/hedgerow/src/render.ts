@@ -56,6 +56,7 @@ import {
   INK,
   drawEnemy,
   TOP_DOWN,
+  FLEET_TOP,
   drawPropIcon,
   propIconsFor,
   drawFarmhouse,
@@ -194,6 +195,9 @@ interface Rect {
   h: number;
 }
 const FONT = "'Hedgerow UI', system-ui, sans-serif";
+
+/** Plan item 707: furthest along the lane (cells) a vehicle waits in the depot's column before it is drawn. */
+const DEPOT_CLEAR_MAX = 1.5;
 
 /** Overshoot ease for a tower popping in: 0 -> 1 with a small bounce. */
 function popScale(k: number): number {
@@ -1292,7 +1296,8 @@ export class Renderer {
       });
     }
     const alive = new Set<number>();
-    this.layOut(game);
+    this.layOut(game, X, Y, s);
+    this.clearBends(game, X, Y, s);
     for (const col of this.lay.columns) {
       const cp = enemyPoint(level, { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) });
       items.push({ y: cp.y + 0.2, draw: () => this.drawColumns(game, ctx, X, Y, s, t, col) });
@@ -1451,18 +1456,21 @@ export class Renderer {
           // Plan item 285: from above (an up/down run, `drawEnemy` turns the body a quarter about its centre), the
           // body's overlays turn with it.
           const run = TOP_DOWN.has(e.kind) ? heading : undefined;
-          if (run) {
+          // Plan item 707: a Fleet rung on a level run is drawn from above too; its overlays lie over the roof.
+          const level2 = !run && FLEET_TOP[e.kind] !== undefined;
+          if (run || level2) {
             const cy = Y(gy) - s * enemyScale(e.kind) * 0.2;
             ctx.save();
             ctx.translate(X(p.x), cy);
-            ctx.rotate(run === "down" ? Math.PI / 2 : -Math.PI / 2);
+            if (run) ctx.rotate(run === "down" ? Math.PI / 2 : -Math.PI / 2);
+            else ctx.translate(0, s * enemyScale(e.kind) * 0.04);
             ctx.translate(-X(p.x), -cy);
           }
           // Fleet properties (Hedgerow 2 section 2): each lock tints the body in its own material.
           if (e.pm) this.drawMaterial(ctx, e.pm, e.kind, X(p.x), Y(gy), s);
           const crack = crackStage(e.kind, e.hp, maxHpOf(e));
           if (crack) this.drawCracks(ctx, crack, e.kind, X(p.x), Y(gy), s, t);
-          if (run) ctx.restore();
+          if (run || level2) ctx.restore();
         },
       });
     }
@@ -1660,9 +1668,7 @@ export class Renderer {
     this.vehicleBoxes = [];
     for (const e of game.enemies) {
       if (this.lay.inColumn.has(e.id)) continue;
-      const q = this.placeEnemy(level, e);
-      const sc = s * 0.62 * enemyScale(e.kind);
-      this.vehicleBoxes.push({ x: X(q.x) - sc / 2, y: Y(q.y + 0.2) - sc, w: sc, h: sc });
+      this.vehicleBoxes.push(this.vehicleBox(level, e, X, Y, s));
     }
     // Plan item 706: the lanes as dots (CSS px, every quarter cell), for the badges to dock off the road.
     this.laneDots = [];
@@ -2270,12 +2276,67 @@ export class Renderer {
   private lay: Convoy = noConvoy();
   /** The columns a swarm badge rode last frame (their own +N chip stands down). */
   private badged = new Set<ConvoyColumn>();
-  private layOut(game: Game): Convoy {
+  private layOut(game: Game, X: (v: number) => number, Y: (v: number) => number, s: number): Convoy {
     // Plan item 684: each slot is the vehicle's whole drawn body plus a sliver of road (SLOT_LEN, 0.62, let a truck
-    // or a lorry overlap the next by a fifth or more).
-    this.lay = layOutField(game.enemies, (k) => drawnLen(k as EnemyKind) * ROAD_GAP);
+    // or a lorry overlap the next by a fifth or more). Plan item 707: and at least 7 CSS px of road between two.
+    const gap = 7 / Math.max(1, s);
+    const level = game.level;
+    // Plan item 707: a vehicle is drawn on the lane once its body is clear of the depot's plate (it ran into the
+    // depot, depot and queue merging); before that it waits in the depot's column, counted on its chip.
+    const start = (lane: 1 | undefined): number => {
+      if (!this.depotBoxes.length) return 0;
+      const r = s * 0.42;
+      for (let d = 0; d < DEPOT_CLEAR_MAX; d += 0.05) {
+        const p = enemyPoint(level, { dist: d, ...(lane ? { lane } : {}) });
+        const cx = X(p.x);
+        const cy = Y(p.y + 0.2) - s * 0.25;
+        if (!this.depotBoxes.some((b) => cx + r > b.x && cx - r < b.x + b.w && cy + r > b.y && cy - r < b.y + b.h)) return d;
+      }
+      return DEPOT_CLEAR_MAX;
+    };
+    this.lay = layOutField(game.enemies, (k) => Math.max(drawnLen(k as EnemyKind) * ROAD_GAP, drawnLen(k as EnemyKind) + gap), start);
     this.chipCount.clear();
     return this.lay;
+  }
+  /** The box a vehicle is drawn in (CSS px). Plan item 707: a Fleet rung's is its from-above body, along or across
+   *  the lane as it runs; the rest keep a square of their scale. */
+  private vehicleBox(level: Level, e: Enemy, X: (v: number) => number, Y: (v: number) => number, s: number): Rect {
+    const q = this.placeEnemy(level, e);
+    const top = FLEET_TOP[e.kind];
+    if (!top) {
+      const sc = s * 0.62 * enemyScale(e.kind);
+      return { x: X(q.x) - sc / 2, y: Y(q.y + 0.2) - sc, w: sc, h: sc };
+    }
+    const k = s * enemyScale(e.kind);
+    const vert = runOf(level, { dist: this.lay.slots.get(e.id)?.dist ?? e.dist, lane: e.lane ?? null }) !== undefined;
+    const w = (vert ? top.wid : top.len) * k;
+    const h = (vert ? top.len : top.wid) * k;
+    const cy = Y(q.y + 0.2) - k * 0.2;
+    return { x: X(q.x) - w / 2, y: cy - h / 2, w, h };
+  }
+  /** Plan item 707: round a bend the lane's distance between two slots is longer than the gap between their bodies
+   *  (one turned across the lane, the next along it), so a vehicle whose body would touch the one ahead's eases back
+   *  along the lane until 3 px of road shows, never more than a cell (nor behind the lane's start). */
+  private clearBends(game: Game, X: (v: number) => number, Y: (v: number) => number, s: number): void {
+    const level = game.level;
+    const pad = 3;
+    const hit = (a: Rect, b: Rect) => a.x < b.x + b.w + pad && a.x + a.w + pad > b.x && a.y < b.y + b.h + pad && a.y + a.h + pad > b.y;
+    for (const lane of [undefined, 1] as const) {
+      const on = game.enemies
+        .filter((e) => (e.lane ?? undefined) === lane && this.lay.slots.has(e.id))
+        .sort((a, b) => this.lay.slots.get(b.id)!.dist - this.lay.slots.get(a.id)!.dist || a.id - b.id);
+      const ahead: Rect[] = [];
+      for (const e of on) {
+        const sl = this.lay.slots.get(e.id)!;
+        const d0 = sl.dist;
+        let box = this.vehicleBox(level, e, X, Y, s);
+        while (ahead.slice(-2).some((b) => hit(box, b)) && sl.dist > Math.max(0, d0 - 1)) {
+          sl.dist = Math.max(0, sl.dist - 0.04);
+          box = this.vehicleBox(level, e, X, Y, s);
+        }
+        ahead.push(box);
+      }
+    }
   }
   /** Where a vehicle is drawn (convoy.ts placeOnLane). */
   private placeEnemy(level: Level, e: Enemy): { x: number; y: number } {
