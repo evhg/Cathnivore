@@ -1926,6 +1926,9 @@ body:has(.front-credits.is-in) .front-back { opacity: 0; pointer-events: none; t
     background: color-mix(in srgb, var(--card-paper) 84%, rgb(var(--white-rgb)));
     /* plan item 672: a deep shade round the strip, so the LUNA neon just under it doesn't glow up round its edges */
     box-shadow: 0 4px 12px rgb(var(--black-rgb) / .55), 0 0 0 6px rgb(var(--black-rgb) / .35), 0 10px 28px 6px rgb(var(--black-rgb) / .75); /* px-ok */
+    /* plan item 710: the sign's lit frame still showed 26 px under the strip and 10 px past its end (the critique's
+       ghost outline): a deeper, lower shade, the strip's size grown 24 px and dropped 22, takes the frame down too */
+    box-shadow: 0 4px 12px rgb(var(--black-rgb) / .55), 0 0 0 6px rgb(var(--black-rgb) / .4), 0 22px 24px 24px rgb(var(--black-rgb) / .94); /* px-ok */
     color: var(--card-ink);
     rotate: -2deg;
     cursor: pointer;
