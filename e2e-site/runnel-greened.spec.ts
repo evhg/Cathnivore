@@ -78,7 +78,7 @@ test('watered fields green the valley plots beside them during play', async ({ p
   await page.goto('/runnel/?shotsolve')
   await page.locator('[data-last]').waitFor()
   // a full turn of one tile re-renders the board without changing it
-  const ch = page.locator('#board g.cell.channel:not([data-last])').first()
+  const ch = page.locator('#board g.cell.channel:not([data-last]):not(.fixed)').first()
   for (let k = 0; k < 6; k++) await ch.click({ force: true })
   await expect(page.locator('#valley-paint')).not.toHaveAttribute('data-greened', '')
   const m = await page.evaluate(() => ({
@@ -96,7 +96,7 @@ test('under reduced motion the valley sprouts fade in place, no transform', asyn
   await page.addInitScript(() => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, lessonDone: true, seenHelp: true, results: {} })))
   await page.goto('/runnel/?shotsolve')
   await page.locator('[data-last]').waitFor()
-  const ch = page.locator('#board g.cell.channel:not([data-last])').first()
+  const ch = page.locator('#board g.cell.channel:not([data-last]):not(.fixed)').first()
   for (let k = 0; k < 6; k++) await ch.click({ force: true })
   const sprout = page.locator('#valley-paint .vl-sprouts[data-wet] .vl-sprout').first()
   await expect(sprout).toBeAttached()

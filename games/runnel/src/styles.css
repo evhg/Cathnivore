@@ -5473,7 +5473,7 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   /* (dark: a lighter touch of green, so the light channels keep 3:1 on it) */
   :root:not([data-theme="light"]) .cell.field:not(.reservoir):not(.wet) .tile { fill: color-mix(in oklab, var(--dry-field) 86%, var(--wet-field)); }
 }
-.cell.spring .tile { fill: color-mix(in oklab, var(--water) 50%, var(--paper)); }
+.cell.spring .tile { fill: color-mix(in oklab, var(--water) 68%, var(--paper)); }
 /* (the glint's loop matches its new dash, so it runs seamlessly; still under reduced motion) */
 @keyframes flow { to { stroke-dashoffset: -0.65; } }
 @media (prefers-reduced-motion: reduce) { .wet .shimmer { animation: none; } }
