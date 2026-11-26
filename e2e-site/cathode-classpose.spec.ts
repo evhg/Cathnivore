@@ -100,22 +100,24 @@ test('each class holds its own pose on the pick, blended in 600 ms of loop time'
 // Plan item 579: each class's held stance has its own outline: her silhouettes (scene().figureMask(), her projected
 // triangles on a 4 px grid) for any two classes differ by 12% or more (1 - IoU) on the class pick still.
 test('her five class stances have five outlines (1 - IoU 0.12+ for every pair)', async ({ page, hasTouch }) => {
-  // Five page loads of the 3D street under SwiftShader: about 5 min at D beside another project.
-  test.setTimeout(600_000)
+  // One page load of the 3D street (five loads under SwiftShader ran past CI's budget, 991b02d3): the pick's own
+  // class switch (the tabs' onSelect, scene().wardrobe) dresses her in each class in turn.
+  test.setTimeout(400_000)
   await page.setViewportSize(hasTouch ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   await page.addInitScript(() => localStorage.setItem('cathode:prefs:v1', JSON.stringify({ adult: true, intensity: 'full' })))
   type M = { w: number; h: number; bits: string }
-  type G = { cathodeFront?: { ready?: boolean; scene: () => (S & { setTime(t: number): void; figureMask(cell?: number): M }) | null } }
+  type G = { cathodeFront?: { ready?: boolean; scene: () => (S & { setTime(t: number): void; wardrobe(c: string | null, instant?: boolean): void; figureMask(cell?: number): M }) | null } }
   const masks: Record<string, string> = {}
+  await page.goto(`/nightshift/?front=classpick&shot&t=8&class=ghost${hasTouch ? '&quality=phone' : ''}`)
+  await page.waitForFunction(() => (window as unknown as G).cathodeFront?.ready, null, { timeout: 250_000 })
   for (const cls of CLASSES) {
-    await page.goto(`/nightshift/?front=classpick&shot&t=8&class=${cls}${hasTouch ? '&quality=phone' : ''}`)
-    await page.waitForFunction(() => (window as unknown as G).cathodeFront?.ready, null, { timeout: 200_000 })
     // setTime runs a second of her updates before it draws: the stance is held at full weight after one call.
-    const r = await page.evaluate(() => {
+    const r = await page.evaluate((c) => {
       const s = (window as unknown as G).cathodeFront!.scene()!
+      s.wardrobe(c, true)
       s.setTime(20)
       return { pose: s.figurePose(), mask: s.figureMask(4) }
-    })
+    }, cls)
     expect(r.pose.kind, cls).toBe(cls)
     expect(r.pose.w, cls).toBe(1)
     masks[cls] = r.mask.bits
