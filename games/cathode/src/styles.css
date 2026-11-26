@@ -3630,3 +3630,34 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-trees-wrap { display: flex; }
   .cp-trees-more { display: inline-flex; }
 }
+
+/* Plan item 709 slice 3: on an upright phone the four stats are one row of ring dials (her number in the ring, the
+   stat and her lead over the average beside it), not two rows of bars; a tap on the row opens item 397's bars read
+   against the field, and folds them again. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-sheet[data-dossier] .cp-attrs { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .cp-attrs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 6px; } /* px-ok */
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .stat-dial {
+    grid-template-columns: 40px minmax(0, 1fr); /* px-ok: the ring */
+    grid-template-rows: auto auto;
+    grid-template-areas: "ring name" "ring lead";
+    column-gap: 5px; /* px-ok */
+    row-gap: 1px; /* px-ok */
+    align-items: center;
+    justify-items: start;
+  }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .stat-dial dt { grid-area: name; align-self: end; font-size: var(--fs-1); }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .cp-attr-v { display: contents; }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .cp-bar {
+    grid-area: ring;
+    width: 40px; /* px-ok */
+    height: 40px; /* px-ok */
+    border-radius: 50%;
+    background: conic-gradient(from 225deg, var(--stamp-red) 0 calc(var(--v, 0) * 270deg), rgb(var(--ink-rgb) / .16) calc(var(--v, 0) * 270deg) 270deg, transparent 270deg);
+    -webkit-mask: radial-gradient(closest-side, transparent 72%, var(--ink) 74% 99%, transparent);
+    mask: radial-gradient(closest-side, transparent 72%, var(--ink) 74% 99%, transparent);
+  }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) :is(.cp-bar-fill, .cp-tick, .cp-mark, .cp-avg) { display: none; }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .cp-attr-n { grid-area: ring; place-self: center; text-align: center; font-size: var(--fs-2); }
+  .cp-sheet[data-dossier]:not(.cp-stats-open) .cp-attr-d { grid-area: lead; align-self: start; min-width: 0; text-align: left; font-size: var(--fs-3); }
+}

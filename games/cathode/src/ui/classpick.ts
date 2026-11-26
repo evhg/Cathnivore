@@ -311,6 +311,12 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     const d = el("span", "cp-attr-d", dd);
     bars.set(a, { row, n, d, mean, v: 0 });
   }
+  // Plan item 709 slice 3: on an upright phone the stats are one row of dials; a tap opens them to the bars read
+  // against the field and folds them again (styles.css). Touch only: Enter anywhere is the hold to start.
+  attrs.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sheet.classList.toggle("cp-stats-open");
+  });
   const weapon = el("div", "cp-weapon", sheet);
   // Plan item 709: on an upright phone the three trees are one line of stamps until "What they do" opens them to a
   // line each; elsewhere the wrap is display: contents and the toggle hidden, so the rows always show.

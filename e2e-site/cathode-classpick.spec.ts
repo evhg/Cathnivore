@@ -133,6 +133,25 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   const opened = await page.locator('.cp-sheet .skill-row .cp-tree-theme').evaluateAll((els) => els.map((e) => (e as HTMLElement).offsetParent !== null && parseFloat(getComputedStyle(e).fontSize) >= 12))
   expect(opened, ps).toEqual([true, true, true])
   await page.locator('.cp-trees-more').click()
+  // Plan item 709 slice 3: the stats are one row of four ring dials (40 px); a tap opens the bars read against the
+  // field (item 559's bars with her lead), and a second tap folds them.
+  const statRow = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.cp-attr')].map((a) => {
+        const r = a.getBoundingClientRect()
+        const ring = a.querySelector('.cp-bar')!.getBoundingClientRect()
+        return { top: Math.round(r.top), ring: [Math.round(ring.width), Math.round(ring.height)] }
+      }),
+    )
+  const dials = await statRow()
+  expect(new Set(dials.map((d) => d.top)).size, JSON.stringify(dials)).toBe(1)
+  for (const d of dials) expect(d.ring, JSON.stringify(dials)).toEqual([40, 40])
+  await page.locator('.cp-attrs').click()
+  const bars = await statRow()
+  expect(new Set(bars.map((d) => d.top)).size, JSON.stringify(bars)).toBe(2)
+  for (const d of bars) expect(d.ring[0]! > 40 && d.ring[1]! <= 10, JSON.stringify(bars)).toBe(true)
+  await page.locator('.cp-attrs').click()
+  expect(new Set((await statRow()).map((d) => d.top)).size).toBe(1)
   // Plan item 422: she holds the gun on the stage, so its slab is a plate beside the name and numbers (about 40% of
   // the panel; it spanned the panel, item 397), its height given to her figure.
   expect(plate.art, ps).toBeGreaterThanOrEqual(0.36)
