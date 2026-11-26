@@ -11,7 +11,7 @@ const base = process.env.CATHODE_URL ?? 'http://localhost:4186/nightshift/'
 const out = process.env.OUT ?? 'e2e/screenshots/classpick'
 mkdirSync(out, { recursive: true })
 const sizes = (process.env.VPS ?? 'D,P,L').split(',')
-const VP = { P: [390, 844, 'phone'], D: [1440, 900, 'high'], L: [844, 390, 'phone'] }
+const VP = { S: [375, 667, 'phone'], P: [390, 844, 'phone'], D: [1440, 900, 'high'], L: [844, 390, 'phone'] }
 const classes = (process.env.CLASSES ?? 'ghost,butcher,gunslinger,wirewitch,fixer').split(',')
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'] })
 for (const s of sizes) {
