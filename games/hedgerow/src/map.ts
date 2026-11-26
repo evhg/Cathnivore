@@ -1700,7 +1700,9 @@ function drawLane(svg: SVGSVGElement, lane: [number, number][], detours: Array<[
   for (const pl of svg.querySelectorAll("path")) {
     const cls = pl.getAttribute("class");
     if (cls?.startsWith("foot-")) continue;
-    pl.setAttribute("d", cls === "lane-walked" ? (walked > 0 ? trailPath(full.slice(0, walked + 1)) : "") : trailPath(full));
+    // Plan item 720: the ruts are worn only where she has walked; the road ahead is a pale untrodden track.
+    const trodden = cls === "lane-walked" || cls === "lane-ruts";
+    pl.setAttribute("d", trodden ? (walked > 0 ? trailPath(full.slice(0, walked + 1)) : "") : trailPath(full));
   }
 }
 
@@ -1746,6 +1748,37 @@ function fogSeen(set?: number): number {
   } catch {
     return 0;
   }
+}
+
+/** Plan item 720: a swag of bunting for a cleared stop's coin: seven pennants on a sagging string, colours turned by
+ *  the stop so neighbours differ. Colours come from the map's flag tokens (styles.css `.stop-bunting .bp-*`). */
+function buntingSvg(id: number): SVGSVGElement {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "stop-bunting");
+  svg.setAttribute("viewBox", "0 0 100 30");
+  svg.setAttribute("aria-hidden", "true");
+  const sag = (x: number): number => 6 + 12 * Math.sin((x / 100) * Math.PI);
+  let o = `<path class="bs" d="M0 6Q50 30 100 6"/>`;
+  for (let k = 0; k < 7; k++) {
+    const x0 = 6 + k * 13;
+    const x1 = x0 + 9;
+    const y0 = sag(x0) - 0.5;
+    const y1 = sag(x1) - 0.5;
+    o += `<path class="bp-${(k + id) % 4}" d="M${x0} ${y0.toFixed(1)}L${x1} ${y1.toFixed(1)}L${((x0 + x1) / 2).toFixed(1)} ${((y0 + y1) / 2 + 9).toFixed(1)}Z"/>`;
+  }
+  svg.innerHTML = o;
+  return svg;
+}
+
+/** Plan item 720: one short line by a locked stop, naming the stop that opens it; it fades after a few seconds. */
+function sayLocked(item: HTMLElement, prev: string | undefined): void {
+  item.querySelector(".locked-say")?.remove();
+  const line = document.createElement("span");
+  line.className = "locked-say";
+  line.setAttribute("role", "status");
+  line.textContent = prev ? `Clear ${prev} first` : "Not open yet";
+  item.append(line);
+  window.setTimeout(() => line.remove(), 3200);
 }
 
 /** Plan item 230: the stops whose won land has already bloomed, so a new win blooms once. */
@@ -2867,6 +2900,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       n.className = "level-n";
       n.textContent = String(lv.id);
       numEl.append(mark, n);
+      // Plan item 720: a cleared stop is a little fete: a string of bunting across its coin.
+      if (stars > 0) numEl.append(buntingSvg(lv.id));
       b.append(numEl, st, medals, name);
       if (lv.id === nextId) {
         b.classList.add("next");
@@ -2893,6 +2928,8 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
         current = b;
       }
       b.addEventListener("click", () => walkThenOpen(list, b, () => open(lv)));
+      // Plan item 720: a tap on a locked stop says what opens it (the button is disabled, so the tap lands on the stop).
+      if (!unlocked) item.addEventListener("click", () => sayLocked(item, levels.find((p) => p.id === lv.id - 1)?.name));
       // Plan item 88: pointing at or focusing an open stop shows it on the level card.
       if (unlocked) for (const ev of ["pointerenter", "focus"] as const) b.addEventListener(ev, () => card?.show(lv));
       item.append(b);

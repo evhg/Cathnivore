@@ -6767,7 +6767,7 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - **Accept:** 6+ people visible from the spawn at 844x390 and 1440x900 (count from `window.cathode`); they scatter within 1 s of a shot (e2e); `scripts/cathode-perf.mjs` within budget (run alone); shots L and D.
 - **Size:** 2
 
-## 720. [ ] Hedgerow map: progress you can read on the stops *(lane A, in progress)*
+## 720. [x] Hedgerow map: progress you can read on the stops *(done 2026-11-26 17:25, lane A: a cleared stop wears a swag of seven pennants across its coin (colours from the map's flag tokens, turned by the stop) over its rosette stars (16 px at P, 17 at D); the lane is trodden up to Next (darker, and its ruts drawn only there) and a pale untrodden track beyond; a tap on a locked stop shows 'Clear <the stop before> first' for 3 s (the disabled coin passes the tap to its stop). Decided: the three states keep their names won/next/held (`data-state`, item 230), not done/next/locked. e2e hedgerow-map-progress (new, P and D); actmap, map, map-ink, map-locked, map-you, map-diorama, critique177, story 82 passed (one map phone timing case passed alone), --retries=0. Shots scratchpad s720 (before, a1: fresh and half-cleared, P and D))*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique; item 314's painted medallions stay)*
 - **Why:** `hedge-menu-D` (stops 285-1060 x 320-440 and 710-830) and `hedge-menu-P`: the stops ahead are identical glass domes; only 'Next' differs; a cleared stop shows no stars, and the lane doesn't show how far you've come.
 - **Build:** a cleared stop wears its 1-3 stars and a strip of bunting; the lane is painted in up to Next and pale beyond; a locked stop stays item 314's sepia print, with its unlock line on tap.

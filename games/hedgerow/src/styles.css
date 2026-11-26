@@ -6936,3 +6936,51 @@ img.act-scene {
 .lvl-bump { animation: lvl-bump 600ms cubic-bezier(0.3, 1.6, 0.5, 1); box-shadow: 0 0 0 3px var(--marks); }
 @keyframes lvl-bump { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .lvl-bump { animation: none; } }
+
+/* Plan item 720: progress you can read on the map. A cleared stop wears a swag of bunting across its coin (map.ts
+   buntingSvg); the road ahead of Next is a pale untrodden track (its ruts are drawn only where she has walked); a tap
+   on a locked stop names the stop that opens it. */
+.node .level-num.vignette .stop-bunting {
+  position: absolute;
+  left: 8%;
+  top: 6%;
+  width: 84%;
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--soil) 35%, transparent));
+}
+.stop-bunting .bs { fill: none; stroke: var(--map-pole-shade); stroke-width: 1.2; }
+.stop-bunting .bp-0 { fill: var(--map-flag-red); }
+.stop-bunting .bp-1 { fill: var(--map-plinth-top); }
+.stop-bunting .bp-2 { fill: var(--map-flag-gold-lit); }
+.stop-bunting .bp-3 { fill: var(--map-bunting-blue); }
+#screen-select .trail-path .lane-bed { stroke: color-mix(in srgb, var(--wheat) 22%, var(--paper)); opacity: 0.8; }
+#screen-select .trail-path .lane-walked { stroke: color-mix(in srgb, var(--soil) 66%, var(--wheat)); }
+#screen-select .stop:has(> .node:disabled) { cursor: help; }
+#screen-select .stop > .node:disabled { pointer-events: none; }
+.locked-say {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: var(--z-tooltip);
+  translate: -50% -110%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--soil) 40%, transparent);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--soil) 30%, transparent);
+  animation: locked-say 3.2s ease-out both;
+}
+@keyframes locked-say {
+  0% { opacity: 0; translate: -50% -90%; }
+  8%, 80% { opacity: 1; translate: -50% -110%; }
+  100% { opacity: 0; translate: -50% -110%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .locked-say { animation: none; }
+}
