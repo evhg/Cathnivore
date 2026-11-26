@@ -863,10 +863,12 @@ function placeGardenSign(): void {
     const board = document.getElementById('board')
     let deepest = -1
     for (let y = g.top + 2; y <= g.bottom - 2; y += 3) for (let x = g.left + 2; x <= g.right - 2; x += 3) if (inPolys(polys, x, y)) deepest = Math.max(deepest, y)
+    // (a cap on its drawn height, not a cut from 100%: its frame's height settles while the fonts load, so a cut
+    // could land with no effect and be added again: 17 Nov's board took 64 px in most loads and 125-195 in some)
     if (board && deepest >= 0) {
-      const cut = Number(board.dataset.gardenCut ?? 0) + Math.ceil(deepest - g.top) + 6
-      board.dataset.gardenCut = String(cut)
-      board.style.setProperty('--garden-cut', `${cut}px`)
+      const cap = Math.floor(board.getBoundingClientRect().height - (deepest - g.top) - 6)
+      board.dataset.gardenMax = String(cap)
+      board.style.setProperty('--garden-max', `${cap}px`)
       requestAnimationFrame(() => placeValleyCath())
     }
   }

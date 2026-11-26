@@ -2488,6 +2488,11 @@ body {
   .rain {
     display: none;
   }
+  /* (and the clouds hold still: their 46 s drift ran on under reduced motion, so a shadow crossed a different tile
+     every look and runnel-tiles' channel contrast read 2.85-3.24 on the same board) */
+  .cloud {
+    animation: none;
+  }
 }
 
 /* Plan item 13: arriving from the games page, its card name morphs into this wordmark. */
@@ -5489,7 +5494,7 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .bea-crops i[data-tuck] { display: none; }
 /* (an upright phone's board gives up the height its last row would take inside Bea's garden: main.ts placeGardenSign) */
 @media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) {
-  .board[style*="--garden-cut"] { height: calc(100% - var(--garden-cut)); }
+  .board[style*="--garden-max"] { max-height: var(--garden-max); }
 }
 /* Plan item 670: Bea's crayon drawing of today's field, pinned a little askew at the rail's foot (the page was bare
    paper there before a solve); it steps aside while the month is open or the result docks in the rail. */
@@ -5657,3 +5662,6 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   scale: 1.6;
 }
 @media (prefers-reduced-motion: reduce) { .mud-cracks, .wilt { transition: none; } }
+/* (a dry ditch's shaded wall stands crisp to its top: the lit cast line along it greyed the wall on a mid-toned clay
+   plot, the board's weakest channel, to 3.0:1 under golden light; a watered ditch keeps it) */
+.cell.field:not(.wet) .bank-cast { opacity: 0; }
