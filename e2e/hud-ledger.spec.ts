@@ -41,3 +41,18 @@ for (const scheme of ['light', 'dark'] as const) {
     expect(axe.violations.flatMap((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([])
   })
 }
+
+// Plan item 708: the quarterly-plan slab's words pass AA on its acrylic (axe, both schemes).
+for (const scheme of ['light', 'dark'] as const) {
+  test(`the plan slab reads at AA at 1440x900 ${scheme}`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop-chromium', 'the big desktop table')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.emulateMedia({ colorScheme: scheme })
+    await page.goto('/')
+    await page.getByText('Quick Game').click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.locator('.plan-strip').waitFor()
+    const axe = await new AxeBuilder({ page }).include('.plan-strip').withRules(['color-contrast']).analyze()
+    expect(axe.violations.flatMap((v) => v.nodes.map((n) => `${n.target.join(' ')}: ${n.any[0]?.message ?? ''}`))).toEqual([])
+  })
+}
