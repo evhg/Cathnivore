@@ -312,8 +312,23 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
     bars.set(a, { row, n, d, mean, v: 0 });
   }
   const weapon = el("div", "cp-weapon", sheet);
-  const trees = el("ul", "cp-trees", sheet);
+  // Plan item 709: on an upright phone the three trees are one line of stamps until "What they do" opens them to a
+  // line each; elsewhere the wrap is display: contents and the toggle hidden, so the rows always show.
+  const treesWrap = el("div", "cp-trees-wrap", sheet);
+  const trees = el("ul", "cp-trees", treesWrap);
   trees.setAttribute("aria-label", "Skill trees");
+  trees.id = "cp-trees";
+  const treesMore = button("cp-trees-more", treesWrap);
+  treesMore.setAttribute("aria-expanded", "false");
+  treesMore.setAttribute("aria-controls", "cp-trees");
+  treesMore.textContent = "What they do";
+  treesMore.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = !sheet.classList.contains("cp-trees-open");
+    sheet.classList.toggle("cp-trees-open", open);
+    treesMore.setAttribute("aria-expanded", String(open));
+    treesMore.textContent = open ? "Fold" : "What they do";
+  });
 
   // ---- the commit: hold the bar ----
   // Plan item 40: on an upright phone the sheet runs past the screen, so the foot (a "more below" cue over the

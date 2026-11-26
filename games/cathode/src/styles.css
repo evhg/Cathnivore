@@ -3597,4 +3597,36 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-dot { border-bottom-color: rgb(var(--ink-rgb) / .12); }
   .cp-dot.is-on { border-bottom: calc(var(--u) * 6) solid var(--blood-hot); }
   .cp-dots { column-gap: max(8px, calc(var(--u) * 4)); justify-content: space-between; } /* px-ok: 8 px between tabs */
+  /* Plan item 709: the trees one line of stamps, opening on a tap to what each does (the sheet was a dense form). */
+  .cp-sheet[data-dossier] .cp-trees-wrap { display: flex; align-items: center; gap: 8px; margin-top: 6px; } /* px-ok */
+  .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-trees { display: flex; flex-wrap: nowrap; gap: 6px; margin: 0; min-width: 0; } /* px-ok */
+  .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-tree { display: block; }
+  .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-tree-theme { display: none; }
+  .cp-sheet[data-dossier].cp-trees-open .cp-trees-wrap { flex-direction: column-reverse; align-items: stretch; }
+  .cp-sheet[data-dossier].cp-trees-open .cp-trees { margin-top: 0; }
+  .cp-trees-more {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    align-self: center;
+    min-height: 44px; /* px-ok: tap target */
+    margin-left: auto;
+    padding: 0 4px; /* px-ok */
+    border: 0;
+    background: none;
+    color: var(--card-ink);
+    font: 700 var(--fs-1)/1 var(--font-ui);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 3px; /* px-ok */
+    cursor: pointer;
+  }
+  .cp-sheet[data-dossier].cp-trees-open .cp-trees-more { align-self: flex-end; min-height: 32px; } /* px-ok */
+}
+.cp-trees-wrap { display: contents; }
+.cp-trees-more { display: none; }
+@media (max-width: 700px) and (orientation: portrait) {
+  .cp-trees-wrap { display: flex; }
+  .cp-trees-more { display: inline-flex; }
 }

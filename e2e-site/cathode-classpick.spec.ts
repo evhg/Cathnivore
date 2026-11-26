@@ -127,7 +127,12 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
   expect(plate.title, ps).toBe(false)
   expect(plate.ghosts, ps).toBe(1)
   expect(plate.rows.length, ps).toBe(3)
-  for (const r of plate.rows) expect(r.shown && r.text.length > 8 && r.size >= 12, ps).toBe(true)
+  // Plan item 709: the trees are one line of stamps; 'What they do' opens each to its effect (item 397's rows).
+  for (const r of plate.rows) expect(!r.shown && r.text.length > 8, ps).toBe(true)
+  await page.locator('.cp-trees-more').click()
+  const opened = await page.locator('.cp-sheet .skill-row .cp-tree-theme').evaluateAll((els) => els.map((e) => (e as HTMLElement).offsetParent !== null && parseFloat(getComputedStyle(e).fontSize) >= 12))
+  expect(opened, ps).toEqual([true, true, true])
+  await page.locator('.cp-trees-more').click()
   // Plan item 422: she holds the gun on the stage, so its slab is a plate beside the name and numbers (about 40% of
   // the panel; it spanned the panel, item 397), its height given to her figure.
   expect(plate.art, ps).toBeGreaterThanOrEqual(0.36)
@@ -825,4 +830,14 @@ test('upright phone: the picked role, its gun and the hold in view; tabs 44 px a
   const picked = await lum(m.tabs[2]!)
   const others = await Promise.all([0, 1, 3, 4].map((i) => lum(m.tabs[i]!)))
   for (const o of others) expect((Math.max(picked, o) + 0.05) / (Math.min(picked, o) + 0.05), 'picked rule against another').toBeGreaterThanOrEqual(3)
+  // The trees are one line of stamps until 'What they do' opens them to what each does.
+  const tops = await page.locator('.cp-tree').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)))
+  expect(new Set(tops).size, 'the trees on one line').toBe(1)
+  await expect(page.locator('.cp-tree-theme').first()).toBeHidden()
+  const more = page.locator('.cp-trees-more')
+  await expect(more).toHaveAttribute('aria-expanded', 'false')
+  expect((await more.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+  await more.click()
+  await expect(more).toHaveAttribute('aria-expanded', 'true')
+  await expect(page.locator('.cp-tree-theme').first()).toBeVisible()
 })
