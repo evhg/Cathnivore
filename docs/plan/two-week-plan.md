@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-26 11:25 UTC
 
 
 
@@ -6698,4 +6697,49 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 - Hedgerow: l27 P the fourth seed packet (Radio Mast, 575-680 x 1420-1550) cut by the More arrow to 'Radio M' with its price half hidden; l27 3D the depot clipped by the frame edge (D 15-180 x 400-530, P 0-60 x 880-990; may fold into 703's framing).
 - NIGHT SHIFT: title P the LUNA neon's outline ghosting round The Ledger card (25-330 x 1010-1130).
 - **Accept:** each fixed or closed with a measurement; the touched specs pass; shots P and D.
+- **Size:** 2
+
+Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 at 2x, D 1440x900, every game), one subagent critique against VISION.md, told to skip 319/543 and items 679-710. Dropped: Hedgerow 'Radio M' peek (item 698, by design); Runnel channel contrast is already held at 3:1 by runnel-tiles, so 711 is about live water and dry fields, not the troughs alone. Check each against today's build first.
+
+## 711. [ ] Runnel: the unsolved board is alive: water runs as you tap, dry fields look dry
+*(planned 2026-11-26 11:40, lane A, plan1126b critique)*
+- **Why:** `plan1126b/runnel-D` (board 465-1330 x 40-830) and `runnel-P` (5-385 x 265-600): 37 hexes in one tan; no water except at the source (840-960 x 370-490); dry and watered fields look alike. The solved shot is vivid, so the minutes of play are the dullest part. VISION 2-3.
+- **Build:** after each tap water runs from the source along every connected channel (about 250 ms a tile); a dry field reads cracked and wilted and perks up when water reaches it; pinned tiles carry a clear stake.
+- **Accept:** at P and D the connected path shows water within 300 ms of a tap (e2e); a watered field's face differs from a dry one's by 3:1 or a 20+ ΔE hue; reduced motion shows the state without animation; runnel-tiles still passes; the solved look unchanged; shots P and D.
+- **Size:** 3
+
+## 712. [ ] NIGHT SHIFT: Cath's first-person hands and baton read as hers
+*(planned 2026-11-26 11:40, lane A, plan1126b critique)*
+- **Why:** `plan1126b/ns-street-P` (sideways, 2x): the baton (1030-1290 x 65-780) an untextured silver cylinder over a sixth of the screen; the hand (1130-1500 x 520-780) a grey blob; no glove or trench cuff.
+- **Build:** a gloved hand with stitching and her trench cuff (per class outfit), a baton with a grip wrap and worn steel; idle sway, walk bob, a swing; kept in the bottom-right third.
+- **Accept:** at 844x390 and 1440x900 the viewmodel inside the right 30% and bottom 55%, never over the crosshair or objective tag; `scripts/cathode-perf.mjs` within budget (run alone); shots L and D.
+- **Size:** 2
+
+## 713. [ ] Hedgerow: Cath has presence in the battle
+*(planned 2026-11-26 11:40, lane A, plan1126b critique; item 681's level-up badge stays)*
+- **Why:** `hedge-l34-2d-D` (895-945 x 280-370), `hedge-l27-2d-D` (665-710 x 380-460), `hedge-l27-3d-D` (780-835 x 280-395): a small static figure lost among towers, no reactions or lines in battle.
+- **Build:** her token about 1.6x with an idle loop and a cast pose; a corner bark with her portrait on a leak, a boss, a combo, Pie or Rally (one per 8 s at most); a 600-900 ms staged ability moment.
+- **Accept:** her figure 64 px+ tall at 1440x900 and 48 CSS px+ at 390x844 (2D and 3D); the bark never over the lane, the seed rack or Go (e2e at P and D); reduced motion fades only; shots P and D.
+- **Size:** 2
+
+## 714. [ ] Cathnivore phone: the whole board with full region names
+*(planned 2026-11-26 11:40, lane A, plan1126b critique; item 710 closed Brindle at x 8 as the board filling the width; this is the names)*
+- **Why:** `cath-game-P`: Brindle's hex at the left edge (0-20 x 245-380), labels cut to 'Kings', 'Salt…'; `cath-title-P` the same ('Moor', 'Salt', 'Oak', 'River', 95-375 x 360-590), while cards name 'Brindle Hills' in full.
+- **Build:** the phone board fitted inside a 16 px gutter, full region names on curved banners; double-tap zoom to about 1.6x with a recentre chip.
+- **Accept:** at 390x844 no hex clipped, full names 12 px+, no label over a counter or another label (e2e); D unchanged; shots P and D.
+- **Size:** 2
+
+## 715. [ ] Portfolio: the games move, and Cath points at them
+*(planned 2026-11-26 11:40, lane A, plan1126b critique; item 680 measured the phone fold)*
+- **Why:** `portfolio-D`: four flat stills (632-1232 x 150-540); Cath (1290-1385 x 180-545) stands in black space and points at nothing.
+- **Build:** each tile plays a 3-5 s loop (animated webp 400 KB or less, poster fallback) on hover or in view; Cath turns toward the hovered tile and her line names that game.
+- **Accept:** LCP under 2.5 s and the weight gate passes; reduced motion shows posters; at P all four tiles or three and a peek within 844 px; shots P and D.
+- **Size:** 2
+
+## 716. [ ] The bugs from the 2026-11-26 11:40 critique, fixed as one batch
+*(planned 2026-11-26 11:40, lane A, plan1126b critique; check each on today's build first)*
+- Cathnivore: game D the hand strip (345-1330 x 775-890) overlapping and cut at the bottom ('Market Day Banner' at y 875); the Market tab's count badge clipped (1403-1428 x 8-28); campaign D Cath cut by the bottom (790-930 x 820-900) with an empty column above her (745-1000 x 130-500).
+- NIGHT SHIFT: role pick P, item 709's stage gun crosses the Ghost's skirt and hand (2x 275-725 x 700-775): place it clear of her figure box (`scene().figureBox()`), or behind her lower edge.
+- Hedgerow: menu P 'Silt and Ruts' half under the briefing sheet (2x 115-460 x 1280-1330); l27 P the 'NEXT: ROUND 15' tab over the seed cards' tops (2x 445-735 x 1380-1422).
+- **Accept:** each fixed or closed with a measurement; touched specs pass; shots P and D.
 - **Size:** 2
