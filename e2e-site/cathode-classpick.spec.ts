@@ -110,7 +110,9 @@ test('the stat sheet reads at 4.5:1 on its plate; the phone names are 15 px and 
       const fx = row.querySelector<HTMLElement>('.cp-tree-theme')!
       return { text: fx.textContent!.trim(), size: parseFloat(getComputedStyle(fx).fontSize), shown: shown(fx) }
     })
-    const art = document.querySelector('.cp-weapon-art')!.getBoundingClientRect()
+    // (its own width: on an upright phone the gun stands turned upright beside her, plan item 716)
+    const artEl = document.querySelector<HTMLElement>('.cp-weapon-art')!
+    const art = { width: Math.max(artEl.getBoundingClientRect().width, artEl.offsetWidth) }
     const panel = document.querySelector('.cp-weapon')!.getBoundingClientRect()
     // Plan item 559: each stat reads her lead over the average ('+7', 14 px or more), not item 397's 6 px ticks.
     const marks = [...document.querySelectorAll('.cp-attr')].map((a) => {
@@ -390,7 +392,8 @@ test('the class weapon lies on the armoury case table and changes with the class
   for (const cls of CLASSES) {
     await pick(page, cls, hasTouch)
     await expect(prop).toHaveAttribute('data-armoury-prop', cls)
-    const w = (await prop.locator('.cp-prop').boundingBox())!.width
+    // its own length (plan item 716: on an upright phone it stands turned upright)
+    const w = await prop.locator('.cp-prop').evaluate((e) => Math.max(e.getBoundingClientRect().width, (e as HTMLElement).offsetWidth))
     expect(w, cls).toBeGreaterThanOrEqual(hasTouch ? 140 : 200)
   }
   if ((await page.locator('.cp-weapon-art.is-lit').count()) > 0) {
@@ -477,8 +480,10 @@ test('the class weapon is lit in 3D with a specular highlight', async ({ page, h
       bottom = Math.max(bottom, y)
       if (0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]! > 200) bright++
     }
+    // its own box, unturned (plan item 716: on an upright phone the gun stands turned upright beside her)
     const box = img.getBoundingClientRect()
-    return { w: c.width, h: c.height, solid, bright, top, bottom, view: [Math.round(box.width), Math.round(box.height)] }
+    const own = (img as HTMLElement).offsetWidth > 0 ? [(img as HTMLElement).offsetWidth, (img as HTMLElement).offsetHeight] : [box.width, box.height]
+    return { w: c.width, h: c.height, solid, bright, top, bottom, view: [Math.round(Math.max(box.width, own[0]!)), Math.round(Math.max(Math.min(box.height, box.width), own[1]!))] }
   })
   const s = JSON.stringify(m)
   expect(m.w, s).toBeGreaterThanOrEqual(600)
