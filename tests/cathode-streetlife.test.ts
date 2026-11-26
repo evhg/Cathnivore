@@ -34,8 +34,8 @@ describe("NIGHT SHIFT street life (plan item 57)", () => {
       expect(walkers(ph)).toBeGreaterThanOrEqual(Math.floor(walkers(hi) * 0.4));
     }
     const m = streetLife("market", "high");
-    expect(m.agents.length).toBe(40);
-    expect(streetLife("market", "phone").agents.length).toBe(25);
+    expect(m.agents.length).toBe(43);
+    expect(streetLife("market", "phone").agents.length).toBe(28);
     for (const role of ["walker", "vendor", "shelter", "shopper", "cyclist", "courier"]) expect(m.agents.some((a) => a.role === role)).toBe(true);
     // Indoors, no street.
     expect(streetLife("clinic", "high").agents).toEqual([]);

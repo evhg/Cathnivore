@@ -87,6 +87,14 @@ function market(): { people: Authored[]; exits: Array<[number, number]> } {
     { role: "walker", path: [[-6.0, 52], [3.1, 50.5]] },
     { role: "shelter", path: [[-9.55, 53.6]], yaw: -0.5, phoneOut: true },
   );
+  // Plan item 719: and in the light, on every tier: two talking in the pool of the first sodium lamp (its head over
+  // x -5, z 50) and a walker coming up the road toward her, inside the quay bollards, so a sideways phone's first frame (half the
+  // walkers dropped, the far ones a few px tall in the rain) has people near enough to read.
+  people.push(
+    { role: "shelter", path: [[-5.35, 48.9]], yaw: -0.9 },
+    { role: "shelter", path: [[-4.65, 48.0]], yaw: 2.3 },
+    { role: "walker", path: [[2.45, 37], [2.45, 55]] },
+  );
   // Sheltering in doorways on the west facades and under the flyover.
   for (const [x, z, k] of [[-9.55, 52.5, 0], [-9.55, 39.5, 1], [-9.55, 16, 0], [-6.9, 11.5, 1], [-6.9, 0.2, 0], [-9.55, -38, 1]] as const)
     people.push({ role: "shelter", path: [[x, z]], yaw: x < -9 ? W : W + 0.6, phoneOut: k === 1 });
