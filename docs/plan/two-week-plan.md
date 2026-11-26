@@ -6684,7 +6684,7 @@ Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, 
 - **Accept:** HUD labels 12 CSS px+, figures 22 CSS px+; portrait 120 px+ at 1440x900; slab, HUD and hex rects don't overlap (e2e); slab text 4.5:1+; P unchanged; shots D and P.
 - **Size:** 2
 
-## 709. [ ] NIGHT SHIFT phone role pick: a case-file carousel, not a photo over a stat form
+## 709. [ ] NIGHT SHIFT phone role pick: a case-file carousel, not a photo over a stat form *(lane A, in progress)*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique; not item 678's title, nor 319/543's model)*
 - **Why:** `plan1126a/ns-play-P` (2x): the top (0-780 x 130-850) is a dim figure with an empty right half; the five roles are small greyscale mugshots (30-750 x 865-1010) with names nearly touching (GUNSLINGER/WIREWITCH 310-610 x 980-1005); the bottom third (22-758 x 1155-1688) a dense stat sheet. The desktop pick is staged; the phone one is a form.
 - **Build:** a horizontal snap carousel of role cards, each with its gun drawn large across the figure's foot; the stat sheet four dials and one line, expanding on tap; the roster thumbnails in colour with a red rule under the picked one.
