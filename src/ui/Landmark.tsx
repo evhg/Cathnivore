@@ -48,6 +48,12 @@ export function Landmark({ kind }: { kind: LandmarkKind }) {
           <path d="M-12 -2.4 L-5 -10 L2 -2.4" fill="none" stroke="var(--clay)" strokeWidth={2.2} />
           <rect x={-7.4} y={1} width={4} height={6} fill="var(--soil)" />
           <rect x={-9.4} y={-3.6} width={2.6} height={2.6} fill="var(--wheat)" strokeWidth={0.9} />
+          {/* Plan item 717: the mill house's chimney, a wisp of smoke curling off it (styles: .amb-smoke). */}
+          <rect x={-3.4} y={-9.4} width={1.8} height={3.4} fill="var(--clay)" strokeWidth={0.8} />
+          <g className="amb-smoke" fill="var(--paper-hi, var(--paper))" strokeWidth={0.5}>
+            <circle cx={-2.2} cy={-10.6} r={0.9} />
+            <circle cx={-1} cy={-11.8} r={0.7} />
+          </g>
           <g className="amb-sails">
             <circle cx={6.4} cy={2.4} r={6} fill="var(--paper)" />
             <circle cx={6.4} cy={2.4} r={1.4} fill="var(--soil)" />

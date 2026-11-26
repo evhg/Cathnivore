@@ -3557,6 +3557,9 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
 /* Plan item 76: the board lives quietly: the mill's sails turn, the boat at the docks bobs, the lighthouse lamp
    breathes, gulls glide, reeds and bunting sway. Board only (the campaign map stays still); parked under reduced
    motion and the no-animations setting. */
+.board-landmark .amb-smoke circle { animation: amb-smoke 3.4s ease-out infinite; }
+.board-landmark .amb-smoke circle:nth-child(2) { animation-delay: -1.7s; }
+@keyframes amb-smoke { 0% { opacity: 0; translate: 0 1px; } 30% { opacity: .9; } 100% { opacity: 0; translate: 0.8px -0.6px; } }
 .board-landmark .amb-sails { transform-box: fill-box; transform-origin: 50% 50%; animation: amb-turn 14s linear infinite; }
 .board-landmark .amb-bob { animation: amb-bob 3.6s ease-in-out infinite; }
 .board-landmark .amb-lamp { animation: amb-lamp 4s ease-in-out infinite; }
@@ -3573,9 +3576,10 @@ html.no-animations .tray-thud .piece-slot:first-child .enemy-stack { animation: 
 @keyframes amb-glide { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(2.5px, -1.2px); } }
 @keyframes amb-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) {
-  .board-landmark [class^='amb-'], .region-ground [class^='amb-'] { animation: none; }
+  .board-landmark [class^='amb-'], .region-ground [class^='amb-'], .board-landmark .amb-smoke circle { animation: none; }
 }
-html.no-animations .board-landmark [class^='amb-'], html.no-animations .region-ground [class^='amb-'] { animation: none; }
+html.no-animations .board-landmark [class^='amb-'], html.no-animations .region-ground [class^='amb-'], html.no-animations .board-landmark .amb-smoke circle { animation: none; }
+html[data-tab-hidden] .board-landmark .amb-smoke circle { animation-play-state: paused; }
 /* Plan item 84: at D the Difficulty and Map panels end at their content (cards laid on the cloth) rather than
    stretching to the row and leaving an empty band at their foot. */
 @media (min-width: 1100px) {

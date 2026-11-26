@@ -47,6 +47,18 @@ export function folkScale(hexPx: number): number {
  * keeps a shopper standing, smaller, rather than none.
  */
 export function regionFolk(id: string, taken: readonly PieceRect[], marks: readonly GroundMark[], control: FolkControl, k = 1): Shopper[] {
+  // The board re-renders on every beat of an enemy turn; a tile's people only change when its pieces or state do.
+  const key = `${id}|${control}|${k}|${taken.map((r) => `${r.x0},${r.y0},${r.x1},${r.y1}`).join(';')}|${marks.map((m) => `${m.kind}${m.x},${m.y},${m.s}`).join(';')}`
+  const hit = CACHE.get(key)
+  if (hit) return hit
+  const folk = placeFolk(id, taken, marks, control, k)
+  if (CACHE.size > 256) CACHE.clear()
+  CACHE.set(key, folk)
+  return folk
+}
+const CACHE = new Map<string, Shopper[]>()
+
+function placeFolk(id: string, taken: readonly PieceRect[], marks: readonly GroundMark[], control: FolkControl, k: number): Shopper[] {
   const rand = rng(`${id}:folk`)
   const want = FOLK_COUNT[control ?? 'none']
   const blocked = [...taken, ...marks.filter((m) => m.kind === 'stall' || m.kind === 'hsign').map(markRect)]
