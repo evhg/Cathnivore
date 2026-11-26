@@ -5162,11 +5162,16 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 /* Plan item 499: on a desktop the valley recedes while the board is in play (its palette mixed further toward the
    paper, like distance haze), so the tiles are the most saturated thing on the stage (the valley read 0.43 against
    the tiles' 0.34, plan1118a); it comes back to full colour as the solved board's bloom greens it. */
+/* Plan item 704 slice 2: the shade at the valley's edges takes the day's sky into it, so the land round the board is
+   warm at golden hour or cool under a morning sky rather than a grey band (its fills keep the paper haze: tinting them
+   moved the kept crops' hue 47 degrees at the solve). */
 @media (min-width: 1100px) and (min-height: 640px) {
   .stage:not(:has(.board.won)) .valley { --vk: 64%; }
+  .stage:not(:has(.board.won)) .vl-focus-out { stop-color: color-mix(in srgb, var(--bank-shade) 55%, var(--vl-sky-top, var(--bank-shade))); }
 }
 @media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: dark) {
   .stage:not(:has(.board.won)) .valley { --vk: 22%; }
+  .stage:not(:has(.board.won)) .vl-focus-out { stop-color: var(--bank-shade); }
 }
 
 /* Plan item 516: the board belongs to the valley's poster: the terrace round the board is the valley's ground under

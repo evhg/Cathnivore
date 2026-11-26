@@ -8,7 +8,7 @@ import { chosenOutfit } from '../../../shared/cath/wardrobe'
 import { chosenPin } from '../../../shared/cath/pins'
 
 const GREETINGS = [
-  "Morning. The spring's running and the fields are thirsty. Let's fix that.",
+  "Right then. The spring's running and the fields are thirsty. Let's fix that.",
   "Bea drew today's field plan. I've kept the pipes. You keep the water moving.",
   'Market day. Nothing sells like a well-watered cabbage.',
   "Coffee's on. Channels are crooked. You know the drill.",
