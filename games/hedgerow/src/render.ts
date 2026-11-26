@@ -107,6 +107,11 @@ const LOOK_SPEC: Record<string, 0 | 1> = { crow: 1, hawk: 1, pumpkin: 0, scatter
 
 /** Gold floaters from fleet knocks merge over this many seconds. */
 const GOLD_WINDOW = 0.15;
+/** Plan item 706: gains this close (CSS px) to a live number join it; a number holds GAIN_HOLD s, gone at GAIN_LIFE. */
+const GAIN_MERGE_PX = 120;
+const GAIN_HOLD = 0.4;
+const GAIN_LIFE = 0.7;
+const GAIN_MIN_PX = 14;
 /** Classic levels' vehicles have no rung colour: a tint per type for the swarm badge's make-up bar. */
 /** Plan item 256: queued vehicles at the gate drawn larger than on the lane (they're parked, the round's cast). */
 const QUEUE_SCALE = 1.4;
@@ -128,6 +133,19 @@ interface Particle {
   text?: string;
   /** Text size multiplier. */
   big?: number;
+}
+
+/** Plan item 706: one pooled gain on the field (cells; dx, dy the step aside it took when first drawn). */
+interface Gain {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  n: number;
+  quiet: number;
+  big: number;
+  placed: boolean;
+  tower?: number;
 }
 
 interface Decal {
@@ -211,8 +229,15 @@ export class Renderer {
   rolloutDust = 0;
   /** Fleet levels: Marks from knocks not yet shown, flushed as one "+N" floater every GOLD_WINDOW seconds. */
   private gold = { n: 0, x: 0, y: 0, age: 0 };
-  /** Plan item 45: each tower's Marks from knocks pooled into one rising "+N" over it, gone 0.9 s after its last knock. */
-  private towerMarks = new Map<number, { n: number; quiet: number }>();
+  /**
+   * Plan item 706: every gain on the field (a tower's Marks from knocks, a kill's bounty, the loose Marks) is one
+   * pooled "+N": a gain within GAIN_MERGE_PX of a live number adds to it, so no two numbers stand within that of each
+   * other; each is gone GAIN_LIFE s after its last gain, and steps aside from vehicles and other towers when placed.
+   * (Plan item 45's per-tower marks, the bounty text floats and the gold floater, merged.)
+   */
+  private gains: Gain[] = [];
+  /** The last frame's cell size in CSS px, for the gain pool's merge radius. */
+  private cellPx = 40;
   /** Plan item 45: wreck debris left on the verge for the round (oldest culled past 140 pieces). */
   private debris: Array<{ x: number; y: number; color: string; rot: number; size: number }> = [];
   private decals: Decal[] = [];
@@ -550,12 +575,9 @@ export class Renderer {
             ring.vx = ring.vy = ring.g = 0;
             this.parts.push(ring);
           }
-          if (e.tower !== undefined) {
-            const m = this.towerMarks.get(e.tower) ?? { n: 0, quiet: 0 };
-            m.n += e.n;
-            m.quiet = 0;
-            this.towerMarks.set(e.tower, m);
-          } else {
+          const tw = e.tower !== undefined ? game.towers.find((x) => x.id === e.tower) : undefined;
+          if (tw) this.gain(tw.col + 0.5, tw.row + 0.5 - 0.95, e.n, tw.id);
+          else {
             this.gold.n += e.n;
             this.gold.x = e.x;
             this.gold.y = e.y;
@@ -582,7 +604,7 @@ export class Renderer {
           if (this.fallen.length < 24)
             this.fallen.push({ kind: e.kind, x: e.x, y: e.y, facing: this.lastFacing(e.x), age: 0 });
           this.burst(e.x, e.y, isBig(e.kind) ? 2.5 : 1);
-          this.float(e.x, e.y - 0.3, `+${e.bounty}`, "#ffe27a", isBig(e.kind) ? 1.6 : 1);
+          this.gain(e.x, e.y - 0.3, e.bounty, undefined, isBig(e.kind) ? 1.4 : 1);
           if (isBig(e.kind)) {
             this.kick(0.5);
             this.flashOnce("255,240,200", 0.5);
@@ -775,6 +797,75 @@ export class Renderer {
     for (let i = 0; i < 3; i++) this.parts.push(this.particle(x, y, "#e8ddc8", "dot", 0.05, 0.4));
   }
 
+  /** Plan item 706: adds a gain to the live number within GAIN_MERGE_PX of (x, y) (cells), else starts one there. */
+  private gain(x: number, y: number, n: number, tower?: number, big = 1): void {
+    if (!(n > 0)) return;
+    const r = GAIN_MERGE_PX / Math.max(1, this.cellPx);
+    const near = this.gains.find((g) => Math.hypot(g.x + g.dx - x, g.y + g.dy - y) < r || Math.hypot(g.x - x, g.y - y) < r);
+    if (near) {
+      near.n += n;
+      near.quiet = 0;
+      near.big = Math.max(near.big, big);
+      return;
+    }
+    this.gains.push({ x, y, dx: 0, dy: 0, n, quiet: 0, big, placed: false, ...(tower !== undefined ? { tower } : {}) });
+  }
+
+  /** Plan item 706: the live gains as drawn last frame (CSS px from the canvas corner), for the e2e tests. */
+  gainRects(): Array<{ x: number; y: number; w: number; h: number; n: number; size: number }> {
+    return this.gainDrawn.map((g) => ({ ...g }));
+  }
+
+  private gainDrawn: Array<{ x: number; y: number; w: number; h: number; n: number; size: number }> = [];
+
+  private drawGains(game: Game, dt: number, X: (v: number) => number, Y: (v: number) => number, s: number): void {
+    const { ctx } = this;
+    this.cellPx = s;
+    this.gainDrawn = [];
+    const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    for (const g of this.gains) g.quiet += dt;
+    this.gains = this.gains.filter((g) => g.quiet <= GAIN_LIFE && (g.tower === undefined || game.towers.some((tw) => tw.id === g.tower)));
+    for (const g of this.gains) {
+      const text = `+${Math.floor(g.n)}`;
+      const fs = Math.max(GAIN_MIN_PX, Math.round(s * (0.26 + Math.min(0.14, Math.log10(1 + g.n) * 0.06)) * g.big));
+      ctx.save();
+      ctx.font = `800 ${fs}px ${FONT}`;
+      const w = ctx.measureText(text).width + fs * 0.3;
+      const h = fs * 1.1;
+      const box = (cx: number, cy: number): Rect => ({ x: X(cx) - w / 2, y: Y(cy) - h / 2, w, h });
+      if (!g.placed) {
+        // Where it first shows: the spot as given, else the nearest of a few steps up and aside that covers no vehicle,
+        // no other tower, no badge, and stands GAIN_MERGE_PX clear of the other numbers.
+        g.placed = true;
+        const towers = game.towers.filter((tw) => tw.id !== g.tower).map((tw) => ({ x: X(tw.col), y: Y(tw.row) - s * 0.55, w: s, h: s * 1.55 }));
+        const others = this.gains.filter((o) => o !== g && o.placed);
+        const clear = (dx: number, dy: number) => {
+          const b = box(g.x + dx, g.y + dy);
+          if (b.x < 2 || b.y < 2 || b.x + b.w > this.cssW - 2 || b.y + b.h > this.cssH - 2) return false;
+          if (this.vehicleBoxes.some((v) => overlaps(b, v)) || towers.some((v) => overlaps(b, v)) || this.badgeBoxes.some((v) => overlaps(b, v))) return false;
+          return others.every((o) => Math.hypot(X(o.x + o.dx) - X(g.x + dx), Y(o.y + o.dy) - Y(g.y + dy)) >= GAIN_MERGE_PX);
+        };
+        const steps: Array<[number, number]> = [[0, 0], [0, -0.5], [0, -1], [-0.9, -0.4], [0.9, -0.4], [-1.3, 0], [1.3, 0], [0, -1.6], [0, 0.8], [-1.2, -1.2], [1.2, -1.2]];
+        const ok = steps.find(([dx, dy]) => clear(dx, dy));
+        if (ok) [g.dx, g.dy] = ok;
+      }
+      const rise = this.reducedMotion ? 0 : Math.max(0, g.quiet - GAIN_HOLD) * 0.9;
+      const cx = X(g.x + g.dx);
+      const cy = Y(g.y + g.dy) - rise * s;
+      ctx.globalAlpha = 1 - Math.max(0, (g.quiet - GAIN_HOLD) / (GAIN_LIFE - GAIN_HOLD));
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = Math.max(3, fs * 0.22);
+      ctx.strokeStyle = "rgba(43,30,8,0.9)";
+      ctx.fillStyle = "#ffe27a";
+      ctx.strokeText(text, cx, cy);
+      ctx.fillText(text, cx, cy);
+      ctx.restore();
+      this.gainDrawn.push({ x: cx - w / 2, y: cy - h / 2, w, h, n: Math.floor(g.n), size: fs });
+    }
+  }
+
   private float(x: number, y: number, text: string, color: string, big = 1): void {
     this.parts.push({ x, y, vx: 0, vy: -0.9, g: 0, age: 0, life: 1.1, size: 0.3, color, shape: "text", rot: 0, vr: 0, text, big });
   }
@@ -881,7 +972,7 @@ export class Renderer {
     if (this.gold.age >= GOLD_WINDOW) {
       const n = Math.floor(this.gold.n);
       if (n >= 1) {
-        this.float(this.gold.x, this.gold.y - 0.3, `+${n}`, "#ffe27a", Math.min(1.5, 0.75 + Math.log10(n) * 0.4));
+        this.gain(this.gold.x, this.gold.y - 0.3, n);
         this.gold.n -= n;
       }
       this.gold.age = 0;
@@ -1496,27 +1587,8 @@ export class Renderer {
     this.columnChips = [];
     for (const it of items) it.draw();
     for (const chip of this.columnChips) chip();
-    // Each tower's pooled Marks: one "+N" that counts up while it keeps knocking, then floats off and fades.
-    for (const [id, m] of this.towerMarks) {
-      m.quiet += dt;
-      const tw = game.towers.find((x) => x.id === id);
-      if (!tw || m.quiet > 0.9) {
-        this.towerMarks.delete(id);
-        continue;
-      }
-      const fs = Math.max(12, s * (0.26 + Math.min(0.14, Math.log10(1 + m.n) * 0.06)));
-      ctx.save();
-      ctx.globalAlpha = 1 - Math.max(0, (m.quiet - 0.5) / 0.4);
-      ctx.font = `800 ${fs}px ${FONT}`;
-      ctx.textAlign = "center";
-      ctx.lineWidth = Math.max(2, fs * 0.16);
-      ctx.strokeStyle = "rgba(60,40,10,0.8)";
-      ctx.fillStyle = "#ffe27a";
-      const ty = Y(tw.row + 0.5) - s * (0.95 + (this.reducedMotion ? 0 : m.quiet * 0.35));
-      ctx.strokeText(`+${Math.floor(m.n)}`, X(tw.col + 0.5), ty);
-      ctx.fillText(`+${Math.floor(m.n)}`, X(tw.col + 0.5), ty);
-      ctx.restore();
-    }
+    // Plan item 706: the pooled gains, each one "+N" that counts up while it keeps paying, then rises and fades.
+    this.drawGains(game, dt, X, Y, s);
     // Blackout: the field is dark except where the towers and Cath give light.
     const dark = setPiece(level, "blackout");
     if (dark) {
@@ -1592,6 +1664,19 @@ export class Renderer {
       const sc = s * 0.62 * enemyScale(e.kind);
       this.vehicleBoxes.push({ x: X(q.x) - sc / 2, y: Y(q.y + 0.2) - sc, w: sc, h: sc });
     }
+    // Plan item 706: the lanes as dots (CSS px, every quarter cell), for the badges to dock off the road.
+    this.laneDots = [];
+    for (const path of [level.path, level.path2]) {
+      if (!path) continue;
+      const len = pathLength(path);
+      for (let d = 0; d <= len; d += 0.25) {
+        const q = pointAt(path, d);
+        this.laneDots.push({ x: X(q.x), y: Y(q.y) });
+      }
+    }
+    this.laneR = s * 0.4;
+    // and the barns (a badge docked over l34's farmhouse at P hid it)
+    this.barnBoxes = (level.barns ?? []).map(([c, r]) => ({ x: X(c), y: Y(r) - s * 0.3, w: s, h: s * 1.3 }));
     for (const sw of swarms(game.enemies)) {
       const col = columnNear(this.lay, sw.lane, sw.dist, rode);
       if (col) {
@@ -2002,6 +2087,10 @@ export class Renderer {
   towerBoxes: Rect[] = [];
   badgeBoxes: Rect[] = [];
   vehicleBoxes: Rect[] = [];
+  /** Plan item 706: the lanes sampled every quarter cell (CSS px), and a lane's half-width, for the badges. */
+  private laneDots: Array<{ x: number; y: number }> = [];
+  private laneR = 16;
+  private barnBoxes: Rect[] = [];
   /** Plan item 403: lanes whose depot stands on the lane's mouth, and how far along the lane its queue starts (cells). */
   depotMouths = new Map<number, number>();
   private queueAge = 0;
@@ -2165,7 +2254,7 @@ export class Renderer {
     places: Array<{ x: number; y: number }>;
   } {
     let marks = 0;
-    for (const m of this.towerMarks.values()) marks = Math.max(marks, m.n);
+    for (const g of this.gains) if (g.tower !== undefined) marks = Math.max(marks, g.n);
     // Plan item 657: where each column stands, for the spec that keeps an ambush's overflow at the ambush.
     // Plan item 684: and where its head is drawn and what its chip says.
     const cols = this.lay.columns.map((c) => ({ dist: c.dist, count: c.count, lane: c.lane ?? 0, at: c.at ?? null, chip: this.chipCount.get(c) ?? null, badged: this.badged.has(c) }));
@@ -2263,9 +2352,9 @@ export class Renderer {
     // Plan item 672: a sprite draws up to 1.3 icons wide (a van's box), so its slot is that wide and the count starts
     // after it; with an icon-wide slot the vans covered their own digits.
     const slot = icon * 1.3;
-    const parts = kinds.map((k) => ({ ...k, w: slot + ctx.measureText(label(k.n)).width * 0.8 + 4 }));
+    let parts = kinds.map((k) => ({ ...k, w: slot + ctx.measureText(label(k.n)).width * 0.8 + 4 }));
     const pad = h * 0.3;
-    const w = pad * 2 + tw + 8 + parts.reduce((a, q) => a + q.w + 4, 0);
+    let w = pad * 2 + tw + 8 + parts.reduce((a, q) => a + q.w + 4, 0);
     // Kept on the field's canvas (plan item 69: at 390 px a queue near the edge ran its badge off the screen).
     let x0 = Math.max(4, Math.min(this.cssW - w - 4, x - w / 2));
     let y0 = y - h;
@@ -2278,26 +2367,57 @@ export class Renderer {
       else y0 = d.y + d.h + 4;
     }
     // Plan item 695: a badge over a tower hid it (l34 at P: '34 21 6 3' over the hedge row, '50 28 11 6' over the
-    // cannon). Try the spot as given, then steps up and down the lane, then sideways; keep the first clear of every
-    // tower (and of the depots and badges already placed); none clear keeps the original.
+    // cannon). Plan item 700: nor on the vehicles it counts. Plan item 706: nor on the road: a packed lane (l34's
+    // left lane at P, every spot along it on a lorry) left the badge on the battle. It now docks at the nearest spot
+    // in a ring of candidates round the queue that covers no tower, depot, badge or vehicle, preferring one off the
+    // lane, with a leader line back to the queue; none clear of vehicles keeps the nearest clear of the towers.
+    const ax = x, ay = y;
     {
-      const hits = (bx: number, by: number, cars: boolean) => {
-        const r = { x: bx, y: by, w, h: h * 1.3 };
-        const over = (b: Rect) => r.x < b.x + b.w && r.x + r.w > b.x && r.y < b.y + b.h && r.y + r.h > b.y;
-        return this.towerBoxes.some(over) || this.depotBoxes.some(over) || this.badgeBoxes.some(over) || (cars && this.vehicleBoxes.some(over));
+      const bh = h * 1.3;
+      const over = (r: Rect) => (b: Rect) => r.x < b.x + b.w && r.x + r.w > b.x && r.y < b.y + b.h && r.y + r.h > b.y;
+      const hard = (bx: number, by: number, bw: number, cars: boolean) => {
+        const o = over({ x: bx, y: by, w: bw, h: bh });
+        return this.towerBoxes.some(o) || this.depotBoxes.some(o) || this.badgeBoxes.some(o) || this.barnBoxes.some(o) || (cars && this.vehicleBoxes.some(o));
       };
-      // Plan item 700: first a spot clear of the vehicles too (its pointer still drops to the queue), else one clear
-      // of the towers alone, as before.
-      if (hits(x0, y0, true)) {
-        const clampX = (v: number) => Math.max(4, Math.min(this.cssW - w - 4, v));
-        const tries: Array<[number, number]> = [[x0, y0]];
-        for (const k of [1, 2, 3]) tries.push([x0, y0 - k * h * 0.7], [x0, y0 + k * h * 0.7]);
-        for (const k of [1, 2, 3]) tries.push([clampX(x0 + (k * w) / 3), y0], [clampX(x0 - (k * w) / 3), y0]);
-        const fits = ([, ty]: [number, number]) => ty >= 4 && ty + h * 1.3 <= this.cssH - 4;
-        const pick = tries.find((c) => fits(c) && !hits(c[0], c[1], true)) ?? tries.find((c) => fits(c) && !hits(c[0], c[1], false));
+      const road = (bx: number, by: number, bw: number) => {
+        let n = 0;
+        const R = this.laneR;
+        for (const d of this.laneDots) if (d.x > bx - R && d.x < bx + bw + R && d.y > by - R && d.y < by + bh + R) n++;
+        return n;
+      };
+      // a ring of spots round the queue: up and down the lane, then columns either side out to two badge widths
+      const ring = (bw: number, sx: number, sy: number) => {
+        const clampX = (v: number) => Math.max(4, Math.min(this.cssW - bw - 4, v));
+        const tries: Array<[number, number]> = [[sx, sy]];
+        for (let k = 1; k <= 10; k++) tries.push([sx, sy - k * h * 0.7], [sx, sy + k * h * 0.7]);
+        for (const fx of [-2.1, -1.6, -1.15, -0.66, -0.33, 0.33, 0.66, 1.15, 1.6, 2.1])
+          for (let k = -8; k <= 8; k++) tries.push([clampX(sx + fx * bw), sy + k * h * 0.7]);
+        return tries.filter(([tx, ty]) => ty >= 4 && ty + bh <= this.cssH - 4 && tx >= 4 && tx + bw <= this.cssW - 4);
+      };
+      const dist = ([tx, ty]: [number, number]) => Math.hypot(tx - x0, ty - y0);
+      // the nearest spot clear of everything, off the road if one is within about five badge heights
+      const best = (bw: number, sx: number, sy: number) => {
+        const clear = ring(bw, sx, sy).filter((c) => !hard(c[0], c[1], bw, true));
+        const offRoad = clear.filter((c) => road(c[0], c[1], bw) === 0 && dist(c) <= Math.max(h * 5, bw * 0.9));
+        return offRoad.sort((p, q) => dist(p) - dist(q))[0] ?? clear.sort((p, q) => road(p[0], p[1], bw) - road(q[0], q[1], bw) || dist(p) - dist(q))[0];
+      };
+      if (hard(x0, y0, w, true) || road(x0, y0, w) > 0) {
+        let pick = best(w, x0, y0);
+        if (!pick) {
+          // Mid-wave the lanes can fill the field round the queue: then the badge drops its sprites to the total and the
+          // make-up bar (about a third the width) rather than lie over a vehicle.
+          const cw = pad * 2 + tw + h * 0.9;
+          const cx = Math.max(4, Math.min(this.cssW - cw - 4, x - cw / 2));
+          pick = best(cw, cx, y0);
+          if (pick) {
+            parts = [];
+            w = cw;
+          }
+        }
+        pick ??= ring(w, x0, y0).filter((c) => !hard(c[0], c[1], w, false)).sort((p, q) => dist(p) - dist(q))[0];
         if (pick) [x0, y0] = pick;
       }
-      this.badgeBoxes.push({ x: x0, y: y0, w, h: h * 1.3 });
+      this.badgeBoxes.push({ x: x0, y: y0, w, h: bh });
     }
     x = Math.max(x0 + h * 0.4, Math.min(x0 + w - h * 0.4, x));
     // the pointer still drops toward the queue, from wherever the badge settled
@@ -2331,6 +2451,26 @@ export class Renderer {
     ctx.fillStyle = "rgba(255,247,230,0.95)";
     ctx.fill();
     ctx.stroke();
+    // Plan item 706: docked away from its queue, a thin leader runs from the pointer to a dot on the queue.
+    if (Math.hypot(ax - x, ay - (y0 + h + h * 0.3)) > h * 0.9) {
+      const lx = Math.max(x0 + h * 0.5, Math.min(x0 + w - h * 0.5, ax));
+      const ly = ay < y0 ? y0 : ay > y0 + h ? y0 + h + h * 0.3 : y0 + h / 2;
+      ctx.save();
+      ctx.lineWidth = Math.max(1.5, h * 0.07);
+      ctx.strokeStyle = "rgba(43,35,32,0.75)";
+      ctx.setLineDash([h * 0.18, h * 0.14]);
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(ax, ay);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#fff7e6";
+      ctx.beginPath();
+      ctx.arc(ax, ay, Math.max(3, h * 0.16), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
     ctx.fillStyle = "#c4433a";
     ctx.textBaseline = "middle";
     ctx.textAlign = "left";

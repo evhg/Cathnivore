@@ -889,6 +889,11 @@ if (SANDBOX)
     canvasRatio: () => { const c = document.querySelector<HTMLCanvasElement>("#canvas"); return c && c.clientWidth ? c.width / c.clientWidth : null; },
     // Plan item 45: the 2D renderer's convoy (null in 3D).
     convoy: () => (renderer as { convoyStats?: (g?: Game) => unknown } | null)?.convoyStats?.(game ?? undefined) ?? null,
+    // Plan item 706: the 2D field's pooled gain numbers, swarm badges, vehicles and towers as drawn (CSS px).
+    field2d: () => {
+      const r = renderer as { gainRects?: () => unknown; badgeBoxes?: unknown; vehicleBoxes?: unknown; towerBoxes?: unknown } | null
+      return r?.gainRects ? { gains: r.gainRects(), badges: r.badgeBoxes, vehicles: r.vehicleBoxes, towers: r.towerBoxes } : null
+    },
     // Plan item 410: the 3D fleet's and depot's main roughness against the farm's (null in 2D).
     materialLook: () => (renderer && is3D(renderer) ? renderer.materialLook() : null),
     // Plan item 539: the lane vehicles' wheels and materials, and the crop shapes on the field (null in 2D).
