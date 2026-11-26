@@ -336,7 +336,7 @@ export default function CampaignMap({
 
   return (
     <figure className="cmp-map" data-free={freedCount} data-phase={phase}>
-      <svg ref={svgRef} className="cmp-map-svg" viewBox="-160 -150 320 296" preserveAspectRatio={host ? "xMinYMid meet" : undefined} role="img" aria-label={label}>
+      <svg ref={svgRef} className="cmp-map-svg" viewBox="-160 -150 320 296" preserveAspectRatio={host ? "xMinYMin meet" : undefined} role="img" aria-label={label}>
         <defs>
           <pattern id="cmp-hold-hatch" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
             <line x1={0} y1={0} x2={0} y2={6} className="cmp-hold-line" />

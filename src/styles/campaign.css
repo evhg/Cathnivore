@@ -2152,6 +2152,17 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { width: auto; margin: 0; align-self: stretch; }
   /* the crates stand at her side in the margin before the rail, not on the sheet */
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-host-stand > .produce-crates { left: auto; right: 2px; width: 88px; }
+  /* Plan item 705: the crates stand across the foot of her bust, in front of her and inside the window, so the
+     half-length figure ends behind the stall's produce rather than at the viewport's edge (88 px at her side left her
+     cut at the foot and the crates 4 px under it) */
+  .campaign-screen > .cmp-map > .cmp-map-host .cmp-host-stand > .produce-crates {
+    left: 50%;
+    right: auto;
+    bottom: 4px;
+    width: 146px;
+    translate: -46% 0;
+    z-index: calc(var(--z-raised) + 1);
+  }
   /* the ticket a size smaller to match the atlas drawn smaller (its 320 px found no place by stop 2 that left the
      names round it whole) */
   .campaign-screen .cmp-ticket { max-width: 272px; min-width: 210px; padding: 10px 12px 10px 14px; }

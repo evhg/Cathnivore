@@ -47,3 +47,17 @@ test('the campaign map is an atlas sheet, not a flat sea box', async ({ page }) 
     expect(cath.y + cath.height).toBeGreaterThanOrEqual(sea.y + sea.height)
   }
 })
+
+// Plan item 705: at a desktop the atlas sheet lies just under the header (the SVG letterboxed it 50 px down its
+// column, an empty band of 85 px over the map at 1440x900).
+for (const [w, h] of [[1440, 900], [1280, 800]] as const)
+  test(`the atlas sheet meets the header at ${w}x${h}`, async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) < 1100, 'desktop layout')
+    await page.setViewportSize({ width: w, height: h })
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Campaign' }).click()
+    await expect(page.locator('.cmp-sheet')).toBeVisible()
+    const head = (await page.locator('.campaign-screen > .cmp-header').boundingBox())!
+    const sheet = (await page.locator('.cmp-sheet').first().boundingBox())!
+    expect(sheet.y - (head.y + head.height), 'gap from the header to the sheet').toBeLessThanOrEqual(48)
+  })

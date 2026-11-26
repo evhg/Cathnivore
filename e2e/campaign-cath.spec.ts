@@ -135,7 +135,11 @@ test('desktop campaign: Cath in front, chapters as sealed letters, bunting follo
     const z = (sel: string) => Number(getComputedStyle(document.querySelector(sel)!).zIndex) || 0
     return z('.cmp-map-host .produce-crates') > z('.cmp-map-host .cmp-header-cath')
   })
-  expect(inFront ? (ox * oy) / (cath.width * cath.height) : 0).toBeLessThanOrEqual(0.1)
+  // Plan item 705: in front, the crates stand across the foot of her bust only (her face, hands and chest above them:
+  // their top in her box's lowest 30%), covering at most a quarter of it, and stand whole inside the window.
+  if (inFront) expect(crates.y - cath.y).toBeGreaterThanOrEqual(cath.height * 0.7)
+  expect(inFront ? (ox * oy) / (cath.width * cath.height) : 0).toBeLessThanOrEqual(0.25)
+  expect(crates.y + crates.height).toBeLessThanOrEqual(900)
   expect(cath.y + cath.height).toBeLessThanOrEqual(900)
   // The locked letters' teasers.
   const goals = page.locator('.cmp-stop-locked:not(.cmp-stop-next) .chapter-goal')
