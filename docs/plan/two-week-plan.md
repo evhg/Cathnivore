@@ -6760,7 +6760,7 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - **Accept:** at 390x844 one print plays at a time while in view; nothing plays under reduced motion or after 20 s with no input; LCP under 2.5 s and the weight gate pass; NIGHT SHIFT's print has a mean luminance of 0.12 or more; shots P and D.
 - **Size:** 1
 
-## 719. [ ] NIGHT SHIFT: the street lived in from the first frame
+## 719. [ ] NIGHT SHIFT: the street lived in from the first frame *(lane A, in progress)*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique; item 57 built the crowd, check where it stands first)*
 - **Why:** `ns-street-P` (sideways): one silhouette in view (about 315-330 x 185-270 CSS); the stall awning (580-835 x 145-190) has no vendor, stock or customers; the lower half is empty wet road.
 - **Build:** from the spawn point the street's people are in view: vendors behind stalls with stock, walkers under umbrellas, someone at the noodle bar, kept within item 57's population and LOD. Steam from vents and a puddle that splashes.
