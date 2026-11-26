@@ -2354,7 +2354,9 @@ h1 {
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .show-strip { gap: var(--sp-4); }
+  /* Plan item 726: the frames' 5 px ring is drawn outside each card, so the mosaic steps in by it and the frames'
+     outer edges meet the page's 16 px gutter (they hung at 11). */
+  .show-strip { gap: var(--sp-4); padding-inline: 5px; box-sizing: border-box; }
   /* Plan item 718: NIGHT SHIFT's print is a lit street, not a black tile: the neon's spill over the image (pink from
      the signs on the right, the cyan screen above, the wet road's sheen at the foot), screened on so the darks lift
      and her black coat in the middle stays black (a flat brightness lift washed it out, item 203). */

@@ -6817,6 +6817,6 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - Cathnivore game P: Bea's 'MUM' drawing on Hollowell's portrait and the Highmoor label (10-60 x 128-185).
 - Cathnivore game D: the hand runs off the bottom (345-1325 x 775-900); Sell's 1/2/3 chips and Buy's cost cross neighbour cards.
 - NIGHT SHIFT street L: the 'Left thumb walks' note covers the left third under HP (10-260 x 165-218); 'DRAG TO AIM' (728-808 x 72-88) unbacked over lamps.
-- Portfolio P: the game tile grid's side gutter about 10 px, not 16.
+- Portfolio P: the game tile grid's side gutter about 10 px, not 16. *(fixed 2026-11-26 21:15: the mosaic steps in by the frames' 5 px ring; e2e portfolio-present)*
 - **Accept:** each closed by a fix with a spec assertion, or by measurement/decision logged; shots P and D.
 - **Size:** 2

@@ -83,7 +83,11 @@ test("Cath's line points at her head, and the phone's prints are framed", async 
     const d = Math.hypot(Math.max(head.l - tail.x, 0, tail.x - head.r), Math.max(head.t - tail.y, 0, tail.y - head.b))
     const card = document.querySelector('.show-a')!
     const label = document.querySelector('.show-a .show-label')!
-    return { d, bottom: b.bottom, h: innerHeight, frame: parseFloat(getComputedStyle(card).paddingLeft), plate: getComputedStyle(label).backgroundImage, scroll: document.documentElement.scrollWidth - innerWidth }
+    // plan item 726: the frames' outer edges (a 5 px ring outside each card) on the page's 16 px gutter
+    const cs = [...document.querySelectorAll('.show-strip .show-card')].map((e) => e.getBoundingClientRect())
+    const gutL = Math.min(...cs.map((r) => r.left)) - 5
+    const gutR = innerWidth - Math.max(...cs.map((r) => r.right)) - 5
+    return { gutL, gutR, d, bottom: b.bottom, h: innerHeight, frame: parseFloat(getComputedStyle(card).paddingLeft), plate: getComputedStyle(label).backgroundImage, scroll: document.documentElement.scrollWidth - innerWidth }
   })
   expect(m.d, JSON.stringify(m)).toBeLessThanOrEqual(24)
   expect(m.bottom).toBeLessThanOrEqual(m.h)
@@ -91,5 +95,7 @@ test("Cath's line points at her head, and the phone's prints are framed", async 
   if (page.viewportSize()!.width <= 720) {
     expect(m.frame).toBeGreaterThanOrEqual(5)
     expect(m.plate).toContain('gradient')
+    expect(m.gutL, JSON.stringify(m)).toBeGreaterThanOrEqual(15.5)
+    expect(m.gutR, JSON.stringify(m)).toBeGreaterThanOrEqual(15.5)
   }
 })
