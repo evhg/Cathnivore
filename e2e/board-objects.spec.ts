@@ -3,9 +3,12 @@ import { test, expect } from '@playwright/test'
 // Plan item 184: the Market Board's readings are objects on the table (a chalk slate, a jar of tokens, a stack of
 // deeds, a cracking plate). Each [data-meter] keeps a 16 px+ figure and an aria label; the strip stays short and
 // clear of the corp cards and the menu key; changes are staged in 250-600 ms, a fade under reduced motion.
+// At 1400x860+ item 708's ruled ledger replaces the objects (e2e/hud-ledger.spec.ts), so the desktop case runs on a
+// 1280x800 laptop, where the objects are still the design.
 for (const reduced of [false, true]) {
   test(`the scoreboard is four objects on the table${reduced ? ' (reduced motion)' : ''}`, async ({ page, isMobile }) => {
     if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' })
+    if (!isMobile) await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto('/?e2eAutoplay=1&e2eAutoplayUntil=3')
     await page.getByText('Quick Game').click()
     await page.getByRole('button', { name: 'Start' }).click()
