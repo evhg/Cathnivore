@@ -5806,6 +5806,18 @@ img.act-scene {
   background: var(--map-flag-red);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%);
 }
+/* Plan item 702: the won stars are pressed into the badge's gold: a deep stamp with a lit lower lip, a touch larger;
+   a missing star is a faint ghost of the die, so 1, 2 and 3 stars read apart at a glance. */
+#screen-select .node .level-stars.won > i { font-style: normal; display: inline-block; }
+#screen-select .node .level-stars.won > .star-got {
+  color: color-mix(in srgb, var(--soil) 85%, var(--ink));
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--paper) 80%, transparent), 0 -0.5px 0 color-mix(in srgb, var(--ink) 35%, transparent);
+  scale: 1.12;
+}
+#screen-select .node .level-stars.won > .star-miss {
+  color: color-mix(in srgb, var(--soil) 38%, transparent);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--paper) 45%, transparent);
+}
 #screen-select .node .level-stars.won::before { left: 22%; rotate: 14deg; }
 #screen-select .node .level-stars.won::after { right: 22%; rotate: -14deg; }
 

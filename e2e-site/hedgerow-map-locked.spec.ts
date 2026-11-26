@@ -74,3 +74,24 @@ test("a locked stop's mist is a breath, 0.15 or less", async ({ page }) => {
   expect(alphas.length, bg).toBeGreaterThan(0)
   expect(Math.max(...alphas), bg).toBeLessThanOrEqual(0.15)
 })
+
+// Plan item 702: a cleared stop's earned stars are pressed into its rosette (solid ink) and its missing ones are faint
+// ghosts, so one, two and three stars read apart; the text still reads ★☆☆.
+test('a won stop presses its earned stars and ghosts the missing ones', async ({ page }) => {
+  await page.goto('/hedgerow/?2d')
+  await page.evaluate(() => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i <= 30; i++) stars[i] = (i % 3) + 1
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { 21: true, 27: true }, tips: { all: true } }))
+  })
+  await page.goto('/hedgerow/?2d')
+  const st = page.locator('#screen-select .node[data-level="24"] .level-stars.won') // 24 % 3 + 1 = 1 star
+  await expect(st).toHaveText('★☆☆')
+  const alpha = (c: string) => (c.startsWith('rgba') ? Number(c.split(',')[3]!.replace(')', '')) : /\/ ([\d.]+)\)/.test(c) ? Number(/\/ ([\d.]+)\)/.exec(c)![1]) : 1)
+  const got = await st.locator('.star-got').evaluateAll((es) => es.map((e) => getComputedStyle(e).color))
+  const miss = await st.locator('.star-miss').evaluateAll((es) => es.map((e) => getComputedStyle(e).color))
+  expect(got).toHaveLength(1)
+  expect(miss).toHaveLength(2)
+  expect(alpha(got[0]!), got[0]).toBeGreaterThan(0.95)
+  for (const c of miss) expect(alpha(c), c).toBeLessThan(0.5)
+})

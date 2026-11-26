@@ -2811,7 +2811,18 @@ export function renderMap(list: HTMLElement, levels: Level[], data: SaveData, op
       const st = document.createElement("span");
       st.className = "level-stars";
       // Plan item 471: no padlock: a locked stop reads as Hollowell's by its wrapped plinth and its H tag (styles.css).
-      st.textContent = unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) + (data.heroic?.[String(lv.id)] ? "◆" : "") : "";
+      // Plan item 702: each star its own mark, so the rosette can press the earned ones into its gold and leave the
+      // missing ones as faint ghosts (the text still reads ★★☆).
+      if (unlocked) {
+        const mark = (cls: string, ch: string): HTMLElement => {
+          const i = document.createElement("i");
+          i.className = cls;
+          i.textContent = ch;
+          return i;
+        };
+        for (let k = 0; k < 3; k++) st.append(k < stars ? mark("star-got", "★") : mark("star-miss", "☆"));
+        if (data.heroic?.[String(lv.id)]) st.append(mark("star-heroic", "◆"));
+      }
       if (!unlocked) {
         st.classList.add("level-lock");
         st.hidden = true;
