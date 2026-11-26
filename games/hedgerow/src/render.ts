@@ -2274,6 +2274,8 @@ export class Renderer {
   private chipCount = new Map<ConvoyColumn, number>();
   /** Plan item 45: this frame's convoy layout (convoy.ts), laid out once per draw. */
   private lay: Convoy = noConvoy();
+  /** Plan item 707: where each lane's drawn vehicles start, clear of the depot's plate (this frame's). */
+  private laneStart: (lane: 1 | undefined) => number = () => 0;
   /** The columns a swarm badge rode last frame (their own +N chip stands down). */
   private badged = new Set<ConvoyColumn>();
   private layOut(game: Game, X: (v: number) => number, Y: (v: number) => number, s: number): Convoy {
@@ -2283,17 +2285,35 @@ export class Renderer {
     const level = game.level;
     // Plan item 707: a vehicle is drawn on the lane once its body is clear of the depot's plate (it ran into the
     // depot, depot and queue merging); before that it waits in the depot's column, counted on its chip.
+    // The test body is the longest and the widest on the field, along and across the lane (a 0.42-cell disc let a
+    // lorry poke 20 px onto the plate at D, CI red on 46fc3312), centred where vehicleBox centres it.
+    let len = s * 0.62;
+    let wid = s * 0.62;
+    for (const e of game.enemies) {
+      const top = FLEET_TOP[e.kind];
+      const k = s * enemyScale(e.kind);
+      len = Math.max(len, top ? top.len * k : s * 0.62 * enemyScale(e.kind));
+      wid = Math.max(wid, top ? top.wid * k : s * 0.62 * enemyScale(e.kind));
+    }
+    const starts = new Map<1 | undefined, number>();
     const start = (lane: 1 | undefined): number => {
       if (!this.depotBoxes.length) return 0;
-      const r = s * 0.42;
+      const known = starts.get(lane);
+      if (known !== undefined) return known;
+      let at = DEPOT_CLEAR_MAX;
       for (let d = 0; d < DEPOT_CLEAR_MAX; d += 0.05) {
         const p = enemyPoint(level, { dist: d, ...(lane ? { lane } : {}) });
         const cx = X(p.x);
-        const cy = Y(p.y + 0.2) - s * 0.25;
-        if (!this.depotBoxes.some((b) => cx + r > b.x && cx - r < b.x + b.w && cy + r > b.y && cy - r < b.y + b.h)) return d;
+        const cy = Y(p.y + 0.2) - s * 0.2;
+        const vert = runOf(level, { dist: d, lane: lane ?? null }) !== undefined;
+        const hw = (vert ? wid : len) / 2;
+        const hh = (vert ? len : wid) / 2;
+        if (!this.depotBoxes.some((b) => cx + hw > b.x + 1 && cx - hw < b.x + b.w - 1 && cy + hh > b.y + 1 && cy - hh < b.y + b.h - 1)) { at = d; break; }
       }
-      return DEPOT_CLEAR_MAX;
+      starts.set(lane, at);
+      return at;
     };
+    this.laneStart = start;
     this.lay = layOutField(game.enemies, (k) => Math.max(drawnLen(k as EnemyKind) * ROAD_GAP, drawnLen(k as EnemyKind) + gap), start);
     this.chipCount.clear();
     return this.lay;
@@ -2332,10 +2352,28 @@ export class Renderer {
       for (const e of on) {
         const sl = this.lay.slots.get(e.id)!;
         const d0 = sl.dist;
+        // Never eased back onto the depot's plate (behind the lane's drawn start).
+        const floor = Math.min(d0, Math.max(0, this.laneStart(lane), d0 - 1));
         let box = this.vehicleBox(level, e, X, Y, s);
-        while ((ahead.slice(-2).some((b) => hit(box, b)) || other.some((b) => hit(box, b))) && sl.dist > Math.max(0, d0 - 1)) {
-          sl.dist = Math.max(0, sl.dist - 0.04);
+        while ((ahead.slice(-2).some((b) => hit(box, b)) || other.some((b) => hit(box, b))) && sl.dist > floor) {
+          sl.dist = Math.max(floor, sl.dist - 0.04);
           box = this.vehicleBox(level, e, X, Y, s);
+        }
+        const on = (b: Rect) => box.x < b.x + b.w - 1 && box.x + box.w > b.x + 1 && box.y < b.y + b.h - 1 && box.y + box.h > b.y + 1;
+        if (sl.dist <= this.laneStart(lane) + 1e-6 && this.laneStart(lane) > 0 && (ahead.slice(-2).some(on) || other.some(on))) {
+          // Eased back to the depot's mouth and still on the one ahead: it waits at the depot, counted on the
+          // chip, rather than being drawn over that one (or the plate).
+          this.lay.slots.delete(e.id);
+          let col = this.lay.columns.find((c) => (c.lane ?? undefined) === lane && c.at === undefined);
+          if (!col) {
+            col = { ...(lane ? { lane } : {}), dist: e.dist, count: 0 };
+            this.lay.columns.push(col);
+          }
+          this.lay.inColumn.set(e.id, col.count);
+          this.lay.columnOf.set(e.id, col);
+          col.count++;
+          col.dist = Math.min(col.dist, e.dist);
+          continue;
         }
         ahead.push(box);
         if (!lane) first.push(box);
