@@ -6736,7 +6736,7 @@ Planning 2026-11-26 11:40 lane A: shots `e2e/screenshots/plan1126b` (P 390x844 a
 - **Accept:** LCP under 2.5 s and the weight gate passes; reduced motion shows posters; at P all four tiles or three and a peek within 844 px; shots P and D.
 - **Size:** 2
 
-## 716. [ ] The bugs from the 2026-11-26 11:40 critique, fixed as one batch *(lane A, in progress)*
+## 716. [ ] The bugs from the 2026-11-26 11:40 critique, fixed as one batch *(handed back 2026-11-26 13:45 by lane A after slice 1: Hedgerow l27 P the 'Next: round' grip 19 px tall, its foot clear of the packets (7b055191, critique166 asserts it); Hedgerow menu P 'Silt and Ruts' closed by measurement (whole at 640-662, the briefing sheet from 666: it is the next stop in the map's scroll fade); Cathnivore game D hand closed by measurement (cards end at 882 of 900, the 5-7 px overlaps are item 701's fan; no Market badge on a fresh game). **Still open:** Market badge with a count (check with stock on the shelf), campaign D Cath cut and empty column, NIGHT SHIFT role pick P gun over the Ghost's skirt. Shots scratchpad s713 (tab, menu), c716)*
 *(planned 2026-11-26 11:40, lane A, plan1126b critique; check each on today's build first)*
 - Cathnivore: game D the hand strip (345-1330 x 775-890) overlapping and cut at the bottom ('Market Day Banner' at y 875); the Market tab's count badge clipped (1403-1428 x 8-28); campaign D Cath cut by the bottom (790-930 x 820-900) with an empty column above her (745-1000 x 130-500).
 - NIGHT SHIFT: role pick P, item 709's stage gun crosses the Ghost's skirt and hand (2x 275-725 x 700-775): place it clear of her figure box (`scene().figureBox()`), or behind her lower edge.
