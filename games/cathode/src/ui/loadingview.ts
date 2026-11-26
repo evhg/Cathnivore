@@ -231,6 +231,7 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
       const cx = x + Math.min(w, 6) / 2;
       const cy = y + h * 0.62;
       const t = svg("text", { x: cx.toFixed(1), y: cy.toFixed(1), "font-size": 2.2, "text-anchor": "middle", "dominant-baseline": "central", transform: `rotate(90 ${cx.toFixed(1)} ${cy.toFixed(1)})`, class: "dmap-t dmap-t-zone ld-water-t" }, labels);
+      t.dataset.strip = [y, h, cx].map((v) => v.toFixed(2)).join(",");
       t.textContent = district === "market" ? "THE CANAL" : "THE RIVER";
     }
     for (const fl of plan.querySelectorAll(".dmap-flood")) {
@@ -292,6 +293,41 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
       const base = Number(t.dataset.size ?? t.getAttribute("font-size") ?? 0);
       t.dataset.size = String(base);
       t.setAttribute("font-size", String(Math.max(base, 13 * perPx)));
+    }
+    knockout(plan, perPx);
+  }
+  // Plan item 721: the names set on the water read on a paper plate knocked out of the hatch and the road's
+  // centre dashes (critique: 'THE CANAL' sat on the wave hatch and the flyover's dashed edge, 'FLOODED' on the
+  // dashed line), and the canal's name slides along its strip to a stretch clear of the flyover deck.
+  function knockout(plan: SVGSVGElement, perPx: number): void {
+    const fly = plan.querySelector<SVGRectElement>(".dmap-flyover");
+    const fy: [number, number] | null = fly ? [Number(fly.getAttribute("y")), Number(fly.getAttribute("y")) + Number(fly.getAttribute("height"))] : null;
+    for (const t of plan.querySelectorAll<SVGTextElement>(".ld-water-t, .ld-flood-t")) {
+      const span = t.getComputedTextLength();
+      if (!span) continue;
+      const strip = t.dataset.strip?.split(",").map(Number);
+      if (strip && strip.length === 3) {
+        // the strip's top, height and x: the first place along it (from 62% down) whose whole name misses the deck
+        const [y0, h, cx] = strip as [number, number, number];
+        const pad = 6 * perPx;
+        const clear = (cy: number) => !fy || cy + span / 2 + pad < fy[0] || cy - span / 2 - pad > fy[1];
+        const fits = (cy: number) => cy - span / 2 - pad >= y0 && cy + span / 2 + pad <= y0 + h;
+        const cy = [0.62, 0.78, 0.86, 0.3, 0.2, 0.45].map((f) => y0 + h * f).find((c) => clear(c) && fits(c)) ?? y0 + h * 0.62;
+        t.setAttribute("y", cy.toFixed(1));
+        t.setAttribute("transform", `rotate(90 ${cx.toFixed(1)} ${cy.toFixed(1)})`);
+      }
+      const b = t.getBBox();
+      const m = 2.5 * perPx;
+      let plate = t.previousElementSibling;
+      if (!plate?.classList.contains("ld-plate")) {
+        plate = svg("rect", { class: "ld-plate" }, t.parentElement!);
+        t.before(plate);
+      }
+      plate.setAttribute("x", (b.x - m).toFixed(2));
+      plate.setAttribute("y", (b.y - m * 0.6).toFixed(2));
+      plate.setAttribute("width", (b.width + m * 2).toFixed(2));
+      plate.setAttribute("height", (b.height + m * 1.2).toFixed(2));
+      plate.setAttribute("transform", t.getAttribute("transform") ?? "");
     }
   }
   addEventListener("resize", () => {

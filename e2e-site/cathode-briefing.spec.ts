@@ -51,6 +51,15 @@ test('at D the briefing is three pinned cards and a labelled sheet, with no perc
   expect(list.y - (print.y + print.height), 'The List pinned under her print').toBeLessThanOrEqual(60)
   expect(list.y).toBeGreaterThanOrEqual(print.y + print.height)
   await expect(page.locator('#loading .ld-corner .ld-pin')).toBeVisible()
+  // Plan item 721: the names set on the water sit on a paper plate, and the canal's clears the flyover deck
+  const water = await page.locator('#loading .ld-map svg').evaluate((svg) => {
+    const r = (s: string) => svg.querySelector(s)?.getBoundingClientRect()
+    const canal = r('.ld-water-t')!
+    const fly = r('.dmap-flyover')!
+    const plated = [...svg.querySelectorAll('.ld-water-t, .ld-flood-t')].every((t) => t.previousElementSibling?.classList.contains('ld-plate'))
+    return { plated, clear: canal.bottom < fly.top || canal.top > fly.bottom }
+  })
+  expect(water).toEqual({ plated: true, clear: true })
 })
 
 test('on an upright phone the still, the objective and Cath stack down the screen, none clipped', async ({ page }) => {

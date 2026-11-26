@@ -349,6 +349,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .ld-untyped { visibility: hidden; }
 .ld-lamps { fill: none; stroke: var(--card-ink); stroke-width: .28; stroke-linecap: round; }
 .ld-lamps circle { fill: var(--card-paper); }
+/* plan item 721: a paper plate knocked out of the hatch under the names set on the water */
+.ld-plate { fill: var(--print-paper); stroke: var(--card-ink); stroke-opacity: .35; stroke-width: .18; }
 .ld-pin.ld-pin-foot { display: none; top: auto; bottom: calc(var(--u) * -4); }
 /* Plan item 705: the string's end on her print at D, in the caption band's left corner (under the photograph) */
 .ld-pin.ld-pin-side { display: none; left: calc(var(--u) * 18); top: auto; bottom: calc(var(--u) * 12); }
