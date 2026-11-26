@@ -26,6 +26,9 @@ test('at 390x844 the title frames her face in the upper middle, clear of the men
         menu: [...document.querySelectorAll('#menu .menu-label')].map(box),
         tab: box(document.querySelector('#ledger-tab')!),
         paper: document.querySelector('#dossier.is-open') ? box(document.querySelector('#dossier')!) : null,
+        list: document.querySelector('.the-list') ? box(document.querySelector('.the-list')!) : null,
+        card: document.querySelector('#menu') ? box(document.querySelector('#menu')!) : null,
+        scroll: document.scrollingElement!.scrollHeight - innerHeight,
       }
     })
   const folded = await measure()
@@ -34,6 +37,13 @@ test('at 390x844 the title frames her face in the upper middle, clear of the men
   expect(mid, msg).toBeGreaterThanOrEqual(0.3)
   expect(mid, msg).toBeLessThanOrEqual(0.55)
   for (const m of folded.menu) expect(meets(m, folded.face), msg).toBe(false)
+  // Plan item 678: she is the poster: her face 70 px+ tall, The List a strip below her shoulders (a face's height
+  // under her chin) and whole on screen with the menu card, nothing scrolled.
+  expect(folded.face.bottom - folded.face.top, msg).toBeGreaterThanOrEqual(70)
+  expect(folded.list, msg).not.toBeNull()
+  expect(folded.list!.top, msg).toBeGreaterThanOrEqual(folded.face.bottom + (folded.face.bottom - folded.face.top))
+  for (const b of [folded.list!, folded.card!]) expect(b.top >= 0 && b.bottom <= 844 && b.left >= 0 && b.right <= 390, msg).toBe(true)
+  expect(folded.scroll, msg).toBeLessThanOrEqual(0)
   expect(meets(folded.tab, folded.face), msg).toBe(false)
   expect(folded.tab.bottom - folded.tab.top, msg).toBeGreaterThanOrEqual(44)
   await expect(page.locator('#ledger-tab')).toHaveAttribute('aria-expanded', 'false')
