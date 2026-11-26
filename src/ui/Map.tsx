@@ -1037,8 +1037,22 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
     // hexPx: a measured board re-renders each status disc's size and estimated place, so it's fitted again.
   }, [active.length, hexPx, shortNames])
 
+  const svgProps = {
+    'data-zoom': zoomCenter ? inspected ?? undefined : undefined,
+    'data-aiming': aiming ? '' : undefined,
+    'data-round': state.round,
+    'data-moment': moment,
+    'data-event': marketEvent,
+    viewBox: `${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`,
+    className: 'map',
+    role: onSelect || inspect || peekPieces ? 'group' : 'img',
+    'aria-label': 'Map of Marrow',
+  }
+  // Gate 7 (2026-11-26): until the board is measured (the layout effect above, before the first paint) the svg is drawn
+  // empty, at its CSS size, so the board is built once at its measured size rather than twice in the page's first task.
+  if (hexPx === null) return <svg ref={svgRef} {...svgProps} />
   return (
-    <svg ref={svgRef} data-zoom={zoomCenter ? inspected ?? undefined : undefined} data-aiming={aiming ? '' : undefined} data-round={state.round} data-moment={moment} data-event={marketEvent} viewBox={`${-SIZE} ${-SIZE + 12} ${SIZE * 2} ${SIZE * 2 - 24}`} className="map" role={onSelect || inspect || peekPieces ? 'group' : 'img'} aria-label="Map of Marrow">
+    <svg ref={svgRef} {...svgProps}>
       <RegionTextureDefs />
       <g transform={fit.k === 1 && fit.tx === 0 && fit.ty === 0 ? undefined : `translate(${fit.tx} ${fit.ty}) scale(${fit.k})`}>
       {/* Plan item 413: the seven tiles sit on one die-cut board, a printed cardboard plate a little proud of them with
