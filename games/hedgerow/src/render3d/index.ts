@@ -1866,12 +1866,15 @@ export class Renderer3D {
           this.floaters.add(e.won ? "Cath wins the duel!" : "Cath's knocked back", new THREE.Vector3(game.hero.x, 1.6, game.hero.y), e.won ? "#fff2b8" : "#ffd0c4", 1.3);
           break;
         case "neighbours": {
+          this.heroCheer = 0;
           const y = this.height(e.x, e.y);
           this.fx.ring(e.x, y + 0.05, e.y, "#ffd76a", 1.2);
           this.floaters.add("Neighbours!", new THREE.Vector3(e.x, y + 1.1, e.y), "#fff6d6", 1.1);
           break;
         }
         case "rally":
+          // Plan item 713: her cast: both arms up (her cheer) as the rings go out.
+          this.heroCheer = 0;
           for (const t of game.towers) {
             const y = this.height(t.col + 0.5, t.row + 0.5);
             this.fx.ring(t.col + 0.5, y + 0.1, t.row + 0.5, "#ffd76a", 0.7);

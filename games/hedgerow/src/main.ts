@@ -153,6 +153,7 @@ import { driverFace, driverSlogan } from "./fleetfaces";
 import { floodAdvice, gapAdvice, roundAdvice } from "./advice";
 import { suggestedPlot } from "./bot";
 import { barkSpot, type BarkSpot } from "./cathsay";
+import { BARK_SHOW, BarkGate, barkCorner, type BarkKind } from "./bark";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
 import { enemySilhouette, towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
@@ -276,6 +277,7 @@ const ui = {
   bubbleFace: $<HTMLElement>("bubble-face"),
   bubbleText: $<HTMLElement>("bubble-text"),
   cathSay: $<HTMLElement>("cath-say"),
+  cathBark: $<HTMLElement>("cath-bark"),
   cathDock: $<HTMLElement>("cath-dock"),
   cathDockBust: $<HTMLButtonElement>("cath-dock-bust"),
   cathDockLine: $<HTMLElement>("cath-dock-line"),
@@ -998,6 +1000,14 @@ if (SANDBOX)
       const f = ui.stage.getBoundingClientRect();
       const b = game && renderer ? cathBox(game, f) : null;
       return b && { ...b, x: b.x + f.left, y: b.y + f.top };
+    },
+    // Plan item 713: her round line (client px) and the lane cells', and a way to make her speak now.
+    bark: () => (barkShown && !ui.cathBark.hidden ? { ...barkShown, lanes: laneBoxes(game!) } : null),
+    testBark: (kind: BarkKind) => {
+      if (!game) return false;
+      barkGate.reset();
+      bark(game, kind);
+      return !ui.cathBark.hidden;
     },
     // Plan item 95: Cath's advice bubble on the field (field px), her figure, and the lane cells' boxes.
     cathSay: () => {
@@ -5345,6 +5355,72 @@ function publishAttacks(now: number): void {
   ui.stage.dataset.attackTowers = [...lastAttack].filter(([, t]) => now - t < 1000).map(([id]) => id).join(",");
 }
 
+// ---- plan item 713: Cath's lines in a round (bark.ts) ----
+const barkGate = new BarkGate();
+let barkTimer = 0;
+let barkShown: { text: string; kind: BarkKind; box: Box } | null = null;
+
+function hideBark(): void {
+  clearTimeout(barkTimer);
+  const el = ui.cathBark;
+  if (el.hidden) return;
+  el.classList.add("leaving");
+  barkTimer = window.setTimeout(() => {
+    el.hidden = true;
+    el.classList.remove("leaving");
+    barkShown = null;
+  }, 300);
+}
+
+/** Her line in a corner of the field, at most one every 8 s; quiet in a replay, on a no-Cath field or outside a round. */
+function bark(g: Game, kind: BarkKind): void {
+  if (player || hasTwist(g.level, "nocath") || g.phase !== "wave" || !renderer || !ui.intro.hidden || !ui.duel.hidden) return;
+  // Her tip bubble is already her voice on the field: no second line beside it.
+  if (!ui.bubble.hidden) return;
+  const line = barkGate.speak(kind, performance.now() / 1000);
+  if (!line) return;
+  const el = ui.cathBark;
+  clearTimeout(barkTimer);
+  el.classList.remove("leaving", "show");
+  el.querySelector(".cath-bark-face")!.innerHTML = cath(line.face);
+  el.querySelector("p")!.textContent = line.text;
+  el.dataset.kind = kind;
+  el.hidden = false;
+  placeBark(g);
+  void el.offsetWidth;
+  el.classList.add("show");
+  say(`Cath: ${line.text}`);
+  barkTimer = window.setTimeout(hideBark, BARK_SHOW * 1000);
+}
+
+function placeBark(g: Game): void {
+  const el = ui.cathBark;
+  const field = ui.stage.getBoundingClientRect();
+  if (!field.width) return;
+  const canvas = ui.canvas.getBoundingClientRect();
+  // The field's own box: the canvas where it sits inside the stage.
+  const fx = Math.max(field.left, canvas.left);
+  const fy = Math.max(field.top, canvas.top);
+  const fr = Math.min(field.right, canvas.right || field.right);
+  const fb = Math.min(field.bottom, canvas.bottom || field.bottom);
+  const hard: Box[] = [];
+  const sel = ".tray-wrap, .controls, #btn-send, .banner.show, .gate-plate, .depot, .round-rosette, .cath-dock:not([hidden]), #bubble:not([hidden]), .cath-say:not([hidden]), .replay-bar:not([hidden])";
+  for (const o of document.querySelectorAll<HTMLElement>(sel)) {
+    const r = o.getBoundingClientRect();
+    if (r.width && r.height) hard.push({ x: r.left, y: r.top, w: r.width, h: r.height });
+  }
+  const q = (renderer as { shownQueue?: { leads: Box[]; plates: Box[]; names?: Box[] } | null }).shownQueue;
+  for (const b of [...(q?.leads ?? []), ...(q?.plates ?? [])]) hard.push({ x: b.x + canvas.left, y: b.y + canvas.top, w: b.w, h: b.h });
+  const me = cathBox(g, field);
+  const soft: Box[] = [...builtPlotBoxes(g)];
+  if (me) soft.push({ x: me.x + field.left, y: me.y + field.top, w: me.w, h: me.h });
+  const spot = barkCorner({ x: fx, y: fy, w: fr - fx, h: fb - fy }, { w: el.offsetWidth, h: el.offsetHeight }, laneBoxes(g), hard, soft);
+  el.style.setProperty("--at-x", `${Math.round(spot.x - field.left)}px`);
+  el.style.setProperty("--at-y", `${Math.round(spot.y - field.top)}px`);
+  el.dataset.corner = spot.corner;
+  barkShown = { text: el.querySelector("p")!.textContent ?? "", kind: el.dataset.kind as BarkKind, box: { x: spot.x, y: spot.y, w: spot.w, h: spot.h } };
+}
+
 function onEvents(g: Game, evs: GameEvent[]): void {
   noteSlowers(g);
   let shots = 0;
@@ -5355,6 +5431,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
     switch (ev.type) {
       case "knock":
         knocks.push(RUNG_STEP[ev.from] ?? 3);
+        if (!ev.to && barkGate.knock(performance.now() / 1000)) bark(g, "combo");
         if (ev.to) peeled = true;
         // Fleet pays a Mark a layer: the knockout's last layer sends its coin to the purse.
         else flyCoin(ev.x, ev.y, ev.n);
@@ -5388,6 +5465,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "kill":
+        if (barkGate.knock(performance.now() / 1000)) bark(g, "combo");
         // Fleet: the last layer's pop already sounded (its Mark came with the knock); bosses still crash.
         if (ev.bounty > 0 || isBig(ev.kind)) sfx.playKill(isBig(ev.kind));
         if (ev.bounty > 0) flyCoin(ev.x, ev.y, ev.bounty);
@@ -5399,6 +5477,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "leak":
+        bark(g, "leak");
         doorstepLeak(doorstep);
         hostFeel("worried");
         if (ev.kind) runLeaks.push({ kind: ev.kind, lost: ev.lost ?? 1, round: waveNo(g, g.wave) });
@@ -5440,6 +5519,7 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         const kinds = waveSummary(groups).map((x) => x.kind);
         const boss = kinds.find((k) => isBig(k));
         if (boss) {
+          bark(g, "boss");
           banner(ENEMIES[boss].name, "Boss incoming", true);
           sfx.playBoss();
           haptic.boss();
@@ -5480,12 +5560,14 @@ function onEvents(g: Game, evs: GameEvent[]): void {
         }
         break;
       case "pie":
+        bark(g, "pie");
         break;
       case "neighbours":
         tip("neighbours", "The neighbours are in the lane. Nothing on wheels gets past them for ten seconds.", "determined");
         break;
       case "rally":
         tip("rally", "Come on, all of you! Everything fires faster for a few seconds.", "delighted");
+        bark(g, "rally");
         break;
       case "lastOrders":
         banner("Last orders, please!", `${ev.hit} Plants take a hit`, false, "small");
@@ -5925,6 +6007,8 @@ function frame(now: number): void {
   renderer.draw(g, paused || introHold || still ? 0 : renderStep(dt * Math.min(speed, 2), now, knockoutUntil));
   syncFieldFit();
   syncCathSay(g, now);
+  // Plan item 713: her round line goes with the round, or when her tip bubble takes the field.
+  if (!ui.cathBark.hidden && !ui.cathBark.classList.contains("leaving") && (g.phase !== "wave" || !ui.bubble.hidden || !!player)) hideBark();
   // Plan item 661: the tip bubble's spot is re-checked as the field's foot changes under it (a phone's drawer tab
   // and controls come and go with the round, moving its CSS spot back over a depot).
   if (!ui.bubble.hidden && now - bubbleClearAt > 300) {

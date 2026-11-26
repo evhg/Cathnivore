@@ -2465,6 +2465,8 @@ export interface HeroLook {
   selected: boolean;
   /** Plan item 114: her pose (the 3D figure's moods, item 102). */
   mood?: "rest" | "cheer" | "worried" | "plant";
+  /** Plan item 713: reduced motion: no idle breathing or sway. */
+  still?: boolean;
 }
 
 /** Plan item 114: Cath is drawn this much bigger than a cell's sprite scale, a head above her towers. */
@@ -2516,8 +2518,12 @@ export function drawHero(ctx: C, look: HeroLook, x: number, y: number, s: number
   ctx.scale(look.facing, 1);
   // Plan item 114: she stoops to plant a new tower (a lean forward from the boots).
   if (look.mood === "plant") ctx.rotate(0.28);
+  // Plan item 713: at rest she breathes and shifts her weight from foot to foot (a slow sway from the boots), so she
+  // reads as alive among the towers; held still under reduced motion.
+  const idle = !look.walking && !look.still && (look.mood ?? "rest") === "rest";
+  if (idle) ctx.rotate(Math.sin(t * 1.3) * 0.035);
   const walk = look.walking ? Math.sin(t * 12) : 0;
-  const bounce = look.walking ? Math.abs(Math.sin(t * 12)) * s * 0.03 : Math.sin(t * 2) * s * 0.006;
+  const bounce = look.walking ? Math.abs(Math.sin(t * 12)) * s * 0.03 : look.still ? 0 : Math.sin(t * 2) * s * 0.014;
   // Legs and boots.
   ctx.strokeStyle = o.trousers;
   ctx.lineWidth = Math.max(2, s * 0.06);

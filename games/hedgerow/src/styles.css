@@ -787,6 +787,73 @@ button {
   }
 }
 
+/* ---- plan item 713: Cath's line in a round: her portrait and a few words in a corner of the field, on a leak, a
+   boss, a combo, her Pie or her Rally (main.ts, bark.ts). Placed off the lane and clear of the rack and Go. */
+.cath-bark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: var(--z-field-ui);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 280px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  background: var(--paper-hi);
+  color: var(--line);
+  border: 2px solid var(--line);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--line) 22%, transparent), 0 8px 18px color-mix(in srgb, var(--line) 28%, transparent);
+  pointer-events: none;
+  transform: translate(var(--at-x, 0), var(--at-y, 0));
+}
+.cath-bark-face {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, var(--paper), var(--paper-2));
+  box-shadow: 0 0 0 2px var(--cath, var(--line));
+}
+.cath-bark-face svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cath-bark p {
+  margin: 0;
+  font: 600 var(--fs-body) / 1.25 var(--font-voice);
+  text-wrap: balance;
+}
+.cath-bark.show {
+  animation: bark-in 260ms cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.cath-bark.leaving {
+  opacity: 0;
+  transition: opacity 300ms ease-in;
+}
+@keyframes bark-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--at-x, 0), calc(var(--at-y, 0px) + 10px)) scale(0.92);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cath-bark.show {
+    animation: bark-fade 200ms ease-out;
+  }
+  @keyframes bark-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+@media (max-width: 520px) {
+  .cath-bark { max-width: 230px; gap: 6px; }
+  .cath-bark-face { width: 44px; height: 44px; }
+}
+
 /* ---- plan item 95: Cath's advice for the round, said beside her on the field before Go ----
    Placed by main.ts (cathsay.ts) off the lane's tiles and within reach of her; the tail points at her. */
 .cath-say {

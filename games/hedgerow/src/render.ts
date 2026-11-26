@@ -215,6 +215,11 @@ function runOf(level: Level, e: { dist: number; lane?: number | null }): "up" | 
   return h.dy > 0 ? "down" : "up";
 }
 
+/** Plan item 713: Cath's least drawn height on the 2D field, in CSS px. */
+const HERO_MIN_PX = 50;
+/** Plan item 713: her cast's staged moment, in seconds. */
+const CAST_S = 0.8;
+
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private bg: HTMLCanvasElement | null = null;
@@ -255,6 +260,9 @@ export class Renderer {
   private lastX = new Map<number, number>();
   private heroSwung = 9;
   private heroThrew = 9;
+  /** Plan item 713: seconds since her Rally or the neighbours' call (her cast: arms up, a gold burst behind her). */
+  private heroCast = 9;
+  private castPie = false;
   private shake = 0;
   private flash = 0;
   private flashColor = "255,60,40";
@@ -263,9 +271,23 @@ export class Renderer {
   /** Plan item 114: Cath's drawn size on this field (px), for the e2e. */
   heroPx(): { h: number; w: number } {
     const key = `${this.view.cellSize}|${this.face?.complete ? 1 : 0}`;
-    if (this.heroPxKey !== key) [this.heroPxKey, this.heroPxAt] = [key, heroSize(this.view.cellSize * HERO_SCALE, this.face)];
+    if (this.heroPxKey !== key) {
+      // Plan item 713: on a small field (a phone's level 34) she keeps 50 CSS px of figure: her scale grows, up to
+      // a third more, until she does.
+      const base = heroSize(this.view.cellSize * HERO_SCALE, this.face);
+      const k = base.h > 0 ? Math.min(1.34, Math.max(1, HERO_MIN_PX / base.h)) : 1;
+      this.heroK = k;
+      this.heroPxAt = k > 1 ? heroSize(this.view.cellSize * HERO_SCALE * k, this.face) : base;
+      this.heroPxKey = key;
+    }
     return this.heroPxAt!;
   }
+  /** Plan item 713: her drawn scale over a cell's (HERO_SCALE, more on a small field). */
+  private heroScale(): number {
+    this.heroPx();
+    return HERO_SCALE * this.heroK;
+  }
+  private heroK = 1;
   private heroPxKey = "";
   private heroPxAt: { h: number; w: number } | null = null;
   private face: HTMLImageElement | null = null;
@@ -627,9 +649,16 @@ export class Renderer {
           this.flashOnce("220,40,30", 0.35);
           this.float(e.x, e.y - 0.4, `-${e.lost ?? 1} Goodwill`, "#ff8f80", 1.1);
           break;
+        case "rally":
+        case "neighbours":
+          this.heroCast = 0;
+          this.castPie = false;
+          break;
         case "pie": {
           const h = game.hero;
           this.heroThrew = 0;
+          this.heroCast = 0;
+          this.castPie = true;
           if (e.x !== undefined && e.y !== undefined)
             this.pies.push({
               fromX: h.x,
@@ -1482,12 +1511,13 @@ export class Renderer {
     const h = game.hero;
     this.heroSwung += dt;
     this.heroThrew += dt;
+    this.heroCast += dt;
     this.moodCheer += dt;
     this.moodWorry += dt;
     this.moodPlant += dt;
     if (game.towers.length > this.towersSeen && this.towersSeen >= 0) this.moodPlant = 0;
     this.towersSeen = game.towers.length;
-    const mood = this.moodCheer < 1.4 ? "cheer" : this.moodWorry < 1.4 ? "worried" : this.moodPlant < 1.2 ? "plant" : "rest";
+    const mood = (this.heroCast < CAST_S && !this.castPie) || this.moodCheer < 1.4 ? "cheer" : this.moodWorry < 1.4 ? "worried" : this.moodPlant < 1.2 ? "plant" : "rest";
     this.levelBeat += dt;
     this.heroMood = this.heroSwung < 0.3 && h.down === 0 ? "swing" : mood;
     const walking = Math.hypot(h.tx - h.x, h.ty - h.y) > 0.03 && h.down === 0;
@@ -1536,6 +1566,43 @@ export class Renderer {
         ctx.restore();
       },
     });
+    // Plan item 713: her cast, staged over 0.8 s: a gold burst opens behind her and fades (under reduced motion a glow
+    // that only fades), drawn just before her figure.
+    if (this.heroCast < CAST_S && h.down === 0) {
+      const k = this.heroCast / CAST_S;
+      items.push({
+        y: h.y + 0.215,
+        draw: () => {
+          const cx = X(h.x);
+          const cy = Y(h.y + 0.22) - s * this.heroScale() * 0.45;
+          const r = s * (this.reducedMotion ? 0.9 : 0.5 + k * 0.9);
+          ctx.save();
+          ctx.globalAlpha = k < 0.12 ? k / 0.12 : Math.pow(1 - (k - 0.12) / 0.88, 1.4);
+          const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+          g.addColorStop(0, this.castPie ? "rgba(255,236,190,0.95)" : "rgba(255,226,122,0.95)");
+          g.addColorStop(0.55, this.castPie ? "rgba(255,190,120,0.45)" : "rgba(242,201,76,0.45)");
+          g.addColorStop(1, "rgba(242,201,76,0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+          if (!this.reducedMotion) {
+            // Eight rays turning out from her.
+            ctx.strokeStyle = "rgba(255,214,77,1)";
+            ctx.lineWidth = Math.max(2, s * 0.05);
+            ctx.lineCap = "round";
+            for (let i = 0; i < 8; i++) {
+              const a = (i / 8) * Math.PI * 2 + k * 0.6;
+              ctx.beginPath();
+              ctx.moveTo(cx + Math.cos(a) * r * 0.6, cy + Math.sin(a) * r * 0.6);
+              ctx.lineTo(cx + Math.cos(a) * r * 1.05, cy + Math.sin(a) * r * 1.05);
+              ctx.stroke();
+            }
+          }
+          ctx.restore();
+        },
+      });
+    }
     // Plan item 132: the site poster (`?keyart`) stands its own Cath in front, so the field leaves hers out.
     const keyart = typeof document !== "undefined" && document.documentElement.dataset.keyart !== undefined;
     if (!hasTwist(level, "nocath") && !this.harvesting && !keyart) items.push({
@@ -1551,11 +1618,12 @@ export class Renderer {
             threw: this.heroThrew,
             selected: this.heroSelected,
             mood,
+            still: this.reducedMotion,
           },
           X(h.x),
           Y(h.y + 0.22),
           // Plan item 114: she stands a head taller than the towers she leads (she was their height).
-          s * HERO_SCALE,
+          s * this.heroScale(),
           t,
           h.down > 0 || mood === "worried" || (game.goodwill <= game.maxGoodwill / 3 && game.phase === "wave")
             ? this.faceWorried
@@ -1564,7 +1632,7 @@ export class Renderer {
               : this.face,
         );
         // Plan item 492: on the Fleet, where she grows through a run, her level is an inked rosette at her feet.
-        if (level.rules === "fleet") this.levelRosette(X(h.x) + s * HERO_SCALE * 0.2, Y(h.y + 0.22) - s * 0.02, s, h.level);
+        if (level.rules === "fleet") this.levelRosette(X(h.x) + s * this.heroScale() * 0.2, Y(h.y + 0.22) - s * 0.02, s, h.level);
       },
     });
     // Plan item 143: the farmfolk, y-sorted with everything else on the field.
