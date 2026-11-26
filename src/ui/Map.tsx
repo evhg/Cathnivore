@@ -256,9 +256,11 @@ function PortraitSymbols({ uid, keys }: { uid: string; keys: Array<[ProducerId, 
   return (
     <defs>
       {keys.map(([pid, face]) => (
-        <symbol key={`${pid}-${face ?? 'neutral'}`} id={portraitSymbolId(uid, pid, face)} viewBox="14 12 72 90">
+        // An <svg> in <defs> (a <use> sets its width and height), not a <symbol>: the portrait's gradients then sit in
+        // a defs subtree, which every engine renders paint servers from.
+        <svg key={`${pid}-${face ?? 'neutral'}`} id={portraitSymbolId(uid, pid, face)} viewBox="14 12 72 90" aria-hidden="true">
           <Portrait character={pid} size={100} expression={face === 'neutral' ? undefined : face} />
-        </symbol>
+        </svg>
       ))}
     </defs>
   )
