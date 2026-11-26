@@ -6774,7 +6774,7 @@ Planning 2026-11-26 15:35 lane A: shots `e2e/screenshots/plan1126c` (P 390x844, 
 - **Accept:** three states as `data-state` (done/next/locked) asserted in e2e; stars 12 CSS px+ at 390x844; labels AA; shots P and D of a fresh act and a half-cleared one.
 - **Size:** 1
 
-## 721. [ ] The bugs from the 2026-11-26 15:35 critique, fixed as one batch *(lane A, in progress)*
+## 721. [ ] The bugs from the 2026-11-26 15:35 critique, fixed as one batch *(handed back 2026-11-26 15:40 by lane A: three Cathnivore points closed by measurement or decision: game D Cath's line is rgb(110,98,90) on rgb(251,248,241), 5.7:1, AA at 17 px italic; title P's short names are the title table's own `shortNames` (a decorative aria-hidden board about 300 px wide, full names would set under 12 px; the play board, item 714, carries them in full); campaign P chip 1 clean in a 4x shot at 1.5 s (the plan shot caught the strip's entrance). Hedgerow, Runnel and NIGHT SHIFT points still open)*
 *(planned 2026-11-26 15:35, lane A, plan1126c critique; check each on today's build first)*
 - Cathnivore: title P board names cut ('Moor', 'Salt', 'Brindle', 'Kings', 'River', 'Oak', 90-330 x 360-515) where item 714's board shows them in full; game D Cath's light grey italic line on cream (350-490 x 255-445): measure, AA or darker ink; campaign P chip 1 shows a clipped '3' at its left edge (14-22 x 583-597).
 - Hedgerow: l27 3D P the depot and its '86 TO GO' cut at the left edge (CSS 0-95 x 435-480); l34 2D D the wave pill (388-600 x 85-115) over the windmill's sails, Cath's bubble (815-1030 x 83-147) over the radio mast's top.
