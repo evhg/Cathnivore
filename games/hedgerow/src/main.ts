@@ -801,6 +801,8 @@ if (SANDBOX)
     },
     spawn: (kind: EnemyKind, dist: number) => game && game.enemies.push(makeEnemy(game, kind, dist, undefined, game.wave || 1)),
     cellCenter: (c: number, r: number) => renderer?.cellCenter(c, r) ?? null,
+    // Plan item 703: the renderer itself, for scripts that probe the 3D scene (shadow casters, materials).
+    renderer: () => renderer,
     // Plan item 468: the towers (damage or slow) with a live vehicle in reach now, for the attack spec.
     inReach: () =>
       game

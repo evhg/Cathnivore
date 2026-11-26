@@ -273,6 +273,9 @@ export class Renderer3D {
   /** Plan item 485: the day across a level (0 morning to 1 dusk), eased on wall-clock time, and the level's noon light. */
   private day = -1;
   private dayAt = 0;
+  /** Plan item 703: the ground's off-field objects (the depot, verge trees, posts) and their own shadow casters. */
+  private offField: Array<{ box: THREE.Box3; meshes: THREE.Mesh[] }> = [];
+  private fieldRect = { x0: 0, z0: 0, x1: 0, z1: 0 };
   private dayBase: { levelId: number; night: boolean; el: number; cx: number; cz: number; sun: THREE.Color; sunI: number; hemi: THREE.Color; hemiG: THREE.Color; sky: THREE.Color; horizon: THREE.Color; exposure: number; lamps: number } | null = null;
   /** Plan item 59: the growing field. */
   private crops: Crops | null = null;
@@ -688,6 +691,67 @@ export class Renderer3D {
     // Plan item 255: her figure inked like the 2D field's people, on her eight largest parts.
     inkFigure(this.cath, 8, 0.02);
     this.dynamic.add(this.cath);
+    this.findOffField(game.level.cols, game.level.rows);
+    this.clipFieldShadows();
+  }
+
+  /** Plan item 703: the objects beside the field (the depot, the verge's trees, posts and parked vans) whose shadow
+   *  casters can reach it. The sun sinks so shadows lengthen 1.8x at the ends of the day (item 485), and a low sun
+   *  laid their shadows across the field as hard dark bands from casters the frame barely shows (P l27: the depot's
+   *  wedge, a verge tree's 130 px bar). Instanced batches (hedges, crops) span the field and stay as they are. */
+  private findOffField(cols: number, rows: number): void {
+    this.fieldRect = { x0: 0, z0: 0, x1: cols, z1: rows };
+    this.offField = [];
+    const group = this.ground?.group;
+    if (!group) return;
+    const box = new THREE.Box3();
+    group.updateMatrixWorld(true);
+    const r = this.fieldRect;
+    const off = (b: THREE.Box3) => !b.isEmpty() && !(b.max.x > r.x0 && b.min.x < r.x1 && b.max.z > r.z0 && b.min.z < r.z1);
+    for (const child of group.children) {
+      const inst = child as THREE.InstancedMesh;
+      if (inst.isInstancedMesh) {
+        // a batch wholly beside the field (the verge's tree rows); the crop and hedge batches span it and stay
+        if (!inst.castShadow) continue;
+        inst.computeBoundingBox();
+        if (inst.boundingBox && off(box.copy(inst.boundingBox).applyMatrix4(inst.matrixWorld))) this.offField.push({ box: box.clone(), meshes: [inst] });
+        continue;
+      }
+      const meshes: THREE.Mesh[] = [];
+      child.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh && o.castShadow && !(o as THREE.InstancedMesh).isInstancedMesh) meshes.push(o as THREE.Mesh);
+      });
+      if (meshes.length && off(box.setFromObject(child))) this.offField.push({ box: box.clone(), meshes });
+    }
+  }
+
+  /** Plan item 703: an off-field object casts no shadow while the sun would lay it on the field (its footprint swept
+   *  along the light by its height over tan(elevation) touches the field's rect); otherwise it keeps its shadow on
+   *  the verge. Run when the sun moves. */
+  private clipFieldShadows(): void {
+    if (!this.offField.length) return;
+    const s = this.sun.position;
+    const t = this.sun.target.position;
+    const hx = t.x - s.x;
+    const hz = t.z - s.z;
+    const hl = Math.hypot(hx, hz) || 1;
+    const run = hl / Math.max(0.05, s.y - t.y); // ground distance a unit of height throws
+    const dx = hx / hl;
+    const dz = hz / hl;
+    const r = this.fieldRect;
+    const inField = (x: number, z: number) => x > r.x0 + 0.05 && x < r.x1 - 0.05 && z > r.z0 + 0.05 && z < r.z1 - 0.05;
+    for (const o of this.offField) {
+      const len = Math.max(0, o.box.max.y) * run;
+      let hits = false;
+      // a 5x5 grid over the footprint (a verge row runs the field's whole side), each point swept along the light
+      for (let i = 0; i <= 4 && !hits; i++)
+        for (let j = 0; j <= 4 && !hits; j++) {
+          const cx = o.box.min.x + ((o.box.max.x - o.box.min.x) * i) / 4;
+          const cz = o.box.min.z + ((o.box.max.z - o.box.min.z) * j) / 4;
+          for (let k = 1; k <= 8 && !hits; k++) hits = inField(cx + (dx * len * k) / 8, cz + (dz * len * k) / 8);
+        }
+      for (const m of o.meshes) m.castShadow = !hits;
+    }
   }
 
   /** Plan item 485: the sun crosses the sky over the level, as in 2D (render.ts): the phase follows the round under
@@ -718,6 +782,7 @@ export class Renderer3D {
     const el = Math.atan(Math.tan((b.el * Math.PI) / 180) / dayShadowLength(p));
     const d = 20;
     this.sun.position.set(b.cx + Math.cos(az) * Math.cos(el) * d, Math.sin(el) * d, b.cz + Math.sin(az) * Math.cos(el) * d);
+    this.clipFieldShadows();
     const warm = dayWarmth(p);
     const low = 2 * Math.abs(p - 0.5);
     this.sun.color.copy(b.sun).lerp(DUSK_SUN, 0.6 * warm);
