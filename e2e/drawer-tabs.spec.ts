@@ -30,7 +30,8 @@ test('desktop drawer keys are drawer fronts with 13 px+ words', async ({ page },
   expect(await keys.first().evaluate((el) => getComputedStyle(el).translate)).toMatch(/-6px|0px 1px/)
 })
 
-// Plan item 366 slice 2: beside the papers at 1440x900 each reading keeps its word, 12 px+, over its figure.
+// Plan item 366 slice 2: beside the papers at 1440x900 each reading keeps its word, 12 px+, with its figure: since
+// plan item 708 a ledger line, the word left of the figure on one line (it stood over the figure before).
 test('the readings beside the papers are labelled at 1440x900', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop-chromium', 'the desktop table')
   await page.setViewportSize({ width: 1440, height: 900 })
@@ -45,11 +46,11 @@ test('the readings beside the papers are labelled at 1440x900', async ({ page },
     const m = await l.evaluate((el) => {
       const r = el.getBoundingClientRect()
       const num = el.parentElement!.querySelector('.board-num')!.getBoundingClientRect()
-      return { size: parseFloat(getComputedStyle(el).fontSize), w: r.width, above: r.bottom <= num.top + 2 }
+      return { size: parseFloat(getComputedStyle(el).fontSize), w: r.width, before: r.right <= num.left + 1 && r.bottom > num.top && r.top < num.bottom }
     })
     expect(m.size).toBeGreaterThanOrEqual(12)
     expect(m.w).toBeGreaterThan(20)
-    expect(m.above).toBe(true)
+    expect(m.before).toBe(true)
   }
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight + 1)).toBe(true)
 })

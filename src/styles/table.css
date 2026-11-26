@@ -6894,3 +6894,64 @@ html.no-animations .table-cath-figure { animation: none; }
     filter: saturate(.55) brightness(.94) drop-shadow(0 2px 3px rgb(var(--shadow-ink) / .3));
   }
 }
+
+/* Plan item 708: on a big desktop the readings are the players' ledger and Pell faces it at full size. The readings
+   are a page of ruled paper, a line each (the label, then a 22 px figure at the right), so the column is 176 px and
+   Pell's medallion grows to 120 px in the cloth's top-left corner, still clear of Highmoor (its edge from ~645 px at
+   1440x900). Docking him on the plan slab instead ran the right-hand stack to 390 px, over Rivermead and the map key. */
+@media (min-width: 1400px) and (min-height: 860px) {
+  .game:has(.table-head.with-table-cath) .market-board {
+    --chalk: var(--ink-on-fixed-fill);
+    --chalk-dim: color-mix(in srgb, var(--ink-on-fixed-fill) 80%, var(--paper-on-fixed-fill));
+    --chalk-line: color-mix(in srgb, var(--corp-slate) 22%, transparent);
+    width: 176px;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-rows: repeat(4, 27px);
+    grid-auto-flow: row;
+    padding: 6px 2px 7px 0;
+    border-color: var(--wood-lo);
+    background:
+      /* the ledger's red margin rule */
+      linear-gradient(90deg, transparent 9px, color-mix(in srgb, var(--clay) 60%, transparent) 9px 10px, transparent 10px),
+      var(--grain-paper),
+      linear-gradient(180deg, var(--paper-on-fixed-fill), color-mix(in srgb, var(--paper-on-fixed-fill) 88%, var(--wheat)));
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--wood-lo) 45%, transparent),
+      0 2px 3px rgb(var(--shadow-ink) / .2),
+      var(--e2);
+  }
+  .game:has(.table-head.with-table-cath) .market-board .board-cell,
+  .game:has(.table-head.with-table-cath) .market-board .board-cell:first-child {
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 6px 0 16px;
+    box-shadow: inset 0 -1px 0 var(--chalk-line);
+  }
+  .game:has(.table-head.with-table-cath) .market-board .board-cell:nth-child(3),
+  .game:has(.table-head.with-table-cath) .market-board .board-cell:nth-child(4),
+  .game:has(.table-head.with-table-cath) .market-board .board-cell + .board-cell { box-shadow: inset 0 -1px 0 var(--chalk-line); }
+  .game:has(.table-head.with-table-cath) .market-board .board-cell:nth-child(4) { box-shadow: none; }
+  .game:has(.table-head.with-table-cath) .market-board .board-cell > .tooltip-trigger,
+  .game:has(.table-head.with-table-cath) .market-board .board-cell .tooltip-trigger-button { display: flex; flex: 1 1 auto; width: 100%; max-width: none; min-width: 0; justify-content: stretch; text-align: left; }
+  .game:has(.table-head.with-table-cath) .market-board .board-head {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "label num";
+    align-items: baseline;
+    column-gap: 6px;
+  }
+  .game:has(.table-head.with-table-cath) .market-board .board-head > svg.board-object { display: none; }
+  .game:has(.table-head.with-table-cath) .market-board .board-label {
+    font: 700 var(--fs-label)/1 var(--font-ui);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .game:has(.table-head.with-table-cath) .market-board .board-num { font: 700 1.375rem/1 var(--font-display); }
+  .game:has(.table-head.with-table-cath) .market-board .board-of { font-size: .8125rem; }
+  .game:has(.table-head.with-table-cath) .market-board .board-menu { grid-column: 2; grid-row: 1; align-self: start; color: var(--ink-on-fixed-fill); }
+
+  .game:has(.table-head.with-table-cath) .table-head .rival { --pell: 120px; left: 178px; }
+  .game:has(.table-head.with-table-cath) .table-head .rival-plate { translate: -50% 0; }
+  .game:has(.table-head.with-table-cath) .event-ticket { top: 146px; }
+}
