@@ -6663,7 +6663,7 @@ Planning 2026-11-25 05:30 lane A: shots `e2e/screenshots/plan1125a` (P 390x844, 
 
 Planning 2026-11-26 03:05 lane A: shots `e2e/screenshots/plan1126a` (P 390x844, D 1440x900, every game), one subagent critique against VISION.md, told to skip items 319, 543, 678 and 703 and to check items 680-705 first; checked again here. Dropped as already closed by measurement: game D's musing (item 700, 5.9:1), campaign D's crates at her bust's foot (item 705, by design), l34 D seed sublabels (item 700, 13 px). Lane B's claim on 678 dates from 2026-11-23 with no lane B session since: handed back.
 
-## 706. [ ] Hedgerow 2D: a battle you can read at a glance
+## 706. [ ] Hedgerow 2D: a battle you can read at a glance *(lane A, in progress)*
 *(planned 2026-11-26 03:05, lane A, plan1126a critique)*
 - **Why:** `plan1126a/hedge-l34-2d-P` (2x): three queue pills sit on the battle itself (215-530 x 210-260, 8-320 x 432-480, 8-320 x 968-1012) over lorries, the windmill's ring and the hive; coin floats (+37, +71, +83, +4) pile up at 100-480 x 960-1140 over vehicles, hive, stall and pond. `hedge-l34-2d-D` the same knot at 320-680 x 740-880; `hedge-l27-2d-P` '+58' on the Scarecrow's hat (405-470 x 860-890).
 - **Build:** each lane's queue pill docked at its lane mouth in the field margin or board edge, never over the path or a tower; gain floats from one tower within 400 ms merged into one number over its head, gone in 700 ms; floats and badges take priority-ordered free slots, stepping aside rather than covering a vehicle.
