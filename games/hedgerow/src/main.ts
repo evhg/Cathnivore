@@ -4234,6 +4234,9 @@ function fire(x?: number, y?: number): void {
 /** Plan item 681: Cath's level-up as a moment on her, not a banner over the lane: a small 'Lv N' badge rises from her
  *  head and flies to the Cath button (the phone's action bar or the desktop panel's), which bumps as it lands. Under
  *  reduced motion it fades in on the button instead. */
+/** Plan item 705: the game whose level-up already carried 'stronger, tougher' (she levels every few seconds in a busy
+ *  fight, and the full badge's hover over her head stood over a tower or the queue in every shot of one). */
+let levelTaught: Game | null = null;
 function levelBadge(g: Game | null, level: number): void {
   // Plan item 689: fly to the Cath control the player can see (the in-game Cath key, the phone's dock bust, else the
   // menu's button); #btn-cath is hidden in a level, and its empty box sent the badge to the top-left over the HUD.
@@ -4251,9 +4254,17 @@ function levelBadge(g: Game | null, level: number): void {
   badge.setAttribute("aria-hidden", "true");
   const b = document.createElement("b");
   b.textContent = `Lv ${level}`;
-  const sub = document.createElement("span");
-  sub.textContent = "stronger, tougher";
-  badge.append(b, sub);
+  // Plan item 705: the first level-up in a level says what it means and hovers over her; the later ones are the number
+  // alone, flying straight to her button in about half the time
+  const brief = !!g && levelTaught === g;
+  if (g) levelTaught = g;
+  badge.append(b);
+  if (brief) badge.classList.add("is-brief");
+  else {
+    const sub = document.createElement("span");
+    sub.textContent = "stronger, tougher";
+    badge.append(sub);
+  }
   document.body.append(badge);
   // Plan item 682: kept whole on screen (at P Cath stood by the right edge and the badge rose half off it)
   const half = badge.offsetWidth / 2 + 8;
@@ -4271,7 +4282,16 @@ function levelBadge(g: Game | null, level: number): void {
   const dx = to.left + to.width / 2 - from.x;
   const dy = to.top + to.height / 2 - from.y;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const run = still
+  const run = brief
+    ? badge.animate(
+        [
+          { opacity: 0, transform: "translate(-50%, -50%) scale(0.6)" },
+          { opacity: 1, offset: 0.2, transform: "translate(-50%, calc(-50% - 10px)) scale(1)" },
+          { opacity: 0.9, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.5)` },
+        ],
+        { duration: still ? 1 : 520, easing: "cubic-bezier(0.45, 0, 0.3, 1)" },
+      )
+    : still
     ? badge.animate([{ opacity: 0, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }, { opacity: 1, offset: 0.3, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }, { opacity: 0, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }], { duration: 900 })
     : badge.animate(
         [

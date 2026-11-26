@@ -92,6 +92,10 @@ const jobs = {
       await p.waitForFunction(() => { const f = window.hedgerow.fx?.(); return !f || ((f.cues ?? f.attackers) >= 3 && f.coinsInAir >= 1 && !document.querySelector('.banner.show')) }, null, { timeout: 20000, polling: 100 }).catch(() => console.log('battle: no peak frame'))
       console.log('battle', JSON.stringify(await p.evaluate(() => window.hedgerow.fx?.())))
       await closeGuide()
+      // plan item 705: nor Cath's level-up badge, a 0.5-0.9 s flight that her first level (about 4 s into the fight, the
+      // same moment as the first peak frame) put in every l34 shot
+      await p.waitForTimeout(150)
+      await p.waitForFunction(() => !document.querySelector('.lvl-badge'), null, { timeout: 3000, polling: 50 }).catch(() => {})
     }
     await p.goto(`${base}/hedgerow/?2d`)
     await p.evaluate(([st, t]) => localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars: st, seenBefore: { 21: true, 27: true }, tips: t })), [stars(30), tips])
