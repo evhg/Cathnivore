@@ -32,7 +32,11 @@
   /* Plan item 704: a dry ditch reads carved, not a raised plank: its sunlit wall is lit above the tile's face
      (it was dulled to the face's own tone, so the pale band read as a ridge beside the dark wall), and the sandy floor
      a step below the face (about the least luminance that keeps every season's water 3:1 on it). */
-  --groove-bed: #d9c08e;
+  /* Plan item 723: the dry ditch is a dark earth trench (the pale sand floor read as a raised plank beside its dark
+     wall, so the route couldn't be traced before water ran): 3:1 or more off the tile's face, its sunlit wall the lit
+     edge. The channel's water runs a brighter blue (--water-run) so it still stands 3:1 on that earth. */
+  --groove-bed: #4f3826;
+  --water-run: #3d8fc4;
   --groove-bed-wet: #3a2a1a;
   --bank-sun: #f2e2b6;
   --bank-shade: #2c2720;
@@ -167,6 +171,7 @@
     --groove: #d8b486;
     --groove-wet: #c8a272;
     --groove-bed: #8c6a44;
+    --water-run: var(--water);
     --groove-bed-wet: #6f5236;
     --bank-sun: #f0d8ac;
     --bank-shade: #9c7a52;

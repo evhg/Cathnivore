@@ -700,7 +700,7 @@ button {
 }
 
 .water {
-  stroke: var(--water);
+  stroke: var(--water-run, var(--water));
   stroke-width: 7.5;
   stroke-dasharray: 1 1;
   stroke-dashoffset: 1;
