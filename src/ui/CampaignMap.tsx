@@ -145,7 +145,14 @@ const SWELL: [number, number, number][] = [
 const GULLS: [number, number, number][] = [[-120, -64, 1], [-104, -72, 0.8], [138, -56, 0.9], [-30, 124, 0.85], [92, -138, 0.8]]
 const BOATS: [number, number, number][] = [[128, -122, 1], [-100, 128, -1], [118, 126, 1]]
 
-function AtlasSheet() {
+// Plan item 743: at a desktop the atlas is drawn 'meet' at the top of a box taller than its 320:296 sheet (about 100 px
+// of table under the torn edge at 1440x900), and chapter 1's ticket had no place on the paper that left the region
+// names whole, so it hung off the edge. The sheet and its sea now run down to fill the box (`extra` viewBox units):
+// the island stays put and the open sea below gives the ticket its room.
+const shift = (y: number, extra: number) => (y > 40 ? y + extra : y)
+function AtlasSheet({ extra = 0 }: { extra?: number }) {
+  const edge = useMemo(() => (extra ? deckled({ ...SHEET, y1: SHEET.y1 + extra }) : SHEET_EDGE), [extra])
+  const seaH = SEA.y1 + extra - SEA.y0
   return (
     <g className="cmp-atlas" aria-hidden="true">
       <defs>
@@ -155,17 +162,17 @@ function AtlasSheet() {
           <stop offset="1" className="cmp-sea-out" />
         </radialGradient>
       </defs>
-      <polygon points={SHEET_EDGE} className="cmp-sheet-shadow" transform="translate(2.5 4)" />
-      <polygon points={SHEET_EDGE} className="cmp-sheet" />
-      <rect x={SEA.x0} y={SEA.y0} width={SEA.x1 - SEA.x0} height={SEA.y1 - SEA.y0} rx={3} className="cmp-sea" fill="url(#cmp-sea-wash)" />
-      <rect x={SEA.x0} y={SEA.y0} width={SEA.x1 - SEA.x0} height={SEA.y1 - SEA.y0} rx={3} className="cmp-sea-rule" />
+      <polygon points={edge} className="cmp-sheet-shadow" transform="translate(2.5 4)" />
+      <polygon points={edge} className="cmp-sheet" />
+      <rect x={SEA.x0} y={SEA.y0} width={SEA.x1 - SEA.x0} height={seaH} rx={3} className="cmp-sea" fill="url(#cmp-sea-wash)" />
+      <rect x={SEA.x0} y={SEA.y0} width={SEA.x1 - SEA.x0} height={seaH} rx={3} className="cmp-sea-rule" />
       <g className="cmp-swell">
         {SWELL.map(([x, y, w]) => (
-          <path key={`${x},${y}`} d={`M${x} ${y} q${w / 4} -2 ${w / 2} 0 t${w / 2} 0`} />
+          <path key={`${x},${y}`} d={`M${x} ${shift(y, extra)} q${w / 4} -2 ${w / 2} 0 t${w / 2} 0`} />
         ))}
       </g>
       {BOATS.map(([x, y, f]) => (
-        <g key={`${x},${y}`} className="cmp-boat" transform={`translate(${x} ${y}) scale(${f} 1)`}>
+        <g key={`${x},${y}`} className="cmp-boat" transform={`translate(${x} ${shift(y, extra)}) scale(${f} 1)`}>
           <path d="M-7 0 H7 L4.5 3.4 H-4.5 Z" className="cmp-boat-hull" />
           <path d="M0 -0.5 V-12" className="cmp-boat-mast" />
           <path d="M0.8 -11 L7 -1.6 H0.8 Z" className="cmp-boat-sail" />
@@ -175,7 +182,7 @@ function AtlasSheet() {
       ))}
       <g className="cmp-gulls">
         {GULLS.map(([x, y, k]) => (
-          <path key={`${x},${y}`} transform={`translate(${x} ${y}) scale(${k})`} d="M-5 0 q2.5 -3 5 0 q2.5 -3 5 0" />
+          <path key={`${x},${y}`} transform={`translate(${x} ${shift(y, extra)}) scale(${k})`} d="M-5 0 q2.5 -3 5 0 q2.5 -3 5 0" />
         ))}
       </g>
     </g>
@@ -183,11 +190,11 @@ function AtlasSheet() {
 }
 
 // Plan item 426: the compass rose and the cartouche sit over the coast's shallows, so they're drawn after them.
-function AtlasMarks() {
+function AtlasMarks({ extra = 0 }: { extra?: number }) {
   return (
     <g className="cmp-atlas-marks" aria-hidden="true">
       {/* the compass rose, bottom left */}
-      <g className="cmp-compass" transform="translate(-128 116)">
+      <g className="cmp-compass" transform={`translate(-128 ${116 + extra})`}>
         <circle r={11} className="cmp-compass-ring" />
         <circle r={8.4} className="cmp-compass-ring is-inner" />
         <path d="M0 -14 L2.4 -2.4 L14 0 L2.4 2.4 L0 14 L-2.4 2.4 L-14 0 L-2.4 -2.4 Z" className="cmp-compass-star" />
@@ -311,6 +318,19 @@ export default function CampaignMap({
     ro.observe(svg)
     return () => ro.disconnect()
   }, [onPick])
+  // Plan item 743: the sheet's sea runs down to fill a desktop box taller than the atlas (see AtlasSheet).
+  const [extra, setExtra] = useState(0)
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg || !host || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      const w = svg.clientWidth
+      const h = svg.clientHeight
+      setExtra(w > 0 ? Math.round(Math.min(60, Math.max(0, ((h - 16) * 320) / w - 296))) : 0)
+    })
+    ro.observe(svg)
+    return () => ro.disconnect()
+  }, [host])
   // The lane: a gentle curve from each pin to the next.
   const lane = pins
     .map((p, i) => {
@@ -336,7 +356,7 @@ export default function CampaignMap({
 
   return (
     <figure className="cmp-map" data-free={freedCount} data-phase={phase}>
-      <svg ref={svgRef} className="cmp-map-svg" viewBox="-160 -150 320 296" preserveAspectRatio={host ? "xMinYMin meet" : undefined} role="img" aria-label={label}>
+      <svg ref={svgRef} className="cmp-map-svg" viewBox={`-160 -150 320 ${296 + extra}`} preserveAspectRatio={host ? "xMinYMin meet" : undefined} role="img" aria-label={label}>
         <defs>
           <pattern id="cmp-hold-hatch" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
             <line x1={0} y1={0} x2={0} y2={6} className="cmp-hold-line" />
@@ -361,7 +381,7 @@ export default function CampaignMap({
             <stop offset="0.7" className="cmp-streak-0" />
           </linearGradient>
         </defs>
-        <AtlasSheet />
+        <AtlasSheet extra={extra} />
         {/* Plan item 49: Marrow is an island. The coast is every hex grown outward and merged (round joins
             soften it): first the surf, then the sand. */}
         {/* Plan item 426: paler shallows round the coast, drawn on the atlas's sea */}
@@ -388,7 +408,7 @@ export default function CampaignMap({
             return <polygon key={id} points={hexPoints(R * 1.06)} transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`} />
           })}
         </g>
-        <AtlasMarks />
+        <AtlasMarks extra={extra} />
         {/* Plan item 580: every tile's thickness goes down before any face, as on the board (Map's tile-edges). */}
         <g className="cmp-map-edges" aria-hidden="true">
           {regionIds.map((id) => {

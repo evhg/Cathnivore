@@ -96,3 +96,28 @@ test('desktop campaign: Cath and her crates stand clear of the window\'s foot', 
     }
   }
 })
+
+// Plan item 743 (critique 2026-11-27 18:30): at 1440x900 chapter 1's ticket spilled 46 px past the map's torn edge (the
+// atlas, drawn 'meet' at the top of a taller box, left no place on the paper clear of the names). The sheet's sea now
+// runs down to fill the box and every chapter's ticket stays on the paper.
+test("desktop campaign: every chapter's ticket stays on the sheet", async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Campaign', { exact: false }).first().click()
+    await page.getByRole('heading', { name: 'Campaign' }).waitFor()
+    const ids = await page.locator('.cmp-pin[data-chapter]').evaluateAll((els) => els.map((e) => e.getAttribute('data-chapter')!))
+    for (const id of ids) {
+      await page.locator(`.cmp-pin[data-chapter="${id}"] .cmp-pin-disc`).hover()
+      await expect(page.locator('.cmp-ticket')).toHaveAttribute('data-chapter', id)
+      await page.waitForTimeout(500)
+      const out = await page.evaluate(() => {
+        const t = document.querySelector('.cmp-ticket')!.getBoundingClientRect()
+        const s = document.querySelector('.campaign-screen .cmp-map-svg .cmp-sheet')!.getBoundingClientRect()
+        return Math.max(s.left - t.left, t.right - s.right, s.top - t.top, t.bottom - s.bottom)
+      })
+      expect(out, `${width}x${height} ${id}'s ticket past the sheet`).toBeLessThanOrEqual(0)
+    }
+  }
+})

@@ -35,7 +35,8 @@ export default function CampaignTicket({
       if (!disc || !svg) return
       const f = fig.getBoundingClientRect()
       const d = disc.getBoundingClientRect()
-      const s = svg.getBoundingClientRect()
+      // Plan item 743: inside the drawn sheet, not the svg's box (the ticket hung 46 px off the torn edge at 1440x900)
+      const s = (svg.querySelector('.cmp-sheet') ?? svg).getBoundingClientRect()
       const px = d.left + d.width / 2 - f.left
       const py = d.top + d.height / 2 - f.top
       const w = el.offsetWidth
@@ -62,8 +63,10 @@ export default function CampaignTicket({
       // ticket sat over the compass and Oakvale's corner.
       const marks = rects('.cmp-compass, .cmp-cartouche')
       // the ticket is turned 1 degree: its corners reach about 4 px past its box
-      const over = (list: Rect[], x: number, y: number) =>
-        list.reduce((a, k) => a + Math.max(0, Math.min(x + w + 4, k.r) - Math.max(x - 4, k.l)) * Math.max(0, Math.min(y + h + 4, k.b) - Math.max(y - 4, k.t)), 0)
+      // (plan item 743: a name's box already carries its line's leading, so names take the ticket's own box: the 4 px
+      // turn margin left no place between Highmoor and Brindle Hills for chapter 2 once the sea below opened)
+      const over = (list: Rect[], x: number, y: number, m = 4) =>
+        list.reduce((a, k) => a + Math.max(0, Math.min(x + w + m, k.r) - Math.max(x - m, k.l)) * Math.max(0, Math.min(y + h + m, k.b) - Math.max(y - m, k.t)), 0)
       // Beside the stop on either side (level, raised, lowered), or above or below it.
       const clampX = (x: number) => Math.min(Math.max(x, minX), maxX - w)
       const clampY = (y: number) => Math.min(Math.max(y, minY), maxY)
@@ -79,9 +82,12 @@ export default function CampaignTicket({
       if (!spots.length) spots.push({ x: clampX(px - GAP - w), y: clampY(py - h / 2) })
       const near = (x: number, y: number) => Math.hypot(Math.max(x - px, 0, px - x - w), Math.max(y - py, 0, py - y - h))
       // Plan items 669 and 682: one search over the places beside, above and below the stop and every place on the
-      // sheet (a 12 px grid). Covering a region name costs most, then the leader line crossing a name, then covering
+      // sheet (a 6 px grid since item 743: at 12 px a place clear of the names between Highmoor and Brindle Hills fell between rows). Covering a region name costs most, then the leader line crossing a name, then covering
       // another stop, then the map's pictures (landmarks, towers), then distance. At D chapter 1's ticket sat on
       // stop 6 and Kingsmarket's landmark, and a far place ran its leader through 'Brindle Hills'.
+      // Plan item 743: past 160 px from its stop a place costs steeply more, so the open sea under a desktop atlas (now
+      // drawn to fill its box) takes the ticket only when every near place would cover a name.
+      const far = (x: number, y: number) => 2 * Math.max(0, near(x, y) - 160) ** 2
       const stops = rects('.cmp-pin-disc')
       const own = d
       const hitsOwn = (x: number, y: number) => x < own.right - f.left + 4 && own.left - f.left - 4 < x + w && y < own.bottom - f.top + 4 && own.top - f.top - 4 < y + h
@@ -95,9 +101,9 @@ export default function CampaignTicket({
         }
         return false
       }
-      for (let y = minY; y <= maxY; y += 12) for (let x = minX; x + w <= maxX; x += 12) spots.push({ x, y })
+      for (let y = minY; y <= maxY; y += 6) for (let x = minX; x + w <= maxX; x += 6) spots.push({ x, y })
       const cost = (x: number, y: number) =>
-        (hitsOwn(x, y) ? 1e12 : 0) + 1e6 * over(names, x, y) + 1e3 * over(stops, x, y) + 1e3 * over(marks, x, y) + (leadCrosses(x, y) ? 1e6 : 0) + over(pics, x, y) + near(x, y) * 40
+        (hitsOwn(x, y) ? 1e12 : 0) + 1e6 * over(names, x, y, 0) + 1e3 * over(stops, x, y) + 1e3 * over(marks, x, y) + (leadCrosses(x, y) ? 1e6 : 0) + over(pics, x, y) + near(x, y) * 40 + far(x, y)
       let best = spots[0]!
       let score = Infinity
       for (const sp of spots) {
@@ -121,7 +127,14 @@ export default function CampaignTicket({
     // Plan item 682: and when the ticket's own size settles (fonts, the goal's wrap): placed from its first size it
     // sat over Oakvale's name.
     ro.observe(el)
-    return () => ro.disconnect()
+    // Plan item 743: and when the atlas's sheet grows to fill its box (its viewBox changes, its box doesn't)
+    const svgEl = fig.querySelector('.cmp-map-svg')
+    const mo = typeof MutationObserver === 'undefined' ? null : new MutationObserver(measure)
+    if (svgEl) mo?.observe(svgEl, { attributes: true, attributeFilter: ['viewBox'] })
+    return () => {
+      ro.disconnect()
+      mo?.disconnect()
+    }
   }, [chapter.id])
   const locked = state === 'locked'
   return (
