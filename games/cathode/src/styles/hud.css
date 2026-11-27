@@ -1647,7 +1647,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   /* C13T: no plate, no rim, no tick. A soft pool of shade under the words, so it holds over a lamp cone. */
   padding: var(--sp-2) var(--sp-4);
   color: rgb(var(--ink-rgb) / .9);
-  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .7), rgb(var(--shade-rgb) / .4) 60%, transparent);
+  /* Plan item 726: denser to the word ends (it was .4 at 60%, so 'DRAG' and 'AIM' sat on a thin edge over lamps) */
+  padding-inline: var(--sp-6);
+  background: radial-gradient(closest-side, rgb(var(--shade-rgb) / .8), rgb(var(--shade-rgb) / .68) 72%, transparent);
   transition: opacity 600ms var(--ease-out);
   pointer-events: none;
 }
