@@ -835,6 +835,30 @@ test('upright phone: the picked role, its gun and the hold in view; tabs 44 px a
   expect(m.row.bottom - m.row.top, 'the weapon row one line').toBeLessThanOrEqual(30)
   // Plan item 716: propped upright beside her, never across her (its turned box may graze her edge by its corner)
   expect(m.gun.left, 'the gun clear of her figure').toBeGreaterThanOrEqual(m.body.right - 12)
+  // Plan item 738: it stands on its butt at the box's foot (the centred 2.4:1 frame left it floating 50 px up) and
+  // the studio frame holds the whole gun (the sniper's stock ran out of the frame's edge).
+  const foot = await page.evaluate(() => {
+    const img = document.querySelector<HTMLImageElement>('.cp-gun')
+    if (!img) return null
+    const c = document.createElement('canvas')
+    c.width = img.naturalWidth
+    c.height = img.naturalHeight
+    const g = c.getContext('2d')!
+    g.drawImage(img, 0, 0)
+    const d = g.getImageData(0, 0, c.width, c.height).data
+    let x0 = c.width, x1 = -1
+    for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3]! > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x) }
+    const box = img.getBoundingClientRect()
+    // contain: the frame's long side is the box's (turned) height scaled by the frame's aspect against the box's
+    const drawn = Math.min(220, 72 * (c.width / c.height))
+    // the image is slid along its length (its translate's x) toward the foot
+    const slid = parseFloat(getComputedStyle(img).translate.split(' ')[0] ?? '0') || 0
+    return { x0, x1, w: c.width, gap: (1 - (x1 + 1) / c.width) * drawn - slid, boxBottom: box.bottom }
+  })
+  expect(foot, 'the lit gun').not.toBeNull()
+  expect(foot!.x0, 'the whole gun in the frame (left)').toBeGreaterThan(2)
+  expect(foot!.x1, 'the whole gun in the frame (right)').toBeLessThan(foot!.w - 3)
+  expect(foot!.gap, 'the gun on its foot').toBeLessThanOrEqual(12)
   expect(m.tabs).toHaveLength(5)
   for (const t of m.tabs) {
     expect(t.right - t.left, 'tab width').toBeGreaterThanOrEqual(44)

@@ -75,6 +75,51 @@ export function turntableYaw(i: number, n: number): number {
  * at a time so a slow device never stalls on the whole turn. `dispose()` drops the render target.
  */
 export class GunStudio {
+  /** The gun's projected extent over the sway's angles (normalised device x and y, -1..1), with the camera where it
+   * stands. */
+  private extent(gun: THREE.Object3D, frames: number): { x0: number; x1: number; y0: number; y1: number } {
+    const v = new THREE.Vector3();
+    const e = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+    const yaws = frames <= 1 ? [GUN_STILL_YAW] : [GUN_STILL_YAW - GUN_SWAY, GUN_STILL_YAW - GUN_SWAY / 2, GUN_STILL_YAW, GUN_STILL_YAW + GUN_SWAY / 2, GUN_STILL_YAW + GUN_SWAY];
+    this.camera.updateMatrixWorld(true);
+    for (const yaw of yaws) {
+      this.pivot.rotation.y = yaw;
+      this.pivot.updateMatrixWorld(true);
+      gun.traverseVisible((m) => {
+        const pos = (m as THREE.Mesh).isMesh ? (m as THREE.Mesh).geometry.getAttribute("position") : undefined;
+        if (!pos) return;
+        const step = Math.max(1, Math.floor(pos.count / 400));
+        for (let k = 0; k < pos.count; k += step) {
+          v.fromBufferAttribute(pos, k).applyMatrix4(m.matrixWorld).project(this.camera);
+          e.x0 = Math.min(e.x0, v.x); e.x1 = Math.max(e.x1, v.x); e.y0 = Math.min(e.y0, v.y); e.y1 = Math.max(e.y1, v.y);
+        }
+      });
+    }
+    this.pivot.rotation.y = 0;
+    return e;
+  }
+
+  /** Pan the camera so the projected gun is centred, and move it in or out until its span over the sway fills 95% of
+   * the frame's width or 90% of its height, whichever binds first. */
+  private fitByVertices(gun: THREE.Object3D, dist: number, frames: number): void {
+    const halfH = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    const halfW = halfH * this.camera.aspect;
+    let ox = 0;
+    let oy = 0;
+    for (let tries = 0; tries < 6; tries++) {
+      const e = this.extent(gun, frames);
+      const fill = Math.max((e.x1 - e.x0) / 2 / 0.95, (e.y1 - e.y0) / 2 / 0.9);
+      // Shift the aim by the projection's off-centre, in world units at the pivot's distance.
+      ox += ((e.x0 + e.x1) / 2) * halfW * dist;
+      oy += ((e.y0 + e.y1) / 2) * halfH * dist;
+      const done = Math.abs(fill - 1) < 0.01 && Math.abs(e.x0 + e.x1) < 0.01 && Math.abs(e.y0 + e.y1) < 0.01;
+      dist *= fill;
+      this.camera.position.set(ox, oy + dist * 0.22, dist);
+      this.camera.lookAt(ox, oy, 0);
+      if (done) return;
+    }
+  }
+
   private readonly scene = new THREE.Scene();
   private readonly pivot = new THREE.Group();
   private readonly camera: THREE.PerspectiveCamera;
@@ -113,6 +158,11 @@ export class GunStudio {
     const dist = Math.max((long * 0.5) / (halfW * 0.92), (size.y * 0.5) / (halfH * 0.8)) + depth * 0.5;
     this.camera.position.set(0, dist * 0.22, dist);
     this.camera.lookAt(0, 0, 0);
+    // Plan item 738: the estimate above counts the gun's width as its depth, but at the three-quarter the stock end
+    // stands about a fifth of its length nearer the lens and grows with perspective: the sniper's stock ran out of the
+    // frame's right edge (alpha to x 719 of 720). Step back until every vertex, at the still angle and both ends of
+    // the sway, projects inside 95% of the frame's width and 90% of its height.
+    this.fitByVertices(gun, dist, o.frames);
 
     const rimColour = new THREE.Color(o.rim[0], o.rim[1], o.rim[2]);
     // Plan item 334: a harder key over a lower fill, so the lit and shadow faces part by 35%+ in lightness. Plan item

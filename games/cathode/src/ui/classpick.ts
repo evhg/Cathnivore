@@ -568,7 +568,11 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
         img.decoding = "sync";
         img.src = reel.frames[0]!;
         let k = 0;
-        if (!still && reel.total > 1) {
+        // Plan item 738: on an upright phone the gun stands propped on its butt beside her: a gun turning in place
+        // there read as floating, so it holds its still three-quarter.
+        const propped = window.matchMedia?.("(max-width: 700px) and (orientation: portrait)").matches ?? false;
+        if (propped) standOnFoot(img);
+        if (!still && !propped && reel.total > 1) {
           reelTimer = window.setInterval(() => {
             // Hold on the last shot frame while the reel is still filling; loop once it's whole.
             const next = k + 1 >= reel.total ? 0 : k + 1;
@@ -838,4 +842,31 @@ export function openClassPick(host: HTMLElement, onPick: (cls: ClassId) => void,
       prevFocus?.focus?.();
     },
   };
+}
+
+/**
+ * Plan item 738: on an upright phone the lit gun stands on its butt at its box's foot (the frame's right end, turned
+ * down by the CSS): a short gun (the revolver) centred in its 2.4:1 frame stood 41 px clear of it. Its drawn right
+ * edge is read from the frame's alpha and the image is slid along its length by the gap.
+ */
+function standOnFoot(img: HTMLImageElement): void {
+  const fit = () => {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!w || !h) return;
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    if (!g) return;
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, w, h).data;
+    let right = -1;
+    for (let x = w - 1; x >= 0 && right < 0; x--) for (let y = 0; y < h; y += 2) if (d[(y * w + x) * 4 + 3]! > 40) { right = x; break; }
+    if (right < 0) return;
+    const drawn = Math.min(img.offsetWidth, img.offsetHeight * (w / h));
+    img.style.translate = `${((1 - (right + 1) / w) * drawn).toFixed(1)}px 0`;
+  };
+  if (img.complete && img.naturalWidth) fit();
+  else img.addEventListener("load", fit, { once: true });
 }
