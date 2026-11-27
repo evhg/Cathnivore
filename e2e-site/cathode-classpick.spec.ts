@@ -534,6 +534,15 @@ test('at D the classes are a lit rack with no empty band under them; keys move t
     expect(r.roleFont).toBeGreaterThanOrEqual(14)
   }
   expect(new Set(rack.map((r) => r.text)).size).toBe(5)
+  // Plan item 743: every name's letters end 8 px or more before its gun's box (GUNSLINGER ran 24 px into it)
+  const gaps = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('.cp-opt')].map((r) => {
+      const range = document.createRange()
+      range.selectNodeContents(r.querySelector('.cp-opt-name')!)
+      return { cls: r.dataset.cls, gap: r.querySelector('.cp-opt-gear')!.getBoundingClientRect().left - range.getBoundingClientRect().right }
+    }),
+  )
+  for (const g of gaps) expect(g.gap, `${g.cls}'s name to its gun`).toBeGreaterThanOrEqual(8)
   // The gap from the last row to the first of her words, in the left column (x 0-560).
   const wordsTop = await page.evaluate(() => {
     const tops = [...document.querySelectorAll<HTMLElement>('.cp-words > *')]
