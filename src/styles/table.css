@@ -3529,6 +3529,20 @@ html.no-animations .table-cath-line { animation: none; }
 @media (min-width: 1240px) and (min-height: 760px) and (max-height: 820px) {
   .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family) { --lift-scale: 1.76; }
 }
+/* Plan item 731: on a tall desktop (861 px+) the resting hand shows its painted cards: 132 px cards with a 68 px
+   window (60 px for a tight name), not item 664's 102 px tray of slivers; the board keeps 55%+ of the screen
+   (hand-rest e2e). A picked-up card is 4 px taller, so a name measured at rest (data-tight) has the same room held,
+   and its lift is scaled to the same ~230 px held height. */
+@media (min-width: 1240px) and (min-height: 861px) {
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item { --rest-h: 132px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family) { --art-h: 68px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):has(> button[data-tight]) { --art-h: 60px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:is(:hover, :has(:focus-visible)) { height: 136px; }
+  .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family) { --lift-scale: 1.7; }
+  /* the board's foot rose 30 px with the hand, and Cath with it: her bubble settles 26 px onto her hair (never her face,
+     table-cath-face) so it stays under the market event's ticket */
+  .game:has(.table-head.with-table-cath) .table-cath .table-cath-line { margin-bottom: -26px; z-index: var(--z-raised); }
+}
 @media (min-width: 1240px) and (min-height: 760px) {
   /* Plan item 320: in rows the picture runs full-bleed down the card's left side, half its width. */
   .game-layout .table-hand[data-rows] .action-item { --win: clamp(56px, calc(var(--hand-card-w, 214px) * .5 - 16px), 104px); }

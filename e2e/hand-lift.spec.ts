@@ -43,6 +43,7 @@ test('the desktop hand card held up to read', async ({ page }, testInfo) => {
       expect([after.x, after.y, after.width, after.height], `${at}: the board stays`).toEqual([before.x, before.y, before.width, before.height])
     }
     await page.mouse.move(5, 5)
-    await expect.poll(() => cards.evaluateAll((els) => Math.max(...els.map((e) => e.getBoundingClientRect().height)))).toBeLessThanOrEqual(140)
+    // ...and drops back to the resting tray (item 731: 132 px cards on a tall desktop, item 664's 102 px below 861 px)
+    await expect.poll(() => cards.evaluateAll((els) => Math.max(...els.map((e) => e.getBoundingClientRect().height)))).toBeLessThanOrEqual(height > 860 ? 150 : 140)
   }
 })
