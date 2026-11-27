@@ -6896,7 +6896,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
 
-## 733. [ ] Cathnivore: Hollowell looks like Hollowell on the table *(lane A, in progress)*
+## 733. [x] Cathnivore: Hollowell looks like Hollowell on the table *(done 2026-11-27 14:12, lane A, 39730d3a, 65adedee, 5b1f347d. Measured first: the gloss gradient, specular strokes, chrome rim and offset deep side were already there (items 282, 425, 525), but the orange face sat 1.4-1.7:1 on the light land fills (3.3-3.6:1 dark). Built: (1) the moulding's deep edge (`--hollowell-ink`) all round the Outlet's and Buyout's silhouette, 5-6:1 on light land, with a cold specular band raked across each face; (2) a region holding 3+ Outlets under a cold fluorescent wash (cool gradient, screen blend) and a lit cyan-white rim (`data-corp-wash`); (3) the Outlet leads its pieces: once a tile is laid out its slot alone grows up to 1.3x while everything still fits (`boostOutlet`). Closed by measurement/decision: Squeeze/Expand are already linear (`sq-shake`) and the pieces' drops already on `--ease-corp` (no overshoot); the plan panel and the phone plan strip are already glossy acrylic, not cream. Sizes: uncrowded hexes draw the Outlet 50-53 px at D and 29-30 at P; a hex holding all three of Hollowell's kinds, stalls and a landmark keeps it at 40-42 D / 24 P, since growing it further would push the stalls under MIN_STALL_PX or the landmark (item 341). e2e corp-wash (new, P and D), unit piece-layout (new case). Local piece-art D round 6 fails also on the unchanged build (median 37.1 against 39; CI passed it). Shots scratchpad s733 before/a1-a3/dark.)*
 - **Why:** critique 2026-11-27 13:25 (shots e2e/screenshots/plan1127b2, cath-game-D 560-1140 x 120-650): Hollowell's Outlets are small orange icons in the same flat ink as the producers' pieces. VISION's art direction makes the corporations glossy, plastic, over-lit and clinical against the players' paper and ink; that contrast is the joke and the design system, and the table doesn't show it. The Hollowell plan panel (1135-1345 x 15-255) is cream cards like the players'. **Measure first:** the Outlet and Buyout pieces' drawn size and contrast on their region at P and D.
 - **Build:**
   - Outlets and Buyouts redrawn as glossy kiosks: a plastic gradient, a specular band, a cold white rim and a hard drop shadow.
@@ -6909,7 +6909,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - piece-art, board-pieces and critique177 pass. Shots P and D.
 - **Size:** 2
 
-## 734. [ ] Runnel phone: a crisp, legible pipe board
+## 734. [ ] Runnel phone: a crisp, legible pipe board *(lane A, in progress)*
 - **Why:** critique 2026-11-27 13:25 (runnel-P 0-390 x 260-640): at 390 wide the pipes look soft, brown on tan, barely apart from the dry crop tiles; connected and unconnected runs are hard to tell before the water flows (VISION 2 'big, rich, legible', 6 'pixel-crisp at every size'). **Measure first** at 390x844 at 3x: is the board SVG or a scaled raster, the pipe stroke in CSS px, and pipe against tile contrast.
 - **Build:**
   - Pipes drawn as crisp vector strokes at the device's pixel ratio.
