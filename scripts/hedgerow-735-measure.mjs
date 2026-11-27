@@ -49,6 +49,37 @@ for (const level of (process.env.LEVELS ?? '1,12,27,34').split(',').map(Number))
       return { lum: Math.round((L / n) * 1000) / 1000, sat: Math.round((S / n) * 1000) / 1000 }
     }, png.toString('base64'))
     console.log(tag, level, n, 'lum', JSON.stringify(lum))
+    // The same over the plots alone: a 7x7 px patch at each empty plot's centre (off the lanes), so P and D compare
+    // like with like whatever the framing puts in the middle.
+    const plots = await p.evaluate(async (b64) => {
+      const h = window.hedgerow, g = h.game(), lv = g.level
+      const road = new Set([...lv.path, ...(lv.path2 ?? [])].map(([c, r]) => `${c},${r}`))
+      const busy = new Set(g.towers.map((t) => `${t.col},${t.row}`))
+      const img = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob())
+      const cv = new OffscreenCanvas(img.width, img.height)
+      const x = cv.getContext('2d')
+      x.drawImage(img, 0, 0)
+      const k = img.width / innerWidth
+      const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }
+      let L = 0, S = 0, n = 0
+      for (let r = 0; r < lv.rows; r++)
+        for (let c = 0; c < lv.cols; c++) {
+          if (road.has(`${c},${r}`) || busy.has(`${c},${r}`)) continue
+          const q = h.cellCenter(c, r)
+          if (!q) continue
+          const px = Math.round(q.x * k), py = Math.round(q.y * k)
+          if (px < 4 || py < 4 || px > img.width - 4 || py > img.height - 4) continue
+          const d = x.getImageData(px - 3, py - 3, 7, 7).data
+          for (let i = 0; i < d.length; i += 4) {
+            L += 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2])
+            const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2])
+            S += mx ? (mx - mn) / mx : 0
+            n++
+          }
+        }
+      return { lum: Math.round((L / n) * 1000) / 1000, sat: Math.round((S / n) * 1000) / 1000, px: n }
+    }, png.toString('base64'))
+    console.log(tag, level, n, 'plots', JSON.stringify(plots))
     await ctx.close()
   }
 await b.close()
