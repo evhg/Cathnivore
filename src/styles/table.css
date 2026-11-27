@@ -3296,6 +3296,10 @@ html.no-animations .table-cath-line { animation: none; }
     .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-label { font-size: var(--fs-small); line-height: 1.2; }
     .game-layout .table-hand:not([data-rows]) .action-item:not([data-dense]) .action-pick { font-size: var(--fs-caption); }
     .game-layout .table-hand:not([data-rows]) .action-item[data-dense] .action-label { font-size: var(--fs-caption); }
+    /* plan item 722: a name that fits its band (not measured tight) reads 16 px; a tight two-line name keeps 15/14 so
+       it and its pick line stay on the 102 px resting face */
+    .game-layout .table-hand:not([data-rows]) .action-item:not(:has(> button[data-tight])) .action-label { font-size: 1rem; line-height: 1.15; }
+    .game-layout .table-hand:not([data-rows]) .action-item.action-item:not(.action-family):not(:has(> button[data-tight])):has(.action-pick) .action-label { margin-top: calc(var(--art-h) + 5px); }
   }
   .game-layout .table-hand .action-item .action-label > svg {
     width: 30px;
@@ -5418,7 +5422,8 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   }
   .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-label {
     margin-top: calc(var(--art-h) + 4px);
-    font-size: 0.875rem;
+    /* plan item 722: 15 px names (was 14; --fs-small is 14 px at a 390 phone) */
+    font-size: .9375rem;
     line-height: 1.08;
   }
   .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost {
