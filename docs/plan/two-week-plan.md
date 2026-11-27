@@ -6877,7 +6877,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - Shots P and D.
 - **Size:** 2
 
-## 731. [ ] Cathnivore D: the resting hand shows its painted cards
+## 731. [ ] Cathnivore D: the resting hand shows its painted cards *(lane A, in progress)*
 - **Why:** critique 2026-11-27 (cath-game-D 345-1330 x 770-890): at rest the hand reads as a strip of slivers, its art windows about 40 px. The painted art of item 722 shows only when a card is held up (item 701). **Measure first**: the resting card and art heights, and any card cut by the viewport, at 1440x900 and 1280x800.
 - **Build:** a resting hand tall enough to show each scene: art 60 px+ and cards 130 px+ at 1440x900, the fan overlapping 12% or less. Item 664's tray height is traded against the board's size: keep the board 55%+ of the viewport's area.
 - **Accept:**
