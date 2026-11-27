@@ -2147,6 +2147,8 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
     bottom: auto;
     min-width: 0;
     margin-right: -24px;
+    /* Plan item 743: the crates at her foot stand on a strip of floor, not on the window's edge (read as her cut off) */
+    margin-bottom: 20px;
   }
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-header-cath { height: var(--cmp-host-h); }
   .campaign-screen > .cmp-map > .cmp-map-host .cmp-cath-line { width: auto; margin: 0; align-self: stretch; }

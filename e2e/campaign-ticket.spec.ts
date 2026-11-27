@@ -81,3 +81,18 @@ test("desktop campaign: no chapter's ticket covers the compass or the cartouche"
     }
   }
 })
+
+// Plan item 743 (critique 2026-11-27 18:30): the crates at Cath's foot met the window's bottom edge, so she read as cut off.
+test('desktop campaign: Cath and her crates stand clear of the window\'s foot', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Campaign', { exact: false }).first().click()
+    await page.getByRole('heading', { name: 'Campaign' }).waitFor()
+    for (const sel of ['.cmp-map-host .produce-crates', '.cmp-map-host .cmp-header-cath']) {
+      const r = await page.locator(sel).boundingBox()
+      expect(r!.y + r!.height, `${width}x${height} ${sel}'s foot`).toBeLessThanOrEqual(height - 16)
+    }
+  }
+})
