@@ -6935,7 +6935,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - hedgerow-3dframe passes. Shots P and D.
 - **Size:** 2
 
-## 736. [ ] Hedgerow 2D late waves: the convoy and the numbers stay readable
+## 736. [ ] Hedgerow 2D late waves: the convoy and the numbers stay readable *(lane A, in progress)*
 - **Why:** critique 2026-11-27 13:25: at level 34 the beehive, stall, hedge and duck pond sit on the road junction and lorries pass under the hedge sprite (hedge-l34-2d-D 320-660 x 740-880; P 90-480 x 1030-1180), a '+68' pill over a lorry; two '+107' floats stack side by side (l34-2d-P 165-320 x 818-892), '+9' sits on a scarecrow by '+172' (l27-2d-P), and '+1'/'+9' chips are cut at the left edge (l27-2d-P 20-125 x 495-545; l34-2d-P 50-85 x 1010-1040) (VISION 3 and 6). **Measure first:** is that set dressing or tower art, and do the floats come from one tower or two.
 - **Build:**
   - Vehicles draw above towers and set dressing on the road, with an ink outline (or the dressing kept off road tiles).
