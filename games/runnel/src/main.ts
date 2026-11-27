@@ -2013,6 +2013,31 @@ function bareBedSvg(state: string): string {
   }</svg>`
 }
 
+/** Plan item 725: one figure on the almanac page: its drawing, its number in the display face and a word under it. */
+function railFigure(cls: string, label: string, art: string, value: string, word: string): HTMLDivElement {
+  const div = document.createElement('div')
+  div.className = cls
+  div.setAttribute('role', 'img')
+  div.setAttribute('aria-label', label)
+  div.innerHTML = `<span class="al-art" aria-hidden="true">${art}</span><b class="num" aria-hidden="true">${value}</b><span aria-hidden="true">${word}</span>`
+  return div
+}
+/** Seven pressed flowers, one for each day of the streak (a week's worth); the rest only their faint pencil outline. */
+function pressedFlowers(streak: number): string {
+  const kept = Math.min(7, streak)
+  const flowers = Array.from({ length: 7 }, (_, i) => {
+    const x = 9 + i * 18
+    const rot = ((i * 47) % 50) - 25
+    const petals = Array.from({ length: 5 }, (_, k) => `<ellipse cx="0" cy="-4.6" rx="3" ry="4.6" transform="rotate(${k * 72})"/>`).join('')
+    return `<g class="pf${i < kept ? ' kept' : ''}" data-n="${i % 3}" transform="translate(${x} 10) rotate(${rot})">${i < kept ? '<path class="pf-stem" d="M0 3 Q2 8 0 13"/>' : ''}${petals}<circle class="pf-eye" r="2"/></g>`
+  }).join('')
+  return `<svg class="pressed" viewBox="0 0 126 24">${flowers}</svg>`
+}
+const CAN_SVG =
+  '<svg viewBox="0 0 32 24"><path class="can-body" d="M8 8h13l-1.5 13h-10z"/><path class="can-spout" d="M20 12l9-6"/><path class="can-rose" d="M27.5 3.5l3.5 2-2 3.5z"/><path class="can-handle" d="M10 8q4.5-7 9 0"/><path class="can-drop" d="M30 11q1 2 0 3q-1-1 0-3z"/></svg>'
+const ROSETTE_SVG =
+  '<svg viewBox="0 0 24 24"><path class="ros-tail" d="M9 13l-3 10 4-2 2 3 1-10zM15 13l3 10-4-2-2 3-1-10z"/><circle class="ros-frill" cx="12" cy="10" r="8.5"/><circle class="ros-eye" cx="12" cy="10" r="5"/></svg>'
+
 // Plan item 158: the almanac page (desktop rail) shows the weather, so the foot hint needn't say it again.
 function almanacShown(): boolean {
   const head = document.getElementById('almanac-head')
@@ -2052,23 +2077,26 @@ function renderRail(): void {
     $<HTMLParagraphElement>('al-note').textContent = beaNote(arcLabel(today))
   }
   const s = dailyStats(data, today)
-  const figs: Array<[string, string]> = [
-    [String(s.streak), 'current streak'],
-    [String(s.played), 'dailies solved'],
-    [String(s.maxStreak), 'best streak'],
-  ]
+  // Plan item 725: the figures are drawn on the almanac's page, not set in form circles: the streak as a row of Bea's
+  // pressed flowers (one pressed for each day kept, up to a week), the dailies watered as a can with its count, the
+  // best streak as a ribbon rosette. Each carries its words as its accessible name.
   $<HTMLDivElement>('rail-figures').replaceChildren(
-    ...figs.map(([v, label]) => {
-      const div = document.createElement('div')
-      const b = document.createElement('b')
-      b.className = 'num'
-      b.textContent = v
-      const span = document.createElement('span')
-      span.textContent = label
-      div.append(b, span)
-      return div
+    railFigure('al-streak', `Current streak: ${s.streak} day${s.streak === 1 ? '' : 's'}`, pressedFlowers(s.streak), `${s.streak}`, s.streak === 1 ? 'day kept' : 'days kept'),
+    railFigure('al-solved', `Dailies solved: ${s.played}`, CAN_SVG, `${s.played}`, 'watered'),
+    railFigure('al-best', `Best streak: ${s.maxStreak} day${s.maxStreak === 1 ? '' : 's'}`, ROSETTE_SVG, `${s.maxStreak}`, 'best run'),
+  )
+  // ...and the fold's tab is the week as a strip of the days' beds (a solved day's crop, today's seed packet), not a
+  // select-like bar with a caret.
+  $<HTMLSpanElement>('rail-more-week').replaceChildren(
+    ...weekBeds(today, data.results).map((b) => {
+      const i = document.createElement('i')
+      i.className = `mw mw-${b.state}`
+      i.innerHTML = `${b.plot ? cropSvg(b.plot.crop, b.plot.stage) : '<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="21" rx="10" ry="4.5"/></svg>'}<b aria-hidden="true">${b.short.slice(0, 1)}</b>`
+      return i
     }),
   )
+  const solvedThisWeek = weekBeds(today, data.results).filter((b) => b.plot).length
+  $<HTMLSpanElement>('rail-more-week').setAttribute('aria-label', `This week: ${solvedThisWeek} of 7 days watered`)
   const cells: HTMLElement[] = []
   for (let i = 27; i >= 0; i--) {
     const day = new Date(Date.parse(`${today}T00:00:00Z`) - i * 86_400_000).toISOString().slice(0, 10)
