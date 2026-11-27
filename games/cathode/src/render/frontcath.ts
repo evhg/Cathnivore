@@ -1087,7 +1087,11 @@ export function buildFrontCath(phone: boolean): FrontCath {
       const [r1, y1] = coatUp[i]!;
       if (y <= y1) {
         const [r0, y0] = coatUp[i - 1]!;
-        return r0 + ((r1 - r0) * (y - y0)) / (y1 - y0 || 1);
+        // The most the folds below swell it there: the belt's gathers (6.5% at the belt) and the skirt's drape.
+        const nearBelt = Math.abs(y - 0.12);
+        const depth = Math.min(1, Math.max(0, (0.08 - y) / 0.5));
+        const swell = 1 + (nearBelt < 0.11 ? 0.065 * (1 - nearBelt / 0.11) : 0) + 0.3 * depth * depth;
+        return (r0 + ((r1 - r0) * (y - y0)) / (y1 - y0 || 1)) * swell;
       }
     }
     return 0;
