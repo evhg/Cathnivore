@@ -3952,13 +3952,13 @@ body[data-mode='practice'] #week-slot {
   .vl-focus { pointer-events: none; }
   .vl-focus-in { stop-color: var(--bank-shade); stop-opacity: 0; }
   .vl-focus-out { stop-color: var(--bank-shade); stop-opacity: .3; }
-  .vl-sky-top { stop-color: color-mix(in srgb, var(--vl-sky-top, var(--band)) var(--vk), var(--paper)); }
-  .vl-sky-low { stop-color: color-mix(in srgb, var(--vl-sky-low, var(--band-2)) var(--vk), var(--paper)); }
-  .vl-hill-far { fill: color-mix(in srgb, var(--vl-far, var(--lip-meadow)) var(--vk), var(--paper)); }
+  .vl-sky-top { stop-color: color-mix(in srgb, var(--vl-sky-top, var(--band)) var(--vk), var(--vk-to, var(--paper))); }
+  .vl-sky-low { stop-color: color-mix(in srgb, var(--vl-sky-low, var(--band-2)) var(--vk), var(--vk-to, var(--paper))); }
+  .vl-hill-far { fill: color-mix(in srgb, var(--vl-far, var(--lip-meadow)) var(--vk), var(--vk-to, var(--paper))); }
   .vl-hill-near,
-  .vl-g-near { fill: color-mix(in srgb, var(--vl-near, var(--lip-meadow)) var(--vk), var(--paper)); stop-color: color-mix(in srgb, var(--vl-near, var(--lip-meadow)) var(--vk), var(--paper)); }
-  .vl-g-meadow { stop-color: color-mix(in srgb, var(--vl-meadow, var(--lip-meadow)) var(--vk), var(--paper)); }
-  .vl-g-low { stop-color: color-mix(in srgb, var(--vl-meadow-low, var(--lip-meadow)) var(--vk), var(--paper)); }
+  .vl-g-near { fill: color-mix(in srgb, var(--vl-near, var(--lip-meadow)) var(--vk), var(--vk-to, var(--paper))); stop-color: color-mix(in srgb, var(--vl-near, var(--lip-meadow)) var(--vk), var(--vk-to, var(--paper))); }
+  .vl-g-meadow { stop-color: color-mix(in srgb, var(--vl-meadow, var(--lip-meadow)) var(--vk), var(--vk-to, var(--paper))); }
+  .vl-g-low { stop-color: color-mix(in srgb, var(--vl-meadow-low, var(--lip-meadow)) var(--vk), var(--vk-to, var(--paper))); }
   .vl-f-crop { fill: color-mix(in srgb, var(--vl-crop) var(--vk), var(--paper)); }
   .vl-f-wheat { fill: color-mix(in srgb, var(--vl-wheat) var(--vk), var(--paper)); }
   .vl-f-fallow { fill: color-mix(in srgb, var(--vl-fallow) var(--vk), var(--paper)); }
@@ -5172,10 +5172,16 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
    moved the kept crops' hue 47 degrees at the solve). */
 @media (min-width: 1100px) and (min-height: 640px) {
   .stage:not(:has(.board.won)) .valley { --vk: 64%; }
-  .stage:not(:has(.board.won)) .vl-focus-out { stop-color: color-mix(in srgb, var(--bank-shade) 55%, var(--vl-sky-top, var(--bank-shade))); }
+  /* Plan item 741: ...toward a golden-hour straw, not the grey paper: the dry valley read a desaturated grey-violet
+     (mean chroma 12 against the solved valley's 35, plan1127c) for the minutes a player looks at it before the solve.
+     The sky, hills and ground only: the plots keep the paper haze (tinting them moved the kept crops' hue, item 704). */
+  .stage:not(:has(.board.won)) .valley { --vk-to: color-mix(in srgb, var(--dry-field) 45%, var(--sky-golden)); }
+  /* Plan item 741: the edge shade half the day's sky and half golden straw (still item 704's sky, warmer), so the
+     valley's rim reads long late shadow, not a grey band */
+  .stage:not(:has(.board.won)) .vl-focus-out { stop-color: color-mix(in srgb, var(--bank-shade) 38%, color-mix(in srgb, var(--vl-sky-top, var(--sky-golden)) 50%, var(--sky-golden))); }
 }
 @media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: dark) {
-  .stage:not(:has(.board.won)) .valley { --vk: 22%; }
+  .stage:not(:has(.board.won)) .valley { --vk: 22%; --vk-to: var(--paper); }
   .stage:not(:has(.board.won)) .vl-focus-out { stop-color: var(--bank-shade); }
 }
 
