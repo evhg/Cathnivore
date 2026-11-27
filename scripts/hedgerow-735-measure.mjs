@@ -66,7 +66,7 @@ for (const level of (process.env.LEVELS ?? '1,12,27,34').split(',').map(Number))
         for (let c = 0; c < lv.cols; c++) {
           if (road.has(`${c},${r}`) || busy.has(`${c},${r}`)) continue
           const q = h.cellCenter(c, r)
-          if (!q) continue
+          if (!q || document.elementFromPoint(q.x, q.y)?.id !== 'canvas') continue
           const px = Math.round(q.x * k), py = Math.round(q.y * k)
           if (px < 4 || py < 4 || px > img.width - 4 || py > img.height - 4) continue
           const d = x.getImageData(px - 3, py - 3, 7, 7).data

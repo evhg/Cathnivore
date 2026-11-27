@@ -232,3 +232,68 @@ for (const level of [1, 12, 27, 34]) {
     for (const d of depots) expect(d.inside, JSON.stringify(d.box)).toBeGreaterThanOrEqual(0.98)
   })
 }
+
+// Plan item 735: the phone's 3D field isn't washed out against D. The mean linear luminance of the empty plots (a
+// 7x7 px patch at each one's centre, off the lanes and clear of the HUD) sits within 10% of the desktop's at levels 1, 12 and 27; at 34
+// the flood meadow's crops fill most of each plot's patch and the bound is 15%.
+type HGL = HGF & { cellCenter(c: number, r: number): { x: number; y: number } | null; noCloudShadows3d(): boolean }
+async function plotLuminance(page: import('@playwright/test').Page, level: number, shot: string): Promise<number> {
+  await page.goto('/hedgerow/?sandbox=1')
+  await page.evaluate((l) => {
+    const stars: Record<string, number> = {}
+    for (let i = 1; i < l; i++) stars[String(i)] = 3
+    localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+  }, level)
+  await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HGF }).hedgerow?.depotFrames()?.length, null, { timeout: 90_000 })
+  await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HGF }).hedgerow.camSettled()), { timeout: 60_000 }).toBe(true)
+  // The drifting cloud shadows off, so the sampled frame doesn't depend on when it was taken.
+  await page.evaluate(() => (window as unknown as { hedgerow: HGL }).hedgerow.noCloudShadows3d())
+  await page.waitForTimeout(2000)
+  const png = (await page.screenshot({ path: shot, timeout: 120_000 })).toString('base64')
+  return page.evaluate(async (b64) => {
+    type G = { level: { path: Array<[number, number]>; path2?: Array<[number, number]>; rows: number; cols: number }; towers: Array<{ col: number; row: number }> }
+    const h = (window as unknown as { hedgerow: HGL }).hedgerow
+    const g = h.game() as G
+    const lv = g.level
+    const skip = new Set([...lv.path, ...(lv.path2 ?? []), ...g.towers.map((t) => [t.col, t.row] as [number, number])].map(([c, r]) => `${c},${r}`))
+    const img = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob())
+    const x = new OffscreenCanvas(img.width, img.height).getContext('2d')!
+    x.drawImage(img, 0, 0)
+    const k = img.width / innerWidth
+    const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    let L = 0
+    let n = 0
+    for (let r = 0; r < lv.rows; r++)
+      for (let c = 0; c < lv.cols; c++) {
+        const q = skip.has(`${c},${r}`) ? null : h.cellCenter(c, r)
+        // only plots the field shows: not under the coach bubble, the tray or a label
+        if (!q || document.elementFromPoint(q.x, q.y)?.id !== 'canvas') continue
+        const px = Math.round(q.x * k)
+        const py = Math.round(q.y * k)
+        if (px < 4 || py < 4 || px > img.width - 4 || py > img.height - 4) continue
+        const d = x.getImageData(px - 3, py - 3, 7, 7).data
+        for (let i = 0; i < d.length; i += 4, n++) L += 0.2126 * lin(d[i]!) + 0.7152 * lin(d[i + 1]!) + 0.0722 * lin(d[i + 2]!)
+      }
+    return L / n
+  }, png)
+}
+test.describe('phone plot luminance', () => {
+  // One worker: each level renders two 3D frames, and side by side they starve each other's frames.
+  test.describe.configure({ mode: 'serial' })
+  for (const [level, bound] of [[1, 0.1], [12, 0.1], [27, 0.1], [34, 0.15]] as const) {
+    test(`the phone's 3D plots read as light as the desktop's (level ${level})`, async ({ browser, page }, info) => {
+      test.skip((page.viewportSize()?.width ?? 0) > 600, 'one run: it opens both frames itself')
+      test.setTimeout(300_000)
+      const baseURL = info.project.use.baseURL
+      const phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
+      const desk = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
+      const p = await plotLuminance(await phone.newPage(), level, info.outputPath('phone.png'))
+      const d = await plotLuminance(await desk.newPage(), level, info.outputPath('desk.png'))
+      await phone.close()
+      await desk.close()
+      console.log(`735 plots level ${level}: P ${p.toFixed(3)} D ${d.toFixed(3)}`)
+      expect(Math.abs(p - d) / d, `P ${p.toFixed(3)} D ${d.toFixed(3)}`).toBeLessThanOrEqual(bound)
+    })
+  }
+})
