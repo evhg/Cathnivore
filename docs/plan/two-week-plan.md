@@ -6896,7 +6896,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
 
-## 733. [ ] Cathnivore: Hollowell looks like Hollowell on the table
+## 733. [ ] Cathnivore: Hollowell looks like Hollowell on the table *(lane A, in progress)*
 - **Why:** critique 2026-11-27 13:25 (shots e2e/screenshots/plan1127b2, cath-game-D 560-1140 x 120-650): Hollowell's Outlets are small orange icons in the same flat ink as the producers' pieces. VISION's art direction makes the corporations glossy, plastic, over-lit and clinical against the players' paper and ink; that contrast is the joke and the design system, and the table doesn't show it. The Hollowell plan panel (1135-1345 x 15-255) is cream cards like the players'. **Measure first:** the Outlet and Buyout pieces' drawn size and contrast on their region at P and D.
 - **Build:**
   - Outlets and Buyouts redrawn as glossy kiosks: a plastic gradient, a specular band, a cold white rim and a hard drop shadow.
