@@ -6885,7 +6885,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - hand-lift, card-art, table-hand and critique177 pass. Shots D (P unchanged).
 - **Size:** 2
 
-## 732. [ ] The bugs from the 2026-11-27 07:30 critique, fixed as one batch *(lane A, in progress)* *(slice 1, lane A 07:35: Hedgerow D rack's range pips 4 px, 1.5 apart, so the role word ends 4 px+ clear of them (shot e2e/screenshots/plan1127b/hedge-l34-2d-D; a spec wasn't kept: in a fresh sandbox l34 the rack is shop-tight and hides the pips, item 4848's rule). Open: the rest)*
+## 732. [ ] The bugs from the 2026-11-27 07:30 critique, fixed as one batch *(handed back 2026-11-27 07:36 by lane A)* *(slice 1, lane A 07:35: Hedgerow D rack's range pips 4 px, 1.5 apart, so the role word ends 4 px+ clear of them (shot e2e/screenshots/plan1127b/hedge-l34-2d-D; a spec wasn't kept: in a fresh sandbox l34 the rack is shop-tight and hides the pips, item 4848's rule); Cathnivore campaign P closed by measurement (390x844 at 3x: all six chapter tabs whole, the 6th ending about 373 px, no stray '3' by tab 1: the critique frame caught the entrance; crop scratchpad camp-P). Open: game D Buy/Sell overlap, campaign D popover, Hedgerow l34 swarm badge over the windmill)*
 - Cathnivore game D: the Buy card overlaps Sell (490-500 x 775-885), and the Injunction text is rotated and cut at y 880 (check against item 701's fan at rest).
 - Cathnivore campaign D: the chapter popover (48-302 x 733-843) covers the compass and Oakvale's corner.
 - Cathnivore campaign P: the 6th chapter thumbnail is cut at the right edge (320-390 x 555-610), and a stray '3' shows behind thumbnail 1 (about 15, 590).
