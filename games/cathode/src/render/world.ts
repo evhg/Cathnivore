@@ -66,7 +66,7 @@ const FOG_COLOR = new THREE.Color(0.0042, 0.0058, 0.0095);
 const FOG_DENSITY = 0.019;
 /** Plan item 724: the street's people take more of the baked lamp and sign light and a rim in its colour, so the
  * near ones read as lit figures, not black cut-outs against the wet street. */
-const PEOPLE_LIGHT = { volume: 2.5, rim: 1.1 };
+const PEOPLE_LIGHT = { volume: 2.9, rim: 1.35 };
 
 export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const quality = options.quality;
