@@ -2592,6 +2592,10 @@ dialog.sheet.story #story-skip {
   color: var(--c, #fff);
   white-space: nowrap;
   text-shadow: 0 2px 0 rgba(20, 14, 10, 0.85), 0 0 8px rgba(20, 14, 10, 0.6);
+  /* Item 726: '+51' and 'Bridge up!' were pale gold on gold and white models: a dark outline under the fill, so the
+     callout reads on any model or sky. */
+  -webkit-text-stroke: calc(4px * var(--s, 1)) color-mix(in srgb, var(--ink-on-fixed-fill) 92%, transparent);
+  paint-order: stroke fill;
   will-change: transform, opacity;
 }
 .bossbar {

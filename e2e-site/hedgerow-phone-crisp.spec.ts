@@ -68,6 +68,12 @@ test('Hedgerow phone 3D: device-ratio canvas, no cut gate board, callouts off th
     const shown = (await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.callouts()))!
     const label = shown.callouts.find((c) => c.text === 'Bridge up!')
     if (!label) continue
+    // Item 726: a callout carries a dark outline under its fill, so pale gold reads on gold and white models.
+    const stroke = await page.evaluate(() => {
+      const el = document.querySelector('.floater')
+      return el ? parseFloat(getComputedStyle(el).webkitTextStrokeWidth) : 0
+    })
+    expect(stroke, 'callout outline px').toBeGreaterThanOrEqual(3)
     const over = shown.towers.filter((t) => label.x < t.x + t.w && label.x + label.w > t.x && label.y < t.y + t.h && label.y + label.h > t.y)
     expect(over, `callout from tower ${i} at ${JSON.stringify(label)}`).toEqual([])
     await page.waitForTimeout(1300)
