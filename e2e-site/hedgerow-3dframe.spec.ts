@@ -211,3 +211,24 @@ test('a 3D win settles the camera on the farmhouse (level 12, D)', async ({ page
   await page.waitForTimeout(2500)
   expect((await cam()).moving).toBe(true)
 })
+
+// Plan item 735: on a phone every depot stands whole in the opening 3D view (level 34's second depot stood a third
+// off the left edge: the lean served the first gate's depot alone).
+type HGF = HG & { depotFrames(): Array<{ box: [number, number, number, number]; inside: number }> | null; camSettled(): boolean }
+for (const level of [1, 12, 27, 34]) {
+  test(`every depot stands whole in the opening view (level ${level})`, async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 0) > 600, 'the phone frame')
+    test.setTimeout(120_000)
+    await page.goto('/hedgerow/?sandbox=1')
+    await page.evaluate((l) => {
+      const stars: Record<string, number> = {}
+      for (let i = 1; i < l; i++) stars[String(i)] = 3
+      localStorage.setItem('hedgerow:v1', JSON.stringify({ version: 3, stars, seenBefore: { [String(l)]: true }, seen: {}, tips: { all: true } }))
+    }, level)
+    await page.goto(`/hedgerow/?sandbox=1&level=${level}`)
+    await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HGF }).hedgerow?.depotFrames()?.length, null, { timeout: 90_000 })
+    await expect.poll(() => page.evaluate(() => (window as unknown as { hedgerow: HGF }).hedgerow.camSettled()), { timeout: 60_000 }).toBe(true)
+    const depots = (await page.evaluate(() => (window as unknown as { hedgerow: HGF }).hedgerow.depotFrames()))!
+    for (const d of depots) expect(d.inside, JSON.stringify(d.box)).toBeGreaterThanOrEqual(0.98)
+  })
+}

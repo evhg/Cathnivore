@@ -961,7 +961,10 @@ export class Renderer3D {
         f.z += (dz / len) * 0.25;
       }
     }
-    this.homePanX = this.leanToDepot(box);
+    // Plan item 735: lean for every depot, not the first gate's alone (level 34's second depot stood a third off the
+    // phone's left edge: item 710's step-back made room for it, but the lean never spent it).
+    const all = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? []).map((o) => new THREE.Box3().setFromObject(o)).filter((b) => !b.isEmpty());
+    this.homePanX = this.leanToDepot(all.reduce((u, b) => u.union(b), box.clone()));
     // The search moved the camera: put it back on the view the player has (item 439: the whole field by default).
     if (close) this.frameClose();
     else this.resetView();
@@ -1087,6 +1090,8 @@ export class Renderer3D {
     // Plan item 622: lean until it stands whole (was: half in, which left level 21's depot cut by the frame at D),
     // as far as the field's own edges allow.
     if (inside >= 0.98) return 0;
+    // Depots off both sides at once: no lean serves both.
+    if (d0 < 0 && d1 > w) return 0;
     // Screen px to world x at the field's middle row.
     const [a, b] = xs([[0, 0, rows / 2], [cols, 0, rows / 2]]);
     const perPx = cols / Math.max(1, b! - a!);
@@ -1329,6 +1334,23 @@ export class Renderer3D {
       if (hi > lo) side += Math.max(0, Math.min(1, lo)) + Math.max(0, 1 - Math.max(0, hi));
     }
     return side / N;
+  }
+
+  /** Plan item 735: each depot's box as the live camera projects it, in canvas CSS px ([x0, y0, x1, y1]), and how
+   *  much of it (0..1 of its projected area) the canvas holds. Tests and screenshot scripts read it. */
+  depotFrames(): Array<{ box: [number, number, number, number]; inside: number }> {
+    const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
+    return depots.map((o) => new THREE.Box3().setFromObject(o)).filter((b) => !b.isEmpty()).map((b) => {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let i = 0; i < 8; i++) {
+        const p = this.v1.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(this.camera);
+        const x = ((p.x + 1) / 2) * this.w, y = ((1 - p.y) / 2) * this.h;
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+      const iw = Math.max(0, Math.min(x1, this.w) - Math.max(x0, 0)), ih = Math.max(0, Math.min(y1, this.h) - Math.max(y0, 0));
+      const area = Math.max(1e-6, (x1 - x0) * (y1 - y0));
+      return { box: [x0, y0, x1, y1].map((v) => Math.round(v)) as [number, number, number, number], inside: Math.round(((iw * ih) / area) * 100) / 100 };
+    });
   }
 
   fieldShare(): number {
