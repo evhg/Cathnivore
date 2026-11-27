@@ -114,6 +114,9 @@ const GAIN_MERGE_PX = 120;
 const GAIN_HOLD = 0.4;
 const GAIN_LIFE = 0.7;
 const GAIN_MIN_PX = 14;
+/** Plan item 736: every number and text float stands this far (CSS px) inside the field's edge, at most MAX_FLOATS live. */
+const FIELD_MARGIN = 12;
+const MAX_FLOATS = 6;
 /** Classic levels' vehicles have no rung colour: a tint per type for the swarm badge's make-up bar. */
 /** Plan item 256: queued vehicles at the gate drawn larger than on the lane (they're parked, the round's cast). */
 const QUEUE_SCALE = 1.4;
@@ -850,6 +853,18 @@ export class Renderer {
     return this.gainDrawn.map((g) => ({ ...g }));
   }
 
+  /** Plan item 736 (tests): the text floats as drawn last frame (CSS px from the canvas corner). */
+  floatRects(): Array<{ x: number; y: number; w: number; h: number; text: string }> {
+    return this.floatDrawn.map((f) => ({ ...f }));
+  }
+
+  private floatDrawn: Array<{ x: number; y: number; w: number; h: number; text: string }> = [];
+
+  /** Plan item 736 (tests): vehicles drawn again last frame over a tower sprite that covered them. */
+  redrawn = 0;
+  /** Plan item 736 (tests): vehicles a tower sprite still covers last frame (0). */
+  underSprite = 0;
+
   private gainDrawn: Array<{ x: number; y: number; w: number; h: number; n: number; size: number }> = [];
 
   private drawGains(game: Game, dt: number, X: (v: number) => number, Y: (v: number) => number, s: number): void {
@@ -859,6 +874,11 @@ export class Renderer {
     const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     for (const g of this.gains) g.quiet += dt;
     this.gains = this.gains.filter((g) => g.quiet <= GAIN_LIFE && (g.tower === undefined || game.towers.some((tw) => tw.id === g.tower)));
+    // Plan item 736: at most MAX_FLOATS numbers (text floats included); past that the oldest fades out first.
+    const texts = this.parts.filter((p) => p.shape === "text").length;
+    for (let i = 0, over = this.gains.length + texts - MAX_FLOATS; i < this.gains.length && over > 0; i++, over--) this.gains[i]!.quiet = Math.max(this.gains[i]!.quiet, GAIN_HOLD);
+    const M = FIELD_MARGIN;
+    const merged = new Set<Gain>();
     for (const g of this.gains) {
       const text = `+${Math.floor(g.n)}`;
       const fs = Math.max(GAIN_MIN_PX, Math.round(s * (0.26 + Math.min(0.14, Math.log10(1 + g.n) * 0.06)) * g.big));
@@ -875,17 +895,32 @@ export class Renderer {
         const others = this.gains.filter((o) => o !== g && o.placed);
         const clear = (dx: number, dy: number) => {
           const b = box(g.x + dx, g.y + dy);
-          if (b.x < 2 || b.y < 2 || b.x + b.w > this.cssW - 2 || b.y + b.h > this.cssH - 2) return false;
-          if ([this.vehicleBoxes, towers, this.badgeBoxes, this.barnBoxes].some((boxes) => boxes.some((v) => overlaps(b, v)))) return false;
+          if (b.x < M || b.y < M || b.x + b.w > this.cssW - M || b.y + b.h > this.cssH - M) return false;
+          if ([this.vehicleBoxes, towers, this.badgeBoxes, this.barnBoxes, this.depotBoxes].some((boxes) => boxes.some((v) => overlaps(b, v)))) return false;
           return others.every((o) => Math.hypot(X(o.x + o.dx) - X(g.x + dx), Y(o.y + o.dy) - Y(g.y + dy)) >= GAIN_MERGE_PX);
         };
         const steps: Array<[number, number]> = [[0, 0], [0, -0.5], [0, -1], [-0.9, -0.4], [0.9, -0.4], [-1.3, 0], [1.3, 0], [0, -1.6], [0, 0.8], [-1.2, -1.2], [1.2, -1.2]];
         const ok = steps.find(([dx, dy]) => clear(dx, dy));
         if (ok) [g.dx, g.dy] = ok;
+        else {
+          // Plan item 736: nowhere clear (two '+107's stood side by side at P l34): it joins the nearest number.
+          const host = others.filter((o) => !merged.has(o)).sort((a, b) => Math.hypot(a.x - g.x, a.y - g.y) - Math.hypot(b.x - g.x, b.y - g.y))[0];
+          if (host) {
+            host.n += g.n;
+            host.quiet = Math.min(host.quiet, g.quiet);
+            merged.add(g);
+            ctx.restore();
+            continue;
+          }
+        }
       }
       const rise = this.reducedMotion ? 0 : Math.max(0, g.quiet - GAIN_HOLD) * 0.9;
-      const cx = X(g.x + g.dx);
-      const cy = Y(g.y + g.dy) - rise * s;
+      // Kept FIELD_MARGIN inside the field as it rises (l27's '+57' stood cut at the phone's left edge).
+      const cx = Math.max(M + w / 2, Math.min(this.cssW - M - w / 2, X(g.x + g.dx)));
+      let cy = Math.max(M + h / 2, Math.min(this.cssH - M - h / 2, Y(g.y + g.dy) - rise * s));
+      // and it never rises into a lane's badge or a depot (P l34's '+236' rose into the badge over Hollowell).
+      const risen = { x: cx - w / 2, y: cy - h / 2, w, h };
+      if (rise > 0 && [this.badgeBoxes, this.depotBoxes].some((boxes) => boxes.some((v) => overlaps(risen, v)))) cy = Math.max(M + h / 2, Math.min(this.cssH - M - h / 2, Y(g.y + g.dy)));
       ctx.globalAlpha = 1 - Math.max(0, (g.quiet - GAIN_HOLD) / (GAIN_LIFE - GAIN_HOLD));
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -898,9 +933,13 @@ export class Renderer {
       ctx.restore();
       this.gainDrawn.push({ x: cx - w / 2, y: cy - h / 2, w, h, n: Math.floor(g.n), size: fs });
     }
+    if (merged.size) this.gains = this.gains.filter((g) => !merged.has(g));
   }
 
   private float(x: number, y: number, text: string, color: string, big = 1): void {
+    // Plan item 736: at most MAX_FLOATS text floats; a new one retires the oldest.
+    const live = this.parts.filter((p) => p.shape === "text");
+    if (live.length >= MAX_FLOATS) live[0]!.age = live[0]!.life;
     this.parts.push({ x, y, vx: 0, vy: -0.9, g: 0, age: 0, life: 1.1, size: 0.3, color, shape: "text", rot: 0, vr: 0, text, big });
   }
 
@@ -1161,7 +1200,9 @@ export class Renderer {
     }
 
     // Sprites in depth order.
-    const items: Array<{ y: number; draw: () => void }> = [];
+    // Plan item 736: a vehicle's box (`veh`) and a tower's sprite box (`cover`): a vehicle a tower sprite drawn later
+    // covers is drawn again over it (l34's lorries passed under the hedge and the duck pond at the junction).
+    const items: Array<{ y: number; draw: () => void; veh?: Rect; cover?: Rect }> = [];
     const end = level.path[level.path.length - 1]!;
     const side = end[0] >= level.cols - 2 ? -1 : 1;
     items.push({
@@ -1210,8 +1251,12 @@ export class Renderer {
       if (age !== undefined) this.built.set(tw.id, age + dt);
       const pop = age !== undefined && age < 0.35 && !this.reducedMotion ? popScale(age / 0.35) : 1;
       this.fired.set(tw.id, since + dt);
+      const reach = towerReach(tw.kind, tw.tier, tw.path);
+      const up = Math.max(1.05, reach.up * FIELD_TOWER) * s;
+      const half = Math.max(0.5, reach.half * FIELD_TOWER) * s;
       items.push({
         y: tw.row + 0.8,
+        cover: { x: X(tw.col + 0.5) - half, y: Y(tw.row + 0.5) - up, w: half * 2, h: s * 0.5 + up },
         draw: () => {
           if (pop !== 1) {
             ctx.save();
@@ -1464,6 +1509,7 @@ export class Renderer {
       const heading = runOf(level, { dist: this.lay.slots.get(e.id)?.dist ?? e.dist, lane: e.lane ?? null });
       items.push({
         y: gy,
+        veh: this.vehicleBox(level, e, X, Y, s),
         draw: () => {
           drawEnemy(
             ctx,
@@ -1663,6 +1709,24 @@ export class Renderer {
     items.sort((a, b) => a.y - b.y);
     this.columnChips = [];
     for (const it of items) it.draw();
+    this.redrawn = 0;
+    this.underSprite = 0;
+    const meets = (v: Rect, c: Rect) => v.x < c.x + c.w && v.x + v.w > c.x && v.y < c.y + c.h && v.y + v.h > c.y;
+    const last = items.map((_, i) => i);
+    for (let i = 0; i < items.length; i++) {
+      const v = items[i]!.veh;
+      if (!v) continue;
+      if (items.slice(i + 1).some((it) => it.cover && meets(v, it.cover))) {
+        items[i]!.draw();
+        last[i] = items.length;
+        this.redrawn++;
+      }
+    }
+    // (tests) a vehicle a tower sprite drawn after its last draw still meets
+    for (let i = 0; i < items.length; i++) {
+      const v = items[i]!.veh;
+      if (v && items.some((it, j) => j > last[i]! && it.cover && meets(v, it.cover))) this.underSprite++;
+    }
     for (const chip of this.columnChips) chip();
     // Plan item 706: the pooled gains, each one "+N" that counts up while it keeps paying, then rises and fades.
     this.drawGains(game, dt, X, Y, s);
@@ -2495,7 +2559,8 @@ export class Renderer {
       const fs = Math.max(11, s * 0.24);
       ctx.font = `800 ${fs}px ${FONT}`;
       const w = ctx.measureText(label).width + fs * 0.9;
-      const cx = Math.max(4, Math.min(this.cssW - w - 4, X(p.x) + s * 0.42));
+      // Plan item 736: FIELD_MARGIN inside the field's edge (P l27's '+1' and '+9' were cut at the left).
+      const cx = Math.max(FIELD_MARGIN, Math.min(this.cssW - w - FIELD_MARGIN, X(p.x) + s * 0.42));
       const cy = Y(p.y + 0.2) - layers * s * 0.08 - fs * 0.7;
       ctx.fillStyle = "rgba(255,250,238,0.95)";
       ctx.strokeStyle = "rgba(70,48,30,0.85)";
@@ -3061,6 +3126,7 @@ export class Renderer {
 
   private drawParticles(dt: number, X: (v: number) => number, Y: (v: number) => number, s: number): void {
     const { ctx } = this;
+    this.floatDrawn = [];
     for (const p of this.parts) {
       p.age += dt;
       p.vy += p.g * dt;
@@ -3120,8 +3186,13 @@ export class Renderer {
           ctx.lineWidth = Math.max(3, size * 0.22);
           ctx.strokeStyle = "rgba(43,35,32,0.85)";
           ctx.lineJoin = "round";
-          ctx.strokeText(p.text!, X(p.x), Y(p.y));
-          ctx.fillText(p.text!, X(p.x), Y(p.y));
+          // Plan item 736: kept FIELD_MARGIN inside the field, like the gains.
+          const half = ctx.measureText(p.text!).width / 2 + size * 0.15;
+          const tx = Math.max(FIELD_MARGIN + half, Math.min(this.cssW - FIELD_MARGIN - half, X(p.x)));
+          const ty = Math.max(FIELD_MARGIN + size * 0.55, Math.min(this.cssH - FIELD_MARGIN - size * 0.55, Y(p.y)));
+          ctx.strokeText(p.text!, tx, ty);
+          ctx.fillText(p.text!, tx, ty);
+          this.floatDrawn.push({ x: tx - half, y: ty - size * 0.55, w: half * 2, h: size * 1.1, text: p.text! });
           break;
         }
         default:
