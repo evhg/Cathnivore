@@ -6994,7 +6994,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** **measure first**. A sandbox spec fills l34 with towers: no two drawn footprints intersect, none covers a lane tile; 70%+ of every vehicle sprite visible in sampled frames; hedgerow-late-labels, -readable, -convoy pass; key art re-shot if `render.ts`/`sprites.ts` change; shots P and D.
 - **Size:** 2
 
-## 743. [ ] The bugs from the 2026-11-27 18:30 critique, fixed as one batch *(lane A, in progress)*
+## 743. [ ] The bugs from the 2026-11-27 18:30 critique, fixed as one batch *(handed back 2026-11-27 19:35 by lane A after 3 slices: done: Cathnivore campaign D (Cath's crates on a 20 px floor strip; the atlas sheet and sea run down to fill the desktop box so every chapter's ticket stays on the paper, e2e campaign-ticket) and NIGHT SHIFT pick D (GUNSLINGER/WIREWITCH tight width, 8 px+ to the gun, e2e cathode-classpick). Left: the two Hedgerow bugs. Lead for the '+99'/'+29': `drawGains` in games/hedgerow/src/render.ts excludes the gain's own tower from its keep-clear boxes (`tw.id !== g.tower`), so the first spot is on its tower's hat; check whether the hedge canopy is drawn after the gains (item 736 redraws). render.ts changes need `npm run keyart hedgerow`.)*
 - Hedgerow l27 3D P (hedge-l27-3d-P 0-190 x 895-945): the '86 TO GO' depot sign is cut by the left edge.
 - Hedgerow 2D P (hedge-l34-2d-P 255-310 x 818-850, hedge-l27-2d-P 405-470 x 875-905): '+99' / '+29' sit on the scarecrow's hat and under the hedge canopy.
 - Cathnivore campaign D (cath-campaign-D 785-925 x 860-900): Cath cut by the bottom edge; (155-410 x 735-840) the 'Chapter 1 / Play' card spills past the map's torn frame.
