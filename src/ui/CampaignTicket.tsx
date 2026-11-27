@@ -58,6 +58,9 @@ export default function CampaignTicket({
           .map((r) => ({ l: r.left - f.left, t: r.top - f.top, r: r.right - f.left, b: r.bottom - f.top }))
       const names = rects('.cmp-map-name')
       const pics = rects('.cmp-landmark, .cmp-tower')
+      // Plan item 732: the atlas's own marks (the compass rose, the cartouche) are kept clear like a stop: at D chapter 1's
+      // ticket sat over the compass and Oakvale's corner.
+      const marks = rects('.cmp-compass, .cmp-cartouche')
       // the ticket is turned 1 degree: its corners reach about 4 px past its box
       const over = (list: Rect[], x: number, y: number) =>
         list.reduce((a, k) => a + Math.max(0, Math.min(x + w + 4, k.r) - Math.max(x - 4, k.l)) * Math.max(0, Math.min(y + h + 4, k.b) - Math.max(y - 4, k.t)), 0)
@@ -94,7 +97,7 @@ export default function CampaignTicket({
       }
       for (let y = minY; y <= maxY; y += 12) for (let x = minX; x + w <= maxX; x += 12) spots.push({ x, y })
       const cost = (x: number, y: number) =>
-        (hitsOwn(x, y) ? 1e12 : 0) + 1e6 * over(names, x, y) + 1e3 * over(stops, x, y) + (leadCrosses(x, y) ? 1e6 : 0) + over(pics, x, y) + near(x, y) * 40
+        (hitsOwn(x, y) ? 1e12 : 0) + 1e6 * over(names, x, y) + 1e3 * over(stops, x, y) + 1e3 * over(marks, x, y) + (leadCrosses(x, y) ? 1e6 : 0) + over(pics, x, y) + near(x, y) * 40
       let best = spots[0]!
       let score = Infinity
       for (const sp of spots) {

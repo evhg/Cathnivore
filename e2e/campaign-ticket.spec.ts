@@ -52,3 +52,32 @@ test('desktop campaign: the chapter ticket is pinned beside its stop and follows
   await expect(ticket).toHaveAttribute('data-chapter', await page.locator('.cmp-pennant').nth(3).getAttribute('data-chapter') as string)
   await expect(page.locator('.cmp-pennant.is-chosen')).toHaveCount(1)
 })
+
+// Plan item 732 (critique 2026-11-27 07:30): at D chapter 1's ticket sat over the atlas's compass rose. Every chapter's
+// ticket keeps clear of the compass and the cartouche (10% of either's box at most).
+test("desktop campaign: no chapter's ticket covers the compass or the cartouche", async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Campaign', { exact: false }).first().click()
+    await page.getByRole('heading', { name: 'Campaign' }).waitFor()
+    const ids = await page.locator('.cmp-pin[data-chapter]').evaluateAll((els) => els.map((e) => e.getAttribute('data-chapter')!))
+    for (const id of ids) {
+      await page.locator(`.cmp-pin[data-chapter="${id}"] .cmp-pin-disc`).hover()
+      await expect(page.locator('.cmp-ticket')).toHaveAttribute('data-chapter', id)
+      await page.waitForTimeout(500)
+      const hit = await page.evaluate(() => {
+        const t = document.querySelector('.cmp-ticket')!.getBoundingClientRect()
+        // the share of each mark's box under the ticket (a corner grazing the compass's box leaves the rose itself clear)
+        return Math.max(...[...document.querySelectorAll('.campaign-screen > .cmp-map :is(.cmp-compass, .cmp-cartouche)')].map((e) => {
+          const r = e.getBoundingClientRect()
+          const w = Math.max(0, Math.min(r.right, t.right) - Math.max(r.left, t.left))
+          const h = Math.max(0, Math.min(r.bottom, t.bottom) - Math.max(r.top, t.top))
+          return (w * h) / (r.width * r.height)
+        }))
+      })
+      expect(hit, `${width}x${height} ${id}'s ticket over the compass or cartouche`).toBeLessThanOrEqual(0.1)
+    }
+  }
+})
