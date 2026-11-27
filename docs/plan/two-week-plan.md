@@ -6921,7 +6921,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - runnel-route, -tiles, -board pass. Shots P (3x crop) and D.
 - **Size:** 2
 
-## 735. [ ] Hedgerow phone 3D: the camera frames the farm
+## 735. [ ] Hedgerow phone 3D: the camera frames the farm *(lane A, in progress)*
 - **Why:** critique 2026-11-27 13:25 (hedge-l27-3d-P, image px at 2x): about a quarter of the playfield's height (105-400) is fogged off-map scenery, the field washed out against D, and the Hollowell depot half off-screen (0-190 x 870-960); a red-roofed building is cut at the left edge (0-110 x 170-250). On a phone the 3D view loses to 2D (VISION 2: the table is the hero). **Measure first:** the projected field bounds and both depots at 390x844 for levels 1, 12, 27 and 34.
 - **Build:**
   - Fit the camera to the bounds of the road and the plots for the screen's aspect.
