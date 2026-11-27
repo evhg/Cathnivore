@@ -16,3 +16,20 @@ E2E with the patch (20 specs, phone + desktop, --retries=0): 132 passed, 20 fail
 - card-drag.spec:144 (the stack-to-lose mark on drag-over), drawer-tabs.spec:5 (desktop), campaign-map.spec:416
   (card foot 25.7 px from the bottom against 24).
 Compare each against the React build at --retries=0 before treating it as a Preact difference.
+
+## 2026-11-27 00:51 lane A: progress
+- **Fixed in the patch:** the tutorial's keyboard focus (tutorial.spec 5/5 pass). Root cause: Preact sets an SVG
+  element's props with setAttribute under their own name, so `<g tabIndex={0}>` got an attribute spelt `tabIndex` and the
+  board's hexes were not focusable at all (a real keyboard regression, not a test quirk). `src/preactFixes.ts` (imported
+  first in main.tsx) renames `tabIndex` to `tabindex` in an `options.vnode` hook. Look for other camelCase props on SVG
+  that React maps and Preact doesn't (grep the board for `<g`/`<svg` props other than tabIndex) before shipping.
+- **Autoplay stall, not yet understood:** quick-game/hotseat/campaign/crash-recovery pass alone (1 worker) and fail with
+  2+ workers. Instrumented (window.__dbg in the AI effect, CPU throttle 4x, 12 runs): 1 stalled, its last entry the AI
+  effect having run and scheduled its setTimeout(0) for round 9, 1 action left, and the timer never firing (so a cleanup
+  cleared it with no successor effect). 8 later runs with cleanup logging all finished. Next: run the stall repro with
+  `clean` + `run` logging until it stalls, to see which dep changed; suspect Preact's pending-effect handling when the
+  component re-renders between an effect's commit and its flush.
+- Hotseat's failure under load: after the second graft the pass-device screen was up and the spec's poll then waited on
+  a gone `.active-producer`; unhurried (1.5 s between clicks) the turn flow is right.
+- Still failing alone at 1 worker: card-drag.spec:144 (no `−1 Outlet` aim chip on drag-over) and drawer-tabs.spec:5
+  (`.is-open` present but computed translate `0px`, want `0px 1px`). Neither compared against React yet.

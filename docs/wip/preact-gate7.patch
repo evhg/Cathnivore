@@ -91,6 +91,37 @@ index abbe5b4e..9efc370c 100644
  
  const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
    'fresh-meat': FRESH_MEAT_SCENES,
+diff --git a/src/main.tsx b/src/main.tsx
+index 87ea010f..0a26855b 100644
+--- a/src/main.tsx
++++ b/src/main.tsx
+@@ -1,3 +1,4 @@
++import './preactFixes'
+ import { StrictMode } from 'react'
+ import { createRoot } from 'react-dom/client'
+ import { unlockAudioOnFirstTap } from './platform/sound'
+diff --git a/src/preactFixes.ts b/src/preactFixes.ts
+new file mode 100644
+index 00000000..0cec1d9a
+--- /dev/null
++++ b/src/preactFixes.ts
+@@ -0,0 +1,16 @@
++// Gate 7 (2026-11-27): the production build renders with Preact (vite.config.ts aliases react to preact/compat;
++// dev and the unit tests keep React). Where the two libraries write the DOM differently, this hook makes Preact
++// write what React does. Import it before anything renders (main.tsx). Under React it installs a hook nothing calls.
++import { options, type VNode } from 'preact'
++
++const previous = options.vnode
++options.vnode = (vnode: VNode) => {
++  const props = vnode.props as Record<string, unknown> | null
++  if (typeof vnode.type === 'string' && props && 'tabIndex' in props) {
++    // React writes `tabindex`; Preact sets an SVG element's props with setAttribute under their own name, and an
++    // attribute spelt `tabIndex` doesn't make the board's hexes (<g tabIndex={0}>) focusable.
++    props.tabindex = props.tabIndex
++    delete props.tabIndex
++  }
++  previous?.(vnode)
++}
 diff --git a/src/ui/Setup.tsx b/src/ui/Setup.tsx
 index c22668b4..130c213a 100644
 --- a/src/ui/Setup.tsx
