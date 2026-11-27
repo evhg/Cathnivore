@@ -2960,6 +2960,29 @@ html.no-animations .setup .difficulty-sheet { animation: none; }
   border-radius: 4px;
   vertical-align: middle;
 }
+/* Plan item 722: a card with its own painted scene shows it in a framed window big enough to read (it was a 52x30
+   chip), and the name is the card's title in the display face, 16 px or more. */
+.card-list-collapsible .card-vignette[data-card-art] {
+  position: absolute;
+  left: 1.1em;
+  top: 0;
+  width: 84px;
+  height: 46px;
+  margin: 0;
+  border: 2px solid var(--paper-hi);
+  border-radius: var(--r-xs);
+  box-shadow: 0 0 0 1px var(--ink-a15), 0 2px 4px var(--ink-a15);
+}
+.card-list-collapsible summary:has(.card-vignette[data-card-art]) { position: relative; min-height: 48px; padding-left: calc(1.1em + 94px); text-indent: 0; }
+.card-list-collapsible summary:has(.card-vignette[data-card-art])::marker { content: ''; }
+.card-list-collapsible summary:has(.card-vignette[data-card-art])::before { content: '\25B8'; position: absolute; left: 0; top: 15px; color: var(--ink-muted); font-size: .8em; }
+.card-list-collapsible details[open] > summary:has(.card-vignette[data-card-art])::before { content: '\25BE'; }
+.card-list-collapsible summary:has(.card-vignette[data-card-art]) > strong {
+  font-family: var(--font-display);
+  font-size: max(1rem, 1em);
+  font-weight: 600;
+  letter-spacing: .005em;
+}
 
 /* Plan item 36: the farmstead. On a phone each producer stands at their gate over a ribbon that sums what
    the farm makes a round, with every bought card laid out as a drawn card. On a desktop the Farm is a
