@@ -77,3 +77,4 @@ Compare each against the React build at --retries=0 before treating it as a Prea
   (hotseat x2). React on the same: the hand specs fail the same 7-8 here with or without the change (environment).
 - **Next:** apply the patch, run the whole game e2e on Preact at --retries=0 (compare any failure against
   `NO_PREACT=1`), then ship it before the 19:51 release (gate 7).
+- Shot check (03:45, random games at 1440x900 and 390x844, React build): the hand, ledger and phone table read right. To check next: at D with a three-row hand the Great Glut ticket overlapped the top of Cath's bubble; compare against the base build with a three-row hand before calling it a regression (the base shot was a different game).
