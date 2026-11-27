@@ -6961,7 +6961,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - cathode-hud and cathode-perf (alone) within budget. Shots L and D.
 - **Size:** 2
 
-## 738. [ ] The bugs from the 2026-11-27 13:25 critique, fixed as one batch *(lane A, in progress)*
+## 738. [ ] The bugs from the 2026-11-27 13:25 critique, fixed as one batch *(handed back 2026-11-27 13:40 by lane A)* *(note, lane A 13:35, no code: the 'floating rifle' on the P pick is item 716's lit gun propped upright right of her (`.cp-weapon-art.cp-case` fixed, rotate(-86deg), styles.css ~3373), on purpose. But it reads as floating: its box's foot is 8 px over the subtitle's top (box 299-387 x 202-426 at 390x844), while the drawn gun inside (`.cp-gun`, rect 140-365) sits about 60 px higher, so the visible muzzle-up rifle ends near y 395 over the dark crate, touching nothing, and the case shadow (`::after`, top 76% of the turned box) falls beside it, not under its foot. Fix: bring the drawn gun to the box's foot (or drop the box by the gap) and give it a contact shadow on the street; cathode-classpick P 'gun on the stage'/'clear of her figure' must still pass.)*
 - NIGHT SHIFT class pick P (ns-play-P, 2x image px 640-720 x 470-790): a sniper rifle stands upright in mid-air right of Cath, cut off (likely the D layout's weapon display on the phone stage).
 - Cathnivore game P (cath-game-P 130-175 x 683-710): the '2' cost chip runs into 'Supply 1 Outlet'; the FREE stamp (285-345 x 690-710) crowds 'Injunction'.
 - NIGHT SHIFT title D (ns-title-D 418-560 x 320-490): the Ledger's photo of Tomas Reed is a man in a beanie; Cathnivore's Tomas (cath-game-D 1240-1330 x 520-660) is someone else. One Tomas across the games (VISION 5).
