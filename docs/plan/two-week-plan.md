@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-27T07:16Z
 
 
 
@@ -6821,4 +6820,77 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - NIGHT SHIFT street L: the 'Left thumb walks' note covers the left third under HP (10-260 x 165-218); 'DRAG TO AIM' (728-808 x 72-88) unbacked over lamps.
 - Portfolio P: the game tile grid's side gutter about 10 px, not 16. *(fixed 2026-11-26 21:15: the mosaic steps in by the frames' 5 px ring; e2e portfolio-present)*
 - **Accept:** each closed by a fix with a spec assertion, or by measurement/decision logged; shots P and D.
+- **Size:** 2
+
+## 727. [ ] NIGHT SHIFT: a 3D Cath who matches the character bible
+- **Why:** critique 2026-11-27 07:30 (shots e2e/screenshots/plan1127a): her face is a flat, unlit mask, with small eyes, no winged liner or highlights, faint nose and lips and no blush (ns-title-P 230-300 x 330-380; ns-play-D 650-720 x 130-200). Her hair has no shine, and strands poke through the coat at the shoulders (ns-title-P 330-390 x 380-650). She is also the hero print on /games/ and the portfolio (games-D 1040-1330 x 560-800). This breaks VISION's Cath bible.
+- **Build:**
+  - eyes with a liner wedge, two highlights and an iris with depth
+  - the raised right brow, a cheek blush and glossy rose lips
+  - a shine band on the hair
+  - the hair kept off the coat (collision or skin weights)
+  - three expressions (smirk, determined, wink) used on the title and role pick
+  - then re-render the posters and key art.
+- **Accept:**
+  - Her face is 90 px+ tall at D and 60 px+ at P on the title.
+  - Eye white against iris is 3:1+.
+  - e2e: three or more expressions, each changing the head's pixels by more than 2%.
+  - No hair through the coat in a turnaround of shots.
+  - keyart-fresh passes; cathode-perf is within budget when run alone. Live shots L and D.
+- **Size:** 3
+
+## 728. [ ] Cathnivore phone game: the table is the hero
+- **Why:** critique 2026-11-27 (cath-game-P): the board gets about 44% of the height (120-490), with five bands stacked under it (Cath and the talk strip, resources, hand, nav). VISION 2: the table is the hero.
+- **Build:**
+  - The resource row joins the hand tray's header.
+  - The producers' talk is a bubble over the board's foot that folds away after 4 s.
+  - The hand keeps item 701's snap rest.
+  - The board takes 55%+ of the height.
+- **Accept:**
+  - The board's box is 465 px+ tall at 390x844 (and at 375x667 it doesn't shrink below today's).
+  - No card is cut without a snap or 'more' tab.
+  - Targets are 44 px+.
+  - phone-hand-whole and region-names-phone still pass. Shots P (D unchanged).
+- **Size:** 2
+
+## 729. [ ] Runnel: thirsty crops that revive when the water reaches them
+- **Why:** critique 2026-11-27: the dry field tiles are rust with a dark red smear for a crop (runnel-D 530-650 x 260-380; runnel-P 5-90 x 385-470). They read as damage, not 'thirsty'. Nothing marks the moment a field is watered beyond the colour change.
+- **Build:**
+  - Each crop (carrot, cabbage, wheat, sunflower, pumpkin) drawn wilted on its dry plot, in its own muted colour.
+  - As the water arrives, a 400-700 ms revive: the stem straightens, colour floods in and a droplet sparkle shows (a fade only under reduced motion).
+- **Accept:**
+  - Unit: every crop has a wilted and a grown drawing.
+  - The wilted glyph is 3:1+ on its plot.
+  - e2e: watering a field sets its revive state within 100 ms; no transform under reduced motion.
+  - runnel-parched and runnel-route pass. Shots P and D, dry and solved.
+- **Size:** 2
+
+## 730. [ ] Hedgerow 3D: convoy types you can tell apart at a glance
+- **Why:** critique 2026-11-27 (hedge-l27-3d-D 260-700 x 260-620; -P 150-260 x 290-560): the convoy reads as identical purple slabs with a yellow dot. Item 703 gave the lorries distinct silhouettes and lightened the sealed tint, so **measure first**: per-type hue and silhouette in sandbox at l27 and l34, P and D, on the critique's round.
+- **Build:** whatever the measurement shows is missing:
+  - each RUNGS type its own model and livery colour as in 2D (item 707)
+  - a hit flash, and a smoke state under 50% HP
+  - the sealed round's tint never collapsing the types into one hue.
+- **Accept:**
+  - Unit: 5+ distinct meshes in the render3d registry.
+  - e2e: three or more distinct body hues (40 degrees+ apart) sampled on screen at l27 round 14, P and D.
+  - Shots P and D.
+- **Size:** 2
+
+## 731. [ ] Cathnivore D: the resting hand shows its painted cards
+- **Why:** critique 2026-11-27 (cath-game-D 345-1330 x 770-890): at rest the hand reads as a strip of slivers, its art windows about 40 px. The painted art of item 722 shows only when a card is held up (item 701). **Measure first**: the resting card and art heights, and any card cut by the viewport, at 1440x900 and 1280x800.
+- **Build:** a resting hand tall enough to show each scene: art 60 px+ and cards 130 px+ at 1440x900, the fan overlapping 12% or less. Item 664's tray height is traded against the board's size: keep the board 55%+ of the viewport's area.
+- **Accept:**
+  - e2e: every resting card is whole in the viewport, its art 60 px+.
+  - hand-lift, card-art, table-hand and critique177 pass. Shots D (P unchanged).
+- **Size:** 2
+
+## 732. [ ] The bugs from the 2026-11-27 07:30 critique, fixed as one batch
+- Cathnivore game D: the Buy card overlaps Sell (490-500 x 775-885), and the Injunction text is rotated and cut at y 880 (check against item 701's fan at rest).
+- Cathnivore campaign D: the chapter popover (48-302 x 733-843) covers the compass and Oakvale's corner.
+- Cathnivore campaign P: the 6th chapter thumbnail is cut at the right edge (320-390 x 555-610), and a stray '3' shows behind thumbnail 1 (about 15, 590).
+- Hedgerow l34 2D D: the tower verbs run into their rating pips ('Shoots●●●●') with no gap (1065-1410 x 150-360).
+- Hedgerow l34 2D D: the swarm badge sits over the windmill's range ring and sails (565-775 x 150-175).
+- Not bugs (decided): 'Radio M' under the rack's arrow is item 698's peek; the phone title's board over Cath below the waist is item 705's design.
+- **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
