@@ -6982,7 +6982,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** **measure first** (piece bboxes per hex at D and P). In the D shot each region landmark 64 CSS px+, producer tokens 1.2x+ an Outlet's area, Outlets 48 CSS px or less but still 3:1 against the tile; piece-art, board-pieces, corp-wash specs pass; shots P and D.
 - **Size:** 2
 
-## 741. [ ] Runnel: the dry board is beautiful before the water runs
+## 741. [ ] Runnel: the dry board is beautiful before the water runs *(lane A, in progress)*
 - **Why:** critique 2026-11-27 18:30 (plan1127c runnel-D board 470-1330 x 40-830): before solving, near-black trenches on beige and a desaturated grey-violet valley; the solved state (runnel-solved-D) is lush. The unsolved board is what players look at for minutes.
 - **Build:** a golden-hour dry palette: straw and cracked ochre earth, channels as carved troughs (mid-brown floor, a lit lip, a cast shadow) instead of item 723's flat dark earth, the valley warm-graded with long shadows and dust haze; the solve's colour arrival stays the payoff.
 - **Accept:** board pixels with L* < 20 at 6% or less (measure today's); the surroundings' mean chroma 70%+ of the solved shot's; channel floor vs tile 3:1+ (item 723's rule); channel water still 3:1 on the floor; runnel-route, runnel-phone-board pass; key art re-shot; shots P and D, day and night.
