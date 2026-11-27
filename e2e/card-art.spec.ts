@@ -66,3 +66,55 @@ test('every Market card shows its own painted scene', async ({ page }) => {
     expect(r.h, `${r.id}'s window`).toBeGreaterThanOrEqual(44)
   }
 })
+
+test('a card reads as a printed card: its scene in a framed window, its name in the display face', async ({ page }) => {
+  const width = page.viewportSize()?.width ?? 0
+  test.skip(width < 1400 && width >= 700, 'the phone and the wide desktop table')
+  await start(page)
+  const hand = await page.evaluate(() => {
+    const display = getComputedStyle(document.documentElement).getPropertyValue('--font-display').split(',')[0]!.trim().replace(/"/g, '')
+    const cards = [...document.querySelectorAll<HTMLElement>('.table-hand .action-item, .action-tray .actions .action-item')].filter(
+      (e) => e.getClientRects().length && e.querySelector(':scope > button:first-child:not(:disabled) svg.action-art[data-scene]'),
+    )
+    return {
+      display,
+      cards: cards.map((c) => {
+        const art = c.querySelector<SVGElement>('svg.action-art[data-scene]')!
+        const label = c.querySelector<HTMLElement>('.action-label')!
+        const region = c.querySelector<HTMLElement>('.action-region, .action-pick')
+        return {
+          name: c.textContent ?? '',
+          font: getComputedStyle(label).fontFamily,
+          sub: region ? getComputedStyle(region).fontFamily : null,
+          frame: getComputedStyle(art).outlineStyle,
+          inset: parseFloat(getComputedStyle(art).outlineOffset),
+        }
+      }),
+    }
+  })
+  expect(hand.cards.length).toBeGreaterThan(1)
+  for (const c of hand.cards) {
+    expect(c.font, `${c.name}: name in the display face`).toContain(hand.display)
+    if (c.sub) expect(c.sub, `${c.name}: its pick line in the text face`).not.toContain(hand.display)
+    expect(c.frame, `${c.name}: framed window`).toBe('solid')
+    expect(c.inset, `${c.name}: the rule inside the picture`).toBeLessThan(0)
+  }
+  if (width >= 700) return
+  // the phone Market sheet: each card's scene a framed window 96 px+ tall inside the card
+  await page.getByRole('button', { name: /^Market/ }).first().click()
+  const cards = page.locator('.sheet .card-list [data-buy-card]')
+  await expect(cards.first()).toBeVisible()
+  const wins = await cards.evaluateAll((els) =>
+    els.map((e) => {
+      const art = e.querySelector<SVGElement>('.card-vignette[data-card-art]')!
+      const a = art.getBoundingClientRect()
+      const c = e.getBoundingClientRect()
+      return { id: e.getAttribute('data-buy-card'), h: a.height, border: parseFloat(getComputedStyle(art).borderTopWidth), inside: a.left >= c.left + 4 && a.right <= c.right - 4 }
+    }),
+  )
+  for (const w of wins) {
+    expect(w.h, `${w.id}'s window height`).toBeGreaterThanOrEqual(96)
+    expect(w.border, `${w.id}'s window rule`).toBeGreaterThanOrEqual(1)
+    expect(w.inside, `${w.id}'s window inside its card`).toBe(true)
+  }
+})

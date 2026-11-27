@@ -7016,3 +7016,33 @@ html.no-animations .folk-walk, html.no-animations .folk-walk .folk-face[data-dir
 @media (prefers-reduced-motion: reduce) {
   .folk-walk, .folk-walk .folk-face[data-dir] { animation: none; }
 }
+
+/* Plan item 722: a hand card reads as a printed card, as the Saving for card and the Market do: its scene in a
+   framed window (an ink rule inset from the picture's edges, over it, so the art's size and the card's layout are
+   unchanged) and its name in the display face. The region and pick line under the name stay in the text face. */
+.action-tray .actions .action-item > button:first-child:not(:disabled) .action-label > svg.action-art[data-scene],
+.game-layout .table-hand .action-item:not(.action-family) .action-label > svg.action-art[data-scene] {
+  outline: 1px solid color-mix(in srgb, var(--ink-on-fixed-fill) 38%, transparent);
+  outline-offset: -5px;
+}
+.action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-label,
+.game-layout .table-hand .action-item:not(.action-family) > button:first-child:not(:disabled) .action-label {
+  font-family: var(--font-display);
+  font-weight: 640;
+  font-variation-settings: "opsz" 24;
+  letter-spacing: .005em;
+}
+.action-tray .actions .action-item .action-label :is(.action-region, .action-pick),
+.game-layout .table-hand .action-item .action-label :is(.action-region, .action-pick) { font-family: var(--font-text); font-variation-settings: normal; letter-spacing: normal; }
+/* Plan item 722: on the phone's Market and Plan sheets the card's own scene is a framed window inside the card (a
+   paper mat and an ink rule), taller than the old banner, as the card zoom of a printed card. */
+.sheet .card-list .card-framed > .card-vignette[data-card-art] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 104px;
+  margin: 2px 0 10px;
+  border: 1px solid color-mix(in srgb, var(--ink) 38%, transparent);
+  border-radius: var(--r-xs);
+  box-shadow: 0 0 0 3px var(--paper-hi), 0 0 0 4px var(--ink-a15);
+}
+.sheet .card-list .card-framed:has(> .card-vignette[data-card-art]) .card-head-name strong { font-size: max(1.0625rem, 1em); }
