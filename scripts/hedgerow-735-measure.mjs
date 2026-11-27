@@ -26,7 +26,29 @@ for (const level of (process.env.LEVELS ?? '1,12,27,34').split(',').map(Number))
       return { canvas: [Math.round(c.width), Math.round(c.height)], share: window.hedgerow.fieldShare(), depots: window.hedgerow.depotFrames(), fog: window.hedgerow.fogFrame() }
     })
     console.log(tag, level, n, JSON.stringify(m))
-    await p.screenshot({ path: `${out}/${tag}-l${level}-${n}.png`, timeout: 120_000 })
+    const png = await p.screenshot({ path: `${out}/${tag}-l${level}-${n}.png`, timeout: 120_000 })
+    // Mean luminance (sRGB-decoded, Rec. 709) and saturation over the canvas's middle (25-75% wide, 30-80% high).
+    const lum = await p.evaluate(async (b64) => {
+      const img = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob())
+      const cv = new OffscreenCanvas(img.width, img.height)
+      const x = cv.getContext('2d')
+      x.drawImage(img, 0, 0)
+      const c = document.querySelector('#canvas').getBoundingClientRect()
+      const k = img.width / innerWidth
+      const x0 = Math.round((c.x + c.width * 0.25) * k), w = Math.round(c.width * 0.5 * k)
+      const y0 = Math.round((c.y + c.height * 0.3) * k), h = Math.round(c.height * 0.5 * k)
+      const d = x.getImageData(x0, y0, w, h).data
+      const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }
+      let L = 0, S = 0, n = 0
+      for (let i = 0; i < d.length; i += 4) {
+        L += 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2])
+        const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2])
+        S += mx ? (mx - mn) / mx : 0
+        n++
+      }
+      return { lum: Math.round((L / n) * 1000) / 1000, sat: Math.round((S / n) * 1000) / 1000 }
+    }, png.toString('base64'))
+    console.log(tag, level, n, 'lum', JSON.stringify(lum))
     await ctx.close()
   }
 await b.close()
