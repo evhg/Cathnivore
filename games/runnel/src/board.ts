@@ -590,8 +590,9 @@ export class Board {
     const g = el('g', { class: 'field-plot' }, root)
     el('ellipse', { cx: 0, cy: 6, rx: S * 0.42, ry: S * 0.3, class: 'mound' }, g)
     for (const dx of [-11, 0, 11]) el('line', { x1: dx - 3, y1: -2, x2: dx + 3, y2: 14, class: 'furrow' }, g)
-    // Plan item 636: dry, the plot holds a wilted seedling drooping in the dust; water lifts it into its crop.
-    el('path', { class: 'wilt', d: 'M0 9 Q-1 1 2 -4 Q5 -8 9 -5 M2 -1 Q-4 -3 -6 1' }, g)
+    // Plan item 729 (was item 636's one generic seedling): dry, the plot holds its own crop wilted (leaning, small, in
+    // its own colours gone dusty and inked dark so it reads 3:1 on the clay); the water revives it (styles.css).
+    if (!this.puzzle.cells[index]?.reservoir) root.dataset.crop = 'wilted'
     // ...and a splash ring spreads from the plot as the water arrives.
     el('ellipse', { class: 'splash', cx: 0, cy: 6, rx: S * 0.36, ry: S * 0.25 }, g)
     const plant = el('g', { class: `crop crop-${crop}` }, g)
@@ -750,6 +751,8 @@ export class Board {
         root.style.setProperty('--delay', `${delay}ms`)
         root.classList.add('wet')
         root.classList.toggle('instant', initial)
+        // Plan item 729: the crop's revive starts with the class (the CSS waits out the water's own delay)
+        if (cell.kind === 'field' && !cell.reservoir) root.dataset.crop = 'revived'
         // `data-wet` marks when the water is really there (tests, and the CSS for the soaked soil).
         clearTimeout(view.wetTimer)
         // Plan item 151: a watered field is tended (its farmer at work, its crop up).
@@ -762,6 +765,7 @@ export class Board {
       } else if (!wet && wasWet) {
         root.style.setProperty('--delay', '0ms')
         root.classList.remove('wet')
+        if (cell.kind === 'field' && !cell.reservoir) root.dataset.crop = 'wilted'
         clearTimeout(view.wetTimer)
         delete root.dataset.wet
         delete root.dataset.tended

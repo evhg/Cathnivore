@@ -13,6 +13,17 @@
   --dry-field: #f0d38c;
   /* Plan item 711: sun-baked clay, the face of a field still waiting for water. */
   --parched: #ba462c;
+  /* Plan item 729: a wilted crop on its dry plot: its own colours gone dusty (--wilt-dust), inked so it reads 3:1+ on
+     the clay under every sky (tests/runnel-wilt). */
+  --wilt-ink: #3a2814;
+  --wilt-dust: #9c8462;
+  /* the field crops' own colours (styles.css .pumpkin, .leaf-outer...), which a wilted crop mixes with the dust */
+  --crop-pumpkin: #e8892b;
+  --crop-leaf: #7ea84a;
+  --crop-heart: #b8d77d;
+  --crop-root: #e0782f;
+  --crop-frond: #6f9a3a;
+  --crop-petal: #f2c230;
   --furrow: #b98a4c;
   --clover: #8fae62;
   --flower: #f6f1e4;
@@ -159,6 +170,8 @@
     --tile-shadow: rgb(0 0 0 / .5);
     --dry-meadow: #4a4c31; /* plan item 323: 10%+ off a wet tile (was #4f5236, 9%) */
     --parched: #6e4630;
+    --wilt-ink: #e9d6a6;
+    --wilt-dust: #8a7656;
     --dry-field: #5d482d; /* a dry field 12% darker: under the morning wash the right-edge tiles lifted to 2.7:1 under their channels (runnel-tiles) */
     --furrow: #3e2f20;
     --clover: #6f8a4c;

@@ -63,7 +63,7 @@ for (const [name, size] of [['P', { width: 390, height: 844 }], ['D', { width: 1
       }
       const fields = [...document.querySelectorAll<SVGGElement>('#board .tiles > g.cell.field:not(.wet):not(.reservoir)')]
       const wilted = fields.filter((f) => {
-        const w = f.querySelector<SVGGraphicsElement>('.wilt')
+        const w = f.dataset.crop === 'wilted' ? f.querySelector<SVGGraphicsElement>('.field-plot .crop') : null
         return w && getComputedStyle(w).visibility !== 'hidden' && Number(getComputedStyle(w).opacity) > 0.5 && w.getBoundingClientRect().width > 0
       })
       return { n: tiles.length, worst: Math.min(...tiles), median: med(tiles), width: Math.min(...widths), fields: fields.length, wilted: wilted.length }

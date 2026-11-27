@@ -5738,3 +5738,42 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .rail-more-week .mw-ahead { opacity: 0.55; }
 }
 @media (prefers-reduced-motion: reduce) { .rail-more-tab::after { transition: none; } }
+
+/* Plan item 729: a dry field holds its own crop wilted, not a generic seedling: smaller, leaning from its foot, its
+   colours gone dusty and its lines inked dark (light lines at night), 3:1+ on the clay (tests/runnel-wilt). As the
+   water arrives (after the same --delay as the soak) it revives in 600 ms: the stem straightens, the colour floods
+   back and item 636's droplets spark. Under reduced motion the pose never moves: only the colour fades. */
+.field-plot .crop-wheat { --wilt-lean: 30deg; }
+.field-plot .crop-carrot { --wilt-lean: 26deg; }
+.field-plot .crop-sunflower { --wilt-lean: 34deg; }
+.field-plot .crop-cabbage { --wilt-lean: 12deg; }
+.field-plot .crop-pumpkin { --wilt-lean: 6deg; }
+.cell.field:not(.wet) .field-plot .crop {
+  opacity: 1;
+  transform: scale(calc(var(--grown) * 0.62)) rotate(var(--wilt-lean, 24deg)) scale(1, 0.84);
+  transition: transform 150ms ease-in;
+}
+.cell.field.wet .field-plot .crop {
+  opacity: 1;
+  transform: scale(var(--grown));
+  transition: transform 600ms cubic-bezier(0.34, 1.45, 0.64, 1) calc(var(--delay, 0ms) + 160ms);
+}
+.field-plot .crop :is(.stalk, .ear, .pumpkin, .pumpkin-side, .leaf-outer, .leaf-inner, .vein, .root, .frond, .frond-fill, .petal, .seedhead) {
+  transition: fill 520ms ease calc(var(--delay, 0ms) + 160ms), stroke 520ms ease calc(var(--delay, 0ms) + 160ms);
+}
+.cell.field:not(.wet) .field-plot .crop :is(.stalk, .frond, .vein) { stroke: var(--wilt-ink); }
+.cell.field:not(.wet) .field-plot .crop :is(.ear, .pumpkin, .pumpkin-side, .leaf-outer, .leaf-inner, .root, .petal) { stroke: var(--wilt-ink); }
+.cell.field:not(.wet) .field-plot .crop .ear { fill: color-mix(in oklab, var(--wheat) 45%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop :is(.pumpkin, .pumpkin-side) { fill: color-mix(in oklab, var(--crop-pumpkin) 40%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop .leaf-outer { fill: color-mix(in oklab, var(--crop-leaf) 35%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop .leaf-inner { fill: color-mix(in oklab, var(--crop-heart) 30%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop .root { fill: color-mix(in oklab, var(--crop-root) 40%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop .frond-fill { fill: color-mix(in oklab, var(--crop-frond) 35%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop .petal { fill: color-mix(in oklab, var(--crop-petal) 28%, var(--wilt-dust)); }
+.cell.field:not(.wet) .field-plot .crop .seedhead { fill: var(--wilt-ink); }
+/* the old drooped seedling (item 636) gives way to the crop itself */
+.field-plot .wilt { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .cell.field:is(.wet, :not(.wet)) .field-plot .crop { transition: none; }
+  .field-plot .crop :is(.stalk, .ear, .pumpkin, .pumpkin-side, .leaf-outer, .leaf-inner, .vein, .root, .frond, .frond-fill, .petal, .seedhead) { transition: fill 300ms ease, stroke 300ms ease; }
+}
