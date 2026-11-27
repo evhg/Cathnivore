@@ -143,6 +143,28 @@ interface Props {
 // hand-writing every click. `?e2eAutoplay=1` makes every producer (not just the Solo AI teammate) act via
 // HeuristicBot and skips enemy-turn playback instantly, so a test only has to load the URL and poll for
 // `state.result`. Never set by the app itself outside a test — see e2e/quick-game.spec.ts.
+// Gate 7 (2026-11-27): the hand's measures (the desktop fan, the tight-card check) clear and rewrite every card, which
+// costs a style recalc of the whole page each time. They run again only when this key changes: the same card nodes with
+// the same classes, text and enabled state, in a hand of the same width, at the same window size, with the fonts in the
+// same state. A resize still runs them directly.
+const handNodeIds = new WeakMap<Element, number>()
+let handNodeNext = 0
+function handKey(container: HTMLElement | null, cards: readonly HTMLElement[]): string {
+  if (!container) return ''
+  const id = (e: Element) => {
+    let n = handNodeIds.get(e)
+    if (n === undefined) handNodeIds.set(e, (n = ++handNodeNext))
+    return n
+  }
+  const parts = cards.map((c) => `${id(c)}:${c.className}:${c.querySelector('button:disabled') ? 1 : 0}:${c.textContent}`)
+  return `${window.innerWidth}x${window.innerHeight}|${container.clientWidth}|${document.fonts?.status ?? ''}|${id(container)}:${container.className}|${parts.join('|')}`
+}
+
+// Which of Pell's papers (Squeeze, Expand, Scout) are on the table: Pell reacts when they change.
+function papersKeyOf(s: GameState): string {
+  return `${s.squeeze?.id ?? ''}|${s.expand?.id ?? ''}|${s.scout?.id ?? ''}`
+}
+
 function isE2EAutoplay(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2eAutoplay') === '1'
 }
@@ -1186,8 +1208,12 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     }
   })
   // Plan item 149: the hand fans out from its middle: outer cards tilt and dip a little, like cards held.
+  const fanKeyRef = useRef('')
   useLayoutEffect(() => {
-    if (!handOnTable) return
+    if (!handOnTable) {
+      fanKeyRef.current = ''
+      return
+    }
     const fan = () => {
     const hand = document.querySelector<HTMLElement>('.table-hand')
     const cards = [...document.querySelectorAll<HTMLElement>('.table-hand .action-item')]
@@ -1341,7 +1367,11 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
       }
     }
     }
-    fan()
+    const key = handKey(document.querySelector<HTMLElement>('.table-hand'), [...document.querySelectorAll<HTMLElement>('.table-hand .action-item')])
+    if (!key || key !== fanKeyRef.current) {
+      fanKeyRef.current = key
+      fan()
+    }
     window.addEventListener('resize', fan)
     return () => window.removeEventListener('resize', fan)
   })
@@ -1604,18 +1634,24 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // ability) is marked tight, and its picture steps down so nothing leaves the card. Measured after each render.
   // Plan item 320: on the desktop table's hand the same measure lets a card whose name fits take a 60% window (table.css);
   // there it reads layout offsets, since the fan's tilt inflates on-screen boxes into each other.
+  // Every card is cleared, then all are read, then the tight ones marked: clearing and reading one card at a time forced a
+  // fresh layout of the whole page per card on every render (gate 7, 2026-11-27).
+  const tightKeyRef = useRef('')
   useLayoutEffect(() => {
-    if (isDesktop) {
-      for (const b of document.querySelectorAll<HTMLElement>('.table-hand .action-item:not(.action-family) > button:first-child:not(:disabled)')) {
-        b.removeAttribute('data-tight')
-        if ([...b.children].some((c) => c instanceof HTMLElement && c.offsetTop + c.offsetHeight > b.clientHeight - 2)) b.setAttribute('data-tight', '')
-      }
-      return
-    }
-    for (const b of document.querySelectorAll<HTMLElement>('.action-tray .actions .action-item > button:first-child:not(:disabled)')) {
-      b.removeAttribute('data-tight')
-      if (b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > b.getBoundingClientRect().bottom + 1)) b.setAttribute('data-tight', '')
-    }
+    const buttons = [...document.querySelectorAll<HTMLElement>(
+      isDesktop ? '.table-hand .action-item:not(.action-family) > button:first-child:not(:disabled)' : '.action-tray .actions .action-item > button:first-child:not(:disabled)',
+    )]
+    const hand = document.querySelector<HTMLElement>(isDesktop ? '.table-hand' : '.action-tray .actions')
+    const key = `${isDesktop}|${handKey(hand, [...(hand?.querySelectorAll<HTMLElement>('.action-item') ?? [])])}`
+    if (hand && key === tightKeyRef.current) return
+    tightKeyRef.current = key
+    for (const b of buttons) b.removeAttribute('data-tight')
+    const tight = buttons.filter((b) => {
+      if (isDesktop) return [...b.children].some((c) => c instanceof HTMLElement && c.offsetTop + c.offsetHeight > b.clientHeight - 2)
+      const bottom = b.getBoundingClientRect().bottom
+      return b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > bottom + 1)
+    })
+    for (const b of tight) b.setAttribute('data-tight', '')
   })
   // Plan item 141: on a phone the card strip scrolls sideways, so after each move the card Cath suggests is
   // brought into view if it's off the strip (never fighting the player's own scroll between moves).
@@ -1684,8 +1720,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   // Plan item 467: Pell's pose for a few seconds after something happens to him at the table; otherwise he mirrors Cath.
   const [pellBeat, setPellBeat] = useState<PellPose | null>(null)
   const pellTimerRef = useRef<number | undefined>(undefined)
-  const papersKey = `${state.squeeze?.id ?? ''}|${state.expand?.id ?? ''}|${state.scout?.id ?? ''}`
-  const papersKeyRef = useRef(papersKey)
+  const papersKeyRef = useRef(papersKeyOf(state))
   const pellReact = useCallback((pose: PellPose) => {
     setPellBeat(pose)
     window.clearTimeout(pellTimerRef.current)
@@ -1721,16 +1756,20 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }, [strikeProducerPoses])
   // The Cath companion (CathCompanion.tsx): react to whatever's newest in the log each time it grows,
   // picking the highest-ranked reaction if a round produced more than one (see `cathReactionFor`).
-  useEffect(() => {
-    const newEvents = state.log.slice(cathLogSeenRef.current)
-    cathLogSeenRef.current = state.log.length
+  // Gate 7 (2026-11-27): `advance` runs this on the move's new state, so the reactions' state lands in the move's own
+  // render instead of a second render after it (Preact runs passive effects after a paint). The effect below still runs
+  // it for any other change of state (load, undo); a second run on the same state finds nothing new and sets nothing.
+  const reactToLog = (s: GameState) => {
+    const newEvents = s.log.slice(cathLogSeenRef.current)
+    cathLogSeenRef.current = s.log.length
     let best: { reaction: CathReaction; rank: number; line: string } | null = null
     for (const event of newEvents) {
       const candidate = cathReactionFor(event)
       if (candidate && (!best || candidate.rank >= best.rank)) best = candidate
     }
-    const papersMoved = papersKeyRef.current !== papersKey
-    papersKeyRef.current = papersKey
+    const papers = papersKeyOf(s)
+    const papersMoved = papersKeyRef.current !== papers
+    papersKeyRef.current = papers
     const pellPose = pellPoseFor(newEvents, papersMoved)
     if (pellPose) pellReact(pellPose)
     if (best) {
@@ -1741,16 +1780,21 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // Plan item 80: the producers react too, for a few seconds.
     const moods = producerMoods(newEvents, moodRegionsRef.current)
     strikeProducerPoses(producerPoses(newEvents, moodRegionsRef.current))
-    if (newEvents.length > 0 && !state.result) {
-      sayProducerLine(producerReply(newEvents, moodRegionsRef.current, state.config.producers, state.round, state.round + state.pressureDeck.length))
+    if (newEvents.length > 0 && !s.result) {
+      sayProducerLine(producerReply(newEvents, moodRegionsRef.current, s.config.producers, s.round, s.round + s.pressureDeck.length))
     }
-    moodRegionsRef.current = state.regions
+    moodRegionsRef.current = s.regions
     if (Object.keys(moods).length > 0) {
       setProducerFaces(moods)
       window.clearTimeout(moodTimerRef.current)
       moodTimerRef.current = window.setTimeout(() => setProducerFaces({}), 6000)
     }
-  }, [state.log, state.regions, state.config.producers, state.round, state.pressureDeck.length, state.result, strikePose, beat, papersKey, pellReact, sayProducerLine, strikeProducerPoses])
+  }
+  const reactToLogRef = useRef(reactToLog)
+  reactToLogRef.current = reactToLog
+  useEffect(() => {
+    reactToLogRef.current(state)
+  }, [state])
   useEffect(() => () => window.clearTimeout(moodTimerRef.current), [])
   // Plan item 127: a moment staged through `?e2eMoment` gets Cath's reaction as the real event would.
   useEffect(() => {
@@ -1847,6 +1891,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
         setAiReasons((reasons) => ({ ...reasons, [logIndex]: aiReason }))
       }
     }
+    reactToLog(next)
     setState(next)
     if (events.length > 0) {
       setEnemyTurnBefore(from.regions)
@@ -1884,7 +1929,9 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     setDailyStrip({ number: day.number, streak: dailyStreak(date, dailyRecord()), layoutName: LAYOUTS[day.layout].name })
   }, [state.result, state.config.daily, state.publicTrust])
 
-  useEffect(() => {
+  // A layout effect (gate 7, 2026-11-27): under Preact a passive effect runs after the next paint, so the next producer's
+  // hand showed for a frame before the hand-off screen covered it ("no peeking").
+  useLayoutEffect(() => {
     if (mode !== 'hotseat' || autoplayRef.current) return
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene) return
     if (state.activeProducer !== passAckRef.current) setPassDeviceFor(state.activeProducer)
@@ -1914,7 +1961,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teammatePick])
 
-  useEffect(() => {
+  // A layout effect (gate 7, 2026-11-27): the build renders with Preact, which runs passive effects after the next
+  // paint, so every autoplayed or AI move would also wait for a paint of the whole board. This effect only reads state
+  // and schedules timers, so running it at commit costs nothing.
+  useLayoutEffect(() => {
     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene || teammatePick) return
     const aiProducer = aiProducerRef.current
     const decision = currentDecision(state)
@@ -2020,7 +2070,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
   }
 
   // Skip the (otherwise real-time) enemy-turn caption playback instantly under e2e autoplay.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (autoplayRef.current && pendingEnemyTurn.length > 0) setPendingEnemyTurn([])
   }, [pendingEnemyTurn])
 

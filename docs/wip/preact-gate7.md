@@ -61,3 +61,19 @@ Compare each against the React build at --retries=0 before treating it as a Prea
 - **Next:** fold the reaction effect into the move (compute the reactions where `advance` sets the state, one render per
   move in both libraries), or make the receipts/sheet/fan measures run only when their inputs change; then rerun the 4
   autoplay specs at default workers, --retries=0, Preact vs React.
+
+## 2026-11-27 02:51 lane A: autoplay specs pass on Preact; Game.tsx fixes on build
+- **On build now (both libraries):** Cath's per-move reaction runs in `advance` (`reactToLog`), so its state lands in
+  the move's own render; the ledger's `fit` caches each line's step and no longer un-hides every line to measure (it
+  was 3,400 data-gone writes and the costliest forced style recalc of a game); the desktop hand fan and the tight-card
+  measure skip when `handKey` (same card nodes, classes, text, enabled state, hand width, window, fonts) is unchanged;
+  the hot-seat hand-off is a layout effect (under Preact the next player's hand painted for a frame before the
+  pass screen: a real peek). The patch's Game.tsx parts (layout-effect autoplay driver, batched data-tight) moved to
+  build too; the patch now holds only package, App, main, preactFixes, Setup and vite.config.
+- Per desktop autoplayed game: style recalcs 13.9 -> 10.3 per move on Preact. Each render still pays ~2 full recalcs
+  (~24 ms each here): the ledger measure, then handKey after the ledger's write. table.css has 247 `:has()` rules,
+  the likely reason one recalc costs that much.
+- Preact, P + D, --retries=0, default workers: quick-game, campaign, daily, crash-recovery, tutorial, hotseat 34/34
+  (hotseat x2). React on the same: the hand specs fail the same 7-8 here with or without the change (environment).
+- **Next:** apply the patch, run the whole game e2e on Preact at --retries=0 (compare any failure against
+  `NO_PREACT=1`), then ship it before the 19:51 release (gate 7).

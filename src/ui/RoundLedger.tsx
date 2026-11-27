@@ -45,36 +45,59 @@ export default function RoundLedger({ state }: { state: GameState }) {
   // The page is written top down; when the column is short, the oldest lines go first, so the newest line is always
   // on the page. The ledger hides outright when not even its title and one line fit, so it never shows as a sliver.
   const ref = useRef<HTMLElement>(null)
+  const steps = useRef(new WeakMap<HTMLElement, number>()).current
   useLayoutEffect(() => {
     const el = ref.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const fit = () => {
-      const bottom = el.getBoundingClientRect().bottom
       const items = [...el.querySelectorAll<HTMLElement>('.receipt')]
-      for (const item of items) delete item.dataset.gone
-      // Gate 7 (the hand-over render under 4x throttling): one layout for the whole fit, not one per hidden line.
-      // The lines stack in a column, so hiding the oldest lifts the newest by the step to the next line's top.
-      const tops = items.map((item) => item.getBoundingClientRect().top)
+      // Gate 7 (2026-11-27): the fit neither shows the hidden lines to measure them nor rewrites what hasn't changed.
+      // Clearing every line's data-gone and setting it again forced a style recalc of the whole page on each move, the
+      // costliest read in an autoplayed game. A line's step (its top to the next line's top) is read while both are
+      // shown and kept on the element; the hidden oldest lines are counted back in from those steps.
+      const gone = items.findIndex((item) => item.dataset.gone === undefined)
+      const h = gone === -1 ? items.length : gone
+      if (items.slice(0, h).some((item) => !steps.has(item)) || items.slice(h).some((item) => item.dataset.gone !== undefined)) {
+        for (const item of items) delete item.dataset.gone
+        measure(items, 0)
+      } else measure(items, h)
+      const bottom = el.getBoundingClientRect().bottom
       const newest = items.at(-1)
+      // where the newest line's foot would be with every line shown
       let newestBottom = newest ? newest.getBoundingClientRect().bottom : 0
+      for (const item of items) {
+        if (item.dataset.gone === undefined) break
+        newestBottom += steps.get(item)!
+      }
       let i = 0
-      while (newest && i < items.length - 1 && newestBottom > bottom + 0.5) {
-        newestBottom -= tops[i + 1]! - tops[i]!
+      while (newest && i < items.length - 1 && newestBottom > bottom + 0.5 && steps.has(items[i]!)) {
+        newestBottom -= steps.get(items[i]!)!
         i++
       }
-      for (let k = 0; k < i; k++) items[k]!.dataset.gone = ''
-      el.dataset.room = newest && newestBottom <= bottom + 0.5 ? 'yes' : 'no'
+      items.forEach((item, k) => {
+        if (k < i && item.dataset.gone === undefined) item.dataset.gone = ''
+        else if (k >= i && item.dataset.gone !== undefined) delete item.dataset.gone
+      })
+      const room = newest && newestBottom <= bottom + 0.5 ? 'yes' : 'no'
+      if (el.dataset.room !== room) el.dataset.room = room
       // Plan item 287: while the page is mostly blank its free room holds Bea's chalk sketch of the stall, sized to
       // the room left under the newest line (it goes once the lines need the space).
       const free = newest ? bottom - newestBottom : 0
-      el.dataset.sketch = free >= 96 ? 'yes' : 'no'
-      el.style.setProperty('--sketch-room', `${Math.max(0, Math.round(free))}px`)
+      const sketch = free >= 96 ? 'yes' : 'no'
+      if (el.dataset.sketch !== sketch) el.dataset.sketch = sketch
+      const freePx = `${Math.max(0, Math.round(free))}px`
+      if (el.style.getPropertyValue('--sketch-room') !== freePx) el.style.setProperty('--sketch-room', freePx)
+    }
+    // each shown line's step to the next shown line, read in one layout
+    const measure = (items: HTMLElement[], from: number) => {
+      const tops = items.slice(from).map((item) => item.getBoundingClientRect().top)
+      for (let k = 0; k + 1 < tops.length; k++) steps.set(items[from + k]!, tops[k + 1]! - tops[k]!)
     }
     fit()
     const ro = new ResizeObserver(fit)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [receipts])
+  }, [receipts, steps])
 
   const signed = (n: number) => `${n > 0 ? '+' : '−'}${Math.abs(n)}`
   return (
