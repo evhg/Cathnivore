@@ -95,6 +95,8 @@ export interface FrontScene {
   ready(): void;
   /** Plan item 449: the deepest weapon vertex inside her coat (m) and its weapon. */
   weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
+  /** Plan item 727: the deepest long-hair vertex inside her coat (m), and how many sit more than 4 mm in. */
+  hairInCoat(): { depth: number; count: number; verts: number; at: number[] | null };
   /** Plan item 140: the expression painted on her face now. */
   readonly expression: FaceExpression;
   /** Plan item 112: the class whose look and idle she's showing (null on the title). */
@@ -1367,6 +1369,9 @@ export async function openFrontScene(canvas: HTMLCanvasElement, o: FrontSceneOpt
     },
     weaponInCoat() {
       return cath.weaponInCoat();
+    },
+    hairInCoat() {
+      return cath.hairInCoat();
     },
     ready() {
       // Plan item 449: the lens's bearing in her own frame (+z ahead of her), so she squares up to the camera.

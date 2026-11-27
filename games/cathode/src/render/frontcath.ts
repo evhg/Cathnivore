@@ -47,6 +47,11 @@ export interface FrontCath {
    */
   weaponInCoat(): { depth: number; gun: string | null; at?: number[] | null };
   /**
+   * Plan item 727: how deep (m) the deepest long-hair vertex (sheet and locks) sits inside her coat, and how many of
+   * the vertices checked sit more than 4 mm inside it. The collar opening, where the hair tucks in, is skipped.
+   */
+  hairInCoat(): { depth: number; count: number; verts: number; at: number[] | null };
+  /**
    * Plan item 449: the pick's commit: whatever is left of the audition plays out in 350 ms (so she ends on her carry:
    * the shotgun shouldered, the rifle slung, the revolver holstered) and she squares up to the lens, chin up. `yaw`
    * is the lens's bearing in her frame (rad, 0 straight ahead of her; turned toward by up to 0.6).
@@ -1074,6 +1079,109 @@ export function buildFrontCath(phone: boolean): FrontCath {
   const coat = add(coatGeo, skirtMat, pelvis);
   coat.name = "coat";
   const coatRest = (coatGeo.attributes.position!.array as Float32Array).slice();
+  // Plan item 727: the coat's radius (x; z is 0.7 of it, the lathe's depth) at a height in its own frame, from the
+  // profile (ascending y after the reverse above), so the long hair can be kept off its shoulders and back.
+  const coatUp = coatProfile.slice();
+  const coatR = (y: number): number => {
+    for (let i = 1; i < coatUp.length; i++) {
+      const [r1, y1] = coatUp[i]!;
+      if (y <= y1) {
+        const [r0, y0] = coatUp[i - 1]!;
+        return r0 + ((r1 - r0) * (y - y0)) / (y1 - y0 || 1);
+      }
+    }
+    return 0;
+  };
+  const hairToCoat = new THREE.Matrix4();
+  const coatToHair = new THREE.Matrix4();
+  const hv = new THREE.Vector3();
+  /** Pushes head-frame hair positions in `a` out of the coat above the skirt's swinging rows; true when any moved. */
+  const keepOffCoat = (a: Float32Array): boolean => {
+    let moved = false;
+    for (let i = 0; i < a.length; i += 3) {
+      hv.set(a[i]!, a[i + 1]!, a[i + 2]!).applyMatrix4(hairToCoat);
+      // From the hips (the skirt's Verlet rows start below -0.19) to the shoulders' top.
+      if (hv.y < -0.17 || hv.y > 0.55) continue;
+      const rad = Math.hypot(hv.x, hv.z);
+      // The collar opening: there the hair tucks in by design.
+      if (hv.y > 0.47 && rad < 0.115) continue;
+      const R = coatR(hv.y);
+      if (R <= 0) continue;
+      const e = Math.hypot(hv.x / R, hv.z / (0.7 * R));
+      const want = (R + 0.006) / R;
+      if (e >= want || e < 1e-4) continue;
+      const k = want / e;
+      hv.x *= k;
+      hv.z *= k;
+      hv.applyMatrix4(coatToHair);
+      a[i] = hv.x;
+      a[i + 1] = hv.y;
+      a[i + 2] = hv.z;
+      moved = true;
+    }
+    return moved;
+  };
+  /**
+   * Plan items 449 and 727: how deep (m) the deepest visible vertex of `objs` sits inside the coat: from 1 m out on
+   * the vertex's side of the coat's axis, a ray in toward it; the first hit is the coat's outside there. `skip` drops
+   * vertices by their coat-local position and radius; `tol` is the depth that counts a vertex as inside.
+   */
+  const coatDepth = (objs: THREE.Object3D[], maxPerMesh: number, skip?: (local: THREE.Vector3, r: number) => boolean, tol = 0) => {
+    const ray = new THREE.Raycaster();
+    const hits: THREE.Intersection[] = [];
+    const axis = new THREE.Vector3();
+    const local = new THREE.Vector3();
+    const w = new THREE.Vector3();
+    const from = new THREE.Vector3();
+    const dir = new THREE.Vector3();
+    coatGeo.computeBoundingBox();
+    coatGeo.computeBoundingSphere();
+    const box = coatGeo.boundingBox!;
+    let depth = 0;
+    let name: string | null = null;
+    let at: number[] | null = null;
+    let count = 0;
+    let verts = 0;
+    for (const g of objs) {
+      let shown = true;
+      for (let o: THREE.Object3D | null = g; o; o = o.parent) if (!o.visible) shown = false;
+      if (!shown) continue;
+      g.traverseVisible((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        const pos = m.geometry.attributes.position as THREE.BufferAttribute;
+        const step = Math.max(1, Math.floor(pos.count / maxPerMesh));
+        for (let i = 0; i < pos.count; i += step) {
+          w.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+          local.copy(w);
+          coat.worldToLocal(local);
+          if (local.y < box.min.y || local.y > box.max.y) continue;
+          const r = Math.hypot(local.x, local.z);
+          if (r < 1e-4 || skip?.(local, r)) continue;
+          verts++;
+          axis.set(0, local.y, 0);
+          coat.localToWorld(axis);
+          from.set(local.x / r, 0, local.z / r).multiplyScalar(1).setY(local.y);
+          coat.localToWorld(from);
+          dir.copy(axis).sub(from).normalize();
+          ray.set(from, dir);
+          ray.far = from.distanceTo(axis);
+          hits.length = 0;
+          coat.raycast(ray, hits);
+          if (!hits.length) continue;
+          const surf = hits.reduce((a, b) => (b.distance < a.distance ? b : a)).point.distanceTo(axis);
+          const d = surf - w.distanceTo(axis);
+          if (d > tol) count++;
+          if (d > depth) {
+            depth = d;
+            name = g.name || "mesh";
+            at = [local.x, local.y, local.z].map((n) => Math.round(n * 1000) / 1000);
+          }
+        }
+      });
+    }
+    return { depth: Math.round(depth * 1000) / 1000, name, at, count, verts };
+  };
   // The belt and its buckle, and a popped collar.
   const belt = new THREE.TorusGeometry(0.112, 0.015, 6, seg(28));
   belt.rotateX(Math.PI / 2);
@@ -2181,7 +2289,7 @@ float reliefShade( vec2 uv ) {
     // as the hood's lining does: lit like the outside it drew grey, jagged strands beside her far cheek.
     rimify(hairSheetMat, 1.2, 0, 0, 0, true, 0, "flat", 0.4);
     mats.push(hairSheetMat);
-    add(sheet, hairSheetMat, headPivot);
+    add(sheet, hairSheetMat, headPivot).name = "cath-hair-sheet";
 
     // Plan item 175: locks laid over the sheet, so the hair reads as layered strands rather than one shell: each
     // a rounded ribbon a few centimetres wide that follows the sheet's waves just outside it, emerging under the
@@ -3408,6 +3516,16 @@ float reliefShade( vec2 uv ) {
         }
         lpos.needsUpdate = true;
       }
+      // Plan item 727: no strand inside the coat: any hair vertex (hood down) that the sway or the head's turn has put
+      // inside the coat's shoulders or back is pushed out to 6 mm over it (the critique's strands through the coat).
+      if (hairRest === hairRestOpen) {
+        headPivot.updateWorldMatrix(true, false);
+        coat.updateWorldMatrix(true, false);
+        hairToCoat.copy(coat.matrixWorld).invert().multiply(headPivot.matrixWorld);
+        coatToHair.copy(hairToCoat).invert();
+        if (keepOffCoat(ha)) hp.needsUpdate = true;
+        if (lockGeo && keepOffCoat(lockGeo.attributes.position!.array as Float32Array)) lockGeo.attributes.position!.needsUpdate = true;
+      }
     }
 
     // The ember breathes; every 14 s she draws on it (brighter) and a curl of smoke rises.
@@ -4555,56 +4673,19 @@ float reliefShade( vec2 uv ) {
       group.updateMatrixWorld(true);
       const guns: THREE.Object3D[] = [rifle, shotgun, hipGun, backRifle, ...sideGuns.values()];
       kits.get("gunslinger")?.traverse((o) => o.name === "kit-gunslinger-revolver" && guns.push(o));
-      const ray = new THREE.Raycaster();
-      const hits: THREE.Intersection[] = [];
-      const axis = new THREE.Vector3();
-      const local = new THREE.Vector3();
-      const w = new THREE.Vector3();
-      const from = new THREE.Vector3();
-      const dir = new THREE.Vector3();
-      const box = (coatGeo.boundingBox ?? (coatGeo.computeBoundingBox(), coatGeo.boundingBox))!;
-      coatGeo.computeBoundingSphere();
-      let depth = 0;
-      let gun: string | null = null;
-      let at: number[] | null = null;
-      for (const g of guns) {
-        let shown = true;
-        for (let o: THREE.Object3D | null = g; o; o = o.parent) if (!o.visible) shown = false;
-        if (!shown) continue;
-        g.traverseVisible((o) => {
-          const m = o as THREE.Mesh;
-          if (!m.isMesh) return;
-          const pos = m.geometry.attributes.position as THREE.BufferAttribute;
-          const step = Math.max(1, Math.floor(pos.count / 120));
-          for (let i = 0; i < pos.count; i += step) {
-            w.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
-            local.copy(w);
-            coat.worldToLocal(local);
-            if (local.y < box.min.y || local.y > box.max.y) continue;
-            const r = Math.hypot(local.x, local.z);
-            if (r < 1e-4) continue;
-            // From 1 m out on her side of the axis, in toward it: the first hit is the coat's outside there.
-            axis.set(0, local.y, 0);
-            coat.localToWorld(axis);
-            from.set(local.x / r, 0, local.z / r).multiplyScalar(1).setY(local.y);
-            coat.localToWorld(from);
-            dir.copy(axis).sub(from).normalize();
-            ray.set(from, dir);
-            ray.far = from.distanceTo(axis);
-            hits.length = 0;
-            coat.raycast(ray, hits);
-            if (!hits.length) continue;
-            const surf = hits.reduce((a, b) => (b.distance < a.distance ? b : a)).point.distanceTo(axis);
-            const d = surf - w.distanceTo(axis);
-            if (d > depth) {
-              depth = d;
-              gun = g.name || "gun";
-              at = [local.x, local.y, local.z].map((n) => Math.round(n * 1000) / 1000);
-            }
-          }
-        });
-      }
-      return { depth: Math.round(depth * 1000) / 1000, gun, at };
+      const r = coatDepth(guns, 120);
+      return { depth: r.depth, gun: r.name, at: r.at };
+    },
+    hairInCoat() {
+      // Under the Ghost's hood the hair is tucked inside the cowl by design (`tuckHair`): nothing of it shows.
+      if (hairRest !== hairRestOpen) return { depth: 0, count: 0, verts: 0, at: null };
+      group.updateMatrixWorld(true);
+      // Plan item 727: the long hair sheet and its locks; the collar opening is skipped (above the shoulder's
+      // round and inside the collar base's radius the hair is tucked in by design).
+      const hair: THREE.Object3D[] = [];
+      headPivot.traverse((o) => (o.name === "cath-hair-sheet" || o.name === "cath-hair-locks") && hair.push(o));
+      const r = coatDepth(hair, 1e9, (l, rad) => l.y > 0.47 && rad < 0.115, 0.004);
+      return { depth: r.depth, count: r.count, verts: r.verts, at: r.at };
     },
     get clipState() {
       return clip ? { kind: clip.kind, u: clip.u, prop: propNow } : null;
