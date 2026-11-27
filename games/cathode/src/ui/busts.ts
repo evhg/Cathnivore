@@ -387,25 +387,21 @@ function sculptedEye(id: string, cx: number, lit: boolean): string {
  * the cheekbone and the jaw's far side fall away), real eyes (white, iris, pupil, a catchlight, heavy upper lids and
  * the bags under them), a broken nose, grey stubble, a wool beanie with its ribs following the crown over a turned
  * cuff, and a pea coat with its collar up and anchor buttons, the debt tag pinned to it.
+ * Plan item 738: one Tomas across the games (VISION 5): Cathnivore's Tomas Reed (src/content/characters.ts: brown
+ * skin, dark curly hair, a grin, the market's mustard) in the Ledger's photo too, so the beanie and the grey went:
+ * his own skin's values, his curls, a market man's half-grin and a mustard knit at the throat under the pea coat.
  */
 function reed(id: string, wrap: Wrap = frame): string {
-  const WOOL = "#5a2a24";
-  const WOOL_DK = "#3a1915";
-  const WOOL_HI = "#7a3f36";
+  // His skin in the photo's warm print (Cathnivore's #8C5A3C), lit from the left.
+  const SK = "#8c6a52";
+  const SK_MID = "#6e5240";
+  const SK_DK = "#47342a";
+  const SK_HI = "#c9a283";
+  const HAIR = "#241a15";
+  const HAIR_HI = "#4d3a2e";
   const COAT = "#262c36";
   const COAT_DK = "#171b22";
   const COAT_HI = "#3a4250";
-  // Ribs over the crown: each one a curve from the cuff up to the crown's top, bowed with the dome.
-  const ribs = Array.from({ length: 11 }, (_, i) => {
-    const t = (i - 5) / 5;
-    const x0 = 100 + t * 34;
-    const top = 100 + t * 12;
-    return `<path d="M${x0.toFixed(1)} 74 C${(x0 - t * 2).toFixed(1)} 60 ${(top + t * 6).toFixed(1)} 44 ${top.toFixed(1)} 34" stroke="${i < 4 ? WOOL_HI : WOOL_DK}" stroke-width="${i < 4 ? 1.3 : 1.6}" fill="none" opacity="${i < 4 ? 0.7 : 0.85}"/>`;
-  }).join("");
-  const cuffRibs = Array.from({ length: 17 }, (_, i) => {
-    const x = 68 + i * 4;
-    return `<line x1="${x}" y1="${76 + Math.abs(i - 8) * 0.3}" x2="${x}" y2="${88 - Math.abs(i - 8) * 0.25}" stroke="${i < 6 ? WOOL_HI : WOOL_DK}" stroke-width="1.2" opacity=".75"/>`;
-  }).join("");
   // Stubble as a fine shadow over the jaw and the upper lip, flecked, not spotted.
   const stubble = Array.from({ length: 140 }, (_, i) => {
     const a = (i * 137.5 * Math.PI) / 180;
@@ -414,6 +410,19 @@ function reed(id: string, wrap: Wrap = frame): string {
     const y = 138 + Math.sin(a) * r * 0.5;
     const lip = y < 134 && y > 128 && Math.abs(x - 100) < 11;
     return (y > 136 && y < 152) || lip ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(0.35 + (i % 3) * 0.12).toFixed(2)}"/>` : "";
+  }).join("");
+  // Curls round the hairline and over the crown: rings in the hair's dark, the lit side (left) catching the key.
+  const curls = Array.from({ length: 30 }, (_, i) => {
+    const ring = i < 18;
+    const t = ring ? i / 17 : (i - 18) / 11;
+    const a = Math.PI * (ring ? 1.06 - t * 1.12 : 0.92 - t * 0.84);
+    const rx = ring ? 33 : 22;
+    const ry = ring ? 34 : 20;
+    const cx = 100 + Math.cos(a) * rx;
+    const cy = (ring ? 74 : 60) - Math.sin(a) * ry;
+    const r = ring ? 5.2 + (i % 3) * 0.8 : 4.6 + (i % 2) * 0.9;
+    const lit = cx < 100;
+    return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${HAIR}"/><path d="M${(cx - r * 0.6).toFixed(1)} ${(cy + r * 0.1).toFixed(1)} a${(r * 0.62).toFixed(1)} ${(r * 0.62).toFixed(1)} 0 1 1 ${(r * 1.1).toFixed(1)} ${(-r * 0.3).toFixed(1)}" stroke="${lit ? HAIR_HI : "#35271f"}" stroke-width="1.1" fill="none" opacity="${lit ? 0.9 : 0.6}"/>`;
   }).join("");
   const eye = (cx: number, lit: boolean) => sculptedEye(id, cx, lit);
   const brow = (cx: number, dir: 1 | -1) =>
@@ -426,9 +435,8 @@ function reed(id: string, wrap: Wrap = frame): string {
     id,
     `
 <defs>
-<linearGradient id="rk${id}" x1="0" x2="1"><stop offset="0" stop-color="#d6cec1"/><stop offset=".5" stop-color="${SKIN}"/><stop offset=".72" stop-color="${SKIN_MID}"/><stop offset="1" stop-color="#6e665c"/></linearGradient>
+<linearGradient id="rk${id}" x1="0" x2="1"><stop offset="0" stop-color="#b08a6e"/><stop offset=".5" stop-color="${SK}"/><stop offset=".72" stop-color="${SK_MID}"/><stop offset="1" stop-color="#3f2e24"/></linearGradient>
 <radialGradient id="rc${id}" cx="35%" cy="40%" r="70%"><stop offset="0" stop-color="${COAT_HI}"/><stop offset="1" stop-color="${COAT_DK}"/></radialGradient>
-<radialGradient id="rw${id}" cx="34%" cy="30%" r="80%"><stop offset="0" stop-color="${WOOL_HI}"/><stop offset=".6" stop-color="${WOOL}"/><stop offset="1" stop-color="${WOOL_DK}"/></radialGradient>
 </defs>
 <!-- pea coat: broad shoulders, the collar turned up behind the neck, wide notched lapels -->
 <path d="M0 240 L4 196 C18 178 48 168 72 162 L100 178 L128 162 C152 168 182 178 196 196 L200 240 Z" fill="url(#rc${id})"/>
@@ -447,65 +455,61 @@ ${[
 ]
   .map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="4.2" fill="${i % 2 ? "#14171d" : "#2e3542"}" stroke="#0a0c10" stroke-width="1"/><path d="M${x} ${y! - 2.4} v4.6 M${x! - 2} ${y! + 1.2} q2 2 4 0" stroke="${i % 2 ? "#3a4250" : "#69738a"}" stroke-width=".9" fill="none"/>`)
   .join("")}
-<!-- a knit jumper at the throat -->
-<path d="M86 156 L100 178 L114 156 C108 160 92 160 86 156 Z" fill="#4a4842"/>
-<g stroke="#34322e" stroke-width=".8" opacity=".8">${[90, 94, 98, 102, 106, 110].map((x) => `<line x1="${x}" y1="${158 + Math.abs(x - 100) * 0.1}" x2="${x + (x < 100 ? 1.4 : -1.4)}" y2="${166 - Math.abs(x - 100) * 0.5}"/>`).join("")}</g>
+<!-- a knit jumper at the throat, the market's mustard -->
+<path d="M86 156 L100 178 L114 156 C108 160 92 160 86 156 Z" fill="#a8873f"/>
+<g stroke="#6e5626" stroke-width=".8" opacity=".8">${[90, 94, 98, 102, 106, 110].map((x) => `<line x1="${x}" y1="${158 + Math.abs(x - 100) * 0.1}" x2="${x + (x < 100 ? 1.4 : -1.4)}" y2="${166 - Math.abs(x - 100) * 0.5}"/>`).join("")}</g>
 <!-- the debt tag pinned to his coat -->
 <path d="M140 204 L160 200 L164 216 L144 220 Z" fill="${RED}"/><circle cx="144" cy="208" r="1.6" fill="#0b0c10"/>
 <path d="M144 208 C140 202 136 200 132 200" stroke="#8d877d" stroke-width=".8" fill="none"/>
 <!-- neck, the far side in shadow, a cord of the throat -->
-<path d="M84 128 L116 128 L118 158 C110 165 90 165 82 158 Z" fill="${SKIN_MID}"/>
-<path d="M104 132 L116 128 L118 158 C114 161 110 162 106 162 Z" fill="${SKIN_DK}" opacity=".6"/>
-<path d="M92 140 C93 148 95 154 96 160" stroke="${SKIN_DK}" stroke-width="1" fill="none" opacity=".5"/>
+<path d="M84 128 L116 128 L118 158 C110 165 90 165 82 158 Z" fill="${SK_MID}"/>
+<path d="M104 132 L116 128 L118 158 C114 161 110 162 106 162 Z" fill="${SK_DK}" opacity=".6"/>
+<path d="M92 140 C93 148 95 154 96 160" stroke="${SK_DK}" stroke-width="1" fill="none" opacity=".5"/>
 <!-- ears: rim, the inner fold, the far one in shadow -->
-<path d="M70 92 C62 88 60 104 64 112 C66 118 70 118 72 114 Z" fill="${SKIN_MID}"/>
-<path d="M68 98 C65 100 65 108 68 112" stroke="${SKIN_DK}" stroke-width="1.2" fill="none"/>
-<path d="M130 92 C138 88 140 104 136 112 C134 118 130 118 128 114 Z" fill="${SKIN_DK}"/>
+<path d="M70 92 C62 88 60 104 64 112 C66 118 70 118 72 114 Z" fill="${SK_MID}"/>
+<path d="M68 98 C65 100 65 108 68 112" stroke="${SK_DK}" stroke-width="1.2" fill="none"/>
+<path d="M130 92 C138 88 140 104 136 112 C134 118 130 118 128 114 Z" fill="${SK_DK}"/>
 <!-- the head: a broad weathered jaw, square at the corners -->
 <path d="M70 88 C70 62 84 52 100 52 C116 52 130 62 130 88 C131 106 130 122 124 134 C119 144 110 152 100 153 C90 152 81 144 76 134 C70 122 69 106 70 88 Z" fill="url(#rk${id})"/>
 <!-- planes: the shadow side, the temple, the hollow under each cheekbone, the jaw's underside -->
-<path d="M110 54 C124 58 130 70 130 88 C131 106 130 122 124 134 C119 144 110 152 100 153 C108 142 114 128 115 112 C116 96 116 72 110 54 Z" fill="${SKIN_DK}" opacity=".55"/>
-<path d="M72 80 C74 90 74 96 72 102" stroke="${SKIN_MID}" stroke-width="4" fill="none" opacity=".45" stroke-linecap="round"/>
-<path d="M78 116 C82 124 86 128 90 130 C86 122 84 118 82 112 Z" fill="${SKIN_MID}" opacity=".7"/>
-<path d="M122 116 C118 124 114 128 110 130 C114 122 116 118 118 112 Z" fill="${SKIN_DK}" opacity=".7"/>
-<path d="M80 138 C88 148 112 148 120 138 C116 148 108 153 100 153 C92 153 84 148 80 138 Z" fill="${SKIN_DK}" opacity=".35"/>
+<path d="M110 54 C124 58 130 70 130 88 C131 106 130 122 124 134 C119 144 110 152 100 153 C108 142 114 128 115 112 C116 96 116 72 110 54 Z" fill="${SK_DK}" opacity=".55"/>
+<path d="M72 80 C74 90 74 96 72 102" stroke="${SK_MID}" stroke-width="4" fill="none" opacity=".45" stroke-linecap="round"/>
+<path d="M78 116 C82 124 86 128 90 130 C86 122 84 118 82 112 Z" fill="${SK_MID}" opacity=".7"/>
+<path d="M122 116 C118 124 114 128 110 130 C114 122 116 118 118 112 Z" fill="${SK_DK}" opacity=".7"/>
+<path d="M80 138 C88 148 112 148 120 138 C116 148 108 153 100 153 C92 153 84 148 80 138 Z" fill="${SK_DK}" opacity=".35"/>
 <!-- lights: forehead, the lit cheekbone, the bridge, the chin -->
-<ellipse cx="90" cy="80" rx="14" ry="5" fill="#ece5d8" opacity=".45"/>
-<ellipse cx="82" cy="110" rx="6" ry="3.4" fill="#ece5d8" opacity=".5" transform="rotate(-20 82 110)"/>
-<ellipse cx="98" cy="146" rx="6" ry="2.6" fill="#ece5d8" opacity=".3"/>
+<ellipse cx="90" cy="80" rx="14" ry="5" fill="${SK_HI}" opacity=".45"/>
+<ellipse cx="82" cy="110" rx="6" ry="3.4" fill="${SK_HI}" opacity=".5" transform="rotate(-20 82 110)"/>
+<ellipse cx="98" cy="146" rx="6" ry="2.6" fill="${SK_HI}" opacity=".3"/>
 <!-- a furrowed brow and crow's feet -->
-<path d="M86 84 C94 82 106 82 114 84 M90 88 C96 87 104 87 110 88" stroke="${SKIN_DK}" stroke-width=".8" fill="none" opacity=".45"/>
-<path d="M98 92 L99 97 M103 92 L102 97" stroke="${SKIN_DK}" stroke-width=".9" opacity=".55"/>
-<path d="M74 98 l-4 -2 M74 101 l-4 1 M126 98 l4 -2 M126 101 l4 1" stroke="${SKIN_DK}" stroke-width=".8" opacity=".5"/>
+<path d="M86 84 C94 82 106 82 114 84 M90 88 C96 87 104 87 110 88" stroke="${SK_DK}" stroke-width=".8" fill="none" opacity=".45"/>
+<path d="M98 92 L99 97 M103 92 L102 97" stroke="${SK_DK}" stroke-width=".9" opacity=".55"/>
+<path d="M74 98 l-4 -2 M74 101 l-4 1 M126 98 l4 -2 M126 101 l4 1" stroke="${SK_DK}" stroke-width=".8" opacity=".5"/>
 ${brow(87, -1)}${brow(113, 1)}
 ${eye(87, true)}${eye(113, false)}
 <!-- the nose, broken once: a bend in the bridge, the tip, the wings and nostrils -->
-<path d="M98 100 C97 106 99 110 97 116 C96 120 94 122 94 124" stroke="${SKIN_DK}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
-<path d="M95 104 C94 110 96 114 94 118" stroke="#ece5d8" stroke-width="2" fill="none" opacity=".55" stroke-linecap="round"/>
-<path d="M103 102 C106 110 108 116 108 121 C104 124 100 124 98 123 Z" fill="${SKIN_MID}" opacity=".8"/>
-<path d="M90 122 C91 126 95 127 98 125 M102 125 C105 127 109 126 110 122" stroke="${SKIN_DK}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<path d="M98 100 C97 106 99 110 97 116 C96 120 94 122 94 124" stroke="${SK_DK}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<path d="M95 104 C94 110 96 114 94 118" stroke="${SK_HI}" stroke-width="2" fill="none" opacity=".55" stroke-linecap="round"/>
+<path d="M103 102 C106 110 108 116 108 121 C104 124 100 124 98 123 Z" fill="${SK_MID}" opacity=".8"/>
+<path d="M90 122 C91 126 95 127 98 125 M102 125 C105 127 109 126 110 122" stroke="${SK_DK}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
 <ellipse cx="94.6" cy="124.4" rx="1.8" ry="1" fill="${INK}" opacity=".7"/><ellipse cx="105.4" cy="124.4" rx="1.8" ry="1" fill="${INK}" opacity=".7"/>
 <!-- the folds from the nose to the mouth's corners -->
-<path d="M88 118 C85 124 84 130 86 136 M112 118 C115 124 116 130 114 136" stroke="${SKIN_DK}" stroke-width="1.1" fill="none" opacity=".55"/>
-<!-- the mouth: set and turned down, a thin upper lip over a fuller lower one -->
-<path d="M88 135 C93 133 97 133.6 100 134.4 C103 133.6 107 133 112 135 C107 136 103 136.4 100 136.2 C97 136.4 93 136 88 135 Z" fill="#6a5f55"/>
-<path d="M88 135.4 C94 136.8 106 136.8 112 135.4" stroke="#2c2622" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-<path d="M90 137 C95 140.6 105 140.6 110 137 C105 139 95 139 90 137 Z" fill="#a39a8e"/>
-<path d="M87 136.4 l-1.6 1.8 M113 136.4 l1.6 1.8" stroke="${SKIN_DK}" stroke-width="1" opacity=".7"/>
-<!-- grey stubble over the jaw and the lip -->
-<path d="M82 138 C88 150 112 150 118 138 C114 148 108 152 100 152 C92 152 86 148 82 138 Z" fill="#5a544c" opacity=".22"/>
-<g fill="#4f4a44" opacity=".45">${stubble}</g>
-<!-- the beanie: a slouched crown of ribbed wool over a turned cuff -->
-<path d="M66 80 C62 46 80 30 100 30 C120 30 138 46 134 80 Z" fill="url(#rw${id})"/>
-${ribs}
-<path d="M64 76 C78 70 122 70 136 76 L136 90 C122 84 78 84 64 90 Z" fill="${WOOL}"/>
-<path d="M64 76 C78 70 122 70 136 76" stroke="${WOOL_HI}" stroke-width="1.4" fill="none" opacity=".8"/>
-${cuffRibs}
-<path d="M64 90 C78 84 122 84 136 90" stroke="${WOOL_DK}" stroke-width="2" fill="none"/>
-<path d="M66 90 C78 85.6 122 85.6 134 90 L134 92 C122 88 78 88 66 92 Z" fill="#1a0c0a" opacity=".5"/>
+<path d="M88 118 C85 124 84 130 86 136 M112 118 C115 124 116 130 114 136" stroke="${SK_DK}" stroke-width="1.1" fill="none" opacity=".55"/>
+<!-- the mouth: a market man's half-grin, the corners up, a line of teeth -->
+<path d="M87 133 C93 136.4 107 136.4 113 132.4 C108 139.6 92 139.8 87 133 Z" fill="#3a231c"/>
+<path d="M90 134.4 C95 136.2 105 136.2 110 134" stroke="#e4d8c6" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<path d="M87 133 C93 136.4 107 136.4 113 132.4" stroke="#24150f" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<path d="M91 138.6 C96 141.4 104 141.4 109 138.2 C104 140.2 96 140.4 91 138.6 Z" fill="#8a5f4c"/>
+<path d="M86 132.6 l-1.8 -1.4 M114 132 l1.8 -1.6" stroke="${SK_DK}" stroke-width="1" opacity=".7"/>
+<!-- dark stubble over the jaw and the lip -->
+<path d="M82 138 C88 150 112 150 118 138 C114 148 108 152 100 152 C92 152 86 148 82 138 Z" fill="#2a1d17" opacity=".22"/>
+<g fill="#241a15" opacity=".45">${stubble}</g>
+<!-- his curls: a close dark crop over the crown, curls at the hairline and over the ears -->
+<path d="M66 96 C60 64 74 36 100 34 C126 36 140 64 134 96 C132 84 128 74 122 68 C112 62 88 62 78 68 C72 74 68 84 66 96 Z" fill="${HAIR}"/>
+${curls}
 <!-- the key's rim along his lit cheek and the wool -->
 <path d="M70.6 92 C70.4 108 72.6 124 79 136" stroke="${P}" stroke-width=".9" fill="none" opacity=".35"/>
-<path d="M68 70 C68 52 80 36 96 32" stroke="#a65d52" stroke-width="1.4" fill="none" opacity=".6"/>
+<path d="M68 72 C68 54 80 40 96 36" stroke="${HAIR_HI}" stroke-width="1.6" fill="none" opacity=".8"/>
 `,
   );
 }

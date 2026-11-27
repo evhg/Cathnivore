@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BUSTS, BUST_FOR_CASE, bustForBanner, bustSvg, mugshotSvg } from "../games/cathode/src/ui/busts";
 import { caseBoard } from "../games/cathode/src/sim/casefile";
+import { CHARACTERS } from "../src/content/characters";
 
 describe("NIGHT SHIFT villain busts (plan item 9)", () => {
   it("draws each name on the List as its own SVG with unique ids", () => {
@@ -65,6 +66,22 @@ describe("NIGHT SHIFT villain busts (plan item 9)", () => {
       expect(s).toMatch(/<filter id="e\w+"[^>]*><feOffset in="SourceAlpha"/);
       expect(s).not.toContain('slope="1.28"');
     }
+  });
+
+  // Plan item 738: one Tomas Reed across the games (VISION 5): the Ledger's photo is Cathnivore's Tomas (dark curly
+  // hair, brown skin, the market's mustard), not a pale man in a beanie.
+  it("draws Tomas Reed as Cathnivore draws him", () => {
+    const tomas = CHARACTERS.tomas!;
+    expect(tomas.hairStyle).toBe("curly");
+    const s = bustSvg("reed");
+    expect(s).not.toContain("beanie");
+    expect(s).not.toContain('"#5a2a24"');
+    expect((s.match(/<circle [^>]*r="[\d.]+" fill="#241a15"\/>/g) ?? []).length, "curls").toBeGreaterThanOrEqual(20);
+    // his face's mid tone is a brown, darker than the pale print the other targets share (#c7beb1)
+    const lum = (hex: string) => [1, 3, 5].map((k) => parseInt(hex.slice(k, k + 2), 16)).reduce((a, v, k) => a + v * [0.2126, 0.7152, 0.0722][k]!, 0) / 255;
+    const mid = /stop offset="\.5" stop-color="(#\w{6})"/.exec(s)![1]!;
+    expect(Math.abs(lum(mid) - lum(tomas.skin)), "skin value").toBeLessThan(0.12);
+    expect(s).toContain('fill="#a8873f"');
   });
 });
 

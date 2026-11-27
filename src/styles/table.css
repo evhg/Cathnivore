@@ -5443,7 +5443,10 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost {
     position: absolute;
     left: 5px;
-    top: calc(var(--art-h) - 22px);
+    /* Plan item 738: the chip's foot stands 4 px inside the window's foot, whatever its height (a 25 px price chip
+       at art-h - 22 hung 3 px past the window onto the name: '2' met 'Supply', 'FREE' met 'Injunction') */
+    top: calc(var(--art-h) - 4px);
+    translate: 0 -100%;
     margin: 0;
     box-shadow: 0 1px 2px rgb(var(--shadow-ink) / .3);
   }
@@ -5453,14 +5456,14 @@ html.no-animations .mat-art-slot[data-bump] { animation: mat-fade 240ms linear; 
   .action-tray .actions .action-item:has(svg.action-art[data-scene]):has(.action-gain-graft) > .tooltip-trigger { top: 6px; }
   /* Plan item 455: Graft's two-value chip stands taller than a price chip, so it rides 6 px higher on the window's
      foot (its foot met the card's name by 5 px). */
-  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost.action-gain-graft { top: calc(var(--art-h) - 28px); }
+  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost.action-gain-graft { top: calc(var(--art-h) - 4px); }
 }
 @media (max-width: 1023.98px) {
   /* Plan item 320: the 'i' now rides a card's window edge at mid-height, and its touch target reaches past the card's
      edge onto the next strip; a card off the front takes no 'i' taps (a tap there brings the card forward, item 302). */
   .action-tray .actions > .action-item[data-peek]:is([data-stack='l'], [data-stack='r']):not(:focus-within) > .tooltip-trigger { pointer-events: none; }  /* Plan item 541: Sell's '-> m 1' chip (arrow, coin and figure) stands as tall as Graft's: it rides as high, clear of
      the card's name (its foot cut the top of 'Sell' by about 5 px on a phone) */
-  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost:has(> .action-gain-arrow) { top: calc(var(--art-h) - 28px); }
+  .action-tray .actions .action-item > button:first-child:not(:disabled):has(svg.action-art[data-scene]) .action-cost:has(> .action-gain-arrow) { top: calc(var(--art-h) - 4px); }
 }
 /* Plan item 320: a hand card's family seal is a badge pinned to the card's top-left corner, over its window. */
 :is(.table-hand, .action-tray .actions) .action-item .action-label > svg.action-seal {

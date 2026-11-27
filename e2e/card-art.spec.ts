@@ -38,13 +38,28 @@ test('hand names are big enough and every chip stays on its own card', async ({ 
       const h = Math.min(chip.bottom, next.bottom) - Math.max(chip.top, next.top)
       if (w > 1 && h > 1) crossings.push(`${c.textContent} chip under the next card (${w.toFixed(0)}x${h.toFixed(0)})`)
     })
+    // Plan item 738: a chip on a card's window stands clear of its own name ('2' met 'Supply', 'FREE' 'Injunction').
+    // Measured in the card's own frame (the fanned hand tilts its cards): the chip's foot, its translate counted, against
+    // the name's top.
+    const crowded: string[] = []
+    if (vw < 700)
+      for (const c of onScreen) {
+        const chip = c.querySelector<HTMLElement>('.action-cost')
+        const label = c.querySelector<HTMLElement>('.action-label')
+        if (!chip || !label || chip.offsetParent !== label.offsetParent || getComputedStyle(chip).position !== 'absolute') continue
+        const ty = (getComputedStyle(chip).translate.split(' ')[1] ?? '0px').trim()
+        const shift = ty.endsWith('%') ? (parseFloat(ty) / 100) * chip.offsetHeight : parseFloat(ty) || 0
+        const foot = chip.offsetTop + chip.offsetHeight + shift
+        if (label.offsetTop - foot < 4) crowded.push(`${c.textContent}: chip foot ${foot.toFixed(1)}, name ${label.offsetTop}`)
+      }
     const bottom = Math.max(...onScreen.map((c) => c.getBoundingClientRect().bottom))
-    return { fonts, crossings, bottom, vh: window.innerHeight }
+    return { fonts, crossings, crowded, bottom, vh: window.innerHeight }
   })
   expect(m.fonts.length).toBeGreaterThan(1)
   const desk = width >= 1400
   for (const f of m.fonts) expect(f.px, f.name).toBeGreaterThanOrEqual(desk ? (f.tight ? 14 : 16) : 15)
   expect(m.crossings).toEqual([])
+  expect(m.crowded).toEqual([])
   expect(m.bottom).toBeLessThanOrEqual(m.vh)
 })
 
