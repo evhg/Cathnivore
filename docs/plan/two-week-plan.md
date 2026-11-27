@@ -6865,7 +6865,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - runnel-parched and runnel-route pass. Shots P and D, dry and solved.
 - **Size:** 2
 
-## 730. [ ] Hedgerow 3D: convoy types you can tell apart at a glance *(note 2026-11-27 09:30, lane A, no code: the registry already builds a distinct model per kind (`buildRung`/`buildEnemy` in render3d/models.ts; hedgerow-fleet-models checks 17 road kinds for wheels and materials), so the unit acceptance needs only a distinct-geometry count; the next step is the on-screen hue sample at l27 round 14, P and D, in sandbox 3D, run with no other browser on the machine)*
+## 730. [ ] Hedgerow 3D: convoy types you can tell apart at a glance *(lane A, in progress)* *(note 2026-11-27 09:30, lane A, no code: the registry already builds a distinct model per kind (`buildRung`/`buildEnemy` in render3d/models.ts; hedgerow-fleet-models checks 17 road kinds for wheels and materials), so the unit acceptance needs only a distinct-geometry count; the next step is the on-screen hue sample at l27 round 14, P and D, in sandbox 3D, run with no other browser on the machine)*
 - **Why:** critique 2026-11-27 (hedge-l27-3d-D 260-700 x 260-620; -P 150-260 x 290-560): the convoy reads as identical purple slabs with a yellow dot. Item 703 gave the lorries distinct silhouettes and lightened the sealed tint, so **measure first**: per-type hue and silhouette in sandbox at l27 and l34, P and D, on the critique's round.
 - **Build:** whatever the measurement shows is missing:
   - each RUNGS type its own model and livery colour as in 2D (item 707)
