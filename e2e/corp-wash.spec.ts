@@ -27,9 +27,21 @@ test('a 3-Outlet region carries the corporate wash; Outlets are glossy', async (
     }
     const stops = Array.from(svg.querySelectorAll('#hollowell-gloss stop')).map((s) => lum(getComputedStyle(s).stopColor))
     const face = svg.querySelector('.enemy-outlet .corp-face')?.getAttribute('fill')
-    return { rows, stops, face }
+    // Plan item 733: the Outlet stands off its land at 3:1+: its face, or the deep moulded edge round it
+    const css = getComputedStyle(document.documentElement)
+    const hex = (v: string) => {
+      const h = css.getPropertyValue(v).trim().replace('#', '')
+      return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+    }
+    const rl = (v: string) => { const [r, g, b] = hex(v); return 0.2126 * r! + 0.7152 * g! + 0.0722 * b! }
+    const cr = (a: string, b: string) => { const [x, y] = [rl(a), rl(b)]; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) }
+    const rim = svg.querySelector('.enemy-outlet .corp-rim')?.getAttribute('stroke')
+    const contrast = ['--region-pasture', '--region-crop', '--region-coast', '--region-capital'].map((land) => Math.max(cr('--hollowell', land), cr('--hollowell-ink', land)))
+    return { rows, stops, face, rim, contrast }
   })
   expect(r.face).toBe('url(#hollowell-gloss)')
+  expect(r.rim).toBe('var(--hollowell-ink)')
+  for (const c of r.contrast) expect(c).toBeGreaterThanOrEqual(3)
   expect(r.stops.length).toBeGreaterThanOrEqual(3)
   expect(r.stops[0]!).toBeGreaterThan(r.stops[1]! + 20)
   for (const row of r.rows) if (!row.free) expect(row.wash, `${row.id} with ${row.outlets} Outlets`).toBe(row.outlets >= 3)

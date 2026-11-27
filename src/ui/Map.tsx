@@ -329,9 +329,17 @@ export function Outlet({ ornament = true, stage = 2 }: { ornament?: boolean; sta
         <polygon points={OUTLET_ROOF} />
         <rect x={0.6} y={4} width={10.8} height={8} />
       </g>
+      {/* Plan item 733: the moulding's deep edge runs all round the silhouette, so the orange face (about 1.5:1 on the
+          light land) stands off its region at 5:1+; in the faction's deep tone, not an ink line (item 413). */}
+      <g className="corp-rim" fill="var(--hollowell-ink)" stroke="var(--hollowell-ink)" strokeWidth={1.3} strokeLinejoin="round">
+        <polygon points={OUTLET_ROOF} />
+        <rect x={0.6} y={4} width={10.8} height={8} />
+      </g>
       <polygon points={OUTLET_ROOF} className="corp-face" fill="url(#hollowell-gloss)" />
       {/* the shop's body and its fascia with the H; plan item 525: a chrome rim round the moulding */}
       <rect x={0.6} y={4} width={10.8} height={8} fill="url(#hollowell-gloss)" />
+      {/* Plan item 733: a cold specular band raked across the moulded front, the over-lit plastic of a showroom */}
+      <polygon className="corp-band" points="0.6,9.6 6.2,4 8.4,4 0.6,11.8" fill="var(--wrap-shine)" opacity={0.2} />
       <rect className="corp-chrome-rim" x={0.6} y={4} width={10.8} height={8} fill="none" stroke="var(--corp-chrome)" strokeWidth={0.45} />
       <rect x={0.6} y={4} width={10.8} height={2.1} fill="var(--hollowell-ink)" />
       {stage === 3 && <circle cx={6} cy={5.05} r={1.15} fill="var(--corp-acrylic)" />}
@@ -387,7 +395,9 @@ export function Buyout({ ornament = true }: { ornament?: boolean }) {
       <path d="M 2.6,8.5 V 12.4 M 9.4,8.5 V 12.4" stroke="var(--corp-chrome)" strokeWidth={1.1} strokeLinecap="round" />
       <path d="M 2.6,10.6 H 9.4" stroke="var(--corp-chrome)" strokeWidth={0.5} />
       <polygon points={board} transform="translate(0.8 0.9)" className="corp-shadow" fill="var(--hollowell-ink)" />
+      <polygon points={board} className="corp-rim" fill="var(--hollowell-ink)" stroke="var(--hollowell-ink)" strokeWidth={1.3} strokeLinejoin="round" />
       <polygon points={board} className="corp-face" fill="url(#hollowell-gloss)" />
+      <polygon className="corp-band" points="0,6.8 5.4,1.2 7.6,1.2 0,9" fill="var(--wrap-shine)" opacity={0.2} />
       <circle cx={6} cy={3.3} r={1.45} fill="var(--corp-acrylic)" />
       <path d="M 5.35,2.6 v 1.4 M 6.65,2.6 v 1.4 M 5.35,3.3 h 1.3" stroke="var(--hollowell-ink)" strokeWidth={0.45} strokeLinecap="round" fill="none" />
       {ornament && <g transform="translate(1,5.6) rotate(-6)">
