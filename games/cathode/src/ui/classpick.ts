@@ -865,7 +865,7 @@ function standOnFoot(img: HTMLImageElement): void {
     for (let x = w - 1; x >= 0 && right < 0; x--) for (let y = 0; y < h; y += 2) if (d[(y * w + x) * 4 + 3]! > 40) { right = x; break; }
     if (right < 0) return;
     const drawn = Math.min(img.offsetWidth, img.offsetHeight * (w / h));
-    img.style.translate = `${((1 - (right + 1) / w) * drawn).toFixed(1)}px 0`;
+    img.style.setProperty("translate", `${((1 - (right + 1) / w) * drawn).toFixed(1)}px 0`);
   };
   if (img.complete && img.naturalWidth) fit();
   else img.addEventListener("load", fit, { once: true });
