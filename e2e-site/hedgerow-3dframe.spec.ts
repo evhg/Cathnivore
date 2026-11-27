@@ -250,8 +250,35 @@ async function plotLuminance(page: import('@playwright/test').Page, level: numbe
   // The drifting cloud shadows off, so the sampled frame doesn't depend on when it was taken.
   await page.evaluate(() => (window as unknown as { hedgerow: HGL }).hedgerow.noCloudShadows3d())
   await page.waitForTimeout(2000)
+  // Plots the field shows: the canvas is the topmost element at the plot's centre with every overlay made hit-testable
+  // (the coach bubble is pointer-events: none, so a plain elementFromPoint saw through it and sampled its white paper
+  // as field: P read 0.244 with the bubble up and 0.199 without, so the test passed or failed by when the bubble showed).
+  const shown = () =>
+    page.evaluate(() => {
+      type G = { level: { rows: number; cols: number } }
+      const h = (window as unknown as { hedgerow: HGL }).hedgerow
+      const lv = (h.game() as G).level
+      const st = document.createElement('style')
+      st.textContent = '* { pointer-events: auto !important }'
+      document.head.append(st)
+      const out: string[] = []
+      for (let r = 0; r < lv.rows; r++)
+        for (let c = 0; c < lv.cols; c++) {
+          const q = h.cellCenter(c, r)
+          if (!q) continue
+          // the full-field layers (fx, depot plates' host) are empty boxes; anything else above the canvas hides it
+          const stack = document.elementsFromPoint(q.x, q.y)
+          const at = stack.findIndex((e) => e.id === 'canvas')
+          if (at >= 0 && stack.slice(0, at).every((e) => e.id === 'fx-layer' || e.id === 'depots')) out.push(`${c},${r}`)
+        }
+      st.remove()
+      return out
+    })
+  const before = await shown()
   const png = (await page.screenshot({ path: shot, timeout: 120_000 })).toString('base64')
-  return page.evaluate(async (b64) => {
+  const after = new Set(await shown())
+  const visible = before.filter((k) => after.has(k))
+  return page.evaluate(async ([b64, visible]) => {
     type G = { level: { path: Array<[number, number]>; path2?: Array<[number, number]>; rows: number; cols: number }; towers: Array<{ col: number; row: number }> }
     const h = (window as unknown as { hedgerow: HGL }).hedgerow
     const g = h.game() as G
@@ -268,7 +295,7 @@ async function plotLuminance(page: import('@playwright/test').Page, level: numbe
       for (let c = 0; c < lv.cols; c++) {
         const q = skip.has(`${c},${r}`) ? null : h.cellCenter(c, r)
         // only plots the field shows: not under the coach bubble, the tray or a label
-        if (!q || document.elementFromPoint(q.x, q.y)?.id !== 'canvas') continue
+        if (!q || !visible.includes(`${c},${r}`)) continue
         const px = Math.round(q.x * k)
         const py = Math.round(q.y * k)
         if (px < 4 || py < 4 || px > img.width - 4 || py > img.height - 4) continue
@@ -276,7 +303,7 @@ async function plotLuminance(page: import('@playwright/test').Page, level: numbe
         for (let i = 0; i < d.length; i += 4, n++) L += 0.2126 * lin(d[i]!) + 0.7152 * lin(d[i + 1]!) + 0.0722 * lin(d[i + 2]!)
       }
     return L / n
-  }, png)
+  }, [png, visible] as const)
 }
 test.describe('phone plot luminance', () => {
   // One worker: each level renders two 3D frames, and side by side they starve each other's frames.

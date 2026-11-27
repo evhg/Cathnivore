@@ -701,8 +701,10 @@ export const FARMHOUSE_3D_SCALE = 1.6;
 const PHONE_LANE: Record<number, number> = { 2: 0.55, 3: 5.4 };
 /** Plan item 735: an upright phone's bed tint per act (else 1.2): the flat 1.2 left act 1's top-down beds 21% darker
  *  than D's and act 3/4's 21-67% lighter and paler (milky); now within 5% of D at levels 1, 12, 27 and 12% at 34
- *  (plots the canvas shows, not under the HUD; e2e hedgerow-3dframe 'read as light'). */
-const PHONE_BED: Record<number, number> = { 0: 1.75, 2: 0.92, 3: 0.15 };
+ *  (plots the canvas shows, not under the HUD; e2e hedgerow-3dframe 'read as light'). Act 2 1.6 (2026-11-27): the
+ *  735 fit had sampled the coach bubble's white paper as field at level 12 (the bubble is pointer-events: none), so
+ *  its 1.2 read 14% darker than D once the spec looked only at the field. */
+const PHONE_BED: Record<number, number> = { 0: 1.75, 1: 1.6, 2: 0.92, 3: 0.15 };
 /** Plan item 486: `phone` (an upright phone's frame, set at build): the lane's packed earth a shade darker and the
  *  beds a shade lighter, so at 390 px the lane reads apart from the plots (lane-to-plot contrast 1.0-1.3 on the
  *  darker acts before; `scripts/hedgerow-486-measure`). */
