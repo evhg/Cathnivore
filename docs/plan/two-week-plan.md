@@ -1,5 +1,7 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
+Planning: lane A, 2026-11-27 18:16
+
 
 
 
@@ -6947,7 +6949,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - hedgerow-readable, -swarm, -convoy pass. Shots P and D.
 - **Size:** 2
 
-## 737. [ ] NIGHT SHIFT phone landscape: a lean HUD and a street you can see into *(lane A, in progress)* *(handed back 2026-11-27 17:40 by lane A, no code: `scripts/cathode-737-measure.mjs` measures the HUD's share bar the touch controls (a 3 px grid over the visible HUD boxes, per element) at 844x390 touch, twice, then shoots; its first run timed out booting `?play` with no class, now it boots as cathode-hud.spec does (`?play&class=gunslinger&rs=0.5`, wait for `cathode.job`), not yet run. Where things are: the lesson line is `Hud.teach` (`.hud-teach`, hud.css ~1271, the phone slip ~2334), the case note and vitals are `.hud-tl` (one blurred block at L, hud.css ~1763), the objective `.hud-objective`)*
+## 737. [x] NIGHT SHIFT phone landscape: a lean HUD and a street you can see into *(done 2026-11-27 18:15, lane A: HUD share bar the touch controls at 844x390 touch 13.6% -> 11.5% with the lesson up (`scripts/cathode-737-measure.mjs`): the lesson slip pinned bottom centre between the stick and AIM/FIRE, gone after her first 1.2 m or 6 s (firstjob stage 0, every device), the case note folds to a red-pencil diamond 3 s after it changes (phone L only; the street marker names the place); e2e cathode-hud '737'. Street people past 9 m on the phone tier take `CATHODE_FAR` (the light above them plus a cool floor, full by 22 m): 18-22 m figures 1.09-4.4x -> 3.5-10x luminance over the street behind them (`scripts/cathode-737-figures.mjs`, with/without the people); unit cathode-far-figures. Not built: the slim health bar (the share is met with the ledger vitals) and an enemy rim (item 41's far-read and the marker riding the nearest man already cover them). cathode-perf phone alone 225/256 calls. Shots L and D in e2e/screenshots/ns737)* *(handed back 2026-11-27 17:40 by lane A, no code: `scripts/cathode-737-measure.mjs` measures the HUD's share bar the touch controls (a 3 px grid over the visible HUD boxes, per element) at 844x390 touch, twice, then shoots; its first run timed out booting `?play` with no class, now it boots as cathode-hud.spec does (`?play&class=gunslinger&rs=0.5`, wait for `cathode.job`), not yet run. Where things are: the lesson line is `Hud.teach` (`.hud-teach`, hud.css ~1271, the phone slip ~2334), the case note and vitals are `.hud-tl` (one blurred block at L, hud.css ~1763), the objective `.hud-objective`)*
 - **Why:** critique 2026-11-27 13:25 (ns-street-P, 1688x780 image px): the health and level block (20-460 x 125-235), the tutorial note (20-520 x 335-435) and the objective tag cover about 30% of the left side; the street is murky and nothing reads past about 15 m (VISION 1: a clear focal point). **Measure first** on a live frame at 844x390: the HUD's area share and the far figures' contrast.
 - **Build:**
   - Health a slim bar under the compass (or an arc round the move stick).
