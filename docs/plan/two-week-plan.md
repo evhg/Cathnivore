@@ -6839,7 +6839,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - keyart-fresh passes; cathode-perf is within budget when run alone. Live shots L and D.
 - **Size:** 3
 
-## 728. [ ] Cathnivore phone game: the table is the hero *(lane A, in progress)*
+## 728. [x] Cathnivore phone game: the table is the hero *(closed by measurement 2026-11-27 09:05, lane A: at 390x844 the board's svg is 390 x 371 and its hexes already span 368 of the 390 px (item 667 runs it the screen's full width at the viewBox's 500:476 aspect, item 443), so the board is width-bound: a 465 px tall board would need a 488 px wide screen, or the outer hexes cropped. Moving the bands (the counter onto the board's foot, the ledger into the tray) would only letterbox the same hexes in a taller box, so it isn't built; the room under the board stays the hand's. Shot scratchpad g728-before-390)*
 - **Why:** critique 2026-11-27 (cath-game-P): the board gets about 44% of the height (120-490), with five bands stacked under it (Cath and the talk strip, resources, hand, nav). VISION 2: the table is the hero.
 - **Build:**
   - The resource row joins the hand tray's header.
@@ -6853,7 +6853,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - phone-hand-whole and region-names-phone still pass. Shots P (D unchanged).
 - **Size:** 2
 
-## 729. [ ] Runnel: thirsty crops that revive when the water reaches them
+## 729. [x] Runnel: thirsty crops that revive when the water reaches them *(done 2026-11-27 09:10, lane A, e8096ebe: a dry field holds its own crop (wheat, cabbage, carrot, sunflower, pumpkin) wilted: 62% of its grown size, leaning 6-34 degrees from its foot by crop, its colours mixed into a dust tone and its lines inked (--wilt-ink #3a2814, 4.7:1+ on the plot under all 64 light skies; #e9d6a6 at night), replacing item 636's one red seedling; the water revives it in 600 ms after the soak's delay (stem straightens, colour floods back, item 636's droplets), `data-crop` wilted/revived set in the turn's own handler; under reduced motion the pose never animates. Unit runnel-wilt (5 crops, 3:1 light and night); e2e runnel-revive (P and D: drawn and leaning dry, revived in the tap's task, upright after; reduced motion no transform transition); runnel-route now checks the crop, runnel-parched, -bloom, -win, -tiles, -fields, -board pass --retries=0. Shots scratchpad r729-before/after (P, D, dark, mid, solved))*
 - **Why:** critique 2026-11-27: the dry field tiles are rust with a dark red smear for a crop (runnel-D 530-650 x 260-380; runnel-P 5-90 x 385-470). They read as damage, not 'thirsty'. Nothing marks the moment a field is watered beyond the colour change.
 - **Build:**
   - Each crop (carrot, cabbage, wheat, sunflower, pumpkin) drawn wilted on its dry plot, in its own muted colour.
