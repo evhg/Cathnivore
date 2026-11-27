@@ -874,29 +874,8 @@ export class Renderer3D {
     this.camera.position.copy(target).addScaledVector(dir, hi);
     this.camera.lookAt(target);
     this.camBase.copy(this.camera.position);
-    // Fog starts beyond the field whatever the camera distance (phones sit further back).
-    if (this.scene.fog instanceof THREE.Fog) {
-      const L = actLight(game.level.id);
-      const dim = hasTwist(game.level, "fog") ? 0.78 : hasTwist(game.level, "night") ? 0.85 : 1;
-      // Plan item 66: clear air over the field by day; the haze only gathers out towards the hills.
-      const clear = dim === 1 && game.level.id <= 90 ? 4 : 0;
-      // Plan item 78: measured from the field's far edge (the fitted camera sits much closer than before), so the
-      // field itself stands in clear air and the haze gathers over the hills beyond it.
-      const farEdge = this.camera.position.distanceTo(this.v1.set(cols / 2, 0, -0.5));
-      const near = farEdge + (L.fogNear - 14) * 0.5 + clear;
-      // Plan item 242: the country past the far verge fades into the act's air within a few cells, so the far
-      // houses, boats and slabs at the frame's top read as distance, not as props sliced by the frame. The field
-      // itself (to its far edge) stays in clear air.
-      // Plan item 469: a wide frame's haze starts a cell further out and thins over 14 cells, not 8 (a critique read
-      // the far edge at D as a white haze over the country, 0-120 px); a phone keeps its short fade.
-      const wide = this.w >= 900;
-      const hazeNear = Math.min(near, farEdge + (wide ? 1.8 : 0.8));
-      // Plan item 290: over 8 cells, not 4.5: the far country (houses, trees, the shore) shows softened at a wide
-      // frame's top instead of a blank band of haze.
-      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + (wide ? 14 : 4.5));
-      this.scene.fog.near = hazeNear * dim;
-      this.scene.fog.far = hazeFar * dim;
-    }
+    this.fogLevel = game.level;
+    this.fitFog();
     this.camTarget.copy(target);
     this.fieldSize.set(cols, rows);
     this.homePanX = 0;
@@ -911,6 +890,40 @@ export class Renderer3D {
         : null;
     // Plan item 710: every view fits once the depots stand (a desktop's depot could stand off the side too).
     this.openFramePending = true;
+  }
+
+  private fogLevel: Game["level"] | null = null;
+  /** The fog fitted to the base view's distance from the field (plan items 66, 78, 242, 469). Plan item 735: refitted
+   *  once the depots stand, since items 591 and 710 may step the view back and the field then sat in the haze. */
+  private fitFog(): void {
+    // Fog starts beyond the field whatever the camera distance (phones sit further back).
+    const level = this.fogLevel;
+    if (level && this.scene.fog instanceof THREE.Fog) {
+      const cols = level.cols;
+      const L = actLight(level.id);
+      const dim = hasTwist(level, "fog") ? 0.78 : hasTwist(level, "night") ? 0.85 : 1;
+      // Plan item 66: clear air over the field by day; the haze only gathers out towards the hills.
+      const clear = dim === 1 && level.id <= 90 ? 4 : 0;
+      // Plan item 78: measured from the field's far edge (the fitted camera sits much closer than before), so the
+      // field itself stands in clear air and the haze gathers over the hills beyond it.
+      const farEdge = this.camBase.distanceTo(this.v1.set(cols / 2, 0, -0.5));
+      const near = farEdge + (L.fogNear - 14) * 0.5 + clear;
+      // Plan item 242: the country past the far verge fades into the act's air within a few cells, so the far
+      // houses, boats and slabs at the frame's top read as distance, not as props sliced by the frame. The field
+      // itself (to its far edge) stays in clear air.
+      // Plan item 469: a wide frame's haze starts a cell further out and thins over 14 cells, not 8 (a critique read
+      // the far edge at D as a white haze over the country, 0-120 px); a phone keeps its short fade.
+      const wide = this.w >= 900;
+      // Plan item 735: on a clear day the haze never starts inside the field. A phone's steep, distant camera puts the
+      // field's near and far edges at much the same range (29 and 32 at level 27), and the act's short fog put its
+      // start at 30: the back half of the field stood in up to half fog, the whole frame milky against D's.
+      const hazeNear = Math.max(dim === 1 ? farEdge + 0.4 : 0, Math.min(near, farEdge + (wide ? 1.8 : 0.8)));
+      // Plan item 290: over 8 cells, not 4.5: the far country (houses, trees, the shore) shows softened at a wide
+      // frame's top instead of a blank band of haze.
+      const hazeFar = Math.min(near + (L.fogFar - L.fogNear), hazeNear + (wide ? 14 : 4.5));
+      this.scene.fog.near = hazeNear * dim;
+      this.scene.fog.far = hazeFar * dim;
+    }
   }
 
   /** Where the close frame looks: towards the field's middle from the gate, as far as keeps the gate (and its
@@ -935,6 +948,7 @@ export class Renderer3D {
     const d = ((this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [])[0];
     this.dropToDepots();
     this.widenToDepots();
+    this.fitFog();
     if (!d) return;
     const box = new THREE.Box3().setFromObject(d);
     if (box.isEmpty()) return;
@@ -1338,6 +1352,14 @@ export class Renderer3D {
 
   /** Plan item 735: each depot's box as the live camera projects it, in canvas CSS px ([x0, y0, x1, y1]), and how
    *  much of it (0..1 of its projected area) the canvas holds. Tests and screenshot scripts read it. */
+  /** Plan item 735: the fog's near and far against the fitted camera's distance to the field's near and far edges. */
+  fogFrame(): { near: number; far: number; nearEdge: number; farEdge: number } | null {
+    const fog = this.scene.fog;
+    if (!(fog instanceof THREE.Fog)) return null;
+    const { x: cols, y: rows } = this.fieldSize;
+    const r = (v: number) => Math.round(v * 100) / 100;
+    return { near: r(fog.near), far: r(fog.far), nearEdge: r(this.camBase.distanceTo(this.v1.set(cols / 2, 0, rows))), farEdge: r(this.camBase.distanceTo(this.v1.set(cols / 2, 0, -0.5))) };
+  }
   depotFrames(): Array<{ box: [number, number, number, number]; inside: number }> {
     const depots = (this.ground?.group.userData.depots as THREE.Object3D[] | undefined) ?? [];
     return depots.map((o) => new THREE.Box3().setFromObject(o)).filter((b) => !b.isEmpty()).map((b) => {

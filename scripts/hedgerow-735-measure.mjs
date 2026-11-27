@@ -23,7 +23,7 @@ for (const level of (process.env.LEVELS ?? '1,12,27,34').split(',').map(Number))
     await p.waitForTimeout(2000)
     const m = await p.evaluate(() => {
       const c = document.querySelector('#canvas').getBoundingClientRect()
-      return { canvas: [Math.round(c.width), Math.round(c.height)], share: window.hedgerow.fieldShare(), depots: window.hedgerow.depotFrames() }
+      return { canvas: [Math.round(c.width), Math.round(c.height)], share: window.hedgerow.fieldShare(), depots: window.hedgerow.depotFrames(), fog: window.hedgerow.fogFrame() }
     })
     console.log(tag, level, n, JSON.stringify(m))
     await p.screenshot({ path: `${out}/${tag}-l${level}-${n}.png`, timeout: 120_000 })
