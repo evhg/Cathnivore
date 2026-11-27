@@ -6809,7 +6809,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** no native-looking select (e2e); streak and solved as graphics with aria labels; WCAG AA text; shots D, and P where the sheet opens.
 - **Size:** 2
 
-## 726. [ ] The bugs from the 2026-11-26 19:30 critique, fixed as one batch *(lane A, in progress)*
+## 726. [ ] The bugs from the 2026-11-26 19:30 critique, fixed as one batch *(handed back 2026-11-27 05:30 by lane A: Hedgerow callouts done. Notes: the title's short plates are item 671's design and title-plates.spec asserts them, so the P title/setup names need a design decision (a smaller floor than 12 px, or a wider plate row) not a fit tweak; Hedgerow's 'to go' plate is clamped 4 px inside the canvas (render3d/index.ts syncLeave), so the cut needs a live late-wave P frame to place; NIGHT SHIFT's look hint backs its words with a closest-side ellipse that is .4 at 60%, thin at the word ends: a denser pool, shot live at L)*
 - Hedgerow l27 2D D: the seed counter (1062-1190 x 20-56) shows its coin and no number. *(closed by measurement 2026-11-26 21:25: l27 2D D at 2, 4, 6 and 9 s into a wave the chip reads 93927-94954 beside its coin; the critique frame was likely pre-font. Shots scratchpad h726)*
 - Hedgerow l27 3D P: the '86 TO GO' depot sign cut by the left edge (0-95 x 455-480).
 - Hedgerow l27 3D D: '+51', '+20' and 'Bridge up!' pale gold on gold/white models: an outline or dark backing. *(fixed 2026-11-27 05:25 lane A: every 3D callout has a dark ink outline under its fill (styles.css .floater); e2e hedgerow-phone-crisp asserts it. Shots scratchpad fl-P, fl-D, floater-ab)*
