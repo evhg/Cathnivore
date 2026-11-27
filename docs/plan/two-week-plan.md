@@ -6822,7 +6822,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** each closed by a fix with a spec assertion, or by measurement/decision logged; shots P and D.
 - **Size:** 2
 
-## 727. [ ] NIGHT SHIFT: a 3D Cath who matches the character bible
+## 727. [ ] NIGHT SHIFT: a 3D Cath who matches the character bible *(note 2026-11-27 10:40, lane A, no code: most of the Build list already exists in `render/frontcath.ts` from items 140, 205, 254, 275 and 319: the painted eyes have a winged liner, a hazel iris, a pupil and two catchlights (around line 1691), blush on the cheek apples (289), a hair shine band (254), and three expressions, smirk, determined and wink (`FaceExpression`, 140). So **measure first** on a live title frame (frames > 1) at D and P: face height in px, eye white against iris contrast, each expression's head-pixel change; then build only what fails (likely scale and light at title distance, and the hair-through-coat check).)*
 - **Why:** critique 2026-11-27 07:30 (shots e2e/screenshots/plan1127a): her face is a flat, unlit mask, with small eyes, no winged liner or highlights, faint nose and lips and no blush (ns-title-P 230-300 x 330-380; ns-play-D 650-720 x 130-200). Her hair has no shine, and strands poke through the coat at the shoulders (ns-title-P 330-390 x 380-650). She is also the hero print on /games/ and the portfolio (games-D 1040-1330 x 560-800). This breaks VISION's Cath bible.
 - **Build:**
   - eyes with a liner wedge, two highlights and an iris with depth
