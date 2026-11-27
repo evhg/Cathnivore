@@ -91,6 +91,9 @@ interface BuildUp {
 /** How long each part of a tower takes to rise into place, and the spread of their start times. */
 /** Plan item 280: how much larger the gate queue's models stand than the lane's traffic. */
 const QUEUE_SCALE_3D = 1.45;
+/** Plan item 743: the depot and queue plates stand this many CSS px inside the frame (at 4 px the phone l27's
+ *  "86 TO GO" read as cut by the left edge beside its half-shown depot); the 2D field keeps its numbers 12 px in too. */
+const PLATE_EDGE = 12;
 /** Plan item 410: the queue's contact shadow, a radial fade on a unit disc (shared by every queued model). */
 const QUEUE_SHADOW_GEO = new THREE.CircleGeometry(1, 20);
 QUEUE_SHADOW_GEO.userData.shared = true;
@@ -3779,10 +3782,10 @@ export class Renderer3D {
       if (onDepot) {
         const pw = el.offsetWidth;
         const ph = el.offsetHeight;
-        let x = Math.max(4, Math.min(w - pw - 4, onDepot.x - pw / 2));
+        let x = Math.max(PLATE_EDGE, Math.min(w - pw - PLATE_EDGE, onDepot.x - pw / 2));
         // Plan item 391: the board stands on its posts on the roof's front edge (7 px legs under it, components.css).
         el.toggleAttribute("data-under", onDepot.under !== undefined);
-        let y = Math.max(4, Math.min(h - ph - 4, onDepot.under ?? onDepot.y - ph - 7));
+        let y = Math.max(PLATE_EDGE, Math.min(h - ph - PLATE_EDGE, onDepot.under ?? onDepot.y - ph - 7));
         // Plan item 391: a docked plate never covers the gate's sign (the flat-roofed depot stands nearer it on a
         // phone's l13): it steps right of the sign, or else under it.
         for (const sg of this.gateSignRects()) {
@@ -3808,8 +3811,8 @@ export class Renderer3D {
       const v = this.v1.set(at.x, this.height(at.x, at.z) + at.up, at.z).project(this.camera);
       const pw = el.offsetWidth;
       const ph = el.offsetHeight;
-      let x = Math.max(4, Math.min(w - pw - 4, (v.x * 0.5 + 0.5) * w - pw / 2));
-      let y = Math.max(4, Math.min(h - ph - 4, (-v.y * 0.5 + 0.5) * h));
+      let x = Math.max(PLATE_EDGE, Math.min(w - pw - PLATE_EDGE, (v.x * 0.5 + 0.5) * w - pw / 2));
+      let y = Math.max(PLATE_EDGE, Math.min(h - ph - PLATE_EDGE, (-v.y * 0.5 + 0.5) * h));
       // Plan item 115: a wide plate (a phone's, with the town's name) clamped at the field's edge could land on the
       // queue itself; it steps clear of the vehicles, to their right or else below them.
       // Item 430: against the vehicles' true projected boxes too: from a phone's high camera a van's lead rect (its
@@ -3840,7 +3843,7 @@ export class Renderer3D {
             { x: sign.x + sign.w / 2 - pw / 2, y: sign.y - ph - 4 },
           ]
         : [];
-      for (const d of dock) d.x = Math.max(4, Math.min(w - pw - 4, d.x));
+      for (const d of dock) d.x = Math.max(PLATE_EDGE, Math.min(w - pw - PLATE_EDGE, d.x));
       ({ x, y } = this.clearPlateSpot({ x, y, w: pw, h: ph }, game, [...cars, ...shown.plates, ...signs], w, h, dock));
       el.style.opacity = String(k);
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
@@ -4384,8 +4387,8 @@ export class Renderer3D {
       el.toggleAttribute("data-under", dock.under !== undefined);
       const pw = el.offsetWidth;
       const ph = el.offsetHeight;
-      const x = Math.max(4, Math.min(w - pw - 4, dock.x - pw / 2));
-      const y = Math.max(4, Math.min(h - ph - 4, dock.under ?? dock.y - ph - 7));
+      const x = Math.max(PLATE_EDGE, Math.min(w - pw - PLATE_EDGE, dock.x - pw / 2));
+      const y = Math.max(PLATE_EDGE, Math.min(h - ph - PLATE_EDGE, dock.under ?? dock.y - ph - 7));
       el.style.opacity = "1";
       el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
     }

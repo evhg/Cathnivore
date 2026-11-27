@@ -865,6 +865,14 @@ export class Renderer {
   /** Plan item 736 (tests): vehicles a tower sprite still covers last frame (0). */
   underSprite = 0;
 
+  /** Plan item 743: each tower sprite's drawn box this frame (CSS px), kept clear by the gains. */
+  private towerCovers: Rect[] = [];
+
+  /** Plan item 743 (tests): the tower sprites' drawn boxes last frame. */
+  towerRects(): Rect[] {
+    return this.towerCovers.map((r) => ({ ...r }));
+  }
+
   private gainDrawn: Array<{ x: number; y: number; w: number; h: number; n: number; size: number }> = [];
 
   private drawGains(game: Game, dt: number, X: (v: number) => number, Y: (v: number) => number, s: number): void {
@@ -891,7 +899,9 @@ export class Renderer {
         // Where it first shows: the spot as given, else the nearest of a few steps up and aside that covers no vehicle,
         // no other tower, no badge, no barn, and stands GAIN_MERGE_PX clear of the other numbers.
         g.placed = true;
-        const towers = game.towers.filter((tw) => tw.id !== g.tower).map((tw) => ({ x: X(tw.col), y: Y(tw.row) - s * 0.55, w: s, h: s * 1.55 }));
+        // Plan item 743: every tower's drawn sprite, its own included ('+99' sat on its scarecrow's hat at P l34,
+        // '+29' under a hedge's canopy at P l27, when the keep-clear was one cell and skipped the paying tower).
+        const towers = this.towerCovers;
         const others = this.gains.filter((o) => o !== g && o.placed);
         const clear = (dx: number, dy: number) => {
           const b = box(g.x + dx, g.y + dy);
@@ -899,7 +909,9 @@ export class Renderer {
           if ([this.vehicleBoxes, towers, this.badgeBoxes, this.barnBoxes, this.depotBoxes].some((boxes) => boxes.some((v) => overlaps(b, v)))) return false;
           return others.every((o) => Math.hypot(X(o.x + o.dx) - X(g.x + dx), Y(o.y + o.dy) - Y(g.y + dy)) >= GAIN_MERGE_PX);
         };
-        const steps: Array<[number, number]> = [[0, 0], [0, -0.5], [0, -1], [-0.9, -0.4], [0.9, -0.4], [-1.3, 0], [1.3, 0], [0, -1.6], [0, 0.8], [-1.2, -1.2], [1.2, -1.2]];
+        const steps: Array<[number, number]> = [[0, 0], [0, -0.5], [0, -1], [-0.9, -0.4], [0.9, -0.4], [-1.3, 0], [1.3, 0], [0, -1.6], [0, 0.8], [-1.2, -1.2], [1.2, -1.2],
+          // plan item 743: wide sprites and a tower on the top row (no room above): further aside, then below it
+          [-1.8, 0], [1.8, 0], [-1.8, -0.8], [1.8, -0.8], [0, 1.7], [-1.3, 1.2], [1.3, 1.2], [0, 2.2]];
         const ok = steps.find(([dx, dy]) => clear(dx, dy));
         if (ok) [g.dx, g.dy] = ok;
         else {
@@ -916,7 +928,17 @@ export class Renderer {
       }
       const rise = this.reducedMotion ? 0 : Math.max(0, g.quiet - GAIN_HOLD) * 0.9;
       // Kept FIELD_MARGIN inside the field as it rises (l27's '+57' stood cut at the phone's left edge).
-      const cx = Math.max(M + w / 2, Math.min(this.cssW - M - w / 2, X(g.x + g.dx)));
+      let cx = Math.max(M + w / 2, Math.min(this.cssW - M - w / 2, X(g.x + g.dx)));
+      // Plan item 743: a number that widened as it counted up (P l34's '+103') steps sideways off the sprite it met.
+      for (const t of this.towerCovers) {
+        const top = Y(g.y + g.dy) - h / 2;
+        if (!(cx - w / 2 < t.x + t.w && cx + w / 2 > t.x && top < t.y + t.h && top + h > t.y)) continue;
+        const left = t.x - w / 2 - 1;
+        const right = t.x + t.w + w / 2 + 1;
+        const fits = (c: number) => c >= M + w / 2 && c <= this.cssW - M - w / 2;
+        const best = [left, right].filter(fits).sort((a, b) => Math.abs(a - cx) - Math.abs(b - cx))[0];
+        if (best !== undefined && Math.abs(best - cx) < w) cx = best;
+      }
       let cy = Math.max(M + h / 2, Math.min(this.cssH - M - h / 2, Y(g.y + g.dy) - rise * s));
       // and it never rises into a lane's badge or a depot (P l34's '+236' rose into the badge over Hollowell).
       const risen = { x: cx - w / 2, y: cy - h / 2, w, h };
@@ -1245,6 +1267,7 @@ export class Renderer {
       const gate = level.path[0]!;
       items.push({ y: gate[1] + 0.5, draw: () => drawSaleBoard(ctx, X(gate[0] + 0.5), Y(gate[1] + 0.5), s) });
     }
+    this.towerCovers = [];
     for (const tw of game.towers) {
       const since = this.fired.get(tw.id) ?? 9;
       const age = this.built.get(tw.id);
@@ -1254,9 +1277,11 @@ export class Renderer {
       const reach = towerReach(tw.kind, tw.tier, tw.path);
       const up = Math.max(1.05, reach.up * FIELD_TOWER) * s;
       const half = Math.max(0.5, reach.half * FIELD_TOWER) * s;
+      const cover = { x: X(tw.col + 0.5) - half, y: Y(tw.row + 0.5) - up, w: half * 2, h: s * 0.5 + up };
+      this.towerCovers.push(cover);
       items.push({
         y: tw.row + 0.8,
-        cover: { x: X(tw.col + 0.5) - half, y: Y(tw.row + 0.5) - up, w: half * 2, h: s * 0.5 + up },
+        cover,
         draw: () => {
           if (pop !== 1) {
             ctx.save();

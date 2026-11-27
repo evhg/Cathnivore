@@ -9,7 +9,7 @@ type HG = {
   place(g: unknown, kind: string, c: number, r: number): { ok: boolean }
   arm?(g: unknown): void
   sendWave(g: unknown, forced?: boolean): void
-  renderer(): { gainRects(): R[]; floatRects(): R[]; redrawn: number; underSprite: number }
+  renderer(): { gainRects(): R[]; floatRects(): R[]; towerRects(): R[]; redrawn: number; underSprite: number }
 }
 
 test('level 34 late wave: the numbers stay apart and inside, the convoy over the towers', async ({ page }) => {
@@ -41,12 +41,13 @@ test('level 34 late wave: the numbers stay apart and inside, the convoy over the
   const meet = (a: R, b: R) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
   let labels = 0
   let redrawn = 0
+  let towersSeen = 0
   for (let i = 0; i < 24; i++) {
     await page.waitForTimeout(500)
     const f = await page.evaluate(() => {
       const r = (window as unknown as { hedgerow: HG }).hedgerow.renderer()
       const c = document.getElementById('canvas')!.getBoundingClientRect()
-      return { w: c.width, h: c.height, all: [...r.gainRects(), ...r.floatRects()], redrawn: r.redrawn, under: r.underSprite }
+      return { w: c.width, h: c.height, all: [...r.gainRects(), ...r.floatRects()], gains: r.gainRects(), towers: r.towerRects(), redrawn: r.redrawn, under: r.underSprite }
     })
     labels += f.all.length
     redrawn = Math.max(redrawn, f.redrawn)
@@ -59,7 +60,11 @@ test('level 34 late wave: the numbers stay apart and inside, the convoy over the
       expect(a.y + a.h, 'inside the foot').toBeLessThanOrEqual(f.h - M + 0.5)
       for (const b of f.all.slice(k + 1)) expect(meet(a, b), `${JSON.stringify(a)} meets ${JSON.stringify(b)}`).toBe(false)
     }
+    // Plan item 743: no "+N" on a tower's drawn sprite, its own tower's included ('+99' sat on the scarecrow's hat).
+    for (const a of f.gains) for (const t of f.towers) expect(meet(a, t), `gain ${JSON.stringify(a)} on tower ${JSON.stringify(t)}`).toBe(false)
+    towersSeen = Math.max(towersSeen, f.towers.length)
   }
   expect(labels, 'the late field pays').toBeGreaterThan(10)
+  expect(towersSeen, 'the twelve towers drawn').toBe(12)
   expect(redrawn, 'some vehicle passed a tower sprite').toBeGreaterThan(0)
 })
