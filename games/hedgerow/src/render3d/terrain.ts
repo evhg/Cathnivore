@@ -699,6 +699,10 @@ export const FARMHOUSE_3D_SCALE = 1.6;
 /** Plan item 486: how an upright phone's lane ribbon is toned per act, apart from its beds (darker where the beds are
  *  light; lighter where they are dark earth). */
 const PHONE_LANE: Record<number, number> = { 2: 0.55, 3: 5.4 };
+/** Plan item 735: an upright phone's bed tint per act (else 1.2): the flat 1.2 left act 1's top-down beds 21% darker
+ *  than D's and act 3/4's 21-67% lighter and paler (milky); now within 10% of D at levels 1, 12, 27 and 12% at 34
+ *  (`scripts/hedgerow-735-measure.mjs`, plots alone). */
+const PHONE_BED: Record<number, number> = { 0: 1.75, 2: 1.0, 3: 0.4 };
 /** Plan item 486: `phone` (an upright phone's frame, set at build): the lane's packed earth a shade darker and the
  *  beds a shade lighter, so at 390 px the lane reads apart from the plots (lane-to-plot contrast 1.0-1.3 on the
  *  darker acts before; `scripts/hedgerow-486-measure`). */
@@ -1035,7 +1039,7 @@ export function buildGround(level: Level, opts: { phone?: boolean } = {}): Groun
         const turn = across ? 0 : Math.PI / 2;
         const jitter = deco();
         const fieldJitter = field ? (((fc * 73 + fr * 151 + level.id * 29) % 97) + 0.5) / 97 : jitter;
-        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar((0.92 + fieldJitter * 0.16) * (phone ? 1.2 : 1));
+        const tint = new THREE.Color(marsh ? marsh.tint : bedTint[base]).multiplyScalar((0.92 + fieldJitter * 0.16) * (phone ? (PHONE_BED[act] ?? 1.2) : 1));
         beds[base].push({ x: c + 0.5, y: h, z: r + 0.5, ry: turn, s: 1, sy: 1, color: tint });
         bedTints.set(`${c},${r}`, tint);
         plotBedLooks.set(`${c},${r}`, look);
