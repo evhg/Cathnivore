@@ -1,6 +1,7 @@
 import { useContext, type ReactNode } from 'react'
 import { ArtSceneContext, RoleProducerContext } from './artScene'
 import { VignetteMotif } from '../Vignette'
+import { CARD_ART } from '../cardArt'
 import type { VignetteKind } from '../vignetteKind'
 
 // Plan item 83: each action card carries its own small painted picture (a 40x40 tile: a sky-and-ground
@@ -167,16 +168,17 @@ const INVEST_SKY = [SEA, WHEAT, CLAY, LEAF]
 /** A shopfront with a hanging sign and a stack of coins: buying an Improvement. Plan item 320: in a hand card's
  * painted window (`motif` given) the picture is what the card buys, the Improvement's own vignette scene (a sheep
  * at the fence, a jetty, a lab; the pinned price tag says it's bought), so no two invest cards share one shopfront. */
-export function InvestArt({ size, motif, variant = 0 }: { size?: number; motif?: VignetteKind; variant?: number }) {
+export function InvestArt({ size, motif, variant = 0, cardId }: { size?: number; motif?: VignetteKind; variant?: number; cardId?: string }) {
   const scene = useContext(ArtSceneContext)
   if (scene && motif) {
     // Improvements of one tag share a motif: the card's place in its tag (`variant`, Game.tsx) picks the motif's
     // facing and the sky's colour, eight pictures per tag, so no two invest cards look the same
-    const transform = variant & 1 ? 'translate(43 10) scale(-0.4 0.4)' : 'translate(-3 10) scale(0.4)'
+    // (plan item 722: a card with its own painted scene stands the right way round; only the stock motifs mirror)
+    const transform = variant & 1 && !(cardId && CARD_ART[cardId]) ? 'translate(43 10) scale(-0.4 0.4)' : 'translate(-3 10) scale(0.4)'
     return (
       <Tile size={size} kind="invest" ground={SEA} sky={INVEST_SKY[(variant >> 1) % INVEST_SKY.length]}>
         <g transform={transform} data-motif={motif}>
-          <VignetteMotif kind={motif} />
+          <VignetteMotif kind={motif} id={cardId} />
         </g>
       </Tile>
     )

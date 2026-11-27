@@ -1,5 +1,6 @@
 import { Children, cloneElement, isValidElement, type JSX, type ReactElement, type ReactNode } from 'react'
 import { vignetteHash, type VignetteKind } from './vignetteKind'
+import { CARD_ART, CARD_ART_SKY } from './cardArt'
 
 // Plan item 36: every Market and Plan card carries a small code-drawn scene keyed by its first tag, so a
 // player sees their engine as places (a pasture, a jetty, a lab) rather than a list of names. One kit, no
@@ -116,9 +117,9 @@ const MOTIF: Record<VignetteKind, JSX.Element> = {
 
 /** Plan item 320: the motif alone (its ground band and subject, no sky or sun), in the vignette's own 120x60 frame, so
  * an invest card's painted window can show what the card buys rather than one shopfront for every Improvement. */
-export function VignetteMotif({ kind }: { kind: VignetteKind }) {
+export function VignetteMotif({ kind, id }: { kind: VignetteKind; id?: string }) {
   // its ground band (the first part) washes into the card's own land instead of standing as a hard bar
-  const [band, ...rest] = Children.toArray((MOTIF[kind].props as { children: ReactNode }).children)
+  const [band, ...rest] = Children.toArray(((((id && CARD_ART[id]) || MOTIF[kind]) as JSX.Element).props as { children: ReactNode }).children)
   return (
     <>
       {isValidElement(band) ? cloneElement(band as ReactElement<{ opacity?: number; stroke?: string }>, { opacity: 0.4, stroke: 'none' }) : band}
@@ -131,6 +132,18 @@ export default function Vignette({ kind, seed }: { kind: VignetteKind; seed: str
   const h = vignetteHash(seed)
   const sunX = 14 + (h % 92)
   const sunY = 10 + ((h >> 8) % 10)
+  // Plan item 722: an Improvement draws its own painted scene (cardArt.tsx) on a fixed cream sky (the picture is an
+  // object, the same in both themes); other cards (schemes, chapters) keep their tag's stock scene.
+  const art = CARD_ART[seed]
+  if (art) {
+    return (
+      <svg className="card-vignette" data-vignette={kind} data-card-art={seed} viewBox="0 0 120 60" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+        <rect x="-400" y="-60" width="920" height="180" fill={CARD_ART_SKY[seed] ?? `color-mix(in srgb, ${TINT[kind]} 16%, var(--art-cream, #F6EEDC))`} />
+        <circle cx={sunX} cy={sunY} r="5.5" fill="color-mix(in srgb, var(--wheat, #D9B45A) 70%, var(--art-cream, #F6EEDC))" opacity={0.85} />
+        {art}
+      </svg>
+    )
+  }
   return (
     <svg className="card-vignette" data-vignette={kind} viewBox="0 0 120 60" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
       {/* sky and ground run past the scene's frame, so a wide banner shows it centred on one continuous strip */}

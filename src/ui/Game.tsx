@@ -782,7 +782,7 @@ function ActionButton({
     <button aria-label={aria ?? (action.kind === 'scheme' ? text : undefined)} data-tutorial={tutorialTarget ? 'action' : undefined} onClick={onClick}>
       <span className="action-label">
         {action.kind === 'invest' ? (
-          <InvestArt size={18} motif={investMotif(action.improvementId)} variant={INVEST_VARIANT.get(action.improvementId)} />
+          <InvestArt size={18} motif={investMotif(action.improvementId)} variant={INVEST_VARIANT.get(action.improvementId)} cardId={action.improvementId} />
         ) : (
           Icon && <Icon size={18} />
         )}

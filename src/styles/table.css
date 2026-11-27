@@ -6755,11 +6755,11 @@ html.no-animations .table-cath-figure { animation: none; }
    science or rift card's own tint is a grey): a sky, a gold sun and a green field under the card's motif. */
 .goal-feature-pic .card-vignette > rect:first-child { fill: color-mix(in srgb, var(--sea) 48%, var(--paper-hi)); }
 .goal-feature-pic .card-vignette > circle:first-of-type { fill: var(--wheat); opacity: 1; }
-.goal-feature-pic .card-vignette[data-vignette='science'] > path:first-of-type,
-.goal-feature-pic .card-vignette[data-vignette='rift'] > path:first-of-type,
-.goal-feature-pic .card-vignette[data-vignette='plan'] > path:first-of-type,
-.goal-feature-pic .card-vignette[data-vignette='media'] > path:first-of-type,
-.goal-feature-pic .card-vignette[data-vignette='community'] > path:first-of-type { fill: color-mix(in srgb, var(--pasture) 60%, var(--paper)); }
+.goal-feature-pic .card-vignette[data-vignette='science']:not([data-card-art]) > path:first-of-type,
+.goal-feature-pic .card-vignette[data-vignette='rift']:not([data-card-art]) > path:first-of-type,
+.goal-feature-pic .card-vignette[data-vignette='plan']:not([data-card-art]) > path:first-of-type,
+.goal-feature-pic .card-vignette[data-vignette='media']:not([data-card-art]) > path:first-of-type,
+.goal-feature-pic .card-vignette[data-vignette='community']:not([data-card-art]) > path:first-of-type { fill: color-mix(in srgb, var(--pasture) 60%, var(--paper)); }
 /* Plan item 644: Cath's suggested pick stays ghosted by its opacity alone; the extra desaturation greyed its sky. */
 .actions-sheet .goal-feature[data-suggested] .goal-feature-pic { filter: none; }
 
