@@ -5629,10 +5629,13 @@ body:has(#dlg-pause[open]) .paused-note {
     gap: 2px;
   }
   .play .tray-wrap .tray .tray-tower .tray-pips .pip-row.damage { display: none; }
-  .play .tray-wrap .tray .tray-tower .tray-pips .pip-row.range { display: inline-flex; gap: 2px; }
+  /* Plan item 732: 4 px pips 1.5 px apart (20.5 px at right 5), so the band's 30 px reserve leaves a 4 px+ gap after
+     the role word ('Shoots' ran into 5 px pips: 26 px at right 6 is 32) */
+  .play .tray-wrap .tray .tray-tower .tray-pips { right: 5px; gap: 1.5px; }
+  .play .tray-wrap .tray .tray-tower .tray-pips .pip-row.range { display: inline-flex; gap: 1.5px; }
   .play .tray-wrap .tray .tray-tower .tray-pips b {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--band) 70%, var(--ink));
   }
