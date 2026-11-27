@@ -1,6 +1,6 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-27 18:16
+
 
 
 
@@ -6968,4 +6968,36 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - Cathnivore game P (cath-game-P 130-175 x 683-710): the '2' cost chip runs into 'Supply 1 Outlet'; the FREE stamp (285-345 x 690-710) crowds 'Injunction'.
 - NIGHT SHIFT title D (ns-title-D 418-560 x 320-490): the Ledger's photo of Tomas Reed is a man in a beanie; Cathnivore's Tomas (cath-game-D 1240-1330 x 520-660) is someone else. One Tomas across the games (VISION 5).
 - **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
+- **Size:** 2
+
+## 739. [ ] NIGHT SHIFT class pick: five roles you can tell apart at a glance
+- **Why:** critique 2026-11-27 18:30 (plan1127c ns-play-P thumbnails 30-750 x 1015-1130, ns-play-D list 65-110 x 170-640): the five role thumbnails are one grey-coated Cath with small tint changes; the Ghost on the stage is the same coat with a hood (VISION: each class a fantasy you pick by eye).
+- **Build:** each role its own outfit layer and idle pose on the shared Cath rig (Butcher rolled sleeves and apron, Gunslinger hat and duster, Wirewitch a cable-lit collar, Fixer a utility vest, Ghost hood and scarf), and its own stage key-light colour; thumbnails re-rendered.
+- **Accept:** **measure first** (the thumbnails' mean pairwise pixel difference and silhouette IoU today). Mean pairwise difference of the 5 thumbnails 18%+; any two roles' silhouette masks differ by 12%+ (1 - IoU); cathode-classpick P/D pass; cathode-perf alone within budget; shots P and D.
+- **Size:** 3
+
+## 740. [ ] Cathnivore table: the producers' world is the hero of each hex
+- **Why:** critique 2026-11-27 18:30 (plan1127c cath-game-D 520-1260 x 40-730): the biggest object on most hexes is the orange Outlet (~90 px); stalls, farms and landmarks (Tomas's stall 625-690 x 330-410) are about 60% of it, so the table reads as Hollowell's (VISION: the table is the hero, warm paper against Hollowell's clinical gloss). Item 733 grew the Outlet to 1.3x for legibility: keep it legible, not dominant.
+- **Build:** a size order per hex: the region's landmark largest, then producer tokens, then Hollowell's pieces as glossy badges that stack; producers keep item 733's paper-cut look.
+- **Accept:** **measure first** (piece bboxes per hex at D and P). In the D shot each region landmark 64 CSS px+, producer tokens 1.2x+ an Outlet's area, Outlets 48 CSS px or less but still 3:1 against the tile; piece-art, board-pieces, corp-wash specs pass; shots P and D.
+- **Size:** 2
+
+## 741. [ ] Runnel: the dry board is beautiful before the water runs
+- **Why:** critique 2026-11-27 18:30 (plan1127c runnel-D board 470-1330 x 40-830): before solving, near-black trenches on beige and a desaturated grey-violet valley; the solved state (runnel-solved-D) is lush. The unsolved board is what players look at for minutes.
+- **Build:** a golden-hour dry palette: straw and cracked ochre earth, channels as carved troughs (mid-brown floor, a lit lip, a cast shadow) instead of item 723's flat dark earth, the valley warm-graded with long shadows and dust haze; the solve's colour arrival stays the payoff.
+- **Accept:** board pixels with L* < 20 at 6% or less (measure today's); the surroundings' mean chroma 70%+ of the solved shot's; channel floor vs tile 3:1+ (item 723's rule); channel water still 3:1 on the floor; runnel-route, runnel-phone-board pass; key art re-shot; shots P and D, day and night.
+- **Size:** 2
+
+## 742. [ ] Hedgerow 2D: every tower stands on its own plot, clear of the lane
+- **Why:** critique 2026-11-27 18:30 (plan1127c hedge-l34-2d-P 150-480 x 1000-1170, hedge-l34-2d-D 320-660 x 740-890): late waves pile the beehive, stall, hedges and duck pond into one knot over the lane; item 736 redraws covered vehicles but the footprints still overlap.
+- **Build:** each tower sprite a plinth sized to its plot, its drawn footprint kept off the road and off its neighbours (scale or anchor per sprite), canopies thinned while a vehicle passes under them, depth y-sorted.
+- **Accept:** **measure first**. A sandbox spec fills l34 with towers: no two drawn footprints intersect, none covers a lane tile; 70%+ of every vehicle sprite visible in sampled frames; hedgerow-late-labels, -readable, -convoy pass; key art re-shot if `render.ts`/`sprites.ts` change; shots P and D.
+- **Size:** 2
+
+## 743. [ ] The bugs from the 2026-11-27 18:30 critique, fixed as one batch
+- Hedgerow l27 3D P (hedge-l27-3d-P 0-190 x 895-945): the '86 TO GO' depot sign is cut by the left edge.
+- Hedgerow 2D P (hedge-l34-2d-P 255-310 x 818-850, hedge-l27-2d-P 405-470 x 875-905): '+99' / '+29' sit on the scarecrow's hat and under the hedge canopy.
+- Cathnivore campaign D (cath-campaign-D 785-925 x 860-900): Cath cut by the bottom edge; (155-410 x 735-840) the 'Chapter 1 / Play' card spills past the map's torn frame.
+- NIGHT SHIFT class pick D (ns-play-D 350-435 x 380-425): the GUNSLINGER heading runs into the revolver.
+- **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
