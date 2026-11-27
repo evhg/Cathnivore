@@ -6988,7 +6988,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** board pixels with L* < 20 at 6% or less (measure today's); the surroundings' mean chroma 70%+ of the solved shot's; channel floor vs tile 3:1+ (item 723's rule); channel water still 3:1 on the floor; runnel-route, runnel-phone-board pass; key art re-shot; shots P and D, day and night.
 - **Size:** 2
 
-## 742. [ ] Hedgerow 2D: every tower stands on its own plot, clear of the lane
+## 742. [ ] Hedgerow 2D: every tower stands on its own plot, clear of the lane *(lane A, in progress)*
 - **Why:** critique 2026-11-27 18:30 (plan1127c hedge-l34-2d-P 150-480 x 1000-1170, hedge-l34-2d-D 320-660 x 740-890): late waves pile the beehive, stall, hedges and duck pond into one knot over the lane; item 736 redraws covered vehicles but the footprints still overlap.
 - **Build:** each tower sprite a plinth sized to its plot, its drawn footprint kept off the road and off its neighbours (scale or anchor per sprite), canopies thinned while a vehicle passes under them, depth y-sorted.
 - **Accept:** **measure first**. A sandbox spec fills l34 with towers: no two drawn footprints intersect, none covers a lane tile; 70%+ of every vehicle sprite visible in sampled frames; hedgerow-late-labels, -readable, -convoy pass; key art re-shot if `render.ts`/`sprites.ts` change; shots P and D.
