@@ -33,3 +33,9 @@ Compare each against the React build at --retries=0 before treating it as a Prea
   a gone `.active-producer`; unhurried (1.5 s between clicks) the turn flow is right.
 - Still failing alone at 1 worker: card-drag.spec:144 (no `−1 Outlet` aim chip on drag-over) and drawer-tabs.spec:5
   (`.is-open` present but computed translate `0px`, want `0px 1px`). Neither compared against React yet.
+- **Stall caught with cleanup logging (run 5 of 6, after the notes above):** the trace ends
+  `... ["clean",10,3],["run",10,2,0,false,false,false],["eff",10,2,"tomas",true]`: the effect scheduled its
+  setTimeout(0) and then neither the timer (`fire` is the callback's first line) nor the cleanup (`clean`) ever ran in 37 s,
+  while page.evaluate still answered. So it's not a dep change cancelling the timer. Next: check whether the Game
+  component unmounted or was replaced without its hooks' cleanups (a Preact Suspense/lazyScreen remount: log a mount id),
+  and whether a second Game instance is the one rendering.
