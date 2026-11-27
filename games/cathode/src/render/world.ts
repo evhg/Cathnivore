@@ -66,7 +66,7 @@ const FOG_COLOR = new THREE.Color(0.0042, 0.0058, 0.0095);
 const FOG_DENSITY = 0.019;
 /** Plan item 724: the street's people take more of the baked lamp and sign light and a rim in its colour, so the
  * near ones read as lit figures, not black cut-outs against the wet street. */
-const PEOPLE_LIGHT = { volume: 2.9, rim: 1.35 };
+const PEOPLE_LIGHT = { volume: 2.9, rim: 1.35, far: 1 };
 
 export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const quality = options.quality;
@@ -176,12 +176,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const standing = addStandingCrowd(
     scene,
     crowdStanders((level.crowds ?? []).map((g) => ({ ...g, count: Math.round(g.count * crowdScale) })), blocked),
-    (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim }),
+    (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim, far: quality === "phone" ? PEOPLE_LIGHT.far : 0 }),
     quality === "phone",
     streetExits(options.district),
   );
   // Plan item 57: the street's own people (walkers, vendors, doorways, riders), who scatter at gunfire.
-  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim }));
+  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim, far: quality === "phone" ? PEOPLE_LIGHT.far : 0 }));
   addPatients(scene, level.seats ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   addShrouds(scene, level.bodies ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);

@@ -195,6 +195,14 @@ const VOLUME_LIGHT = /* glsl */ `
   vec3 cRimVol = cathodeVolume( vFogWorld + vec3( 0.0, 0.9, 0.0 ) + cWorldN * 0.8 ) * uVolGain;
   totalEmissiveRadiance += cRimVol * cRim * CATHODE_RIM;
   #endif
+  #ifdef CATHODE_FAR
+  // Plan item 737: past about 9 m a figure on a phone shrinks to a dozen pixels and sinks into the fog and the street
+  // behind it; it takes a flat share of the light above it plus a cool floor, ramping in to full by 22 m, so a
+  // passer-by at 20 m still reads as a lit figure.
+  float cFar = smoothstep( 9.0, 22.0, length( vViewPosition ) );
+  vec3 cFarVol = cathodeVolume( vFogWorld + vec3( 0.0, 0.9, 0.0 ) + cWorldN * 0.8 ) * uVolGain;
+  totalEmissiveRadiance += ( cFarVol * 0.8 + vec3( 0.022, 0.026, 0.034 ) ) * cFar * CATHODE_FAR;
+  #endif
 }
 #endif
 `;
@@ -214,6 +222,8 @@ export interface PatchOptions {
   /** Plan item 724: a fresnel rim in the colour of the light above the surface (the street's people: the nearest
    * lamp or sign edges their silhouettes against the dark street). 0 or unset: none. */
   rim?: number;
+  /** Plan item 737: the street's people on a phone: a lift that grows with distance from the camera (0 or unset: none). */
+  far?: number;
 }
 
 /**
@@ -228,7 +238,9 @@ export function patchMaterial(mat: THREE.MeshStandardMaterial, s: SharedUniforms
   if (o.roadLines) mat.defines.CATHODE_ROAD_LINES = "";
   const rim = (o.rim ?? 0).toFixed(3);
   if (o.rim) mat.defines.CATHODE_RIM = rim;
-  mat.customProgramCacheKey = () => `cathode-${o.kind}-${volScale}-${wet}-${bias}-${o.roadLines ? 1 : 0}-${rim}`;
+  const far = (o.far ?? 0).toFixed(3);
+  if (o.far) mat.defines.CATHODE_FAR = far;
+  mat.customProgramCacheKey = () => `cathode-${o.kind}-${volScale}-${wet}-${bias}-${o.roadLines ? 1 : 0}-${rim}-${far}`;
   mat.onBeforeCompile = (shader) => {
     bindShared(shader, s);
     let fs = shader.fragmentShader;
