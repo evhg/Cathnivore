@@ -1,3 +1,4 @@
+import './preactFixes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { unlockAudioOnFirstTap } from './platform/sound'

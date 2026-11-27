@@ -54,8 +54,22 @@ function pageFonts(): Plugin {
   }
 }
 
-export default defineConfig({
+// Gate 7, 2026-11-27: the build runs on Preact (preact/compat), not react-dom: the title's entry chunk falls from 141 to
+// 105 KB gzipped and Lighthouse's phone model paints about 0.4 s sooner (72 -> 81 on the same machine, 3+3 runs). The
+// dev server and the unit tests (their own vitest.config.ts) keep React, so Fast Refresh and react-dom/server work;
+// production behaviour is what the e2e suites test (they run the built preview). Code that relies on React-only event
+// semantics must use the form both share (a focus on a wrapper: onFocusCapture, not React's bubbling onFocus).
+const PREACT_ALIAS = [
+  { find: /^react-dom\/client$/, replacement: 'preact/compat/client' },
+  { find: /^react-dom$/, replacement: 'preact/compat' },
+  { find: /^react\/jsx-runtime$/, replacement: 'preact/jsx-runtime' },
+  { find: /^react\/jsx-dev-runtime$/, replacement: 'preact/jsx-dev-runtime' },
+  { find: /^react$/, replacement: 'preact/compat' },
+]
+
+export default defineConfig(({ command }) => ({
   base,
+  resolve: command === 'build' && !process.env.NO_PREACT ? { alias: PREACT_ALIAS } : undefined,
   plugins: [
     react(),
     versionFile(),
@@ -93,4 +107,4 @@ export default defineConfig({
     // 2.9 s (86-90). Lazy screens still split off as before.
     rolldownOptions: { output: { codeSplitting: { groups: [{ name: 'boot', tags: ['$initial'] }] } } },
   },
-})
+}))

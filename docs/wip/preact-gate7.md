@@ -90,3 +90,11 @@ Compare each against the React build at --retries=0 before treating it as a Prea
   board-scale D, table-producers D (2) fail the same way. piece-art D passed on ca70b414 but failed on React 28e794af:
   check it against CI's E2E for 28e794af (pending at 04:30) before calling it a regression of the handKey change.
 - Patch unchanged; not on build.
+
+## 2026-11-27 04:51 lane A: shipped to build
+- The 6 Preact-only failures of slice 5, each alone at 1 worker, --retries=0, both builds: ai-teammate:63, boardroom:49,
+  producer-faces:6 (phone), campaign:12, table-hand:65 (desktop) pass on Preact; title-attract:60 fails on React and
+  Preact alike here (environment, as before). So they were load flakes.
+- `npm run shots` P + D on both builds, pixel-diffed: identical but for Quick Game's random seed (setup, game, map,
+  end screen) and a 3 px entry-animation timing on the campaign's chapter cards.
+- The patch is applied on build (the .patch file removed). `NO_PREACT=1 npm run build` still builds React for A/B.

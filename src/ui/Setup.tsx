@@ -174,7 +174,7 @@ export default function Setup({ onStart }: Props) {
         </div>
         <div className="producer-grid">
           {ALL_PRODUCER_IDS.map((id) => (
-            <label key={id} className="producer-card" data-setup-choice="producer" data-producer={id} data-seat={producers.includes(id) ? id : undefined} onMouseEnter={rail ? () => playPower([id]) : undefined} onFocus={rail ? () => playPower([id]) : undefined}>
+            <label key={id} className="producer-card" data-setup-choice="producer" data-producer={id} data-seat={producers.includes(id) ? id : undefined} onMouseEnter={rail ? () => playPower([id]) : undefined} onFocusCapture={rail ? () => playPower([id]) : undefined}>
               <input
                 type="checkbox"
                 aria-label={`${PRODUCERS[id].name}, ${PRODUCERS[id].roleName}. ${PRODUCERS[id].roleAbility}${RECOMMENDED_PAIR.includes(id) ? ' Recommended.' : ''}`}

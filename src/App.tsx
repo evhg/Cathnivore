@@ -1,4 +1,4 @@
-import { lazy, startTransition, Suspense, useEffect, useState } from 'react'
+import { lazy, startTransition, Suspense, useEffect, useState, type ComponentType } from 'react'
 import { createGame, replay } from './engine/api'
 import type { Mode } from './ui/Setup'
 import TitleArt from './ui/TitleArt'
@@ -53,13 +53,26 @@ import { OPENING_MS, openingThisLoad } from './ui/titleOpening'
 function withFullCss<T>(load: () => Promise<T>): () => Promise<T> {
   return () => Promise.all([load(), loadFullCss()]).then(([m]) => m)
 }
-const Setup = lazy(withFullCss(() => import('./ui/Setup')))
-const Game = lazy(withFullCss(() => import('./ui/Game')))
-const Scene = lazy(withFullCss(() => import('./ui/Scene')))
-const RulesReference = lazy(withFullCss(() => import('./ui/RulesReference')))
-const Settings = lazy(withFullCss(() => import('./ui/Settings')))
-const Credits = lazy(withFullCss(() => import('./ui/Credits')))
-const CampaignScreen = lazy(withFullCss(() => import('./ui/CampaignScreen')))
+// Gate 7 (2026-11-27): each lazy screen has its own Suspense boundary. The build runs on Preact (vite.config.ts), whose
+// Suspense loses the state update when the component that set it (Screens) is itself the one suspending: the screen's
+// chunk arrived but the title stayed. A boundary under Screens keeps Screens out of the suspension in both libraries.
+function lazyScreen<P extends object>(load: () => Promise<{ default: ComponentType<P> }>): (props: P) => React.JSX.Element {
+  const Screen = lazy(withFullCss(load)) as unknown as ComponentType<P>
+  return function LazyScreen(props: P) {
+    return (
+      <Suspense fallback={null}>
+        <Screen {...props} />
+      </Suspense>
+    )
+  }
+}
+const Setup = lazyScreen(() => import('./ui/Setup'))
+const Game = lazyScreen(() => import('./ui/Game'))
+const Scene = lazyScreen(() => import('./ui/Scene'))
+const RulesReference = lazyScreen(() => import('./ui/RulesReference'))
+const Settings = lazyScreen(() => import('./ui/Settings'))
+const Credits = lazyScreen(() => import('./ui/Credits'))
+const CampaignScreen = lazyScreen(() => import('./ui/CampaignScreen'))
 
 const STORY_SCENES: Record<string, typeof FRESH_MEAT_SCENES> = {
   'fresh-meat': FRESH_MEAT_SCENES,
