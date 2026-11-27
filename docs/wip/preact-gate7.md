@@ -78,3 +78,15 @@ Compare each against the React build at --retries=0 before treating it as a Prea
 - **Next:** apply the patch, run the whole game e2e on Preact at --retries=0 (compare any failure against
   `NO_PREACT=1`), then ship it before the 19:51 release (gate 7).
 - Shot check (03:45, random games at 1440x900 and 390x844, React build): the hand, ledger and phone table read right. To check next: at D with a three-row hand the Great Glut ticket overlapped the top of Cath's bubble; compare against the base build with a three-row hand before calling it a regression (the base shot was a different game).
+
+## 2026-11-27 03:51 lane A: whole game e2e on Preact
+- Patch applied to 28e794af, P + D, 2 workers, --retries=0: **643 passed, 29 failed** (31.5 min). The same 29 on a
+  `NO_PREACT=1` React build: **23 fail on React too**, 6 pass there.
+- **Preact-only (to fix or show as load flakes before shipping):** phone ai-teammate.spec:63 (AI decision < 1 s at 4x),
+  phone boardroom.spec:49 (strip not visible), phone producer-faces.spec:6 (faces seen), desktop campaign.spec:12
+  (Growing Season end screen in time), desktop table-hand.spec:65 (hand at the table edge, 1440x900), desktop
+  title-attract.spec:60 (a beat's long task at 4x). Run each alone on both builds first: four are timing specs.
+- **Environment, not code:** on ca70b414 (CI-green) built here, disabled-actions P (4, `.tooltip-popover` never shows),
+  board-scale D, table-producers D (2) fail the same way. piece-art D passed on ca70b414 but failed on React 28e794af:
+  check it against CI's E2E for 28e794af (pending at 04:30) before calling it a regression of the handKey change.
+- Patch unchanged; not on build.
