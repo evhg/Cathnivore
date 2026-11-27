@@ -6909,7 +6909,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - piece-art, board-pieces and critique177 pass. Shots P and D.
 - **Size:** 2
 
-## 734. [ ] Runnel phone: a crisp, legible pipe board *(lane A, in progress)*
+## 734. [x] Runnel phone: a crisp, legible pipe board *(closed by measurement 2026-11-27 14:25, lane A: at 390x844 (3x) the board is pure SVG (no canvas), the channel 16 CSS px wide (lip 18.5, cut 21), so the 6 px floor and the 20% narrow-screen widening are moot; since item 723 (07:08 today) the channel is a dark earth trench on the tan plots, and runnel-tiles' channel-on-tile contrast passes at P in light and dark across six skies; a channel joined to the spring already carries its water (`.wet`, `data-wet`) before the solve. The critique's frame was likely pre-723 or under a dim sky. New e2e-site runnel-phone-board pins it (vector, 6 px+, wet before the solve); scripts/runnel-734-measure.mjs. Shot scratchpad r734.)*
 - **Why:** critique 2026-11-27 13:25 (runnel-P 0-390 x 260-640): at 390 wide the pipes look soft, brown on tan, barely apart from the dry crop tiles; connected and unconnected runs are hard to tell before the water flows (VISION 2 'big, rich, legible', 6 'pixel-crisp at every size'). **Measure first** at 390x844 at 3x: is the board SVG or a scaled raster, the pipe stroke in CSS px, and pipe against tile contrast.
 - **Build:**
   - Pipes drawn as crisp vector strokes at the device's pixel ratio.
