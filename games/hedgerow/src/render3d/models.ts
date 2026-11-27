@@ -1608,13 +1608,17 @@ export function buildRung(kind: EnemyKind): THREE.Group | null {
       return g;
     }
     case "sprinter": {
-      const g = vehicle({ len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", logo: "#ffd23f" });
+      // Plan item 730: a redder violet (was #8a4fd0, hue 267), so on screen it stands 40 degrees+ off the lorries' blue
+      // (they sampled 38 apart at l27, and a sealed round read as one fleet of purple boxes).
+      const g = vehicle({ len: 0.66, h: 0.34, body: "#a040d0", stripe: "#ffd23f", logo: "#ffd23f" });
       for (const side of [-1, 1]) g.add(box(0.22, 0.05, 0.005, glow("#ffffff", 0.9), -0.14, 0.24, side * 0.153));
       return g;
     }
     case "lorry": {
       const g = new THREE.Group();
-      g.add(rbox(0.62, 0.36, 0.34, 0.03, plastic("#24345e"), -0.1, 0.1, 0), ...tailLights(-0.41, 0.16, 0.34));
+      // Plan item 730: Hollowell's blue, brighter and bluer than the old navy (#24345e), which went near black and
+      // purple beside the Same-Day vans under the warm grade.
+      g.add(rbox(0.62, 0.36, 0.34, 0.03, plastic("#1f4a92"), -0.1, 0.1, 0), ...tailLights(-0.41, 0.16, 0.34));
       g.add(truckCab(0.43, 0.2, 0.28, 0.32, gloss("#e9ecef")));
       for (const side of [-1, 1]) g.add(box(0.5, 0.05, 0.005, glow("#5ab0ff", 0.7), -0.1, 0.36, side * 0.172));
       // Plan item 647: Hollowell's mark on the box, as on the vans: a pale panel with the lit ring through both flanks

@@ -1540,9 +1540,9 @@ export interface EnemyLook {
  */
 export const FLEET_TOP: Partial<Record<EnemyKind, { len: number; wid: number; body: string }>> = {
   courier: { len: 0.5, wid: 0.145, body: "#5ec0a8" },
-  lorry: { len: 0.82, wid: 0.3, body: "#24345e" },
+  lorry: { len: 0.82, wid: 0.3, body: "#1f4a92" },
   pickup: { len: 0.6, wid: 0.27, body: "#4f9a3c" },
-  sprinter: { len: 0.62, wid: 0.34, body: "#8a4fd0" },
+  sprinter: { len: 0.62, wid: 0.34, body: "#a040d0" },
   van: { len: 0.48, wid: 0.33, body: "#f4f6f8" },
   hatchback: { len: 0.38, wid: 0.32, body: "#e8b23a" },
 };
@@ -2220,14 +2220,14 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
       break;
     }
     case "sprinter":
-      vehicle(ctx, 0, 0, s, tt, { len: 0.66, h: 0.34, body: "#8a4fd0", stripe: "#ffd23f", label: "24h", labelColor: "#ffd23f", wheels: 2 });
+      vehicle(ctx, 0, 0, s, tt, { len: 0.66, h: 0.34, body: "#a040d0", stripe: "#ffd23f", label: "24h", labelColor: "#ffd23f", wheels: 2 });
       // Plan item 285: a high-roof van, so its outline isn't a longer copy of the delivery van's: a raised roof pod
       // over the load bed (from above, a roof light bar across it).
       if (fromAbove) rr(ctx, -s * 0.2, -s * 0.13, s * 0.06, s * 0.26, s * 0.02, "#ffd23f");
-      else rr(ctx, -s * 0.31, -s * 0.56, s * 0.4, s * 0.1, s * 0.04, "#8a4fd0");
+      else rr(ctx, -s * 0.31, -s * 0.56, s * 0.4, s * 0.1, s * 0.04, "#a040d0");
       break;
     case "lorry":
-      vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.42, body: "#24345e", cab: "#e9ecef", stripe: "#5ab0ff", wheels: 3 });
+      vehicle(ctx, 0, 0, s, tt, { len: 0.8, h: 0.42, body: "#1f4a92", cab: "#e9ecef", stripe: "#5ab0ff", wheels: 3 });
       break;
     case "steel":
       // The Plated Lorry: riveted steel, rivets along the top.

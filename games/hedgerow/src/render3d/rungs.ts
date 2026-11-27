@@ -16,12 +16,15 @@ const TINTS: Array<[number, THREE.Color]> = [
   [P.plated, new THREE.Color(0.72, 0.78, 0.86)],
   // Plan item 703: a light lilac (was 0.78, 0.58, 1): the strong one turned the navy lorries the sprinters' purple, so a
   // sealed round (l27's 'Sealed lorries') read as one fleet of purple boxes; the property's icon rides above them
-  [P.sealed, new THREE.Color(0.93, 0.86, 1.0)],
+  // Plan item 730: near neutral now; any hue here pulls the lorries toward the vans' violet. The grille icon says it.
+  [P.sealed, new THREE.Color(0.97, 0.95, 1.0)],
   [P.reefer, new THREE.Color(0.8, 0.96, 1.0)],
   [P.wrapped, new THREE.Color(0.88, 0.97, 1.0)],
   [P.reinforced, new THREE.Color(1.0, 0.88, 0.45)],
 ];
 const WHITE = new THREE.Color(1, 1, 1);
+/** Plan item 730: a hit vehicle's flash, past white so the lit body blooms for a moment. */
+const FLASH_TINT = new THREE.Color(2.4, 2.3, 2.1);
 /** A stealth vehicle nothing can see: hedge-camo green, drawn see-through (section 2: "hedge-camo, 60% alpha"). */
 const CAMO = new THREE.Color(0.45, 0.85, 0.45);
 const GHOST_ALPHA = 0.5;
@@ -34,10 +37,13 @@ const LIVERIES: THREE.Color[][] = [
   [[0.82, 0.88, 1], [0.7, 0.8, 0.95], [1, 1, 1], [1, 0.85, 0.85]],
   [[0.95, 0.8, 1], [1, 0.8, 0.9], [0.85, 0.85, 1], [1, 1, 1]],
 ].map((row) => row.map((c) => new THREE.Color(c[0]!, c[1]!, c[2]!)));
+/** Plan item 730: the liveries at half strength. A full tint multiplies the whole body, so act 3's orange turned
+ *  the violet vans magenta and the blue lorries grey, and the kinds ran together; half keeps each kind's own hue. */
+const SOFT: THREE.Color[][] = LIVERIES.map((row) => row.map((c) => WHITE.clone().lerp(c, 0.5)));
 
 /** The livery of vehicle `id` on a level of the given act. */
 export function liveryOf(act: number, id: number): THREE.Color {
-  const row = LIVERIES[(Math.max(1, act) - 1) % LIVERIES.length]!;
+  const row = SOFT[(Math.max(1, act) - 1) % SOFT.length]!;
   return row[(Math.imul(id, 2654435761) >>> 0) % row.length]!;
 }
 
@@ -248,7 +254,7 @@ export class RungInstances {
     return l === undefined ? undefined : l * enemyScale(kind) * 1.3;
   }
 
-  add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0, livery: THREE.Color = WHITE): void {
+  add(kind: EnemyKind, x: number, ground: number, z: number, heading: number, bob: number, ghost = false, pm = 0, livery: THREE.Color = WHITE, flash = 0): void {
     const mesh = (ghost ? this.ghosts : this.meshes).get(kind);
     if (!mesh) return;
     const used = ghost ? this.ghostUsed : this.used;
@@ -274,6 +280,7 @@ export class RungInstances {
     this.tint.copy(livery);
     for (const [bit, c] of TINTS) if (pm & bit) this.tint.multiply(c);
     if (ghost) this.tint.multiply(CAMO);
+    else if (flash > 0) this.tint.lerp(FLASH_TINT, flash);
     mesh.setColorAt(i, this.tint);
     used.set(kind, i + 1);
   }
@@ -297,6 +304,31 @@ export class RungInstances {
       mesh.count = this.iconUsed.get(k) ?? 0;
       mesh.instanceMatrix.needsUpdate = true;
     }
+  }
+
+  /**
+   * Plan item 730: every solid vehicle drawn this frame, as its kind and its body's box on screen (CSS px in a
+   * `w` x `h` canvas), for the e2e hue sample: the instanced fleet has no per-vehicle object to ask.
+   */
+  drawnBoxes(camera: THREE.Camera, w: number, h: number): Array<{ kind: EnemyKind; x: number; y: number; w: number; h: number }> {
+    const out: Array<{ kind: EnemyKind; x: number; y: number; w: number; h: number }> = [];
+    const v = new THREE.Vector3();
+    const m = new THREE.Matrix4();
+    for (const [kind, mesh] of this.meshes) {
+      const bb = mesh.geometry.boundingBox;
+      if (!bb) continue;
+      for (let i = 0; i < mesh.count; i++) {
+        mesh.getMatrixAt(i, m);
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (let k = 0; k < 8; k++) {
+          v.set(k & 1 ? bb.max.x : bb.min.x, k & 2 ? bb.max.y : bb.min.y, k & 4 ? bb.max.z : bb.min.z).applyMatrix4(m).project(camera);
+          const x = ((v.x + 1) / 2) * w, y = ((1 - v.y) / 2) * h;
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
+        out.push({ kind, x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+      }
+    }
+    return out;
   }
 
   /** How many draw calls the Fleet costs this frame (one per rung kind on the lane). */

@@ -36,6 +36,7 @@ import {
   towerAt,
   towerStats,
   type Enemy,
+  type EnemyKind,
   type Game,
   type GameEvent,
   type Tower,
@@ -212,6 +213,8 @@ const GOLD_WINDOW = 0.15;
 
 /** How long a hit flash lasts, in seconds. */
 const FLASH = 0.07;
+/** Plan item 730: an instanced vehicle's hit flash, a little longer (it fades rather than swaps). */
+const RUNG_FLASH = 0.14;
 
 const SHOT_COLOURS: Record<string, string> = {
   scarecrow: "#ffe08a",
@@ -284,6 +287,8 @@ export class Renderer3D {
   private levelId = -1;
   private towers = new Map<number, TowerView>();
   private enemies = new Map<number, EnemyView>();
+  /** Plan item 730: when each instanced vehicle was last hit (this.clock), for its flash. */
+  private rungHit = new Map<number, number>();
   /** Fleet levels: every rung kind is one InstancedMesh (Hedgerow 2 M2); built on the first fleet level. */
   private rungs: RungInstances | null = null;
   /** Fleet knocks' Marks not yet floated: one "+N" every GOLD_WINDOW seconds. */
@@ -1235,6 +1240,12 @@ export class Renderer3D {
     return { drawn: this.lay.slots.size, column: this.lay.inColumn.size, cols };
   }
 
+  /** Plan item 730: the instanced vehicles drawn this frame, kind and body box (CSS px, the canvas's frame). */
+  rungBoxes(): Array<{ kind: EnemyKind; x: number; y: number; w: number; h: number }> {
+    const r = this.canvas.getBoundingClientRect();
+    return this.rungs?.drawnBoxes(this.camera, r.width, r.height) ?? [];
+  }
+
   /** Plan item 215: each vehicle's box on screen (CSS px, the canvas's own frame), for the size checks: its
    * convoy footprint (the instanced fleet has no per-vehicle object), 0.55 units a size class long, 0.4 high. */
   vehicleBoxes(game: Game): Array<{ x: number; y: number; w: number; h: number }> {
@@ -1918,6 +1929,8 @@ export class Renderer3D {
     const flash = () => {
       const ev = this.enemies.get(enemy);
       if (ev) ev.hit = 0;
+      // Plan item 730: an instanced vehicle has no view of its own; its hit flash is kept by id.
+      else this.rungHit.set(enemy, this.clock);
     };
     if (kind === "silo") {
       this.fx.beam(fx, fy, fz, tx, ty, tz, "#ffcf5a", spec === 0 ? 0.09 : 0.06, 0.16);
@@ -2234,6 +2247,7 @@ export class Renderer3D {
     const t = this.clock;
     this.syncTowers(game, dt, t);
     this.syncEnemies(game, dt, t);
+    if (this.rungHit.size > 256) for (const [id, at] of this.rungHit) if (t - at > RUNG_FLASH) this.rungHit.delete(id);
     this.syncHero(game, dt, t);
     this.shownFolk = this.farm.step(game, dt, this.reducedMotion);
     this.folkMeshes.update(this.shownFolk, (x, z) => this.height(x, z), t);
@@ -2595,7 +2609,8 @@ export class Renderer3D {
         const bob = moving ? Math.abs(Math.sin(t * 9 + e.id)) * 0.012 + (enemyLift(e.kind) ? Math.sin(t * 3 + e.id) * 0.04 : 0) : 0;
         const ghost = !isRevealed(game, e);
         // Unrevealed stealth is drawn see-through in hedge-camo, never blinked out (its icons stay over it).
-        this.rungs.add(e.kind, p.x, this.height(p.x, p.y) + tierUp, p.y, heading, bob, ghost, e.pm, liveryOf(Math.ceil(game.level.id / 10), e.id));
+        const hitAgo = t - (this.rungHit.get(e.id) ?? -9);
+        this.rungs.add(e.kind, p.x, this.height(p.x, p.y) + tierUp, p.y, heading, bob, ghost, e.pm, liveryOf(Math.ceil(game.level.id / 10), e.id), hitAgo < RUNG_FLASH ? 1 - hitAgo / RUNG_FLASH : 0);
         // Its property icons (section 2): a row of roundels over the vehicle.
         if (e.pm) this.rungs.addIcons(e.pm, p.x, this.height(p.x, p.y) + enemyLift(e.kind) + 0.95 * enemyScale(e.kind), p.y);
         if (e.stun > 0 && Math.random() < dt * 6) this.sparks.emit(p.x, this.height(p.x, p.y) + 0.6, p.y, "#fff6b0", 1, 0.8, 0.1, 0.4, 0);
