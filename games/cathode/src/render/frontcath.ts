@@ -1731,7 +1731,9 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // line; the iris stays round, so the lids cover its top and foot), and the irises turned in a touch rather
         // than out: wide whites round both irises, each set outward, read as a blank, startled stare off camera
         // (critique, 11-12 08:35), not the bible's knowing smirk.
-        const lidK = 0.84;
+        // Plan item 727: the determined look narrows her eyes (0.84 -> 0.74), a set, focused gaze: with the brows alone it
+        // changed 1.1% of the title head's pixels against the smirk and read as the same face.
+        const lidK = expr === "determined" ? 0.74 : 0.84;
         const squash = () => {
           g.translate(0, ey);
           g.scale(1, lidK);
@@ -1841,8 +1843,10 @@ export function buildFrontCath(phone: boolean): FrontCath {
         // a level pair).
         const raise = sx < 0 ? (expr === "smirk" ? 0.0068 : expr === "wink" ? 0.0042 : 0.004) : 0;
         // Plan item 289: set higher over the larger eyes, lighter and arched.
-        const by = 0.0315 + raise - (expr === "wink" && sx > 0 ? 0.0018 : 0);
-        const inner = expr === "determined" ? -0.0034 : 0;
+        // Plan item 727: determined sets both brows lower (0.0022) and draws their inner heads down further (-0.0034 ->
+        // -0.0058), so the knit reads at title distance.
+        const by = 0.0315 + raise - (expr === "wink" && sx > 0 ? 0.0018 : 0) - (expr === "determined" ? 0.0022 : 0);
+        const inner = expr === "determined" ? -0.0058 : 0;
         // Plan item 205: a fuller, darker brow, so it holds as a stroke at title distance.
         // Plan item 275: fuller at the head, tapering to the tail, peaking two-thirds out.
         // Plan item 319 slice 9: a dark warm brown, not near-black, and a fifth slimmer at the head (the critique
