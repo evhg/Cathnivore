@@ -6839,7 +6839,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
   - keyart-fresh passes; cathode-perf is within budget when run alone. Live shots L and D.
 - **Size:** 3
 
-## 728. [ ] Cathnivore phone game: the table is the hero
+## 728. [ ] Cathnivore phone game: the table is the hero *(lane A, in progress)*
 - **Why:** critique 2026-11-27 (cath-game-P): the board gets about 44% of the height (120-490), with five bands stacked under it (Cath and the talk strip, resources, hand, nav). VISION 2: the table is the hero.
 - **Build:**
   - The resource row joins the hand tray's header.
