@@ -6008,6 +6008,17 @@ html.no-animations .action-tray .actions[data-fan] > .action-item[data-fan] { tr
 .wrap-streak-1 { stop-color: var(--wrap-shine); stop-opacity: 0.5; }
 .wrap-spot-in { stop-color: var(--wrap-spot); stop-opacity: 0.34; }
 .wrap-spot-out { stop-color: var(--wrap-spot); stop-opacity: 0; }
+/* Plan item 733: a region holding 3+ Outlets under cold strip light (Map.tsx #corp-wash): the land cooled from the
+   top, and a lit cyan-white rim just inside the hex, so a colonised region reads at a glance. */
+.corp-wash-top { stop-color: var(--corp-lightbox); stop-opacity: 0.42; }
+.corp-wash-mid { stop-color: var(--corp-lightbox); stop-opacity: 0.16; }
+.corp-wash-base { stop-color: var(--corp-lightbox-lo); stop-opacity: 0.06; }
+.corp-wash > polygon:first-child { mix-blend-mode: screen; }
+.corp-wash-edge {
+  stroke: var(--wrap-edge);
+  opacity: 0.9;
+  filter: drop-shadow(0 0 3px var(--corp-lightbox));
+}
 /* a liberation peels the wrap up off the tile's top corner and away, 750 ms; under reduced motion it only fades */
 .wrap-peel {
   transform-box: fill-box;

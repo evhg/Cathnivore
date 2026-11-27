@@ -226,6 +226,12 @@ function RegionTextureDefs() {
         <stop offset="0.5" className="wrap-streak-1" />
         <stop offset="1" className="wrap-streak-0" />
       </linearGradient>
+      {/* Plan item 733: a colonised region's cold fluorescent wash, strongest under the strip lights at the top */}
+      <linearGradient id="corp-wash" x1="0.3" y1="0" x2="0.6" y2="1">
+        <stop offset="0" className="corp-wash-top" />
+        <stop offset="0.55" className="corp-wash-mid" />
+        <stop offset="1" className="corp-wash-base" />
+      </linearGradient>
       <radialGradient id="wrap-spot" cx="0.5" cy="0.5" r="0.5">
         <stop offset="0" className="wrap-spot-in" />
         <stop offset="1" className="wrap-spot-out" />
@@ -1328,6 +1334,14 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             {r.outlets > 0 && control !== 'held' && (
               <g className="plastic-film shrink-wrap" data-wrap="loose" pointerEvents="none" key={`film${r.outlets}`}>
                 <ShrinkWrap x={x} y={y} tight={false} />
+              </g>
+            )}
+            {/* Plan item 733: three or more Outlets light a region like a retail park at night: a cold fluorescent
+                wash over the land and a lit cyan-white edge, so a colonised region reads at a glance across the table. */}
+            {r.outlets >= 3 && !r.liberated && (
+              <g className="corp-wash" data-corp-wash={r.outlets} pointerEvents="none">
+                <polygon points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.97)} fill="url(#corp-wash)" />
+                <polygon className="corp-wash-edge" points={hexPoints(x, y, HEX_R * GAP_SCALE * 0.93)} fill="none" strokeWidth={2.2} strokeLinejoin="round" />
               </g>
             )}
             {/* Plan item 525: freed land peels its wrap off (600-900 ms; a fade under reduced motion). */}
