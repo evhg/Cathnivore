@@ -6798,7 +6798,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** trench-to-tile luminance contrast 3:1+ measured from shot pixels; channel 6 px+ at P; a crop glyph on every field in the dry state (count = fields); runnel-tiles still passes; shots P and D.
 - **Size:** 2
 
-## 724. [ ] NIGHT SHIFT: shopfronts with lettering you can read, and lit passers-by
+## 724. [ ] NIGHT SHIFT: shopfronts with lettering you can read, and lit passers-by *(lane A, in progress)*
 - **Why:** a gap on item 719: `ns-street-P` the neon signs are blurred blocks (~320-335 x 115-140, 525-545 x 115-160), the near people unlit silhouettes (300-345 x 180-270).
 - **Build:** shop signs lettered on canvas (noodle bar, pawn, LUNA, the hotel katakana) on emissive planes, reflected in the road; a rim from the nearest lamp on the street's people.
 - **Accept:** 8+ signs within 40 m of the spawn, each with text 10 px+ tall at D; the near people's mean luminance 1.5x today's (measured from a live frame); cathode-perf within budget run alone; live shots (frames > 1) L and D.
