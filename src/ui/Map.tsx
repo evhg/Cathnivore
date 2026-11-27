@@ -1462,7 +1462,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
                           // Plan item 451: the stack a dragged card will take pieces from lifts and fades in time.
                           data-going={aim?.region === id && aim.going?.includes(k) ? '' : undefined}
                         >
-                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale} ornaments={tray.ornaments} cy={rect.cy ?? tray.enemyY} />
+                          <EnemyStack kind={rect.kind} n={n} scale={tray.enemyScale * (rect.kind === 'outlets' ? (tray.outletBoost ?? 1) : 1)} ornaments={tray.ornaments} cy={rect.cy ?? tray.enemyY} />
                           {open && peek && <PiecePeek anchor={peek.anchor} id={peekId} onClose={closePeek} />}
                         </g>
                       )

@@ -11,7 +11,7 @@ const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIU
 const SIZES = { P: [390, 844, true], D: [1440, 900, false] }
 for (const n of (process.env.SIZES ?? 'P,D').split(',')) {
   const [w, h, touch] = SIZES[n]
-  const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: touch, deviceScaleFactor: 2 })
+  const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: touch, deviceScaleFactor: 2, colorScheme: process.env.SCHEME === 'dark' ? 'dark' : 'light' })
   const p = await ctx.newPage()
   await p.goto(`${base}?e2eAutoplay=1&e2eAutoplayUntil=${round}`)
   await p.getByText('Quick Game').click()

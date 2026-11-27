@@ -1,6 +1,6 @@
 // Plan item 63: a tile's piece tray never overlaps itself and its counts stay readable at every hex size.
 import { describe, expect, it } from 'vitest'
-import { MIN_COUNT_PX, ORNAMENT_PX, pieceLayout, rectsOverlap, TILE_R } from '../src/ui/pieceLayout'
+import { MIN_COUNT_PX, ORNAMENT_PX, OUTLET_BOOST, pieceLayout, rectsOverlap, TILE_R } from '../src/ui/pieceLayout'
 
 const label = (name: string) => name.length * 8.6 + 16
 
@@ -19,6 +19,19 @@ describe('pieceLayout', () => {
             expect(r.some((x) => x.kind === 'outlets')).toBe(outlets > 0)
           }
     })
+
+  // Plan item 733: Hollowell's storefront leads its pieces: where the tile has room the Outlet's slot grows past the
+  // Buyout's (up to OUTLET_BOOST), standing on the same ground line, and never past it.
+  it('grows the Outlet past the other stacks where the tile has room', () => {
+    const input = { outlets: 3, buyouts: 1, doubt: 0, producers: 1, scheme: false, labelWidth: label('Saltmarsh') }
+    const t = pieceLayout(input, 90)
+    const o = t.rects.find((x) => x.kind === 'outlets')!
+    const b = t.rects.find((x) => x.kind === 'buyouts')!
+    expect(t.outletBoost ?? 1).toBeGreaterThan(1)
+    expect(t.outletBoost ?? 1).toBeLessThanOrEqual(OUTLET_BOOST + 1e-9)
+    expect(o.x1 - o.x0).toBeGreaterThan(b.x1 - b.x0)
+    expect(o.y1).toBeCloseTo(b.y1, 6)
+  })
 
   it('drops ornaments on a small hex before it shrinks the pieces', () => {
     const input = { outlets: 3, buyouts: 1, doubt: 0, producers: 2, scheme: false, labelWidth: label('Rivermead') }

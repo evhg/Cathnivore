@@ -54,6 +54,9 @@ export interface PieceTray {
   /** Plan item 282: Hollowell's stacks' own scale (at least `scale`): on a hex shared with producers they grow on
    *  their own once the producers have their size. */
   enemyScale: number
+  /** Plan item 733: the Outlet's own growth over `enemyScale` (1 when the hex has no room): Hollowell's storefront
+   *  leads its pieces, so a colonised region reads at a glance. */
+  outletBoost?: number
   /** Whether the stacks wear their ornaments (the .99 tag, the SOLD sign). */
   ornaments: boolean
   /** A count badge's radius in tile units (its text is 1.25 x this). */
@@ -129,7 +132,7 @@ function row(ws: number[]): number[] {
  *  stands beside them on the other flank rather than the pieces shrinking to leave it the foot of the hex. */
 export const ROW_SHIFTS = [0, 14, -14, 24, -24, 32, -32] as const
 
-function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1, eScale = scale, side = false, dx = 0, cluster = false): { rects: PieceRect[]; enemyY: number; producerY: number } {
+function place(input: PieceInput, scale: number, ornaments: boolean, countR: number, badgeK = 1, eScale = scale, side = false, dx = 0, cluster = false, ob = 1): { rects: PieceRect[]; enemyY: number; producerY: number } {
   const out: PieceRect[] = []
   const lw = input.labelWidth / 2
   out.push({ kind: 'label', x0: -lw, y0: LABEL_Y - 15, x1: lw, y1: LABEL_Y - 15 + LABEL_H })
@@ -146,10 +149,12 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   // Plan item 550: Hollowell's stacks carry no count disc (the region's status disc on its banner counts its pieces).
   const counted = (_k: PieceKind) => false
   // Plan item 413: with no pile of copies the slot's right edge is free, so the count sits inside it (no extra width).
-  const ws = slots.map(() => STACK_W * eScale)
+  const boost = (k: PieceKind) => (k === 'outlets' ? ob : 1)
+  const ws = slots.map((k) => STACK_W * eScale * boost(k))
   // Plan item 172: the row steps down the tile, rather than shrinking, when the plate or a badge sits over it.
   const ceil = out.reduce((a, r) => Math.max(a, r.y1), -Infinity) + GAP
-  const highest = (STACK_H * eScale) / 2 + (ornaments ? ORNAMENT_H * eScale : 0) + (slots.some(counted) ? countR * 0.5 : 0) + lift
+  // An Outlet grown by `ob` stands on the row's one ground line, rising above its neighbours.
+  const highest = (STACK_H * eScale) * (ob - 0.5) + (ornaments ? ORNAMENT_H * eScale * ob : 0) + (slots.some(counted) ? countR * 0.5 : 0) + lift
   const enemyY = slots.length ? Math.max(ENEMY_Y, ceil + highest) : ENEMY_Y
   const bottom = enemyY + (STACK_H * eScale) / 2
   const pws = Array.from({ length: input.producers }, (_, k) => PRODUCER_W * scale + ((input.stallCounts?.[k] ?? COUNT_FROM) >= COUNT_FROM ? countR * 0.35 : 0))
@@ -163,8 +168,9 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
     out.push({ kind: 'doubt', back: true, cy: enemyY - lift, x0: mid - w / 2, y0: enemyY - lift - (STACK_H * eScale) / 2 - (ornaments ? ORNAMENT_H * eScale : 0), x1: mid + w / 2, y1: bottom - lift })
   }
   xs.slice(0, ws.length).forEach((x, k) => {
-    const top = enemyY - (STACK_H * eScale) / 2 - (ornaments ? ORNAMENT_H * eScale : 0) - (counted(slots[k]!) ? countR * 0.5 : 0)
-    out.push({ kind: slots[k]!, x0: x, y0: top, x1: x + ws[k]!, y1: bottom })
+    const b = boost(slots[k]!)
+    const top = bottom - STACK_H * eScale * b - (ornaments ? ORNAMENT_H * eScale * b : 0) - (counted(slots[k]!) ? countR * 0.5 : 0)
+    out.push({ kind: slots[k]!, x0: x, y0: top, x1: x + ws[k]!, y1: bottom, ...(b !== 1 ? { cy: bottom - (STACK_H * eScale * b) / 2 } : {}) })
   })
   const producerY = side && slots.length ? bottom - PRODUCER_H * scale * 0.4 : Math.max(PRODUCER_Y, (slots.length ? bottom : ceil) + GAP + PRODUCER_H * scale * 0.6)
   ;(side ? xs.slice(ws.length) : row(pws).map((x) => x + dx)).forEach((x, k) =>
@@ -261,7 +267,7 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
         for (const cl of CLUSTER)
           for (const dx of ROW_SHIFTS) {
             const p = place(input, scale, ornaments, countR, 1, scale, side, dx, cl)
-            if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin, dx, cl)
+            if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin, dx, cl, side)
           }
   if (lmMin > 0) return null
   const scale = 0.35
@@ -270,13 +276,27 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
 
 /** Plan item 282: with the producers placed at the tray's scale, Hollowell's stacks take the largest scale up to
  *  `start` (the hex's own ceiling) that still fits beside them. */
-function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx = 0, cl = false): PieceTray {
-  if (!input.producers || !(input.outlets || input.buyouts || input.doubt)) return t
+function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx = 0, cl = false, side0 = false): PieceTray {
+  if (!input.producers || !(input.outlets || input.buyouts || input.doubt)) return boostOutlet(input, t, lmMin, side0, dx, cl)
   for (let e = start; e > t.scale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
     for (const side of [false, true]) {
       const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side, dx, cl)
-      if (fits(p.rects, lmMin)) return { ...t, ...p, enemyScale: e }
+      if (fits(p.rects, lmMin)) return boostOutlet(input, { ...t, ...p, enemyScale: e }, lmMin, side, dx, cl)
     }
+  return boostOutlet(input, t, lmMin, side0, dx, cl)
+}
+
+/** Plan item 733: the most an Outlet grows over the other stacks. */
+export const OUTLET_BOOST = 1.3
+
+/** Plan item 733: with every piece placed, the Outlet alone grows (up to OUTLET_BOOST) while the tile still fits,
+ *  so on a crowded hex Hollowell's storefront still leads its pieces. */
+function boostOutlet(input: PieceInput, t: PieceTray, lmMin: number, side: boolean, dx: number, cl: boolean): PieceTray {
+  if (!input.outlets) return t
+  for (let b = OUTLET_BOOST; b > 1 + 1e-9; b = Math.round((b - 0.05) * 100) / 100) {
+    const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, t.enemyScale, side, dx, cl, b)
+    if (fits(p.rects, lmMin)) return { ...t, ...p, outletBoost: b }
+  }
   return t
 }
 
