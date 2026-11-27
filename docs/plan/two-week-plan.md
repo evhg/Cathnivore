@@ -1,6 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-27T13:15Z
 
 
 
@@ -6894,5 +6893,77 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - Hedgerow l34 2D D: the tower verbs run into their rating pips ('Shoots●●●●') with no gap (1065-1410 x 150-360).
 - Hedgerow l34 2D D: the swarm badge sits over the windmill's range ring and sails (565-775 x 150-175).
 - Not bugs (decided): 'Radio M' under the rack's arrow is item 698's peek; the phone title's board over Cath below the waist is item 705's design.
+- **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
+- **Size:** 2
+
+## 733. [ ] Cathnivore: Hollowell looks like Hollowell on the table
+- **Why:** critique 2026-11-27 13:25 (shots e2e/screenshots/plan1127b2, cath-game-D 560-1140 x 120-650): Hollowell's Outlets are small orange icons in the same flat ink as the producers' pieces. VISION's art direction makes the corporations glossy, plastic, over-lit and clinical against the players' paper and ink; that contrast is the joke and the design system, and the table doesn't show it. The Hollowell plan panel (1135-1345 x 15-255) is cream cards like the players'. **Measure first:** the Outlet and Buyout pieces' drawn size and contrast on their region at P and D.
+- **Build:**
+  - Outlets and Buyouts redrawn as glossy kiosks: a plastic gradient, a specular band, a cold white rim and a hard drop shadow.
+  - A faint cool fluorescent wash on a region holding 3+ Outlets, so a colonised region reads at a glance.
+  - Squeeze and Expand animate linear, with no overshoot (the players' pieces keep their springy ink).
+  - The Hollowell plan panel as a glossy corporate memo, not cream cards.
+- **Accept:**
+  - Outlet piece 44 px+ at D and 28 px+ at P, 3:1+ against its region fill.
+  - e2e: an Outlet's fill is a gradient with a highlight stop; a 3-Outlet region carries the wash.
+  - piece-art, board-pieces and critique177 pass. Shots P and D.
+- **Size:** 2
+
+## 734. [ ] Runnel phone: a crisp, legible pipe board
+- **Why:** critique 2026-11-27 13:25 (runnel-P 0-390 x 260-640): at 390 wide the pipes look soft, brown on tan, barely apart from the dry crop tiles; connected and unconnected runs are hard to tell before the water flows (VISION 2 'big, rich, legible', 6 'pixel-crisp at every size'). **Measure first** at 390x844 at 3x: is the board SVG or a scaled raster, the pipe stroke in CSS px, and pipe against tile contrast.
+- **Build:**
+  - Pipes drawn as crisp vector strokes at the device's pixel ratio.
+  - A darker ink edge and a lighter trough on each pipe, the stroke 20% wider at 420 px or under.
+  - A faint shimmer on pipe already joined to the spring, before the solve.
+- **Accept:**
+  - Pipe against tile 3:1+; pipe stroke 6 CSS px+ at 390 wide.
+  - e2e: any board canvas's backing store is its CSS size times the device pixel ratio; a joined pipe carries its joined state.
+  - runnel-route, -tiles, -board pass. Shots P (3x crop) and D.
+- **Size:** 2
+
+## 735. [ ] Hedgerow phone 3D: the camera frames the farm
+- **Why:** critique 2026-11-27 13:25 (hedge-l27-3d-P, image px at 2x): about a quarter of the playfield's height (105-400) is fogged off-map scenery, the field washed out against D, and the Hollowell depot half off-screen (0-190 x 870-960); a red-roofed building is cut at the left edge (0-110 x 170-250). On a phone the 3D view loses to 2D (VISION 2: the table is the hero). **Measure first:** the projected field bounds and both depots at 390x844 for levels 1, 12, 27 and 34.
+- **Build:**
+  - Fit the camera to the bounds of the road and the plots for the screen's aspect.
+  - A steeper pitch in portrait.
+  - Lighter fog on phones.
+  - Both depots and the exit always in frame.
+- **Accept:**
+  - At 390x844 the field's box fills 85%+ of the canvas width and 70%+ of its height.
+  - Mean field luminance within 10% of D.
+  - e2e: the depots and the exit project inside the canvas at the four levels.
+  - hedgerow-3dframe passes. Shots P and D.
+- **Size:** 2
+
+## 736. [ ] Hedgerow 2D late waves: the convoy and the numbers stay readable
+- **Why:** critique 2026-11-27 13:25: at level 34 the beehive, stall, hedge and duck pond sit on the road junction and lorries pass under the hedge sprite (hedge-l34-2d-D 320-660 x 740-880; P 90-480 x 1030-1180), a '+68' pill over a lorry; two '+107' floats stack side by side (l34-2d-P 165-320 x 818-892), '+9' sits on a scarecrow by '+172' (l27-2d-P), and '+1'/'+9' chips are cut at the left edge (l27-2d-P 20-125 x 495-545; l34-2d-P 50-85 x 1010-1040) (VISION 3 and 6). **Measure first:** is that set dressing or tower art, and do the floats come from one tower or two.
+- **Build:**
+  - Vehicles draw above towers and set dressing on the road, with an ink outline (or the dressing kept off road tiles).
+  - One tower's same-moment income and damage merge into one stacked label.
+  - Floats and chips kept 12 px inside the field's edge.
+  - At most 6 floats on screen, the oldest fading first.
+- **Accept:**
+  - e2e at `?sandbox=1` level 34, a late wave: no two float boxes intersect, all inside the field; no road vehicle is drawn under a sprite.
+  - hedgerow-readable, -swarm, -convoy pass. Shots P and D.
+- **Size:** 2
+
+## 737. [ ] NIGHT SHIFT phone landscape: a lean HUD and a street you can see into
+- **Why:** critique 2026-11-27 13:25 (ns-street-P, 1688x780 image px): the health and level block (20-460 x 125-235), the tutorial note (20-520 x 335-435) and the objective tag cover about 30% of the left side; the street is murky and nothing reads past about 15 m (VISION 1: a clear focal point). **Measure first** on a live frame at 844x390: the HUD's area share and the far figures' contrast.
+- **Build:**
+  - Health a slim bar under the compass (or an arc round the move stick).
+  - The tutorial note bottom-centre, gone after the first move or 6 s.
+  - The objective tag folds to a diamond after 3 s.
+  - The street's exposure lifted on phones, people and enemies within 25 m rimmed.
+- **Accept:**
+  - The HUD, bar the touch controls, covers 12% or less of the viewport.
+  - A figure at 20 m 3:1+ against what's behind it.
+  - e2e: the tutorial note is gone after a scripted move.
+  - cathode-hud and cathode-perf (alone) within budget. Shots L and D.
+- **Size:** 2
+
+## 738. [ ] The bugs from the 2026-11-27 13:25 critique, fixed as one batch *(lane A, in progress)*
+- NIGHT SHIFT class pick P (ns-play-P, 2x image px 640-720 x 470-790): a sniper rifle stands upright in mid-air right of Cath, cut off (likely the D layout's weapon display on the phone stage).
+- Cathnivore game P (cath-game-P 130-175 x 683-710): the '2' cost chip runs into 'Supply 1 Outlet'; the FREE stamp (285-345 x 690-710) crowds 'Injunction'.
+- NIGHT SHIFT title D (ns-title-D 418-560 x 320-490): the Ledger's photo of Tomas Reed is a man in a beanie; Cathnivore's Tomas (cath-game-D 1240-1330 x 520-660) is someone else. One Tomas across the games (VISION 5).
 - **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
