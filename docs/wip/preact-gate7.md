@@ -39,3 +39,25 @@ Compare each against the React build at --retries=0 before treating it as a Prea
   while page.evaluate still answered. So it's not a dep change cancelling the timer. Next: check whether the Game
   component unmounted or was replaced without its hooks' cleanups (a Preact Suspense/lazyScreen remount: log a mount id),
   and whether a second Game instance is the one rendering.
+
+## 2026-11-27 01:51 lane A: the "stall" is slowness, not a stall
+- Probed at the failure (performance.now() on every autoplay step): the last move was 0.1-5 s before the test gave up,
+  so the game was still moving, just too slowly for the 30 s budget. The "timer never fired" reading came from a trace
+  with no timestamps.
+- Same 9 specs (quick-game, campaign, daily, crash-recovery, hotseat, card-drag, drawer-tabs, campaign-map, tutorial),
+  P + D, default workers, --retries=0: **React 76/79, Preact 71/79.** card-drag:144, drawer-tabs:5 and hotseat (phone)
+  fail on React too here, so they aren't Preact bugs (CI passes them: local environment). After the patch's new changes,
+  the 4 autoplay specs on Preact: 20/22, failing campaign.spec:12 D and crash-recovery D (end screen not in 30 s).
+- Why: Preact renders Game ~2.2x as often per move (139 vs 64 in one desktop game). Preact runs useEffect after the next
+  frame, so the per-move reaction effect (`cathLogSeenRef`: setCathReaction, strikePose, beat, setProducerFaces,
+  strikeProducerPoses) commits as its own render after a paint; React folds it into the next move's render. Every render
+  then runs the layout-effect measures (receipts `fit`, the desktop sheet `check`, the hand `fan`/`overflows`), each forcing
+  a layout of the whole board: getBoundingClientRect self time ~5 s of a ~15 s profiled game in both builds.
+- Alone, one desktop game times the same within noise (React 14.8/12.2 s, Preact 12.1/15.4 s), so the gap shows only under load.
+- In the patch now: the autoplay/AI driver effect and the enemy-turn skip are layout effects (no wait for a paint);
+  the phone/desktop data-tight measure clears, reads, then writes (it forced a layout per card before);
+  `NO_PREACT=1 npm run build` builds React for A/B.
+- Tried and dropped: `options.requestAnimationFrame` as a MessageChannel post (effects in the next task): no clear gain.
+- **Next:** fold the reaction effect into the move (compute the reactions where `advance` sets the state, one render per
+  move in both libraries), or make the receipts/sheet/fan measures run only when their inputs change; then rerun the 4
+  autoplay specs at default workers, --retries=0, Preact vs React.

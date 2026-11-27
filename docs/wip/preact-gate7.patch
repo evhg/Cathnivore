@@ -102,10 +102,10 @@ index 87ea010f..0a26855b 100644
  import { unlockAudioOnFirstTap } from './platform/sound'
 diff --git a/src/preactFixes.ts b/src/preactFixes.ts
 new file mode 100644
-index 00000000..0cec1d9a
+index 00000000..a2c8b4a3
 --- /dev/null
 +++ b/src/preactFixes.ts
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,17 @@
 +// Gate 7 (2026-11-27): the production build renders with Preact (vite.config.ts aliases react to preact/compat;
 +// dev and the unit tests keep React). Where the two libraries write the DOM differently, this hook makes Preact
 +// write what React does. Import it before anything renders (main.tsx). Under React it installs a hook nothing calls.
@@ -122,6 +122,63 @@ index 00000000..0cec1d9a
 +  }
 +  previous?.(vnode)
 +}
++
+diff --git a/src/ui/Game.tsx b/src/ui/Game.tsx
+index c49924dc..35ef18ca 100644
+--- a/src/ui/Game.tsx
++++ b/src/ui/Game.tsx
+@@ -1604,18 +1604,19 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
+   // ability) is marked tight, and its picture steps down so nothing leaves the card. Measured after each render.
+   // Plan item 320: on the desktop table's hand the same measure lets a card whose name fits take a 60% window (table.css);
+   // there it reads layout offsets, since the fan's tilt inflates on-screen boxes into each other.
++  // Every card is cleared, then all are read, then the tight ones marked: clearing and reading one card at a time forced a
++  // fresh layout of the whole page per card on every render (gate 7, 2026-11-27).
+   useLayoutEffect(() => {
+-    if (isDesktop) {
+-      for (const b of document.querySelectorAll<HTMLElement>('.table-hand .action-item:not(.action-family) > button:first-child:not(:disabled)')) {
+-        b.removeAttribute('data-tight')
+-        if ([...b.children].some((c) => c instanceof HTMLElement && c.offsetTop + c.offsetHeight > b.clientHeight - 2)) b.setAttribute('data-tight', '')
+-      }
+-      return
+-    }
+-    for (const b of document.querySelectorAll<HTMLElement>('.action-tray .actions .action-item > button:first-child:not(:disabled)')) {
+-      b.removeAttribute('data-tight')
+-      if (b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > b.getBoundingClientRect().bottom + 1)) b.setAttribute('data-tight', '')
+-    }
++    const buttons = [...document.querySelectorAll<HTMLElement>(
++      isDesktop ? '.table-hand .action-item:not(.action-family) > button:first-child:not(:disabled)' : '.action-tray .actions .action-item > button:first-child:not(:disabled)',
++    )]
++    for (const b of buttons) b.removeAttribute('data-tight')
++    const tight = buttons.filter((b) => {
++      if (isDesktop) return [...b.children].some((c) => c instanceof HTMLElement && c.offsetTop + c.offsetHeight > b.clientHeight - 2)
++      const bottom = b.getBoundingClientRect().bottom
++      return b.scrollHeight > b.clientHeight + 1 || [...b.children].some((c) => c.getBoundingClientRect().bottom > bottom + 1)
++    })
++    for (const b of tight) b.setAttribute('data-tight', '')
+   })
+   // Plan item 141: on a phone the card strip scrolls sideways, so after each move the card Cath suggests is
+   // brought into view if it's off the strip (never fighting the player's own scroll between moves).
+@@ -1914,7 +1915,10 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [teammatePick])
+ 
+-  useEffect(() => {
++  // A layout effect (gate 7, 2026-11-27): the build renders with Preact, which runs passive effects after the next
++  // paint, so every autoplayed or AI move would also wait for a paint of the whole board. This effect only reads state
++  // and schedules timers, so running it at commit costs nothing.
++  useLayoutEffect(() => {
+     if (state.result || pendingEnemyTurn.length > 0 || pendingMidScene || teammatePick) return
+     const aiProducer = aiProducerRef.current
+     const decision = currentDecision(state)
+@@ -2020,7 +2024,7 @@ export default function Game({ initial, seed, mode, onExit, onPlayAgain, onNewGa
+   }
+ 
+   // Skip the (otherwise real-time) enemy-turn caption playback instantly under e2e autoplay.
+-  useEffect(() => {
++  useLayoutEffect(() => {
+     if (autoplayRef.current && pendingEnemyTurn.length > 0) setPendingEnemyTurn([])
+   }, [pendingEnemyTurn])
+ 
 diff --git a/src/ui/Setup.tsx b/src/ui/Setup.tsx
 index c22668b4..130c213a 100644
 --- a/src/ui/Setup.tsx
@@ -136,7 +193,7 @@ index c22668b4..130c213a 100644
                  type="checkbox"
                  aria-label={`${PRODUCERS[id].name}, ${PRODUCERS[id].roleName}. ${PRODUCERS[id].roleAbility}${RECOMMENDED_PAIR.includes(id) ? ' Recommended.' : ''}`}
 diff --git a/vite.config.ts b/vite.config.ts
-index 04875d7a..07a32b7d 100644
+index 04875d7a..2fed1df8 100644
 --- a/vite.config.ts
 +++ b/vite.config.ts
 @@ -54,8 +54,22 @@ function pageFonts(): Plugin {
@@ -159,7 +216,7 @@ index 04875d7a..07a32b7d 100644
 +
 +export default defineConfig(({ command }) => ({
    base,
-+  resolve: command === 'build' ? { alias: PREACT_ALIAS } : undefined,
++  resolve: command === 'build' && !process.env.NO_PREACT ? { alias: PREACT_ALIAS } : undefined,
    plugins: [
      react(),
      versionFile(),
