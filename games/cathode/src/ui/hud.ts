@@ -137,6 +137,8 @@ export class Hud {
   private compassTick: HTMLElement;
   private compassLt: HTMLElement;
   private objText: HTMLElement;
+  /** When the objective last changed (0 once folded). */
+  private objAt = 0;
   private prompt: HTMLElement;
   private promptKey: HTMLElement;
   private tellOn = false;
@@ -497,6 +499,14 @@ export class Hud {
       this.objText.textContent = s.objective;
       if (!first) this.punch(this.objective, "is-new", 1000);
       this.wpPulse = 6;
+      // Plan item 737: on a phone held sideways the note folds to a red-pencil diamond 3 s after it changes
+      // (the CSS acts only there; the marker in the street still names the place).
+      this.objAt = performance.now();
+      this.objective.classList.remove("folded");
+    }
+    if (this.objAt > 0 && performance.now() - this.objAt > 3000) {
+      this.objective.classList.add("folded");
+      this.objAt = 0;
     }
     this.show(this.objective, !!s.objective);
     // The objective marker (S7.2): an 18u diamond over the objective with its distance under it; off screen, a 22u

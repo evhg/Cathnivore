@@ -2361,7 +2361,35 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
     box-shadow: inset -2px -2px 0 rgb(var(--shade-rgb) / .35), 0 1px 2px rgb(var(--shade-rgb) / .6);
   }
   .hud-teach { padding-top: 16px; }
+  /* Plan item 737: the slip is pinned bottom centre, in the gap between the move stick and the AIM/FIRE arc, under
+     the crosshair (it sat over the left column under the vitals, a third of that side covered); it rises in. */
+  .hud-teach {
+    left: 50%;
+    top: auto;
+    bottom: calc(max(10px, var(--safe-b)) + 92px);
+    max-width: min(340px, calc(100% - 2 * (var(--safe-l) + 180px)));
+    transform: translateX(-50%);
+    text-align: center;
+    translate: 0 12px;
+  }
   :root.reduce-motion .hud-teach { translate: 0 0; transition: opacity 200ms linear; }
+  /* Plan item 737: 3 s after it changes, the case note folds to a red-pencil diamond (the eyebrow and words fold away
+     over 200 ms); the marker in the street still names the place, and a new objective unfolds it. */
+  .hud-tl > .hud-objective { transition: opacity 200ms var(--ease-out); }
+  .hud-tl > .hud-objective.folded {
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    margin: 4px 0 2px 3px;
+    overflow: hidden;
+    color: transparent;
+    text-shadow: none;
+    rotate: 45deg;
+    border: 2px solid var(--stamp-red);
+    background: rgb(var(--shade-rgb) / .6);
+  }
+  .hud-tl > .hud-objective.folded::before { display: none; }
+  .hud-tl > .hud-objective.folded > .hud-objective-text { display: none; }
   /* Health as a ledger line: ruled above and below like a row of the case file's accounts, faint column rules
      behind the bar, and the figure in the file's display face. */
   .hud-hp-row {

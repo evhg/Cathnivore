@@ -285,4 +285,36 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     await expect.poll(async () => Number(await mag.textContent()), { timeout: 60_000 }).toBe(full)
     await expect(page.locator('.hud-ammo-tap')).toBeHidden()
   })
+
+  test('plan item 737: at L the HUD covers 12% or less, the objective folds, and the move lesson goes after a move', async ({ page, hasTouch }) => {
+    test.skip(!hasTouch, 'the phone held sideways')
+    test.setTimeout(400_000)
+    await boot(page)
+    await expect(page.locator('.hud-teach.on')).toBeVisible({ timeout: 60_000 })
+    // The case note folds to its diamond 3 s after it is set.
+    await expect(page.locator('.hud-objective.folded')).toHaveCount(1, { timeout: 60_000 })
+    const share = await page.evaluate(() => {
+      const W = innerWidth, H = innerHeight
+      const boxes: DOMRect[] = []
+      for (const s of ['.hud-objective', '.hud-vitals', '.hud-teach', '.hud-compass', '.hud-tr', '.hud-sub', '.hud-feed', '.look-hint'])
+        for (const e of document.querySelectorAll(s)) {
+          const cs = getComputedStyle(e)
+          if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) < 0.05) continue
+          const r = e.getBoundingClientRect()
+          if (r.width >= 1 && r.height >= 1) boxes.push(r)
+        }
+      let hit = 0, n = 0
+      for (let y = 1; y < H; y += 3)
+        for (let x = 1; x < W; x += 3, n++) if (boxes.some((b) => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom)) hit++
+      return hit / n
+    })
+    expect(share).toBeLessThanOrEqual(0.12)
+    // The slip sits bottom centre, clear of the left column (the vitals) and below the crosshair.
+    const slip = (await page.locator('.hud-teach').boundingBox())!
+    expect(slip.x).toBeGreaterThan(160)
+    expect(slip.y).toBeGreaterThan(390 / 2)
+    // She walks a couple of metres: the lesson goes.
+    await page.evaluate(() => { (window as unknown as { cathode: C }).cathode.player.pos.z -= 2 })
+    await expect(page.locator('.hud-teach.on')).toHaveCount(0, { timeout: 60_000 })
+  })
 })

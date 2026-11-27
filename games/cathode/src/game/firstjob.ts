@@ -356,6 +356,9 @@ export class FirstJob {
   /** Plan item 639: the first mark, a diamond in the street over stage 0's target. */
   mark: ArrivalMark | null = null;
   private wait = 0;
+  private moveLesson = false;
+  private moveT = 0;
+  private moveFrom: THREE.Vector3 | null = null;
   private seen = false;
 
   constructor(private readonly h: JobHost) {
@@ -441,6 +444,9 @@ export class FirstJob {
         this.target = this.P(-2, FIRST_GUARD.z + FIRST_CONTACT_M);
         this.targetName = "Under the lamp";
         this.lesson("move");
+        this.moveLesson = true;
+        this.moveT = 0;
+        this.moveFrom = null;
         // Plan item 639: the street's end is lit from the first frame (the lamp he will stand under is already on)
         // and the mark stands in the street, so the arrival has somewhere to look.
         this.lamp ??= new Lamp(this.P(FIRST_GUARD.x, FIRST_GUARD.z), h.scene, h.light);
@@ -545,6 +551,14 @@ export class FirstJob {
     const cleared = this.wave.length > 0 && this.wave.every((e) => !e.alive);
     switch (this.stage) {
       case 0:
+        // Plan item 737: the move lesson goes after her first steps or 6 s, whichever comes first.
+        if (this.moveLesson) {
+          this.moveT += dt;
+          if (this.moveT > 6 || h.player.pos.distanceTo(this.moveFrom ??= h.player.pos.clone()) > 1.2) {
+            this.moveLesson = false;
+            this.lesson(null);
+          }
+        }
         // Plan item 7: he comes into view 8.7 m off (was 10.5 m), so the first man she meets reads at 120+ px on a desktop.
         if (h.player.pos.z < FIRST_GUARD.z + FIRST_CONTACT_M) this.goto(1);
         break;
