@@ -64,6 +64,9 @@ const PRESETS: Record<Quality, Preset> = {
 /** Fog: a cold blue-grey haze, linear RGB. */
 const FOG_COLOR = new THREE.Color(0.0042, 0.0058, 0.0095);
 const FOG_DENSITY = 0.019;
+/** Plan item 724: the street's people take more of the baked lamp and sign light and a rim in its colour, so the
+ * near ones read as lit figures, not black cut-outs against the wet street. */
+const PEOPLE_LIGHT = { volume: 2.5, rim: 1.1 };
 
 export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const quality = options.quality;
@@ -173,12 +176,12 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
   const standing = addStandingCrowd(
     scene,
     crowdStanders((level.crowds ?? []).map((g) => ({ ...g, count: Math.round(g.count * crowdScale) })), blocked),
-    (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7 }),
+    (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.7, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim }),
     quality === "phone",
     streetExits(options.district),
   );
   // Plan item 57: the street's own people (walkers, vendors, doorways, riders), who scatter at gunfire.
-  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6 }));
+  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim }));
   addPatients(scene, level.seats ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   addShrouds(scene, level.bodies ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);
@@ -304,6 +307,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     viewScene,
     viewCamera,
     fx: fxs.fx,
+    signDefs: () => level.signs,
     street: street || standing ? {
       snapshot: () => [...(street?.snapshot() ?? []), ...(standing?.snapshot() ?? [])],
       shot: (x: number, z: number, suppressed?: boolean) => {

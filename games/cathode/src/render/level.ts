@@ -220,6 +220,20 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     b.box("blackPaint", center.x, center.y, center.z, w + 0.12, h + 0.12, 0.16, { cover: "thin", mat: "metalSheet" });
     light(center.clone(), color, 3.5 + h * w, 6 + h * 1.5, null, flicker);
   };
+  /** Plan item 724: a lettered plate in plain words hung under a blade, double-sided and facing up and down the
+   * street, so the shop reads by name from the spawn (the fascias face across the road and fold away at that angle).
+   * Lit by its blade's light: it adds none of its own. */
+  const plate = (text: string, color: string, wallX: number, out: 1 | -1, y: number, z: number, h: number, style: SignStyle = "box") => {
+    const w = Math.max(1.5, text.length * h * 0.46 + h * 0.8);
+    // Hung from the wall out over the pavement: its inner edge a hand's breadth off the wall.
+    const center = V(wallX + out * (0.3 + w / 2), y, z);
+    const key = `${text}|${color}|${style}|plate`;
+    for (const n of [1, -1]) {
+      signs.push({ text, style, color, w, h, center: center.clone().add(V(0, 0, 0.07 * n)), normal: V(0, 0, n), flicker: 0, intensity: style === "tube" ? 5 : 2.6, key });
+    }
+    b.box("blackPaint", center.x, center.y, center.z, w + 0.1, h + 0.1, 0.12, { cover: "thin", mat: "metalSheet" });
+    b.box("darkMetal", center.x, center.y + h / 2 + 0.12, center.z, 0.05, 0.2, 0.05);
+  };
 
   // ------------------------------------------------------------------ ground
   const zN = L.zNorth;
@@ -294,23 +308,23 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     mat: string;
     shop: "shutter" | "glass" | "halfShutter" | "dark";
     fascia?: { text: string; color: string; style: SignStyle; broken?: [number, number]; flicker?: number };
-    blade?: { text: string; color: string; style?: SignStyle };
+    blade?: { text: string; color: string; style?: SignStyle; en?: string };
     fire?: boolean;
     interior?: string;
   }
   const west: Bld[] = [
-    { z0: 55, z1: 64, storeys: 5, mat: "brickDark", shop: "glass", fascia: { text: "HOTEL MARROW", color: NEON.amber, style: "tube" }, blade: { text: "ホテル", color: NEON.pink, style: "bladeTube" }, interior: "#ffb070" },
+    { z0: 55, z1: 64, storeys: 5, mat: "brickDark", shop: "glass", fascia: { text: "HOTEL MARROW", color: NEON.amber, style: "tube" }, blade: { text: "ホテル", color: NEON.pink, style: "bladeTube", en: "HOTEL" }, interior: "#ffb070" },
     { z0: 45.5, z1: 55, storeys: 4, mat: "plasterGreen", shop: "shutter", fascia: { text: "TOMAS EGGS", color: NEON.white, style: "box", flicker: 2, broken: [0, 1] }, fire: true },
-    { z0: 35.5, z1: 45.5, storeys: 6, mat: "concreteA", shop: "glass", fascia: { text: "0.99 NOODLE", color: NEON.green, style: "tube" }, blade: { text: "拉麺", color: NEON.green, style: "bladeTube" }, interior: "#ffd08a" },
-    { z0: 25, z1: 35.5, storeys: 4, mat: "brickRed", shop: "halfShutter", fascia: { text: "PAWN · CASH · CHIPS", color: NEON.yellow, style: "box" }, blade: { text: "質屋", color: NEON.amber } },
+    { z0: 35.5, z1: 45.5, storeys: 6, mat: "concreteA", shop: "glass", fascia: { text: "0.99 NOODLE", color: NEON.green, style: "tube" }, blade: { text: "拉麺", color: NEON.green, style: "bladeTube", en: "NOODLE BAR" }, interior: "#ffd08a" },
+    { z0: 25, z1: 35.5, storeys: 4, mat: "brickRed", shop: "halfShutter", fascia: { text: "PAWN · CASH · CHIPS", color: NEON.yellow, style: "box" }, blade: { text: "質屋", color: NEON.amber, en: "PAWN SHOP" } },
     { z0: 15, z1: 21, storeys: 5, mat: "plasterPink", shop: "glass", fascia: { text: "KARAOKE 노래방", color: NEON.violet, style: "tube", broken: [0.62, 1] }, interior: "#ff70d0" },
     { z0: 5, z1: 15, storeys: 2, mat: "concreteB", shop: "shutter", fascia: { text: "RUIZ REPAIRS", color: NEON.cyan, style: "tube" } },
     { z0: -3, z1: 5, storeys: 2, mat: "corrugatedWall", shop: "dark" },
-    { z0: -14, z1: -3, storeys: 5, mat: "brickDark", shop: "glass", fascia: { text: "CANDOR CLINIC", color: NEON.cyan, style: "tube", broken: [0.55, 1], flicker: 2 }, blade: { text: "診療所", color: NEON.ice }, interior: "#9dffe0", fire: true },
-    { z0: -26, z1: -14, storeys: 6, mat: "concreteA", shop: "halfShutter", fascia: { text: "LUCKY 8 MAHJONG", color: NEON.red, style: "tube" }, blade: { text: "麻雀", color: NEON.red, style: "bladeTube" } },
-    { z0: -41, z1: -26, storeys: 4, mat: "plasterGreen", shop: "glass", fascia: { text: "BAR LOW TIDE", color: NEON.pink, style: "tube" }, blade: { text: "酒場", color: NEON.pink }, interior: "#ff6080" },
+    { z0: -14, z1: -3, storeys: 5, mat: "brickDark", shop: "glass", fascia: { text: "CANDOR CLINIC", color: NEON.cyan, style: "tube", broken: [0.55, 1], flicker: 2 }, blade: { text: "診療所", color: NEON.ice, en: "CLINIC" }, interior: "#9dffe0", fire: true },
+    { z0: -26, z1: -14, storeys: 6, mat: "concreteA", shop: "halfShutter", fascia: { text: "LUCKY 8 MAHJONG", color: NEON.red, style: "tube" }, blade: { text: "麻雀", color: NEON.red, style: "bladeTube", en: "MAHJONG" } },
+    { z0: -41, z1: -26, storeys: 4, mat: "plasterGreen", shop: "glass", fascia: { text: "BAR LOW TIDE", color: NEON.pink, style: "tube" }, blade: { text: "酒場", color: NEON.pink, en: "BAR" }, interior: "#ff6080" },
     { z0: -55, z1: -45, storeys: 5, mat: "brickRed", shop: "shutter", fascia: { text: "DRY CLEAN 洗濯", color: NEON.ice, style: "box" }, fire: true },
-    { z0: -68, z1: -55, storeys: 6, mat: "concreteB", shop: "glass", fascia: { text: "WHOLESOME HOLLOW FRESH", color: NEON.amber, style: "box" }, blade: { text: "薬局", color: NEON.green }, interior: "#fff0d0" },
+    { z0: -68, z1: -55, storeys: 6, mat: "concreteB", shop: "glass", fascia: { text: "WHOLESOME HOLLOW FRESH", color: NEON.amber, style: "box" }, blade: { text: "薬局", color: NEON.green, en: "PHARMACY" }, interior: "#fff0d0" },
   ];
   void westMats;
   const W = L.westFacade;
@@ -392,6 +406,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
     if (bd.blade) {
       const h = Math.min(H - gf - 1.2, bd.blade.text.length * 1.15 + 0.6);
       blade(bd.blade.text, bd.blade.color, V(W + 1.05, gf + 0.9 + h / 2, bd.z1 - 1.2), h, 1.15, bd.blade.style ?? "blade", 1);
+      if (bd.blade.en) plate(bd.blade.en, bd.blade.color, W, 1, gf + 0.26, bd.z1 - 1.2, 0.72);
       b.box("darkMetal", W + 0.3, gf + 1.0, bd.z1 - 1.2, 0.6, 0.08, 0.08);
       b.box("darkMetal", W + 0.3, gf + 0.8 + h, bd.z1 - 1.2, 0.6, 0.08, 0.08);
     }
@@ -706,16 +721,16 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
 
   // ------------------------------------------------------------------ east buildings, out of the canal
   const E = L.canalE;
-  const eastDefs: Array<{ z0: number; z1: number; storeys: number; mat: string; sign?: [string, string, SignStyle]; blade?: [string, string] }> = [
-    { z0: 50, z1: 64, storeys: 8, mat: "concreteA", sign: ["HOLLOWELL CREDIT · 0%", NEON.cyan, "box"], blade: ["電脳", NEON.cyan] },
-    { z0: 38, z1: 50, storeys: 6, mat: "brickRed", blade: ["생선", NEON.amber] },
+  const eastDefs: Array<{ z0: number; z1: number; storeys: number; mat: string; sign?: [string, string, SignStyle]; blade?: [string, string]; en?: [string, SignStyle] }> = [
+    { z0: 50, z1: 64, storeys: 8, mat: "concreteA", sign: ["HOLLOWELL CREDIT · 0%", NEON.cyan, "box"], blade: ["電脳", NEON.cyan], en: ["CYBER CAFE", "box"] },
+    { z0: 38, z1: 50, storeys: 6, mat: "brickRed", blade: ["생선", NEON.amber], en: ["LUNA", "tube"] },
     { z0: 26, z1: 38, storeys: 9, mat: "concreteB", sign: ["CANDOR", NEON.pink, "tube"] },
-    { z0: 15, z1: 26, storeys: 7, mat: "plasterPink", blade: ["ホテル", NEON.violet] },
+    { z0: 15, z1: 26, storeys: 7, mat: "plasterPink", blade: ["ホテル", NEON.violet], en: ["HOTEL", "box"] },
     { z0: -3, z1: 15, storeys: 2, mat: "corrugatedWall" },
-    { z0: -16, z1: -3, storeys: 8, mat: "brickDark", sign: ["LOW TIDE ROOMS", NEON.red, "tube"], blade: ["酒", NEON.red] },
-    { z0: -30, z1: -16, storeys: 6, mat: "concreteA", blade: ["鮮魚市場", NEON.cyan] },
+    { z0: -16, z1: -3, storeys: 8, mat: "brickDark", sign: ["LOW TIDE ROOMS", NEON.red, "tube"], blade: ["酒", NEON.red], en: ["BAR", "box"] },
+    { z0: -30, z1: -16, storeys: 6, mat: "concreteA", blade: ["鮮魚市場", NEON.cyan], en: ["FISH MARKET", "box"] },
     { z0: -44, z1: -30, storeys: 10, mat: "plasterGreen", sign: ["CANDOR CLINIC · BE MORE", NEON.ice, "box"] },
-    { z0: -56, z1: -44, storeys: 7, mat: "brickRed", blade: ["노래방", NEON.pink] },
+    { z0: -56, z1: -44, storeys: 7, mat: "brickRed", blade: ["노래방", NEON.pink], en: ["KARAOKE", "box"] },
     { z0: -70, z1: -56, storeys: 8, mat: "concreteB", sign: ["WATER TAXI 水上タクシー", NEON.green, "tube"] },
   ];
   for (const ed of eastDefs) {
@@ -763,6 +778,7 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       blade(text, color, V(E - 1.3, gf + 2 + h / 2, ed.z1 - 1.0), h, 1.6, rand() < 0.5 ? "bladeTube" : "blade", 1);
       b.box("darkMetal", E - 0.6, gf + 2.2, ed.z1 - 1.0, 1.2, 0.08, 0.08);
       b.box("darkMetal", E - 0.6, gf + 1.8 + h, ed.z1 - 1.0, 1.2, 0.08, 0.08);
+      if (ed.en) plate(ed.en[0], ed.en[1] === "tube" ? NEON.pink : color, E, -1, gf + 1.2, ed.z1 - 1.0, 1.0, ed.en[1]);
     }
     // LED strips along some floor bands (a cheap, very Hollowell glow).
     if (rand() < 0.55) {

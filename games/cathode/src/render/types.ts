@@ -109,6 +109,8 @@ export interface World {
   readonly viewScene: THREE.Scene;
   readonly viewCamera: THREE.PerspectiveCamera;
   readonly fx: Effects;
+  /** The district's signs (plan item 724's tests read their size on screen). */
+  readonly signDefs?: () => ReadonlyArray<{ text: string; center: THREE.Vector3; normal: THREE.Vector3; w: number; h: number; style: string }>;
   /** Walkable floor height under (x, z), including stairs and ramps. */
   groundHeight(x: number, z: number): number;
   /** One of the street's shared materials by key ("rust", "wood"...), for props added after the build. */

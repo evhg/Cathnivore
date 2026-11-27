@@ -189,6 +189,12 @@ const VOLUME_LIGHT = /* glsl */ `
   vec3 cWorldN = inverseTransformDirection( normal, viewMatrix );
   vec3 vol = cathodeVolume( vFogWorld + cWorldN * 0.55 ) * uVolGain;
   irradiance += vol * CATHODE_VOL_SCALE;
+  #ifdef CATHODE_RIM
+  // Plan item 724: the lamp's or sign's light catching the edge (light from above and the sides, sampled a metre up).
+  float cRim = pow( 1.0 - clamp( dot( normal, normalize( vViewPosition ) ), 0.0, 1.0 ), 3.5 );
+  vec3 cRimVol = cathodeVolume( vFogWorld + vec3( 0.0, 0.9, 0.0 ) + cWorldN * 0.8 ) * uVolGain;
+  totalEmissiveRadiance += cRimVol * cRim * CATHODE_RIM;
+  #endif
 }
 #endif
 `;
@@ -205,6 +211,9 @@ export interface PatchOptions {
   puddleBias?: number;
   /** Ground: paint road markings. */
   roadLines?: boolean;
+  /** Plan item 724: a fresnel rim in the colour of the light above the surface (the street's people: the nearest
+   * lamp or sign edges their silhouettes against the dark street). 0 or unset: none. */
+  rim?: number;
 }
 
 /**
@@ -217,7 +226,9 @@ export function patchMaterial(mat: THREE.MeshStandardMaterial, s: SharedUniforms
   const bias = (o.puddleBias ?? 0).toFixed(3);
   mat.defines = { ...(mat.defines ?? {}), CATHODE_VOLUME: "", CATHODE_VOL_SCALE: volScale, CATHODE_WET: wet, CATHODE_PUDDLE_BIAS: bias };
   if (o.roadLines) mat.defines.CATHODE_ROAD_LINES = "";
-  mat.customProgramCacheKey = () => `cathode-${o.kind}-${volScale}-${wet}-${bias}-${o.roadLines ? 1 : 0}`;
+  const rim = (o.rim ?? 0).toFixed(3);
+  if (o.rim) mat.defines.CATHODE_RIM = rim;
+  mat.customProgramCacheKey = () => `cathode-${o.kind}-${volScale}-${wet}-${bias}-${o.roadLines ? 1 : 0}-${rim}`;
   mat.onBeforeCompile = (shader) => {
     bindShared(shader, s);
     let fs = shader.fragmentShader;
