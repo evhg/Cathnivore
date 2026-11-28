@@ -1385,6 +1385,12 @@ function render(): void {
       if (page) page.innerHTML = art.replace(/sk-g/g, 'sk-g-al').replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ')
       const words = document.getElementById('al-sky-label')
       if (words) words.textContent = boardSky(puzzle.seed).label
+      // Plan item 750: and the phone's almanac strip carries the same sky, its words as its name.
+      const pal = document.getElementById('pal-sky')
+      if (pal) {
+        pal.innerHTML = art.replace(/sk-g/g, 'sk-g-pal').replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ')
+        pal.title = boardSky(puzzle.seed).label
+      }
     }
   }
   paintValley(puzzle.seed)
@@ -1450,6 +1456,9 @@ function render(): void {
   // Plan item 68's strip shows the solve's time; the foot keeps what it doesn't (the next puzzle), and at D sits the
   // note and its button side by side so the column doesn't grow past the screen (it ran 30 px over at 1440x900).
   document.querySelector('.foot')?.toggleAttribute('data-solved', game.solved)
+  // Plan item 750: once a daily has been solved the player knows the taps; on a phone the plain hint line then gives
+  // the foot to the almanac strip (a flashed message still shows).
+  document.querySelector('.foot')?.toggleAttribute('data-known', dailyStats(data, today).played > 0)
   if (game.solved) {
     ui.hint.textContent = isDaily
       ? `Solved. Next in ${untilTomorrow().replace(/ /g, '\u00a0')}.`
@@ -2067,7 +2076,8 @@ const ROSETTE_SVG =
 // Plan item 158: the almanac page (desktop rail) shows the weather, so the foot hint needn't say it again.
 function almanacShown(): boolean {
   const head = document.getElementById('almanac-head')
-  return !!head && head.offsetParent !== null
+  // Plan item 750: or the phone's almanac strip, which shows the sky too.
+  return (!!head && head.offsetParent !== null) || document.getElementById('phone-almanac')?.offsetParent != null
 }
 
 // Plan item 158: Bea's note on the almanac page, by the day's place in the weekly arc.
@@ -2107,6 +2117,12 @@ function renderRail(): void {
   // pressed flowers (one pressed for each day kept, up to a week), the dailies watered as a can with its count, the
   // best streak as a ribbon rosette. Each carries its words as its accessible name.
   $<HTMLDivElement>('rail-figures').replaceChildren(
+    railFigure('al-streak', `Current streak: ${s.streak} day${s.streak === 1 ? '' : 's'}`, pressedFlowers(s.streak), `${s.streak}`, s.streak === 1 ? 'day kept' : 'days kept'),
+    railFigure('al-solved', `Dailies solved: ${s.played}`, CAN_SVG, `${s.played}`, 'watered'),
+    railFigure('al-best', `Best streak: ${s.maxStreak} day${s.maxStreak === 1 ? '' : 's'}`, ROSETTE_SVG, `${s.maxStreak}`, 'best run'),
+  )
+  // Plan item 750: the phone's strip draws the same three figures (the rail is hidden there).
+  $<HTMLDivElement>('pal-figs').replaceChildren(
     railFigure('al-streak', `Current streak: ${s.streak} day${s.streak === 1 ? '' : 's'}`, pressedFlowers(s.streak), `${s.streak}`, s.streak === 1 ? 'day kept' : 'days kept'),
     railFigure('al-solved', `Dailies solved: ${s.played}`, CAN_SVG, `${s.played}`, 'watered'),
     railFigure('al-best', `Best streak: ${s.maxStreak} day${s.maxStreak === 1 ? '' : 's'}`, ROSETTE_SVG, `${s.maxStreak}`, 'best run'),

@@ -5752,20 +5752,6 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .rail-figures .al-art svg { display: block; overflow: visible; }
   .al-streak .al-art svg { width: 168px; height: 32px; }
   .al-solved .al-art svg, .al-best .al-art svg { width: 30px; height: 26px; }
-  .pressed .pf ellipse { fill: none; stroke: color-mix(in srgb, var(--soil) 32%, transparent); stroke-width: 0.6; stroke-dasharray: 1.2 1.1; }
-  .pressed .pf .pf-eye { fill: none; stroke: color-mix(in srgb, var(--soil) 32%, transparent); stroke-width: 0.6; }
-  .pressed .pf.kept ellipse { fill: color-mix(in srgb, var(--blossom-1) 78%, var(--paper)); stroke: color-mix(in srgb, var(--blossom-1) 60%, var(--soil)); stroke-width: 0.5; stroke-dasharray: none; }
-  .pressed .pf.kept[data-n='1'] ellipse { fill: color-mix(in srgb, var(--gold) 62%, var(--paper)); stroke: color-mix(in srgb, var(--gold) 60%, var(--soil)); }
-  .pressed .pf.kept[data-n='2'] ellipse { fill: color-mix(in srgb, var(--water) 40%, var(--paper)); stroke: color-mix(in srgb, var(--water) 55%, var(--soil)); }
-  .pressed .pf.kept .pf-eye { fill: color-mix(in srgb, var(--gold) 70%, var(--soil)); stroke: none; }
-  .pressed .pf-stem { fill: none; stroke: color-mix(in srgb, var(--lip-meadow) 80%, var(--soil)); stroke-width: 0.9; stroke-linecap: round; }
-  .can-body { fill: color-mix(in srgb, var(--water) 55%, var(--paper)); stroke: var(--soil); stroke-width: 1.2; stroke-linejoin: round; }
-  .can-spout, .can-handle { fill: none; stroke: var(--soil); stroke-width: 1.6; stroke-linecap: round; }
-  .can-rose { fill: var(--soil); }
-  .can-drop { fill: var(--water); }
-  .ros-tail { fill: color-mix(in srgb, var(--blossom-1) 70%, var(--soil)); }
-  .ros-frill { fill: color-mix(in srgb, var(--gold) 70%, var(--paper)); stroke: var(--soil); stroke-width: 1; stroke-dasharray: 2 1.2; }
-  .ros-eye { fill: color-mix(in srgb, var(--paper) 70%, var(--gold)); stroke: var(--soil); stroke-width: 0.8; }
 
   .rail-more-tab {
     position: relative;
@@ -5845,4 +5831,48 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
    key's colour, as the secondary keys of one row (5.8:1 on the strip in day, 3.4:1 at night). */
 .strip-actions .btn-quiet {
   box-shadow: inset 0 0 0 2px var(--pasture-deep);
+}
+
+/* Plan item 725/750: the almanac figures' drawings (the rail at D, the phone's strip at P). */
+.pressed .pf ellipse { fill: none; stroke: color-mix(in srgb, var(--soil) 32%, transparent); stroke-width: 0.6; stroke-dasharray: 1.2 1.1; }
+.pressed .pf .pf-eye { fill: none; stroke: color-mix(in srgb, var(--soil) 32%, transparent); stroke-width: 0.6; }
+.pressed .pf.kept ellipse { fill: color-mix(in srgb, var(--blossom-1) 78%, var(--paper)); stroke: color-mix(in srgb, var(--blossom-1) 60%, var(--soil)); stroke-width: 0.5; stroke-dasharray: none; }
+.pressed .pf.kept[data-n='1'] ellipse { fill: color-mix(in srgb, var(--gold) 62%, var(--paper)); stroke: color-mix(in srgb, var(--gold) 60%, var(--soil)); }
+.pressed .pf.kept[data-n='2'] ellipse { fill: color-mix(in srgb, var(--water) 40%, var(--paper)); stroke: color-mix(in srgb, var(--water) 55%, var(--soil)); }
+.pressed .pf.kept .pf-eye { fill: color-mix(in srgb, var(--gold) 70%, var(--soil)); stroke: none; }
+.pressed .pf-stem { fill: none; stroke: color-mix(in srgb, var(--lip-meadow) 80%, var(--soil)); stroke-width: 0.9; stroke-linecap: round; }
+.can-body { fill: color-mix(in srgb, var(--water) 55%, var(--paper)); stroke: var(--soil); stroke-width: 1.2; stroke-linejoin: round; }
+.can-spout, .can-handle { fill: none; stroke: var(--soil); stroke-width: 1.6; stroke-linecap: round; }
+.can-rose { fill: var(--soil); }
+.can-drop { fill: var(--water); }
+.ros-tail { fill: color-mix(in srgb, var(--blossom-1) 70%, var(--soil)); }
+.ros-frill { fill: color-mix(in srgb, var(--gold) 70%, var(--paper)); stroke: var(--soil); stroke-width: 1; stroke-dasharray: 2 1.2; }
+.ros-eye { fill: color-mix(in srgb, var(--paper) 70%, var(--gold)); stroke: var(--soil); stroke-width: 0.8; }
+
+/* Plan item 750: on a phone, today's almanac as one strip in the foot: the day's sky as a small pasted picture, the
+   streak's pressed flowers with their count, the can and the rosette with theirs. Hidden wherever the rail shows. */
+.pal { display: none; }
+@media (max-width: 600px) and (orientation: portrait) {
+  .pal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 4px 0;
+    border-top: 1px dashed color-mix(in srgb, var(--soil) 30%, transparent);
+  }
+  .pal-sky { flex: none; width: 52px; height: 30px; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 2px var(--paper); rotate: -2deg; }
+  .pal-sky svg { display: block; width: 100%; height: 100%; }
+  .pal-figs { display: flex; align-items: center; gap: 10px; }
+  .pal-figs > div { display: flex; align-items: center; gap: 4px; }
+  .pal-figs > div > b { font-family: var(--font-display); font-size: 1.2rem; line-height: 1; color: var(--soil); }
+  .pal-figs > div > span:last-child { font-size: var(--fs-label); line-height: 1.1; color: var(--ink-muted); max-width: 4.2em; }
+  .pal-figs .al-art svg { display: block; overflow: visible; }
+  .pal-figs .al-streak .al-art svg { width: 96px; height: 19px; }
+  .pal-figs .al-solved .al-art svg, .pal-figs .al-best .al-art svg { width: 24px; height: 21px; }
+  .pal-figs .al-solved > span:last-child, .pal-figs .al-best > span:last-child { display: none; }
+  .foot[data-known]:not([data-solved]) .hint:not(.flash) { display: none; }
+  /* Solved, the result's own strip tells the day; the foot keeps item 633's solved layout (Bea's garden its size). */
+  .foot[data-solved] .pal { display: none; }
 }
