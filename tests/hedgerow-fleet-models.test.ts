@@ -99,6 +99,23 @@ describe("Hedgerow 3D vans (plan item 757)", () => {
       expect(roofGlass).toBeGreaterThanOrEqual(1);
     });
 
+  // Measured 2026-11-28: before 757 a van baked to 25 meshes and 1,388 triangles; its glass and darks add 72
+  // triangles and, sharing the chassis' dark, one mesh (each is a draw call per van on a classic level's lane).
+  it("the van's detail stays in budget: 26 meshes and 1,600 triangles or fewer", () => {
+    for (const kind of ["van", "tender"] as EnemyKind[]) {
+      let meshes = 0;
+      let tris = 0;
+      buildEnemy(kind).traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        meshes++;
+        tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position!.count) / 3;
+      });
+      expect(meshes, kind).toBeLessThanOrEqual(kind === "van" ? 26 : 27);
+      expect(tris, kind).toBeLessThanOrEqual(1600);
+    }
+  });
+
   it("queued vans keep a quarter of a van's length of road between them", () => {
     expect(GAP_3D - 1).toBeGreaterThanOrEqual(0.25);
   });

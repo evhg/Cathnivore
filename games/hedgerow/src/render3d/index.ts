@@ -343,7 +343,7 @@ export class Renderer3D {
   private ghostTint = new THREE.MeshLambertMaterial({ color: "#fff2c8", emissive: "#5a4a20", transparent: true, opacity: 0.6, depthFunc: THREE.LessEqualDepth, depthWrite: false });
   private bossBar: HTMLElement;
   /** Swarm badges (plan item 10), one per queue of more than 12, pooled; `key` is what each one shows. */
-  private swarmEls: Array<{ el: HTMLElement; key: string }> = [];
+  private swarmEls: Array<{ el: HTMLElement; key: string; bw: number; bh: number }> = [];
   /** Plan item 657: a '+N' plate per column no swarm badge rides. */
   private columnEls: HTMLElement[] = [];
   /** Plan item 657: the columns counted on screen last frame (by a swarm badge or their own plate). */
@@ -3605,12 +3605,13 @@ export class Renderer3D {
         el.className = "swarm-badge";
         el.setAttribute("aria-hidden", "true");
         this.overlayEl.append(el);
-        slot = { el, key: "" };
+        slot = { el, key: "", bw: 0, bh: 0 };
         this.swarmEls.push(slot);
       }
       const key = `${sw.count}|${sw.kinds.map((k) => `${k.kind}:${k.n}`).join(",")}`;
       if (key !== slot.key) {
         slot.key = key;
+        slot.bw = 0;
         const total = document.createElement("b");
         total.textContent = String(sw.count);
         slot.el.replaceChildren(total);
@@ -3651,11 +3652,34 @@ export class Renderer3D {
         nx = -nx;
         ny = -ny;
       }
-      const p = { x: p0.x + nx * 0.9, y: p0.y + ny * 0.9 };
-      const up = 0.7;
-      const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + up, p.y).project(this.camera);
+      // On screen, the whole badge clears the road: at a phone's scale the badge is wider than a cell, so a point
+      // a cell off the lane still left its near half on the road's edge. Its box is pushed out along the lane's
+      // screen normal until its nearest corner stands past the road's half-width (with a 4 px margin).
+      const scr = (x: number, y: number, up: number) => {
+        const v = new THREE.Vector3(x, this.height(x, y) + up, y).project(this.camera);
+        return { x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h };
+      };
+      const r = scr(p0.x, p0.y, 0.3);
+      const edge = scr(p0.x + nx * 0.5, p0.y + ny * 0.5, 0.3);
+      const a = scr(p0.x + nx * 0.9, p0.y + ny * 0.9, 0.7);
       slot.el.hidden = false;
-      slot.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
+      if (!slot.bw) {
+        slot.bw = slot.el.offsetWidth;
+        slot.bh = slot.el.offsetHeight;
+      }
+      let dx = a.x - r.x;
+      let dy = a.y - r.y;
+      const dl = Math.hypot(dx, dy) || 1;
+      dx /= dl;
+      dy /= dl;
+      const c = { x: a.x, y: a.y - slot.bh / 2 };
+      const need = Math.hypot(edge.x - r.x, edge.y - r.y) + 4 + Math.abs(dx) * (slot.bw / 2) + Math.abs(dy) * (slot.bh / 2);
+      const have = (c.x - r.x) * dx + (c.y - r.y) * dy;
+      if (have < need) {
+        c.x += dx * (need - have);
+        c.y += dy * (need - have);
+      }
+      slot.el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px) translate(-50%, -50%)`;
     });
     for (let i = list.length; i < this.swarmEls.length; i++) this.swarmEls[i]!.el.hidden = true;
     // Plan item 657: a column no badge rides shows how many wait in it past the JAM_3D drawn.
