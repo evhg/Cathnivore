@@ -7089,7 +7089,7 @@ Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, 
 
 Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, NIGHT SHIFT and Hedgerow at 2x; D 1440x900; every game), one subagent critique against VISION.md, told to skip 730-754 and 319/543/752. Dropped: Cathnivore campaign D 'chapter opened in the centre, Cath half length' (item 716's decision: the atlas bounds her column; the ticket is item 659/753's design); its 'ticket over the compass' report goes in 759 to measure (item 732's spec holds it to 10%).
 
-## 755. [ ] NIGHT SHIFT: the case briefing laid out on Cath's desk, not floating in a void
+## 755. [ ] NIGHT SHIFT: the case briefing laid out on Cath's desk, not floating in a void *(lane A, in progress)*
 - **Why:** critique (plan1128c ns-street-D 0-1440 x 0-110, 860-1440 x 650-900): the briefing's mugshot, objective, map, polaroid and List hang on a blurred black street; about 40% of the frame is dead black and the pins and string attach to nothing (items 629/690 staged the pieces, not a surface).
 - **Build:** a desk-and-corkboard set behind the briefing (`games/cathode/src/ui/caseboard.ts` / the loading view): cork, a desk-lamp pool of warm light, a rain-streaked window strip with the street through it, her umbrella and a coffee ring; the papers land one by one (about 1.2 s, slight overshoot, a pin tock); reduced motion fades.
 - **Accept:** **measure first** (the dark share at D and P). No 200x200 window at D has mean luminance under 0.04 (pixel); 3+ distinct materials behind the cards; e2e: cards arrive in order; NIGHT SHIFT CSS lint (`tests/cathode-type.test.ts`); shots P/D.
