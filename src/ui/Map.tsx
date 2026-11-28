@@ -1166,17 +1166,18 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
             // Plan item 554: no room kept for a threat badge: item 550 made the target the hex's lit rim (threat-edge),
             // so the badge box only cost a targeted hex's pieces their size.
             badge: false,
+            landmark: BOARD_LANDMARKS[id],
           },
           hexPx,
         )
         // The landmark's flank spot, which the dressing and the ground marks also keep clear of.
-        const spot = tray ? pickSpot(tray.rects) : null
+        const spot = tray ? pickSpot(tray.rects, 0, BOARD_LANDMARKS[id]) : null
         // Plan item 144: the event's dressing keeps to the hex's foot, but steps aside (and down in size) when the
         // stalls, pushed down the tile by Hollowell's stacks, reach there; it never meets a piece or the landmark.
         const dress =
           tray && (marketEvent === 'glut' || marketEvent === 'festival')
             ? (() => {
-                const taken = spot ? [...tray.rects, boxAt(spot, spot.scale)] : tray.rects
+                const taken = spot ? [...tray.rects, boxAt(spot, spot.scale, BOARD_LANDMARKS[id])] : tray.rects
                 return dressingSpot(marketEvent, taken, { x: 0, y: HEX_R * (marketEvent === 'glut' ? 0.8 : 0.72) })
               })()
             : null
@@ -1184,14 +1185,14 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
         // a freed tile's stalls keep clear of LiberatedLife's cottage and bunting too.
         const ground = (() => {
           if (!tray) return []
-          const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale) }] : tray.rects
+          const taken = spot ? [...tray.rects, { kind: 'badge' as const, ...boxAt(spot, spot.scale, BOARD_LANDMARKS[id]) }] : tray.rects
           return regionGround(id, def.type, r.liberated ? [...taken, ...LIFE_RECTS] : taken, control)
         })()
         // Plan item 717: the region's shoppers, clear of the pieces, the landmark, the event's dressing and the stalls.
         const folk = (() => {
           if (!tray) return []
           const taken = [...tray.rects]
-          if (spot) taken.push({ kind: 'badge', ...boxAt(spot, spot.scale) })
+          if (spot) taken.push({ kind: 'badge', ...boxAt(spot, spot.scale, BOARD_LANDMARKS[id]) })
           if (dress && (marketEvent === 'glut' || marketEvent === 'festival')) taken.push({ kind: 'badge', ...scaled(DRESSING_BOX[marketEvent], dress, dress.scale) })
           if (r.liberated) taken.push(...LIFE_RECTS)
           return regionFolk(id, taken, ground, control, folkScale(hexPx ?? 90))
@@ -1368,7 +1369,7 @@ export default function Map({ state, enemyTurn, highlight, threat, onSelect, onI
               const grip = gripStage(r)
               const edge = atTheEdge(r)
               return (
-                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-full={spot.scale >= landmarkMinScale(hexPx) - 1e-9 || undefined} data-target={Math.round(landmarkMinScale(hexPx) * LANDMARK_ART_H * (hexPx / HEX_R))} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
+                <g className="board-landmark" data-landmark={BOARD_LANDMARKS[id]} data-full={spot.scale >= landmarkMinScale(hexPx, BOARD_LANDMARKS[id]) - 1e-9 || undefined} data-target={Math.round(landmarkMinScale(hexPx) * LANDMARK_ART_H * (hexPx / HEX_R))} data-grip={grip} data-edge={edge || undefined} data-cx={x} data-cy={y} transform={`translate(${x + spot.x}, ${y + spot.y}) scale(${spot.scale})`} pointerEvents="none">
                   <Landmark kind={BOARD_LANDMARKS[id]} />
                   <GripProps stage={grip} edge={edge} />
                 </g>

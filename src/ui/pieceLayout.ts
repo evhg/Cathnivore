@@ -5,6 +5,7 @@
 // a count never renders under 11 px. Pure, so a unit test proves no two slots overlap; Map.tsx draws from it.
 
 import { landmarkMinScale, pickSpot } from './landmarkSpot'
+import type { LandmarkKind } from '../content/campaignMapLayout'
 
 export const TILE_R = 92
 /** The tile face less a margin, as landmarkSpot.ts measures it. */
@@ -45,6 +46,8 @@ export interface PieceInput {
   badge?: boolean
   /** Plan item 172: each producer's stall count (in slot order); a count badge is kept room for only above 3. */
   stallCounts?: number[]
+  /** Plan item 740: the region's landmark, so its room is kept by its own drawn height. */
+  landmark?: LandmarkKind
 }
 
 export interface PieceTray {
@@ -180,13 +183,13 @@ function place(input: PieceInput, scale: number, ornaments: boolean, countR: num
   return { rects: out, enemyY, producerY }
 }
 
-function fits(rects: PieceRect[], lmMin = 0): boolean {
+function fits(rects: PieceRect[], lmMin = 0, kind?: LandmarkKind): boolean {
   const pieces = rects.filter((r) => r.kind !== 'label' && r.kind !== 'badge')
   if (!pieces.every(rectInside)) return false
   for (let a = 0; a < rects.length; a++) for (let b = a + 1; b < rects.length; b++) if (rectsOverlap(rects[a]!, rects[b]!)) return false
   // Plan item 172: the pieces grow only while the tile's landmark still has a spot (Map.tsx's pickSpot); item 341:
   // a spot for it at its readable size (`lmMin`) when the pieces can keep their own floors beside it.
-  return pickSpot(rects, lmMin) !== null
+  return pickSpot(rects, lmMin, kind) !== null
 }
 
 const memo = new Map<string, PieceTray>()
@@ -205,7 +208,7 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
   // before, the landmark taking whatever size is left.
   // A crowded hex (stacks and stalls across the face) tries tiers in between: the landmark a little smaller and the
   // pieces a little under nominal, so neither is squeezed to a sketch.
-  const full = landmarkMinScale(hexPx)
+  const full = landmarkMinScale(hexPx, input.landmark)
   // Plan item 443: every tier is tried with the threat badge at its legible size before any tier may fall back to
   // the badge's drawn size: on a 375x667 phone Oakvale's EXPAND drew at 1x (9 px text) though a smaller landmark
   // tier would have held it at 12.
@@ -220,8 +223,9 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
 /** Plan item 341: [the landmark's share of its readable size, the pieces' least scale] tried in order. */
 export const LANDMARK_TIERS: ReadonlyArray<readonly [number, number]> = [
   [1, 1],
-  // Plan item 740: a step between, so a crowded desktop hex keeps its landmark near 64 px rather than dropping to 0.8.
-  [0.9, 0.95],
+  // Plan item 740: a crowded hex first gives the landmark room from the pieces (down to 0.95 of nominal), so a desktop
+  // landmark keeps its 64 px+ (LANDMARK_SCALES' 2.2 step; the next, 2, draws about 59).
+  [1, 0.95],
   [0.8, 0.9],
   [0.65, 0.8],
 ]
@@ -271,7 +275,7 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
             for (const dx of ROW_SHIFTS) {
               const e = Math.min(scale, enemyCap(hexPx, scale, input.producers))
               const p = place(input, scale, ornaments, countR, k, e, false, dx, cl)
-              if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: e, ornaments, countR, badgeK: k }, Math.min(start, enemyCap(hexPx, scale, input.producers)), lmMin, dx, cl)
+              if (fits(p.rects, lmMin, input.landmark)) return grow(input, { ...p, scale, enemyScale: e, ornaments, countR, badgeK: k }, Math.min(start, enemyCap(hexPx, scale, input.producers)), lmMin, dx, cl)
             }
   if (badgeOnly) return null
   // Item 341: the pieces give the landmark room only down to their nominal size; below that, it takes what's left.
@@ -285,7 +289,7 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
           for (const dx of ROW_SHIFTS) {
             const e = Math.min(scale, enemyCap(hexPx, scale, input.producers))
             const p = place(input, scale, ornaments, countR, 1, e, side, dx, cl)
-            if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: e, ornaments, countR, badgeK: 1 }, Math.min(start, enemyCap(hexPx, scale, input.producers)), lmMin, dx, cl, side)
+            if (fits(p.rects, lmMin, input.landmark)) return grow(input, { ...p, scale, enemyScale: e, ornaments, countR, badgeK: 1 }, Math.min(start, enemyCap(hexPx, scale, input.producers)), lmMin, dx, cl, side)
           }
   if (lmMin > 0) return null
   const scale = 0.35
@@ -300,7 +304,7 @@ function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx 
   for (let e = start; e > t.enemyScale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
     for (const side of [false, true]) {
       const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side, dx, cl)
-      if (fits(p.rects, lmMin)) return boostOutlet(input, { ...t, ...p, enemyScale: e }, lmMin, side, dx, cl)
+      if (fits(p.rects, lmMin, input.landmark)) return boostOutlet(input, { ...t, ...p, enemyScale: e }, lmMin, side, dx, cl)
     }
   return boostOutlet(input, t, lmMin, side0, dx, cl)
 }
@@ -315,7 +319,7 @@ function boostOutlet(input: PieceInput, t: PieceTray, lmMin: number, side: boole
   if (!input.outlets) return t
   for (let b = OUTLET_BOOST; b > 1 + 1e-9; b = Math.round((b - 0.05) * 100) / 100) {
     const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, t.enemyScale, side, dx, cl, b)
-    if (fits(p.rects, lmMin)) return { ...t, ...p, outletBoost: b }
+    if (fits(p.rects, lmMin, input.landmark)) return { ...t, ...p, outletBoost: b }
   }
   return t
 }

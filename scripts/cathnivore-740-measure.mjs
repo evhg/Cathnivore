@@ -12,6 +12,8 @@ for (const [name, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 39
   for (const until of [2, 5, 8]) {
     const ctx = await b.newContext({ viewport: vp, ...(vp.width < 600 ? { hasTouch: true, isMobile: true } : {}) })
     const page = await ctx.newPage()
+    // SEED=n: a seeded Math.random, so old and new code are measured on the same deals.
+    if (process.env.SEED) await page.addInitScript((seed) => { let a = seed >>> 0; Math.random = () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }, Number(process.env.SEED))
     await page.goto(`${base}/?e2eAutoplay=1&e2eAutoplayUntil=${until}`)
     await page.getByText('Quick Game').click()
     await page.getByRole('button', { name: 'Start' }).click()
@@ -22,11 +24,13 @@ for (const [name, vp] of [['D', { width: 1440, height: 900 }], ['P', { width: 39
       const svg = document.querySelector('.map-wrap svg.map[data-round]')
       const out = { lm: [], stall: [], outlet: [] }
       if (!svg) return out
-      for (const el of svg.querySelectorAll('.board-landmark')) { const q = el.getBoundingClientRect(); out.lm.push([q.width, q.height]) }
+      for (const el of svg.querySelectorAll('.board-landmark')) { const q = el.getBoundingClientRect(); out.lm.push([q.width, q.height, el.getAttribute('data-landmark'), el.getAttribute('data-target'), el.hasAttribute('data-full')]) }
       for (const el of svg.querySelectorAll('.region-hex [data-piece="stall"]')) { const q = el.getBoundingClientRect(); out.stall.push([q.width, q.height]) }
-      for (const el of svg.querySelectorAll('.region-hex [data-piece="o"]')) { const q = el.getBoundingClientRect(); out.outlet.push([q.width, q.height]) }
+      for (const el of svg.querySelectorAll('.region-hex [data-piece="o"]')) { const q = el.getBoundingClientRect(); out.outlet.push([q.width, q.height, el.closest('.region-hex')?.getAttribute('data-region') ?? el.closest('[data-region]')?.getAttribute('data-region'), el.outerHTML.length]) }
       return out
     })
+    if (process.env.DETAIL) for (const q of r.lm) if (q[1] < (vp.width > 600 ? 66 : 38)) console.log(name, until, q.map((v) => (typeof v === 'number' ? +v.toFixed(1) : v)).join(' '))
+    if (process.env.DETAIL) for (const q of r.outlet) if (q[1] > (vp.width > 600 ? 48 : 30)) console.log(name, until, 'outlet', q.map((v) => (typeof v === 'number' ? +v.toFixed(1) : v)).join(' '))
     all.lm.push(...r.lm.map((q) => q[1])); all.stall.push(...r.stall.map((q) => q[1])); all.outlet.push(...r.outlet.map((q) => q[1]))
     all.stallArea.push(...r.stall.map((q) => q[0] * q[1])); all.outletArea.push(...r.outlet.map((q) => q[0] * q[1]))
     await ctx.close()

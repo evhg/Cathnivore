@@ -76,3 +76,22 @@ describe('item 341', () => {
     }
   })
 })
+
+// Plan item 740: each landmark is sized by its own drawn height, so the low barn and fern stand as tall as the clock
+// tower, 64 px+ on a 1440x900 board (hex 110 px), and its box (its own height) still clears the pieces.
+import { landmarkHeight } from '../src/ui/landmarkSpot'
+describe('item 740', () => {
+  const kinds = [...new Set(Object.values(BL))]
+  it('every kind draws 64 px+ on a roomy desktop hex, inside the hex and clear of the pieces', () => {
+    for (const kind of kinds) {
+      const input = { outlets: 1, buyouts: 0, doubt: 0, producers: 1, stallCounts: [1], scheme: false, labelWidth: 80, badge: false, landmark: kind }
+      const t = layout341(input, 110)
+      const s = pick341(t.rects, 0, kind)
+      expect(s, kind).not.toBeNull()
+      expect(s!.scale * landmarkHeight(kind) * (110 / 92), kind).toBeGreaterThanOrEqual(64)
+      const box = boxAt(s!, s!.scale, kind)
+      for (const r of t.rects) expect(overlaps(box, r, 0), kind).toBe(false)
+      for (const [x, y] of [[box.x0, box.y0], [box.x1, box.y0], [box.x0, box.y1], [box.x1, box.y1]] as const) expect(insideHex(x, y), kind).toBe(true)
+    }
+  })
+})

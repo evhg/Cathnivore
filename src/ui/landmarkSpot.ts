@@ -37,6 +37,44 @@ export const LANDMARK_SCALES = [2.4, 2.2, 2, 1.8, 1.6, 1.4, 1.25, 1.0, 0.8] as c
 /** The art's drawn height at scale 1 (its 24-unit box, the strokes and the ground shadow), in tile units. */
 export const LANDMARK_ART_H = 26
 const PAD = 2
+/** Plan item 740: each landmark's art above and below its centre at scale 1 (tile units, fills only; measured with
+ *  getBoundingClientRect). They all fill the 24.8-unit width, but the barn, the docks and the fern stand lower than
+ *  the clock tower, so a landmark is sized and boxed by its own height: at a given step each draws as tall as the
+ *  next. Unknown kinds keep the old square 26-unit box. */
+export const LANDMARK_EXTENT: Record<LandmarkKind, { top: number; bottom: number }> = {
+  cross: { top: 12.5, bottom: 12.4 },
+  mill: { top: 12.5, bottom: 12.4 },
+  docks: { top: 10, bottom: 12.4 },
+  lighthouse: { top: 13, bottom: 12.4 },
+  oak: { top: 11.1, bottom: 12.4 },
+  barn: { top: 8.6, bottom: 12.4 },
+  fold: { top: 12.6, bottom: 12.4 },
+  gull: { top: 12.8, bottom: 11.3 },
+  fern: { top: 10, bottom: 11 },
+  tarn: { top: 11.4, bottom: 10 },
+}
+/** The strokes' reach past the fills (INK's 1.4 width, half outside), so the box keeps the drawn ink clear. */
+const STROKE = 0.6
+/** The clock tower's drawn height (its fills), the height every kind's steps are matched to. */
+const REF_H = 24.9
+/** Plan item 740: a kind's drawn height (fills) at scale 1. */
+export function landmarkHeight(kind?: LandmarkKind): number {
+  if (!kind) return LANDMARK_ART_H
+  const e = LANDMARK_EXTENT[kind]
+  return e.top + e.bottom
+}
+/** A kind's scale steps: LANDMARK_SCALES matched in drawn height to the clock tower's. */
+const STEPS = new Map<string, readonly number[]>()
+function stepsFor(kind?: LandmarkKind): readonly number[] {
+  if (!kind) return LANDMARK_SCALES
+  let list = STEPS.get(kind)
+  if (!list) {
+    const k = REF_H / landmarkHeight(kind)
+    list = LANDMARK_SCALES.map((s) => Math.round(s * k * 1000) / 1000)
+    STEPS.set(kind, list)
+  }
+  return list
+}
 /** Flank spots round the middle column, best first: low on each side, then the upper flanks, then the sides. */
 export const SPOTS: ReadonlyArray<{ x: number; y: number }> = [
   { x: -52, y: 30 },
@@ -73,9 +111,11 @@ export function stallBox(stalls: number): Box | null {
   return { x0: -w / 2 - 2, y0: R * 0.4 - 26, x1: w / 2 + 2, y1: R * 0.4 + 26 }
 }
 
-export function boxAt(p: { x: number; y: number }, scale = 1): Box {
+export function boxAt(p: { x: number; y: number }, scale = 1, kind?: LandmarkKind): Box {
   const h = ART_HALF * scale
-  return { x0: p.x - h, y0: p.y - h, x1: p.x + h, y1: p.y + h }
+  if (!kind) return { x0: p.x - h, y0: p.y - h, x1: p.x + h, y1: p.y + h }
+  const e = LANDMARK_EXTENT[kind]
+  return { x0: p.x - h, y0: p.y - (e.top + STROKE) * scale, x1: p.x + h, y1: p.y + (e.bottom + STROKE) * scale }
 }
 
 export function overlaps(a: Box, b: Box, pad = PAD): boolean {
@@ -107,22 +147,23 @@ const GRID: ReadonlyArray<{ x: number; y: number }> = (() => {
 const CANDIDATES = [...SPOTS, ...GRID]
 /** Gate 7 (2026-11-26): at each scale, the candidates whose box lies inside the hex, in CANDIDATES' order. That test
  *  doesn't depend on the pieces, so it is worked once, not on every tile of every board render. */
-const INSIDE_AT = new Map<number, ReadonlyArray<{ x: number; y: number; box: Box }>>()
-function insideAt(scale: number): ReadonlyArray<{ x: number; y: number; box: Box }> {
-  let list = INSIDE_AT.get(scale)
+const INSIDE_AT = new Map<string, ReadonlyArray<{ x: number; y: number; box: Box }>>()
+function insideAt(scale: number, kind?: LandmarkKind): ReadonlyArray<{ x: number; y: number; box: Box }> {
+  const key = `${kind ?? ''}${scale}`
+  let list = INSIDE_AT.get(key)
   if (!list) {
-    list = CANDIDATES.map((s) => ({ ...s, box: boxAt(s, scale) })).filter((c) => boxInside(c.box))
-    INSIDE_AT.set(scale, list)
+    list = CANDIDATES.map((s) => ({ ...s, box: boxAt(s, scale, kind) })).filter((c) => boxInside(c.box))
+    INSIDE_AT.set(key, list)
   }
   return list
 }
 
 /** The same choice against measured boxes (tile units round the hex centre): Map.tsx refines with the real pieces.
  *  `minScale` (plan item 341) refuses a landmark drawn smaller than that. */
-export function pickSpot(taken: readonly Box[], minScale = 0): { x: number; y: number; scale: number } | null {
-  for (const scale of LANDMARK_SCALES) {
+export function pickSpot(taken: readonly Box[], minScale = 0, kind?: LandmarkKind): { x: number; y: number; scale: number } | null {
+  for (const scale of stepsFor(kind)) {
     if (scale < minScale - 1e-9) break
-    for (const c of insideAt(scale)) {
+    for (const c of insideAt(scale, kind)) {
       if (!taken.some((t) => overlaps(c.box, t))) return { x: c.x, y: c.y, scale }
     }
   }
@@ -132,10 +173,11 @@ export function pickSpot(taken: readonly Box[], minScale = 0): { x: number; y: n
 /** Plan item 341: the smallest landmark scale that reads at a glance on a hex drawn `hexPx` CSS px centre to
  *  vertex: about a quarter of the hex's height, 26 px at least. Plan item 740: about a third (0.62 of the radius, was
  *  0.5), up to 78 px (was 58), so the region's landmark is the hex's hero, 64 px+ on a desktop board. */
-export function landmarkMinScale(hexPx: number): number {
+export function landmarkMinScale(hexPx: number, kind?: LandmarkKind): number {
   const pxPerUnit = Math.max(1, hexPx) / R
   const target = Math.max(26, Math.min(78, hexPx * 0.62))
-  return target / (LANDMARK_ART_H * pxPerUnit)
+  // Plan item 740: a known kind's steps are matched to the clock tower's drawn height, so its least scale is too.
+  return (target / (LANDMARK_ART_H * pxPerUnit)) * (kind ? REF_H / landmarkHeight(kind) : 1)
 }
 
 /** The market event's dressing (Map.tsx, plan item 144) round its anchor at scale 1: the Great Glut's heap and the
