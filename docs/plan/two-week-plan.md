@@ -7055,7 +7055,7 @@ Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, 
 - **Accept:** **measure first**. At 390x844 the strip, streak and week row are visible without scrolling past the board; no plain paragraph below the board; the board's corners whole; runnel-phone-board, runnel-one-cath, runnel-win pass; key art unchanged (P only) or re-shot; shots P/D.
 - **Size:** 2
 
-## 751. [ ] NIGHT SHIFT: the Pin in her hand is a crafted thing
+## 751. [ ] NIGHT SHIFT: the Pin in her hand is a crafted thing *(lane A, in progress)*
 - **Why:** critique (plan1128b ns-street-P 1120-1690 x 330-780 at 2x): the Pin is a plain grey cylinder in a black blob glove, the largest object on the play screen and the least made. Items 698/713 placed the viewmodel; this is its modelling.
 - **Build:** the Pin's view model: the coat cuff over the wrist, the glove's knuckle seams (item 713's fingers kept), a ridged leather grip, a steel ferrule and a tip ring; wet specular; the idle sway and walk bob checked to move it.
 - **Accept:** **measure first** (the viewmodel's triangles and parts). Cuff and grip visible in a P and D shot; sway non-zero between frames 1 s apart; `scripts/cathode-perf.mjs` phone alone within budget (<= 256 calls); cathode-viewmodel/street specs pass; shots P/D.
