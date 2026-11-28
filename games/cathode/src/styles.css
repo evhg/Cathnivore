@@ -471,13 +471,14 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
   z-index: var(--z-lift-2);
 }
 /* The prints are dealt onto the frame one after another (still, sheet, photograph), each dropping into its pin. */
-.ld-still { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 120ms both; }
-.ld-print { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 560ms both; }
-.ld-obj { animation: ld-deal 460ms cubic-bezier(.2, .8, .25, 1) 300ms both; }
-.ld-map { animation: ld-deal-move 460ms cubic-bezier(.2, .8, .25, 1) 420ms both; }
+/* Plan item 755: each lands with a slight overshoot, as a print slapped onto cork does; the four are down by 1.2 s. */
+.ld-still { animation: ld-deal 520ms cubic-bezier(.3, 1.32, .5, 1) 120ms both; }
+.ld-print { animation: ld-deal 520ms cubic-bezier(.3, 1.32, .5, 1) 660ms both; }
+.ld-obj { animation: ld-deal 520ms cubic-bezier(.3, 1.32, .5, 1) 300ms both; }
+.ld-map { animation: ld-deal-move 520ms cubic-bezier(.3, 1.32, .5, 1) 480ms both; }
 @keyframes ld-deal { from { opacity: 0; transform: translateY(-4vh) rotate(calc(var(--tilt) * -2)) scale(1.04); } to { opacity: 1; } }
 /* Plan item 690: once the pins are in, the string draws itself still -> objective -> sheet -> her, in 800 ms. */
-.ld-string path { animation: ld-string-in 800ms cubic-bezier(.5, 0, .3, 1) 1020ms both; }
+.ld-string path { animation: ld-string-in 800ms cubic-bezier(.5, 0, .3, 1) 1180ms both; }
 @keyframes ld-string-in { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes ld-deal-move { from { transform: translateY(-4vh) rotate(calc(var(--tilt) * -2)) scale(1.04); } }
 .loading.is-still :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; }
