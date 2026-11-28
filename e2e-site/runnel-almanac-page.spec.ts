@@ -52,3 +52,26 @@ test('the desktop rail is an almanac page, not a form', async ({ page }) => {
   })
   expect(worst).toBeGreaterThanOrEqual(4.5)
 })
+
+// Plan item 750: at P (no rail) the foot's almanac strip carries the week's seven beds (a crop for each day kept),
+// the streak, the dailies watered and the best run, all on screen with the board, no page scroll.
+test('the phone foot carries the week row and the streak', async ({ page }) => {
+  const vp = page.viewportSize()!
+  test.skip(vp.width > 600, 'the phone strip')
+  const results: Record<string, unknown> = {}
+  for (const d of ['2026-11-24', '2026-11-25', '2026-11-26']) results[d] = { number: 1, timeMs: 90000, taps: 80, par: 85 }
+  await page.clock.setFixedTime(new Date('2026-11-27T10:00:00Z'))
+  await page.addInitScript((r) => localStorage.setItem('runnel:v1', JSON.stringify({ version: 1, daily: {}, practice: {}, results: r, bestPractice: {}, practiceSolved: 0, seenHelp: true, climbDone: true })), results)
+  await page.goto('/runnel/?nohelp')
+  const strip = page.locator('#phone-almanac')
+  await expect(strip.getByRole('img', { name: 'This week: 3 of 7 days watered' })).toBeVisible()
+  await expect(strip.locator('.al-week .mw')).toHaveCount(7)
+  await expect(strip.locator('.al-week .mw svg.ga')).toHaveCount(3)
+  await expect(strip.getByRole('img', { name: 'Current streak: 3 days' })).toBeVisible()
+  await expect(strip.getByRole('img', { name: 'Dailies solved: 3' })).toBeVisible()
+  const box = (await strip.boundingBox())!
+  expect(box.y + box.height).toBeLessThanOrEqual(vp.height)
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(vp.width)
+  expect(await page.evaluate(() => document.scrollingElement!.scrollHeight)).toBeLessThanOrEqual(vp.height)
+})

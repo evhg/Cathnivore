@@ -2061,16 +2061,17 @@ function railFigure(cls: string, label: string, art: string, value: string, word
   return div
 }
 /** Seven pressed flowers, one for each day of the streak (a week's worth); the rest only their faint pencil outline. */
-function pressedFlowers(streak: number): string {
-  const kept = Math.min(7, streak)
-  const flowers = Array.from({ length: 7 }, (_, i) => {
+function pressedFlowers(streak: number, count = 7): string {
+  const kept = Math.min(count, streak)
+  const flowers = Array.from({ length: count }, (_, i) => {
     const x = 9 + i * 18
     const rot = ((i * 47) % 50) - 25
     const petals = Array.from({ length: 5 }, (_, k) => `<ellipse cx="0" cy="-4.6" rx="3" ry="4.6" transform="rotate(${k * 72})"/>`).join('')
     return `<g class="pf${i < kept ? ' kept' : ''}" data-n="${i % 3}" transform="translate(${x} 10) rotate(${rot})">${i < kept ? '<path class="pf-stem" d="M0 3 Q2 8 0 13"/>' : ''}${petals}<circle class="pf-eye" r="2"/></g>`
   }).join('')
-  return `<svg class="pressed" viewBox="0 0 126 24">${flowers}</svg>`
+  return `<svg class="pressed" viewBox="0 0 ${count * 18} 24">${flowers}</svg>`
 }
+const BARE_BED_SVG = '<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="21" rx="10" ry="4.5"/></svg>'
 const CAN_SVG =
   '<svg viewBox="0 0 32 24"><path class="can-body" d="M8 8h13l-1.5 13h-10z"/><path class="can-spout" d="M20 12l9-6"/><path class="can-rose" d="M27.5 3.5l3.5 2-2 3.5z"/><path class="can-handle" d="M10 8q4.5-7 9 0"/><path class="can-drop" d="M30 11q1 2 0 3q-1-1 0-3z"/></svg>'
 const ROSETTE_SVG =
@@ -2124,9 +2125,20 @@ function renderRail(): void {
     railFigure('al-solved', `Dailies solved: ${s.played}`, CAN_SVG, `${s.played}`, 'watered'),
     railFigure('al-best', `Best streak: ${s.maxStreak} day${s.maxStreak === 1 ? '' : 's'}`, ROSETTE_SVG, `${s.maxStreak}`, 'best run'),
   )
-  // Plan item 750: the phone's strip draws the same three figures (the rail is hidden there).
+  // Plan item 750: the phone's strip draws the same figures (the rail is hidden there), led by the week's seven beds
+  // (a solved day's crop, a bare mound otherwise, today's watered, its day's initial under each); the streak is then
+  // one pressed flower with its count, as the week row already shows which days were kept.
+  const weekRow = weekBeds(today, data.results)
+  const week = document.createElement('div')
+  week.className = 'al-week'
+  week.setAttribute('role', 'img')
+  week.setAttribute('aria-label', `This week: ${weekRow.filter((b) => b.plot).length} of 7 days watered`)
+  week.innerHTML = weekRow
+    .map((b) => `<i class="mw mw-${b.state}" aria-hidden="true">${b.plot ? cropSvg(b.plot.crop, b.plot.stage) : BARE_BED_SVG}<b>${b.short.slice(0, 1)}</b></i>`)
+    .join('')
   $<HTMLDivElement>('pal-figs').replaceChildren(
-    railFigure('al-streak', `Current streak: ${s.streak} day${s.streak === 1 ? '' : 's'}`, pressedFlowers(s.streak), `${s.streak}`, s.streak === 1 ? 'day kept' : 'days kept'),
+    week,
+    railFigure('al-streak', `Current streak: ${s.streak} day${s.streak === 1 ? '' : 's'}`, pressedFlowers(Math.min(1, s.streak), 1), `${s.streak}`, s.streak === 1 ? 'day kept' : 'days kept'),
     railFigure('al-solved', `Dailies solved: ${s.played}`, CAN_SVG, `${s.played}`, 'watered'),
     railFigure('al-best', `Best streak: ${s.maxStreak} day${s.maxStreak === 1 ? '' : 's'}`, ROSETTE_SVG, `${s.maxStreak}`, 'best run'),
   )
@@ -2136,7 +2148,7 @@ function renderRail(): void {
     ...weekBeds(today, data.results).map((b) => {
       const i = document.createElement('i')
       i.className = `mw mw-${b.state}`
-      i.innerHTML = `${b.plot ? cropSvg(b.plot.crop, b.plot.stage) : '<svg viewBox="0 0 28 28" aria-hidden="true"><ellipse class="bed-mound" cx="14" cy="21" rx="10" ry="4.5"/></svg>'}<b aria-hidden="true">${b.short.slice(0, 1)}</b>`
+      i.innerHTML = `${b.plot ? cropSvg(b.plot.crop, b.plot.stage) : BARE_BED_SVG}<b aria-hidden="true">${b.short.slice(0, 1)}</b>`
       return i
     }),
   )

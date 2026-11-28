@@ -5869,7 +5869,15 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .pal-figs > div > b { font-family: var(--font-display); font-size: 1.2rem; line-height: 1; color: var(--soil); }
   .pal-figs > div > span:last-child { font-size: var(--fs-label); line-height: 1.1; color: var(--ink-muted); max-width: 4.2em; }
   .pal-figs .al-art svg { display: block; overflow: visible; }
-  .pal-figs .al-streak .al-art svg { width: 96px; height: 19px; }
+  .pal-figs .al-streak .al-art svg { width: 15px; height: 20px; }
+  /* The week's seven beds, the day's initial under each (the rail fold's own beds, smaller). */
+  .pal-figs .al-week { gap: 1px; }
+  .pal-figs .al-week .mw { display: flex; flex-direction: column; align-items: center; width: 15px; font-style: normal; }
+  .pal-figs .al-week .mw svg { width: 17px; height: 17px; }
+  .pal-figs .al-week .mw b { font: 600 var(--fs-label) / 1 var(--font-ui, inherit); color: var(--ink-muted); }
+  .pal-figs .al-week .mw-today b { color: var(--ink); }
+  .pal-figs .al-week .mw-today svg .bed-mound { fill: color-mix(in srgb, var(--water) 30%, var(--paper)); }
+  .pal-figs .al-week .mw-ahead { opacity: 0.55; }
   .pal-figs .al-solved .al-art svg, .pal-figs .al-best .al-art svg { width: 24px; height: 21px; }
   .pal-figs .al-solved > span:last-child, .pal-figs .al-best > span:last-child { display: none; }
   /* The plain hint line gives the foot to the strip (a first daily's how-to is Cath's line; a flashed message still shows). */
