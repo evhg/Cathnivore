@@ -7061,7 +7061,7 @@ Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, 
 - **Accept:** **measure first** (the viewmodel's triangles and parts). Cuff and grip visible in a P and D shot; sway non-zero between frames 1 s apart; `scripts/cathode-perf.mjs` phone alone within budget (<= 256 calls); cathode-viewmodel/street specs pass; shots P/D.
 - **Size:** 2
 
-## 752. [ ] NIGHT SHIFT: Cath's face made up and lit (catch-lights, liner, blush, gloss)
+## 752. [ ] NIGHT SHIFT: Cath's face made up and lit (catch-lights, liner, blush, gloss) *(lane A, in progress)*
 - **Why:** critique (plan1128b ns-title-D 960-1065 x 285-375, ns-play-P 300-380 x 270-380): her face reads as flat porcelain, no catch-lights, faint liner and blush, a matte mouth, one look everywhere (VISION's character bible). Item 319 sculpts her; this is the paint and light on the face only; check 319's slices first and build only what's missing.
 - **Build:** on the face material: a catch-light pair per eye (unlit, view-facing), winged liner and a raised right brow in the face texture, cheek blush, a lip gloss specular lobe; the title smirk, the pick's determined look (item 727) kept.
 - **Accept:** **measure first** (luminance spread over the face box at title D, from `front-poster`). Spread +30%; 2+ near-white clusters per eye at title D zoom; cheek redder than forehead (a* +8); posters and key art re-rendered; cathode-front, classpick pass; cathode-perf in budget; shots P/D.
