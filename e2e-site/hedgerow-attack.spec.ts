@@ -71,6 +71,13 @@ for (const reduced of [false, true])
             for (const m of list)
               for (const n of m.addedNodes)
                 if (n instanceof HTMLElement && n.classList.contains('coin-fly')) {
+                  // Plan item 748: on the lane it starts small and faint, so it never hides the next vehicle.
+                  const k0 = n.getAnimations()[0]?.effect instanceof KeyframeEffect ? (n.getAnimations()[0]!.effect as KeyframeEffect).getKeyframes()[0] : undefined
+                  if (!k0 || Number(k0.opacity) > 0.5 || !/scale\(0\.[0-6]/.test(String(k0.transform))) {
+                    obs.disconnect()
+                    done(-1)
+                    return
+                  }
                   const t0 = performance.now()
                   new MutationObserver((_l, o2) => {
                     if (!n.isConnected) {
@@ -84,6 +91,7 @@ for (const reduced of [false, true])
           }).observe(document.body, { childList: true })
         }),
     )
+    expect(ms).toBeGreaterThanOrEqual(0)
     expect(ms).toBeLessThanOrEqual(600)
     await expect.poll(() => stage.getAttribute('data-coins'), { timeout: 10_000 }).not.toBeNull()
   })

@@ -5310,9 +5310,12 @@ function flyCoin(x: number, y: number, n: number): void {
   const tx = ico && ico.width ? ico.left + ico.width / 2 : to.left + 16;
   const ty = to.top + to.height / 2;
   const at = (x: number, y: number, k: number) => `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${k})`;
+  // Plan item 748: it leaves the lane small and faint and comes to full size and ink once it has lifted off: the
+  // gold '+1', full size on the knockout's spot, hid the next vehicle in the file (P l27's lead lorry).
   const a = coin.animate(
     [
-      { transform: at(from.x, from.y, 1), opacity: 1 },
+      { transform: at(from.x, from.y, 0.5), opacity: 0.35 },
+      { transform: at(from.x + (tx - from.x) * 0.1, from.y + (ty - from.y) * 0.04 - 26, 0.85), opacity: 0.9, offset: 0.14 },
       { transform: at(from.x + (tx - from.x) * 0.35, from.y + (ty - from.y) * 0.15 - 30, 1.15), opacity: 1, offset: 0.3 },
       { transform: at(tx, ty, 0.6), opacity: 0 },
     ],

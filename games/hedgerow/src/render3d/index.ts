@@ -348,7 +348,7 @@ export class Renderer3D {
   /** Plan item 45: this frame's convoy layout (syncEnemies), which the swarm badges ride. */
   private lay: Convoy = noConvoy();
   /** Plan item 45: each tower's pooled Marks and its "+N" label. */
-  private towerMarks = new Map<number, { n: number; quiet: number; el: HTMLElement | null }>();
+  private towerMarks = new Map<number, { n: number; quiet: number; el: HTMLElement | null; box?: Rect; own?: Rect }>();
   /** Wreck panels are lying on the field (cleared once the round is over). */
   private debrisLying = false;
   private overlayEl: HTMLElement;
@@ -1463,8 +1463,10 @@ export class Renderer3D {
   }
 
   /** Plan item 691 (tests): the live callouts' boxes and the towers' boxes, CSS px on the canvas. */
-  calloutCheck(): { callouts: Array<{ text: string; x: number; y: number; w: number; h: number }>; towers: Rect[] } {
-    return { callouts: this.floaters.boxes(), towers: this.towerRects() };
+  calloutCheck(): { callouts: Array<{ text: string; x: number; y: number; w: number; h: number }>; towers: Rect[]; marks: Array<Rect & { own: Rect | null }> } {
+    // Plan item 748: and each tower's pooled '+N' as placed last frame.
+    const marks = [...this.towerMarks.values()].flatMap((m) => (m.box && m.el && Number(m.el.style.opacity) > 0.2 ? [{ ...m.box, own: m.own ? { ...m.own } : null }] : []));
+    return { callouts: this.floaters.boxes(), towers: this.towerRects(), marks };
   }
 
   /** Plan item 691: whether an object's projected box lies wholly inside the canvas (with a margin, CSS px). */
@@ -3664,12 +3666,34 @@ export class Renderer3D {
         m.el.setAttribute("aria-hidden", "true");
         this.overlayEl.append(m.el);
       }
-      m.el.textContent = `+${Math.floor(m.n)}`;
-      const x = tw.col + 0.5;
-      const z = tw.row + 0.5;
-      const v = new THREE.Vector3(x, this.height(x, z) + 1.25 + (this.reducedMotion ? 0 : m.quiet * 0.4), z).project(this.camera);
+      const text = `+${Math.floor(m.n)}`;
+      if (m.el.textContent !== text) m.el.textContent = text;
+      // Plan item 748: it stands on the tower's drawn top, not 1.25 units up its body (the gold '+33' sat on the gold
+      // beehive, '+8' on the scarecrow's chest, at l27 D and P); a top too near the frame's edge puts it beside.
+      const view = this.towers.get(id);
+      const lean = (view?.obj.userData.lean as THREE.Object3D | undefined) ?? view?.obj;
+      const rise = this.reducedMotion ? 0 : m.quiet * 14;
+      const lw = m.el.offsetWidth;
+      const lh = m.el.offsetHeight;
+      let px: number, py: number;
+      if (lean) {
+        const b = this.boxRect(new THREE.Box3().setFromObject(lean), w, h);
+        m.own = b;
+        px = b.x + b.w / 2;
+        py = b.y - 3 - rise;
+        if (py - lh < PLATE_EDGE) {
+          py = Math.max(PLATE_EDGE + lh, b.y + lh + 4);
+          px = b.x + b.w + 4 + lw / 2 <= w - PLATE_EDGE ? b.x + b.w + 4 + lw / 2 : b.x - 4 - lw / 2;
+        }
+      } else {
+        const v = new THREE.Vector3(tw.col + 0.5, this.height(tw.col + 0.5, tw.row + 0.5) + 1.25, tw.row + 0.5).project(this.camera);
+        px = (v.x * 0.5 + 0.5) * w;
+        py = (-v.y * 0.5 + 0.5) * h - rise;
+      }
+      px = Math.max(PLATE_EDGE + lw / 2, Math.min(w - PLATE_EDGE - lw / 2, px));
+      m.box = { x: px - lw / 2, y: py - lh, w: lw, h: lh };
       m.el.style.opacity = String(1 - Math.max(0, (m.quiet - 0.5) / 0.4));
-      m.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
+      m.el.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
     }
   }
 
