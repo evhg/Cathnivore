@@ -80,6 +80,12 @@ describe('Runnel readable water (plan items 421, 723)', () => {
       for (const ground of ['--dry', '--dry-meadow', '--dry-field']) expect(contrast(p['--groove-bed']!, p[ground]!), ground).toBeGreaterThanOrEqual(3)
       expect(contrast(p['--water-run']!, p['--groove-bed']!)).toBeGreaterThanOrEqual(3)
     })
+    // Plan item 741: the dry floor is a step lighter than the trench's earth (a carved trough), still 3:1 off the ground
+    it(`${name}: the dry ditch's floor stands 3:1 off every dry ground`, () => {
+      const p = palettes[name]!
+      for (const ground of ['--dry', '--dry-meadow', '--dry-field']) expect(contrast(p['--groove-floor']!, p[ground]!), ground).toBeGreaterThanOrEqual(3)
+      expect(contrast(p['--groove-floor']!, p['--groove-bed']!)).toBeGreaterThan(1.2)
+    })
   }
 })
 

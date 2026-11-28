@@ -649,7 +649,7 @@ button {
   opacity: 0;
 }
 .groove-bed {
-  stroke: var(--groove-bed);
+  stroke: var(--groove-floor, var(--groove-bed));
   stroke-width: 6.5;
   transition: stroke 380ms ease var(--delay, 0ms);
 }

@@ -47,6 +47,10 @@
      wall, so the route couldn't be traced before water ran): 3:1 or more off the tile's face, its sunlit wall the lit
      edge. The channel's water runs a brighter blue (--water-run) so it still stands 3:1 on that earth. */
   --groove-bed: #4f3826;
+  /* Plan item 741: a dry ditch's floor a step lighter than its earth (mid-brown between the dark shaded wall and the
+     lit lip), so the cut reads as a carved trough with depth, not one flat dark bar; still 3:1+ off every tile face
+     by its shaded wall (runnel-tiles). Water never runs on it: a wet ditch takes --groove-bed-wet. */
+  --groove-floor: #624329;
   --water-run: #3d8fc4;
   --groove-bed-wet: #3a2a1a;
   --bank-sun: #f2e2b6;
@@ -184,6 +188,7 @@
     --groove: #d8b486;
     --groove-wet: #c8a272;
     --groove-bed: #8c6a44;
+    --groove-floor: var(--groove-bed);
     --water-run: var(--water);
     --groove-bed-wet: #6f5236;
     --bank-sun: #f0d8ac;
