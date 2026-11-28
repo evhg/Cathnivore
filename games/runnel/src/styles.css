@@ -4701,6 +4701,31 @@ body[data-mode='practice'] #week-slot {
   fill: var(--groove-bed);
 }
 
+/* Plan item 748: the feed's inlet pipe on the spring tile, turned to face the culvert by placeFeeder. */
+.spring-inlet:not([data-on]) {
+  display: none;
+}
+.inlet-pipe {
+  fill: var(--stone);
+  stroke: var(--groove-bed);
+  stroke-width: 1.2;
+}
+.inlet-water {
+  stroke: var(--water);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.inlet-mouth {
+  fill: var(--stone);
+  stroke: var(--groove-bed);
+  stroke-width: 1.4;
+}
+.inlet-hole {
+  fill: var(--water);
+  stroke: var(--groove-bed);
+  stroke-width: 1;
+}
+
 /* Plan item 193: the Weekly tab: a drop of water beside it once this week's big valley is watered. */
 #tab-weekly[data-state='watered']::after {
   content: '';

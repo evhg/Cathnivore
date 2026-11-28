@@ -524,6 +524,14 @@ export class Board {
     const g = el('g', { class: 'spring-well' }, root)
     el('circle', { r: S * 0.46, class: 'well-glow' }, g)
     el('circle', { r: S * 0.46, class: 'well-glow well-glow-2' }, g)
+    // Plan item 748: the spring-house feed arrives here. A stone pipe runs in from the tile's corner that faces the
+    // culvert in the terrace lip (corners never carry a channel), so the stream visibly reaches the spring. Drawn
+    // along +x; main.ts's placeFeeder turns it to that corner and shows it (`data-on`).
+    const inlet = el('g', { class: 'spring-inlet' }, g)
+    el('rect', { x: S * 0.3, y: -6, width: S * 0.52, height: 12, rx: 3, class: 'inlet-pipe' }, inlet)
+    el('line', { x1: S * 0.3, y1: 0, x2: S * 0.8, y2: 0, class: 'inlet-water' }, inlet)
+    el('circle', { cx: S * 0.82, r: 9.5, class: 'inlet-mouth' }, inlet)
+    el('circle', { cx: S * 0.82, r: 5.5, class: 'inlet-hole' }, inlet)
     el('circle', { r: S * 0.36, class: 'well-ring' }, g)
     el('circle', { r: S * 0.27, class: 'well-water' }, g)
     el('circle', { r: S * 0.12, class: 'well-ripple' }, g)

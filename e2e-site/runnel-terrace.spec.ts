@@ -46,11 +46,26 @@ test('the board sits in a terrace, fed by the stream', async ({ page }) => {
     // Plan item 259: the culvert is never tucked against the spring house's tag (it hid the branch there).
     const sign = document.querySelector('.spring-sign')!.getBoundingClientRect()
     const bySign = !!end && end[0]! > sign.left - 14 && end[0]! < sign.right + 14 && end[1]! > sign.top - 14 && end[1]! < sign.bottom + 14
-    return { onValley, n, hidden: feeder?.hasAttribute('hidden') ?? true, lipGap, bySign }
+    // Plan item 748: the feed visibly arrives at the spring: its tile's inlet pipe is shown and faces the culvert
+    // (within half a corner step, 30 degrees, of the culvert's bearing from the spring).
+    const inlet = document.querySelector<SVGGElement>('.tiles > g.cell.spring .spring-inlet')
+    const well = document.querySelector('.tiles > g.cell.spring .well-ring')?.getBoundingClientRect()
+    const mouth = inlet?.querySelector('.inlet-mouth')?.getBoundingClientRect()
+    let inletOff = 180
+    if (end && well && mouth) {
+      const [wx, wy] = [well.x + well.width / 2, well.y + well.height / 2]
+      const a = Math.atan2(mouth.y + mouth.height / 2 - wy, mouth.x + mouth.width / 2 - wx)
+      const b = Math.atan2(end[1]! - wy, end[0]! - wx)
+      inletOff = Math.abs((((a - b) * 180) / Math.PI + 540) % 360 - 180)
+    }
+    return { onValley, n, hidden: feeder?.hasAttribute('hidden') ?? true, lipGap, bySign, inletOn: !!inlet?.dataset.on, mouthW: mouth?.width ?? 0, inletOff }
   })
   expect(r.n).toBeGreaterThan(20)
   expect(r.onValley).toBe(0)
   expect(r.hidden).toBe(false)
   expect(r.lipGap).toBeLessThanOrEqual(12)
   expect(r.bySign).toBe(false)
+  expect(r.inletOn).toBe(true)
+  expect(r.mouthW).toBeGreaterThan(6)
+  expect(r.inletOff).toBeLessThanOrEqual(31)
 })

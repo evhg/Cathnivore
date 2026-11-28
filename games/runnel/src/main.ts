@@ -556,6 +556,7 @@ function placeDitch(): void {
 // nearest the terrace and ends in a stone culvert in the terrace's turf lip (the spring sits inside the board, so
 // the water goes under the tiles from there). Drawn in the farm layer, re-routed when the layout moves.
 let feederKey = ''
+let feederEnd: { x: number; y: number } | null = null
 function placeFeeder(): void {
   const deco = document.querySelector<HTMLElement>('.farm-deco')
   const bed = document.querySelector<SVGPathElement>('.valley .vl-bed')
@@ -568,8 +569,13 @@ function placeFeeder(): void {
   const box = deco.getBoundingClientRect()
   const first = lips[0]!.getBoundingClientRect()
   const key = [puzzle.seed, box.width, box.height, first.left, first.top].join('|')
-  if (key === feederKey && svg) return
+  if (key === feederKey && svg) {
+    // A board redrawn on the same layout (a reset) has a fresh spring tile: its inlet needs turning again.
+    if (feederEnd && !document.querySelector('.tiles > g.cell.spring .spring-inlet[data-on]')) aimInlet(feederEnd)
+    return
+  }
   feederKey = key
+  feederEnd = null
   if (!svg) {
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.id = 'runnel-feeder'
@@ -645,6 +651,26 @@ function placeFeeder(): void {
   svg.querySelector('.culvert-mouth')!.setAttribute('d', `M${b.x - r + 1} ${b.y + 4}a${r - 1} ${r - 1} 0 0 1 ${2 * (r - 1)} 0z`)
   svg.dataset.end = `${Math.round(best.r.x)},${Math.round(best.r.y)}`
   svg.removeAttribute('hidden')
+  feederEnd = { x: best.r.x, y: best.r.y }
+  aimInlet(feederEnd)
+}
+
+/** Plan item 748: turn the spring tile's inlet pipe to the corner facing the culvert (never the top corner, which
+ *  keeps the pin's stake), so the feed visibly arrives at the spring rather than stopping at the board's edge. */
+function aimInlet(end: { x: number; y: number }): void {
+  const inlet = document.querySelector<SVGGElement>('.tiles > g.cell.spring .spring-inlet')
+  const m = inlet?.parentElement instanceof SVGGraphicsElement ? inlet.parentElement.getScreenCTM() : null
+  if (!inlet || !m) return
+  const local = new DOMPoint(end.x, end.y).matrixTransform(m.inverse())
+  const deg = (Math.atan2(local.y, local.x) * 180) / Math.PI
+  // Corners sit at 30 + 60k degrees (pointy-top hex); 270 is the top corner.
+  let best = 30
+  for (const c of [30, 90, 150, 210, 330]) {
+    const off = (a: number) => Math.abs(((deg - a + 540) % 360) - 180)
+    if (off(c) < off(best)) best = c
+  }
+  inlet.setAttribute('transform', `rotate(${best})`)
+  inlet.dataset.on = String(best)
 }
 
 /**
