@@ -6970,7 +6970,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** each one is closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
 
-## 739. [ ] NIGHT SHIFT class pick: five roles you can tell apart at a glance
+## 739. [ ] NIGHT SHIFT class pick: five roles you can tell apart at a glance *(lane A, in progress)*
 - **Why:** critique 2026-11-27 18:30 (plan1127c ns-play-P thumbnails 30-750 x 1015-1130, ns-play-D list 65-110 x 170-640): the five role thumbnails are one grey-coated Cath with small tint changes; the Ghost on the stage is the same coat with a hood (VISION: each class a fantasy you pick by eye).
 - **Build:** each role its own outfit layer and idle pose on the shared Cath rig (Butcher rolled sleeves and apron, Gunslinger hat and duster, Wirewitch a cable-lit collar, Fixer a utility vest, Ghost hood and scarf), and its own stage key-light colour; thumbnails re-rendered.
 - **Accept:** **measure first** (the thumbnails' mean pairwise pixel difference and silhouette IoU today). Mean pairwise difference of the 5 thumbnails 18%+; any two roles' silhouette masks differ by 12%+ (1 - IoU); cathode-classpick P/D pass; cathode-perf alone within budget; shots P and D.
