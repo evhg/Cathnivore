@@ -9,7 +9,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { HAIRS, SKINS, UMBRELLAS, standingParts, umbrellaParts } from "./crowd";
 import { LAYER_NO_REFLECT } from "./reflection";
 import { RIM_DRIPS, addStreetWet, type WetPerson } from "./streetwet";
-import { hearShot, initialState, stepStreet, streetLife, visible, type AgentState, type StreetPlan, type StreetTier } from "../sim/streetlife";
+import { dressStreet, hearShot, initialState, stepStreet, streetLife, visible, type AgentState, type StreetPlan, type StreetTier } from "../sim/streetlife";
 
 /** Wet wool in colours that read under neon: camel, olive, oxblood, slate, mustard, teal, charcoal. */
 const STREET_COATS = ["#7a6248", "#5a5e3c", "#5e2a2a", "#45505e", "#8a6a2c", "#2f5552", "#3a3a40", "#6a4a5a", "#8c7a62", "#2c3a4e"];
@@ -120,7 +120,9 @@ export function addStreetLife(
   const c = new THREE.Color();
   type Part = { mesh: THREE.InstancedMesh; who: number[]; onBike: boolean };
   const partsList: Part[] = [];
-  const mk = (geo: THREE.BufferGeometry, mat: THREE.Material, who: number[], palette: string[] | null, salt: number, mirrored: boolean, onBike = false) => {
+  // Plan item 745: coats and canopies dealt so neighbours never share a look and a colour (sim/streetlife.ts).
+  const dress = dressStreet(plan, STREET_COATS.length, STREET_UMBRELLAS.length);
+  const mk = (geo: THREE.BufferGeometry, mat: THREE.Material, who: number[], palette: string[] | null, salt: number, mirrored: boolean, onBike = false, pick?: (a: number) => number) => {
     if (!who.length) return;
     const mesh = new THREE.InstancedMesh(geo, mat, who.length);
     if (!(mirrored && reflect)) mesh.layers.set(LAYER_NO_REFLECT);
@@ -128,7 +130,7 @@ export function addStreetLife(
     mesh.receiveShadow = false;
     mesh.frustumCulled = false;
     mesh.name = "streetlife";
-    if (palette) who.forEach((a, i) => mesh.setColorAt(i, c.set(palette[Math.floor(hash(plan.agents[a]!.seed * 13 + salt) * palette.length)]!)));
+    if (palette) who.forEach((a, i) => mesh.setColorAt(i, c.set(palette[pick ? pick(a) : Math.floor(hash(plan.agents[a]!.seed * 13 + salt) * palette.length)]!)));
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     scene.add(mesh);
     partsList.push({ mesh, who, onBike });
@@ -143,7 +145,7 @@ export function addStreetLife(
   };
   const hatted = (i: number) => headKind(i) === "hat";
   const hooded = (i: number) => headKind(i) === "hood";
-  mk(merge(parts.coat), std(0.5), all, STREET_COATS, 1, true);
+  mk(merge(parts.coat), std(0.5), all, STREET_COATS, 1, true, false, (a) => dress[a]!.coat);
   if (lo) {
     const tint = (gs: THREE.BufferGeometry[], col: string) =>
       gs.map((g) => {
@@ -176,7 +178,7 @@ export function addStreetLife(
   // tuned for coats in shadow), the wet sheen and the rim washed every colour on them to the same beige.
   const umbMat = wrap(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0 }), UMBRELLA_LIGHT);
   umbMat.side = THREE.DoubleSide;
-  mk(merge(umbrellaParts()), umbMat, all.filter((i) => plan.agents[i]!.umbrella), STREET_UMBRELLAS, 6, true);
+  mk(merge(umbrellaParts()), umbMat, all.filter((i) => plan.agents[i]!.umbrella), STREET_UMBRELLAS, 6, true, false, (a) => dress[a]!.umbrella);
   const riders = all.filter((i) => plan.agents[i]!.role === "cyclist" || plan.agents[i]!.role === "courier");
   mk(merge(bikeParts()), std(0.4, 0.6), riders, ["#1a1c20", "#3a3e44", "#6a1a1a"], 7, true, true);
   // The courier's insulated box: Hollowell orange, the same as the takeaway bags in the stalls (not on the phone).

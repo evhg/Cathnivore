@@ -5,6 +5,11 @@ import { crowdStanders } from "../games/cathode/src/render/crowd";
 import { RIM_DRIPS, wetLayout, type WetPerson } from "../games/cathode/src/render/streetwet";
 import {
   DUCK_S,
+  NEIGHBOUR_M,
+  dressClashes,
+  dressStreet,
+  seedPick,
+  streetLook,
   RETURN_AFTER_S,
   hearShot,
   initialState,
@@ -42,6 +47,24 @@ describe("NIGHT SHIFT street life (plan item 57)", () => {
         for (let i = 0; i < 600; i++) stepStreet(plan, st, 0.1, 1e9);
       }
     }
+  });
+
+  it("market: no two neighbours share a look and a coat, or a canopy; five looks at least (plan item 745)", () => {
+    for (const tier of ["phone", "high", "ultra"] as const) {
+      const plan = streetLife("market", tier);
+      const dress = dressStreet(plan, 10, 9);
+      // Measured 2026-11-28: each seed's own pick gave two clashing pairs on high (none on the phone).
+      const seedOnly = plan.agents.map((a) => ({ look: streetLook(a), coat: seedPick(a, 1, 10), umbrella: a.umbrella ? seedPick(a, 6, 9) : -1 }));
+      expect(dressClashes(plan, dress)).toBe(0);
+      // Only the clashes change: most people keep their seed's colours.
+      const changed = dress.filter((d, i) => d.coat !== seedOnly[i]!.coat || d.umbrella !== seedOnly[i]!.umbrella).length;
+      expect(changed).toBeLessThanOrEqual(dressClashes(plan, seedOnly) * 2);
+      expect(new Set(dress.map((d) => d.look)).size).toBeGreaterThanOrEqual(5);
+      expect(new Set(dress.map((d) => d.coat)).size).toBeGreaterThanOrEqual(8);
+      // Deterministic.
+      expect(dressStreet(plan, 10, 9)).toEqual(dress);
+    }
+    expect(NEIGHBOUR_M).toBeGreaterThanOrEqual(2.5);
   });
 
   it("is deterministic per district and tier, and phones get about half the walkers", () => {

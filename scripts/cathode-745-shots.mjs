@@ -1,6 +1,6 @@
 // Plan item 745: the market crowd and stalls, a live frame at D and L (phone tier).
 // Usage: npm run build:site && npx vite preview --outDir dist-site --port 4186 &  then
-//   node scripts/cathode-724-shots.mjs <outdir> [tag]   (SIZES=D,L)
+//   node scripts/cathode-745-shots.mjs <outdir> [tag]   (SIZES=D,L)
 import { chromium } from 'playwright'
 const out = process.argv[2] ?? 'e2e/screenshots'
 const tag = process.argv[3] ?? 'after'
@@ -47,14 +47,22 @@ for (const n of sizes) {
     const g = cv.getContext('2d')
     g.drawImage(img, 0, 0)
     const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }
-    const vals = people.filter((q) => q.hh >= 12).map((q) => {
-      const w = Math.max(2, Math.round(q.hh * 0.25)), h = Math.max(2, Math.round(q.hh * 0.9))
-      const d = g.getImageData(q.x - w / 2, q.y - h / 2, w, h).data
+    const box = (x, y, w, h) => {
+      const d = g.getImageData(Math.round(x), Math.round(y), w, h).data
       let s = 0
       for (let i = 0; i < d.length; i += 4) s += 0.2126 * lin(d[i]) + 0.7152 * lin(d[i + 1]) + 0.0722 * lin(d[i + 2])
       return s / (d.length / 4)
+    }
+    // Plan item 745's 2:1: each figure's torso against the street just beside it (two boxes 1.5 torso widths out),
+    // as a contrast ratio ((L1 + 0.05) / (L2 + 0.05), whichever is lighter on top).
+    const vals = people.filter((q) => q.hh >= 12).map((q) => {
+      const w = Math.max(2, Math.round(q.hh * 0.25)), h = Math.max(2, Math.round(q.hh * 0.9))
+      const fig = box(q.x - w / 2, q.y - h / 2, w, h)
+      const bg = (box(q.x - w * 2, q.y - h / 2, w, h) + box(q.x + w, q.y - h / 2, w, h)) / 2
+      return { fig, bg, ratio: (Math.max(fig, bg) + 0.05) / (Math.min(fig, bg) + 0.05) }
     })
-    return { n: vals.length, mean: vals.reduce((a, b) => a + b, 0) / Math.max(1, vals.length) }
+    const ratios = vals.map((v) => v.ratio).sort((a, b) => a - b)
+    return { n: vals.length, mean: vals.reduce((a, b) => a + b.fig, 0) / Math.max(1, vals.length), ratios: ratios.map((r) => Math.round(r * 100) / 100), median: ratios[Math.floor(ratios.length / 2)] ?? 0 }
   }, { b64: buf.toString('base64'), people: info.people })
   console.log(tag, n, JSON.stringify(info))
   await ctx.close()

@@ -404,3 +404,69 @@ function sAt(a: StreetAgent, x: number, z: number): number {
 export function visible(st: AgentState): boolean {
   return st.mood !== "gone";
 }
+
+// ------------------------------------------------------------ what they wear (plan item 745)
+
+/** A figure's silhouette: under an umbrella, a hat, a hood up, bare hair, a vendor's apron, or a child. */
+export type StreetLook = "umbrella" | "hat" | "hood" | "hair" | "apron" | "child";
+
+/** Two people starting this close (m) stand side by side in the first view: they must not look alike. */
+export const NEIGHBOUR_M = 3;
+
+/** Who wears what: the silhouette, then the coat (and canopy) dealt from the palettes. */
+export interface StreetDress {
+  look: StreetLook;
+  coat: number;
+  /** -1 without an umbrella. */
+  umbrella: number;
+}
+
+/** The look a person's head and outline give them (the renderer draws it: render/streetlife.ts). */
+export function streetLook(a: StreetAgent): StreetLook {
+  if ((a.scale ?? 1) < 0.8) return "child";
+  if (a.role === "vendor") return "apron";
+  if (a.umbrella) return "umbrella";
+  const k = hash(a.seed * 5.1);
+  return k < 0.3 ? "hat" : k < 0.6 ? "hood" : "hair";
+}
+
+/** The colour each agent's seed alone picks from a palette of `n` (render/streetlife.ts's first choice). */
+export function seedPick(a: StreetAgent, salt: number, n: number): number {
+  return Math.floor(hash(a.seed * 13 + salt) * n);
+}
+
+/**
+ * Plan item 745: colours dealt so no two neighbours (starting within NEIGHBOUR_M of each other) share both their look
+ * and their coat, and no two neighbouring umbrellas share a canopy. Each person keeps their seed's pick when it's
+ * free and otherwise steps along the palette, so the deal is deterministic and changes only the clashes.
+ */
+export function dressStreet(plan: StreetPlan, coats: number, umbrellas: number, coatSalt = 1, umbSalt = 6): StreetDress[] {
+  const st = plan.agents.map(initialState);
+  const out: StreetDress[] = [];
+  plan.agents.forEach((a, i) => {
+    const look = streetLook(a);
+    const near = out.map((d, j) => ({ d, j })).filter(({ j }) => Math.hypot(st[i]!.x - st[j]!.x, st[i]!.z - st[j]!.z) < NEIGHBOUR_M);
+    let coat = seedPick(a, coatSalt, coats);
+    for (let k = 0; k < coats && near.some(({ d }) => d.look === look && d.coat === coat); k++) coat = (coat + 1) % coats;
+    let umbrella = -1;
+    if (a.umbrella) {
+      umbrella = seedPick(a, umbSalt, umbrellas);
+      for (let k = 0; k < umbrellas && near.some(({ d }) => d.umbrella === umbrella); k++) umbrella = (umbrella + 1) % umbrellas;
+    }
+    out.push({ look, coat, umbrella });
+  });
+  return out;
+}
+
+/** Neighbour pairs that clash, for the tests: same look and coat, or the same canopy. */
+export function dressClashes(plan: StreetPlan, dress: readonly StreetDress[]): number {
+  const st = plan.agents.map(initialState);
+  let n = 0;
+  for (let i = 0; i < dress.length; i++)
+    for (let j = 0; j < i; j++) {
+      if (Math.hypot(st[i]!.x - st[j]!.x, st[i]!.z - st[j]!.z) >= NEIGHBOUR_M) continue;
+      const a = dress[i]!, b = dress[j]!;
+      if ((a.look === b.look && a.coat === b.coat) || (a.umbrella >= 0 && a.umbrella === b.umbrella)) n++;
+    }
+  return n;
+}
