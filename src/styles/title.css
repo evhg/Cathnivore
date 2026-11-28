@@ -1851,6 +1851,11 @@ html.no-animations .title-screen * {
 .sq-walk .sq-face[data-dir="l"] { animation-name: sq-turn-l; }
 .sq-walk[data-pace="2"], .sq-walk[data-pace="2"] .sq-face { animation-duration: 19s; animation-delay: -7s; }
 .sq-stand .sq-face { animation: sq-browse 7s ease-in-out infinite; transform-origin: 50% 100%; }
+/* the stall-keeper's apron and hair; the depth: houses drift 5 px, stalls and people 11 px against the pointer */
+.sq-apron { fill: var(--paper-hi); stroke: var(--ink); stroke-width: .5; }
+.sq-folk-hair { fill: color-mix(in srgb, var(--soil) 70%, var(--ink)); }
+.sq-back { translate: calc(var(--sq-px, 0) * -5px) 0; transition: translate .6s ease-out; }
+.sq-mid { translate: calc(var(--sq-px, 0) * -11px) 0; transition: translate .6s ease-out; }
 @keyframes sq-stroll {
   0%, 10% { translate: 0 0; }
   44%, 60% { translate: var(--wx) 0; }

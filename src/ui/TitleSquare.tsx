@@ -6,6 +6,7 @@
 // the same square at dusk with lit windows. A paper haze sits behind the menu, Cath and the board so the square
 // stays back. Static (nothing moves); purely decorative (aria-hidden). Colours are tokens (`--square-*`).
 
+import { useEffect, useRef } from 'react'
 import { FACADES, GROUND, roofPath, W, WINDOWS } from './titleSquareLayout'
 
 /** Each house's ground floor: a shopfront under a striped awning, the door on the side away from the sun. */
@@ -173,9 +174,49 @@ function Stall({ x, flip }: { x: number; flip?: boolean }) {
   )
 }
 
-export default function TitleSquare() {
+/** Plan item 746: on a desktop with a mouse the square answers the pointer a little (the houses 5 px, the stalls and
+ * people 11 px), so it has depth; none on touch or under reduced motion. Written as one CSS variable per frame. */
+function useParallax() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    const mq = window.matchMedia('(min-width: 1024px) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
+    if (!el || !mq.matches) return
+    let raf = 0
+    let px = 0
+    const move = (e: PointerEvent) => {
+      px = Math.max(-1, Math.min(1, (e.clientX / window.innerWidth) * 2 - 1))
+      if (!raf)
+        raf = requestAnimationFrame(() => {
+          raf = 0
+          el.style.setProperty('--sq-px', px.toFixed(3))
+        })
+    }
+    window.addEventListener('pointermove', move, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', move)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
+  return ref
+}
+
+/** Plan item 746: the stall-keeper behind the right-hand stall's counter, an apron over her coat. */
+function Keeper({ x }: { x: number }) {
   return (
-    <div className="title-square" aria-hidden="true">
+    <g className="sq-keeper" transform={`translate(${x},508) scale(3.2)`}>
+      <path className="sq-folk-coat" data-tone={1} d="M-3.8,0 L-2.6,-11.6 Q0,-13 2.6,-11.6 L3.8,0 Z" />
+      <path className="sq-apron" d="M-2,-9.6 h4 l0.6,9.6 h-5.2 Z" />
+      <circle className="sq-folk-head" data-skin={1} cx={0} cy={-14.6} r={2.5} />
+      <path className="sq-folk-hair" d="M-2.7,-14.8 a2.7 2.9 0 0 1 5.4 0 q-1.2,-1.4 -2.7,-1.2 q-1.6,-0.1 -2.7,1.2Z" />
+    </g>
+  )
+}
+
+export default function TitleSquare() {
+  const ref = useParallax()
+  return (
+    <div className="title-square" aria-hidden="true" ref={ref}>
       <svg viewBox={`0 0 ${W} 600`} preserveAspectRatio="xMidYMax slice" focusable="false">
         <defs>
           <radialGradient id="sq-haze-menu" cx="0.21" cy="0.68" r="0.24">
@@ -196,6 +237,7 @@ export default function TitleSquare() {
           </linearGradient>
         </defs>
         {/* the houses, windows and shops, each layer one path per paint (about 40 nodes, not a thousand) */}
+        <g className="sq-back">
         {[0, 1, 2, 3, 4].map((t) => (
           <path key={t} className={`sq-wall w${t}`} d={L.walls[t]} />
         ))}
@@ -240,11 +282,15 @@ export default function TitleSquare() {
           <path className="sq-door" d={`M${TOWER_X + 16} ${GROUND}V490a16 16 0 0 1 32 0V${GROUND}Z`} />
           <path className="sq-mullion" d={`M${TOWER_X + 32} 474V${GROUND}`} />
         </g>
+        </g>
         <rect className="sq-cobble" x={0} y={GROUND} width={W} height={600 - GROUND} />
         <path className="sq-cobble-line" d={COBBLES} />
-        <Stall x={-30} />
-        <Stall x={W - 120} flip />
-        <SquareFolk />
+        <g className="sq-mid">
+          <Keeper x={W - 50} />
+          <Stall x={-30} />
+          <Stall x={W - 120} flip />
+          <SquareFolk />
+        </g>
         {/* low sun from the right; then the paper haze that keeps the square behind the menu, Cath and the board */}
         <rect className="sq-sunwash" x={0} y={0} width={W} height={600} fill="url(#sq-sun)" />
         <rect x={0} y={0} width={W} height={600} fill="url(#sq-haze-menu)" />
