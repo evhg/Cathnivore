@@ -65,6 +65,8 @@ import {
   HERO_SCALE,
   drawTower,
   towerReach,
+  fieldFit,
+  towerFoot,
   enemyLift,
   enemyScale,
   drawnLen,
@@ -82,6 +84,16 @@ import { driverFace } from "./fleetfaces";
 // Plan item 431: 1.4 cells (was 1.2): a tower is the thing worth looking at on the field, not a token on its plot (at
 // 1.56, the item's 1.3x, neighbours on adjacent plots overlapped and the top row met the frame).
 export const FIELD_TOWER = 1.4;
+
+/**
+ * Plan item 742: a field tower's drawn reach from its plot's centre, in cells (up and either side), once its solid foot
+ * is fitted inside the plot (`fieldFit`), and the fit itself.
+ */
+export function fieldReach(kind: TowerKind, tier: number, path?: readonly number[]): { up: number; half: number; fit: ReturnType<typeof fieldFit> } {
+  const fit = fieldFit(kind, tier, path, FIELD_TOWER);
+  const r = towerReach(kind, tier, path);
+  return { up: r.up * FIELD_TOWER * fit.scale + fit.lift, half: r.half * FIELD_TOWER * fit.scale * fit.squeeze, fit };
+}
 
 interface Shot {
   kind: TowerKind;
@@ -868,6 +880,14 @@ export class Renderer {
   /** Plan item 743: each tower sprite's drawn box this frame (CSS px), kept clear by the gains. */
   private towerCovers: Rect[] = [];
 
+  /** Plan item 742: each tower sprite's solid foot on the ground this frame (CSS px). */
+  private towerFeet: Rect[] = [];
+
+  /** Plan item 742 (tests): the tower sprites' solid feet last frame. */
+  footRects(): Rect[] {
+    return this.towerFeet.map((r) => ({ ...r }));
+  }
+
   /** Plan item 743 (tests): the tower sprites' drawn boxes last frame. */
   towerRects(): Rect[] {
     return this.towerCovers.map((r) => ({ ...r }));
@@ -940,6 +960,22 @@ export class Renderer {
         if (best !== undefined && Math.abs(best - cx) < w) cx = best;
       }
       let cy = Math.max(M + h / 2, Math.min(this.cssH - M - h / 2, Y(g.y + g.dy) - rise * s));
+      // Plan item 742: and one that grew as it counted into a sprite (l34 D's '+56' came to rest 0.3 px into the
+      // scarecrow under it, '+103' between two stacked towers) moves to the nearest spot just off that sprite that meets
+      // no tower and stays inside the field.
+      {
+        const meets = (x: number, y: number) => this.towerCovers.some((t) => x - w / 2 < t.x + t.w && x + w / 2 > t.x && y - h / 2 < t.y + t.h && y + h / 2 > t.y);
+        const inside = (x: number, y: number) => x >= M + w / 2 && x <= this.cssW - M - w / 2 && y >= M + h / 2 && y <= this.cssH - M - h / 2;
+        if (meets(cx, cy)) {
+          const spots: Array<[number, number]> = [];
+          for (const t of this.towerCovers) {
+            if (!(cx - w / 2 < t.x + t.w && cx + w / 2 > t.x && cy - h / 2 < t.y + t.h && cy + h / 2 > t.y)) continue;
+            spots.push([cx, t.y - h / 2 - 0.5], [cx, t.y + t.h + h / 2 + 0.5], [t.x - w / 2 - 0.5, cy], [t.x + t.w + w / 2 + 0.5, cy]);
+          }
+          const best = spots.filter(([x, y]) => inside(x, y) && !meets(x, y)).sort((a, b) => Math.hypot(a[0] - cx, a[1] - cy) - Math.hypot(b[0] - cx, b[1] - cy))[0];
+          if (best && Math.hypot(best[0] - cx, best[1] - cy) < s * 1.5) [cx, cy] = best;
+        }
+      }
       // and it never rises into a lane's badge or a depot (P l34's '+236' rose into the badge over Hollowell).
       const risen = { x: cx - w / 2, y: cy - h / 2, w, h };
       if (rise > 0 && [this.badgeBoxes, this.depotBoxes].some((boxes) => boxes.some((v) => overlaps(risen, v)))) cy = Math.max(M + h / 2, Math.min(this.cssH - M - h / 2, Y(g.y + g.dy)));
@@ -1268,17 +1304,25 @@ export class Renderer {
       items.push({ y: gate[1] + 0.5, draw: () => drawSaleBoard(ctx, X(gate[0] + 0.5), Y(gate[1] + 0.5), s) });
     }
     this.towerCovers = [];
+    this.towerFeet = [];
     for (const tw of game.towers) {
       const since = this.fired.get(tw.id) ?? 9;
       const age = this.built.get(tw.id);
       if (age !== undefined) this.built.set(tw.id, age + dt);
       const pop = age !== undefined && age < 0.35 && !this.reducedMotion ? popScale(age / 0.35) : 1;
       this.fired.set(tw.id, since + dt);
-      const reach = towerReach(tw.kind, tw.tier, tw.path);
-      const up = Math.max(1.05, reach.up * FIELD_TOWER) * s;
-      const half = Math.max(0.5, reach.half * FIELD_TOWER) * s;
+      const reach = fieldReach(tw.kind, tw.tier, tw.path);
+      const fit = reach.fit;
+      const up = Math.max(1.05, reach.up) * s;
+      const half = Math.max(0.5, reach.half) * s;
       const cover = { x: X(tw.col + 0.5) - half, y: Y(tw.row + 0.5) - up, w: half * 2, h: s * 0.5 + up };
       this.towerCovers.push(cover);
+      {
+        const f = towerFoot(tw.kind, tw.tier, tw.path);
+        const k = FIELD_TOWER * fit.scale * s;
+        const cy = Y(tw.row + 0.5) - fit.lift * s;
+        this.towerFeet.push({ x: X(tw.col + 0.5) - f.half * k * fit.squeeze, y: cy + 0.05 * k, w: f.half * k * fit.squeeze * 2, h: (f.below - 0.05) * k });
+      }
       items.push({
         y: tw.row + 0.8,
         cover,
@@ -1306,6 +1350,14 @@ export class Renderer {
             ctx.restore();
             drawTower(ctx, { kind: other, tier: 4, spec: null, fired: since, dazed: false }, X(tw.annex[0] + 0.5), Y(tw.annex[1] + 0.5), s, t + tw.id);
           }
+          // Plan item 742: its solid foot fitted inside the plot (a little smaller and narrower where it was wider).
+          const fitted = fit.scale !== 1 || fit.lift !== 0;
+          if (fitted) {
+            ctx.save();
+            ctx.translate(X(tw.col + 0.5), Y(tw.row + 0.5) - fit.lift * s);
+            ctx.scale(fit.squeeze, 1);
+            ctx.translate(-X(tw.col + 0.5), -Y(tw.row + 0.5));
+          }
           drawTower(
             ctx,
             {
@@ -1320,9 +1372,10 @@ export class Renderer {
             X(tw.col + 0.5),
             Y(tw.row + 0.5),
             // Plan item 322: on the field a tower stands 1.2x its cell, so it rises proud over the plot's edge
-            s * FIELD_TOWER,
+            s * FIELD_TOWER * fit.scale,
             t + tw.id * 0.37,
           );
+          if (fitted) ctx.restore();
           if (tw.crown !== undefined) {
             // A Crown (M5): a gold ring under the tower and a little crown over it.
             ctx.save();
@@ -1822,9 +1875,9 @@ export class Renderer {
     // Plan item 695: the towers' screen boxes (the cell and the sprite's height over it), for the badges to keep off.
     // Plan item 721: as tall as its sprite draws (the windmill's sails, the mast's tip), not a flat 1.05 cells over its centre.
     this.towerBoxes = game.towers.map((tw) => {
-      const r = towerReach(tw.kind, tw.tier, tw.path);
-      const up = Math.max(1.05, r.up * FIELD_TOWER) * s;
-      const half = Math.max(0.5, r.half * FIELD_TOWER) * s;
+      const r = fieldReach(tw.kind, tw.tier, tw.path);
+      const up = Math.max(1.05, r.up) * s;
+      const half = Math.max(0.5, r.half) * s;
       return { x: X(tw.col + 0.5) - half, y: Y(tw.row + 0.5) - up, w: half * 2, h: s * 0.5 + up };
     });
     this.badgeBoxes = [];

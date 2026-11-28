@@ -121,7 +121,7 @@ import { cardBody, damageLabel, leakReport as fleetLeakReport, lockLine, lossCau
 import { roundFor } from "./rounds";
 import { fieldCards, initUnlocks, isOpen, markFieldCardSeen, markUnlockSeen, pendingUnlock, type UnlockId } from "./unlocks";
 import { LEVELS } from "./levels";
-import { FIELD_TOWER, Renderer } from "./render";
+import { fieldReach, Renderer } from "./render";
 import type { Renderer3D } from "./render3d";
 
 /** The 3D renderer and three.js load as their own chunk: the map screen doesn't need them, so the first
@@ -155,7 +155,7 @@ import { suggestedPlot } from "./bot";
 import { barkSpot, type BarkSpot } from "./cathsay";
 import { BARK_SHOW, BarkGate, barkCorner, type BarkKind } from "./bark";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
-import { enemySilhouette, towerSilhouette, towerTier, towerReach } from "./sprites";
+import { enemySilhouette, towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
@@ -5201,9 +5201,9 @@ function builtPlotBoxes(g: Game): Box[] {
         return !!p && Math.abs(p.x - (b.x + b.w / 2)) < 1 && Math.abs(p.y - (b.y + b.h / 2)) < 1;
       });
       if (!tw) continue;
-      const r = towerReach(tw.kind, tw.tier, tw.path);
-      const up = Math.max(0, r.up * FIELD_TOWER * b.h - b.h / 2);
-      const side = Math.max(0, r.half * FIELD_TOWER * b.w - b.w / 2);
+      const r = fieldReach(tw.kind, tw.tier, tw.path);
+      const up = Math.max(0, r.up * b.h - b.h / 2);
+      const side = Math.max(0, r.half * b.w - b.w / 2);
       b.y -= up;
       b.h += up;
       b.x -= side;

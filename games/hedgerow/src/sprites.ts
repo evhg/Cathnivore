@@ -274,6 +274,66 @@ export function towerReach(kind: TowerKind, tier: number, path?: readonly number
   return reach;
 }
 
+/**
+ * Plan item 742: the solid part of a tower's sprite where it meets the ground (its plinth, footing, hedge or barn walls;
+ * not the soft shadows), in its drawn size: how far it reaches either side of the point it is drawn at and how far below
+ * it. Measured once per kind and tier like `towerReach`.
+ */
+const footCache = new Map<string, { half: number; below: number }>();
+export function towerFoot(kind: TowerKind, tier: number, path?: readonly number[]): { half: number; below: number } {
+  const key = `${kind}:${towerTier({ tier, ...(path ? { path } : {}) })}:${path?.join(",") ?? ""}`;
+  const known = footCache.get(key);
+  if (known) return known;
+  let foot = { half: 0.43, below: 0.45 };
+  try {
+    const S = 64;
+    const W = S * 3;
+    const H = S * 4;
+    const cv = typeof document !== "undefined" ? document.createElement("canvas") : null;
+    const ctx = cv?.getContext("2d", { willReadFrequently: true });
+    if (cv && ctx) {
+      cv.width = W;
+      cv.height = H;
+      const cy = S * 3;
+      const from = Math.floor(cy + S * 0.05);
+      ctx.clearRect(0, 0, W, H);
+      drawTower(ctx, { kind, tier, spec: null, fired: 9, dazed: false, bare: true, still: true, ...(path ? { path } : {}) }, W / 2, cy, S, 0);
+      const px = ctx.getImageData(0, 0, W, H).data;
+      let side = 0;
+      let low = cy;
+      for (let y = from; y < H; y++)
+        for (let x = 0; x < W; x++)
+          if (px[(y * W + x) * 4 + 3]! > 150) {
+            side = Math.max(side, Math.abs(x + 0.5 - W / 2));
+            low = Math.max(low, y + 1);
+          }
+      foot = { half: side / S, below: (low - cy) / S };
+    }
+  } catch {
+    // no canvas (tests): about a plinth's size
+  }
+  footCache.set(key, foot);
+  return foot;
+}
+
+/** Plan item 742: how much of a plot (from its centre) a tower's solid foot may take: a thin gutter of grass between neighbours. */
+export const FOOT_HALF = 0.45;
+export const FOOT_BELOW = 0.46;
+
+/**
+ * Plan item 742: how a tower drawn `size` cells tall fits its plot. Where its solid foot is wider than the plot, it is
+ * drawn a little smaller (`scale`) and a little narrower (`squeeze`, half the fit each, so neither reads as distorted),
+ * and lifted (`lift`, cells) where its plinth would hang over the plot's lower edge. A narrow tower is drawn as it was.
+ */
+export function fieldFit(kind: TowerKind, tier: number, path: readonly number[] | undefined, size: number): { scale: number; squeeze: number; lift: number } {
+  const foot = towerFoot(kind, tier, path);
+  const q = Math.min(1, FOOT_HALF / Math.max(0.01, foot.half * size));
+  const scale = Math.sqrt(q);
+  const squeeze = q / scale;
+  const lift = Math.max(0, foot.below * size * scale - FOOT_BELOW);
+  return { scale, squeeze, lift };
+}
+
 export function drawTower(ctx: C, look: TowerLook, x: number, y: number, s: number, t: number): void {
   const base = y + s * 0.3;
   const tier = towerTier(look);
