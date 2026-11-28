@@ -164,3 +164,42 @@ for (const level of [1, 21, 34, 40]) test(`level ${level}'s gate has its depot i
   expect(m.count).toBeGreaterThan(0)
   expect(m.plates).toBe(0)
 })
+
+// Plan item 748: mid-round both boards read '0 next' (the count came from the next round only between rounds). During
+// a round each board counts its lane's vehicles still to leave, ticking down, and goes dim once its last has left.
+test("during a round the depot's board counts what is still to leave, not '0 next'", async ({ page, hasTouch }) => {
+  test.skip(hasTouch, 'level 34 has no margin for its depots on a phone')
+  await page.goto('/hedgerow/?2d&sandbox=1&level=34')
+  await page.waitForFunction(() => !!(window as unknown as W).hedgerow?.game(), null, { timeout: 30_000 })
+  const boards = page.locator('[data-depot] .depot-board')
+  await expect(boards.first()).toBeAttached()
+  await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: { game: () => unknown; sendWave: (g: unknown, f?: boolean) => void } }).hedgerow
+    hg.sendWave(hg.game(), true)
+  })
+  await expect.poll(async () => (await boards.allTextContents()).join('|'), { timeout: 10_000 }).toMatch(/to go/)
+  const read = () =>
+    page.evaluate(() => {
+      const g = (window as unknown as { hedgerow: { game: () => { spawnQueue: Array<{ lane?: number }> } } }).hedgerow.game()
+      return {
+        texts: [...document.querySelectorAll('[data-depot] .depot-board')].map((b) => b.textContent),
+        counts: [...document.querySelectorAll<HTMLElement>('[data-depot]')].map((d) => ({
+          lane: Number(d.dataset.depot),
+          n: Number(d.querySelector('[data-depot-count]')!.getAttribute('data-depot-count')),
+          spent: d.hasAttribute('data-spent'),
+        })),
+        queue: [0, 1].map((l) => g.spawnQueue.filter((q) => (q.lane ?? 0) === l).length),
+      }
+    })
+  const a = await read()
+  for (const t of a.texts) expect(t).toMatch(/^\d+ to go$/)
+  expect(a.counts.some((c) => c.n > 0)).toBe(true)
+  // The board's number is the lane's queue (read in the same frame, give or take the one that just left).
+  for (const c of a.counts) {
+    expect(Math.abs(c.n - a.queue[c.lane]!)).toBeLessThanOrEqual(1)
+    expect(c.spent).toBe(c.n === 0)
+  }
+  // The board still fits its box with the longer word.
+  const fit = await boards.evaluateAll((els) => els.every((e) => e.scrollWidth <= e.clientWidth + 1))
+  expect(fit).toBe(true)
+})

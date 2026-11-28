@@ -5800,8 +5800,13 @@ function syncDepots(g: Game): void {
   const stage = ui.stage.getBoundingClientRect();
   const fieldL = c00.x - cell / 2, fieldT = c00.y - cell / 2;
   const fieldR = fieldL + L.cols * cell, fieldB = fieldT + L.rows * cell;
+  // Plan item 748: between rounds each board counts its lane's next round ('12 next'); during a round, its vehicles
+  // still to leave ('5 to go', as the 3D depot's plate), dimmed once the last has pulled out (both read '0 next'
+  // mid-round, which said nothing about the convoy on the lane).
+  const going = g.phase === "wave" && !betweenRounds(g);
   const counts = [0, 0];
-  if (betweenRounds(g) && L.waves[g.wave]) for (const q of waveSpawns(g, L.waves[g.wave]!, g.wave + 1)) counts[(q as { lane?: number }).lane ? 1 : 0]!++;
+  if (going) for (const q of g.spawnQueue) counts[q.lane ? 1 : 0]!++;
+  else if (L.waves[g.wave]) for (const q of waveSpawns(g, L.waves[g.wave]!, g.wave + 1)) counts[(q as { lane?: number }).lane ? 1 : 0]!++;
   const lanes = [L.path, L.path2].map((path, i) => ({ path, i })).filter((l) => !!l.path);
   const spots: Array<{ x: number; y: number; count: number; lane: number; size: number; jetty: boolean }> = [];
   // Plan item 246: where no margin holds the full two-cell depot, a smaller one (1.3 cells, 48 px at least) is tried.
@@ -5866,8 +5871,29 @@ function syncDepots(g: Game): void {
   r.depotBoxes = spots.map((sp) => ({ x: sp.x + stage.left - canvas.left, y: sp.y + stage.top - canvas.top, w: sp.size, h: sp.size }));
   // Toggled in place, not rebuilt: rebuilding the depots' SVG in the round's call frame delayed that frame.
   if (layer0) for (const el of layer0.querySelectorAll<HTMLElement>(".depot")) el.toggleAttribute("data-showdown", standOut);
-  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.count},${s.size},${s.jetty}`).join(";")}`;
-  if (key === depotKey) return;
+  // (The counts are written in place below, not keyed: a rebuild per vehicle leaving would redo the SVG each spawn.)
+  const key = `${L.id}|${size}|${depotMood}|${doorOpen}|${spots.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${s.size},${s.jetty}`).join(";")}`;
+  const writeBoards = (root: HTMLElement): void => {
+    for (const sp of spots) {
+      const el = root.querySelector<HTMLElement>(`.depot[data-depot="${sp.lane}"]`);
+      const board = el?.querySelector<HTMLElement>(".depot-board");
+      if (!el || !board) continue;
+      const n = String(sp.count);
+      const word = going ? " to go" : " next";
+      if (board.dataset.depotCount !== n) {
+        board.dataset.depotCount = n;
+        board.querySelector("b")!.textContent = n;
+      }
+      const w = board.querySelector<HTMLElement>(".depot-next")!;
+      if (w.textContent !== word) w.textContent = word;
+      board.toggleAttribute("data-going", going);
+      el.toggleAttribute("data-spent", going && sp.count === 0);
+    }
+  };
+  if (key === depotKey) {
+    if (layer0) writeBoards(layer0);
+    return;
+  }
   depotKey = key;
   let layer = layer0;
   if (!layer) {
@@ -5900,6 +5926,7 @@ function syncDepots(g: Game): void {
       return el;
     }),
   );
+  writeBoards(layer);
 }
 
 let twistKey = "";
