@@ -5187,6 +5187,15 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
 @media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: light) {
   .stage:not(:has(.board.won)) .valley { --vk: 78%; filter: saturate(1.2) brightness(.9); }
 }
+/* ...and on a phone (whose valley never receded) the same warm straw under the dry board, its filter no longer
+   draining it (the filter was already there, so a new value costs no extra paint) */
+@media (max-width: 600px) and (orientation: portrait) and (min-height: 700px) and (prefers-color-scheme: light) {
+  .stage:not(:has(.board.won)) .valley {
+    --vk: 85%;
+    --vk-to: color-mix(in srgb, var(--dry-field) 45%, var(--sky-golden));
+    filter: saturate(1.15) brightness(.92);
+  }
+}
 @media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: dark) {
   .stage:not(:has(.board.won)) .valley { --vk: 22%; --vk-to: var(--paper); }
   .stage:not(:has(.board.won)) .vl-focus-out { stop-color: var(--bank-shade); }
