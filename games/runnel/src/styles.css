@@ -5799,3 +5799,10 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .cell.field:is(.wet, :not(.wet)) .field-plot .crop { transition: none; }
   .field-plot .crop :is(.stalk, .ear, .pumpkin, .pumpkin-side, .leaf-outer, .leaf-inner, .vein, .root, .frond, .frond-fill, .petal, .seedhead) { transition: fill 300ms ease, stroke 300ms ease; }
 }
+
+/* Plan item 748: on the win strip the two quiet keys ('Your card', 'Play practice') were beige on the cream strip,
+   their edge under 3:1 (non-text contrast). They keep their paper fill and ink words and take a green rim, the Share
+   key's colour, as the secondary keys of one row (5.8:1 on the strip in day, 3.4:1 at night). */
+.strip-actions .btn-quiet {
+  box-shadow: inset 0 0 0 2px var(--pasture-deep);
+}

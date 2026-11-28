@@ -254,3 +254,29 @@ for (const vp of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }]) {
     expect(m.buttons).toBeGreaterThanOrEqual(44)
   })
 }
+
+// Plan item 748: the strip's quiet keys ('Your card', 'Play practice') stand off the strip by a rim of 3:1 or more
+// (non-text contrast), day and night; their beige fill alone was under it.
+for (const scheme of ['light', 'dark'] as const) {
+  test(`the strip's quiet keys have a 3:1 edge (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme })
+    await page.goto('/runnel/?shotwin&nohelp')
+    await expect(page.locator('#strip-card')).toBeVisible({ timeout: 10_000 })
+    const ratio = await page.evaluate(() => {
+      const rgb = (s: string) => (s.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number)
+      const lum = ([r = 0, g = 0, b = 0]: number[]) => {
+        const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+      }
+      const strip = lum(rgb(getComputedStyle(document.querySelector('.win-strip')!).backgroundColor))
+      return [...document.querySelectorAll<HTMLElement>('.strip-actions .btn-quiet:not([hidden])')].map((b) => {
+        // (no rim: the key's own fill is its edge)
+        const cs = getComputedStyle(b)
+        const rim = lum(rgb(cs.boxShadow === 'none' ? cs.backgroundColor : cs.boxShadow))
+        return (Math.max(rim, strip) + 0.05) / (Math.min(rim, strip) + 0.05)
+      })
+    })
+    expect(ratio.length).toBeGreaterThan(0)
+    for (const r of ratio) expect(r).toBeGreaterThanOrEqual(3)
+  })
+}
