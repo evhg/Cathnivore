@@ -227,6 +227,20 @@ export class Arm {
       // The stitching points run from the wrist toward the index, middle and ring knuckles (wired gloves: copper traces).
       add(hand, tube(0.034, 0.00115, 0.00095, { seg: 4, caps: true, phone }), D.glove === "wired" ? D.trim! : D.seamFin, { p: [s * FINGER_X[f]! * 0.72, 0.022, 0.0134 - Math.abs(FINGER_X[f]!) * 0.09], r: [0, 0, s * -FINGER_X[f]! * 2] });
     }
+    if (D.glove === "leather" || D.glove === "wired") {
+      // Plan item 751: the glove's knuckle seam, a stitched welt arching across the back of the hand over the
+      // knuckles, so the fist reads as a made glove (its knuckle line) and not a black mitt. Six spans of a
+      // three-sided tube, so the pistol with both hands stays under its 30k triangle budget.
+      const arc: THREE.Vector3[] = [];
+      for (let i = 0; i <= 8; i++) {
+        const x = THREE.MathUtils.lerp(FINGER_X[0]! - 0.006, FINGER_X[3]! + 0.006, i / 8);
+        arc.push(new THREE.Vector3(s * x, PALM.len - 0.013 - Math.abs(x) * 0.12, 0.0128 - x * x * 2.2));
+      }
+      const welt = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(arc), phone ? 5 : 6, 0.0013, 3);
+      welt.deleteAttribute("uv");
+      welt.userData.edge = new Float32Array(welt.getAttribute("position").count);
+      add(hand, welt, D.seamFin);
+    }
     // The thumb's pad, filling the web between the thumb and the palm.
     add(hand, sphere(0.016, phone), D.handFin, { p: [s * -0.022, 0.026, -0.004], s: [1, 1.6, 0.9] });
     if (D.glove === "knuckle") {

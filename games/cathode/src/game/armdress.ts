@@ -74,7 +74,8 @@ export const VIEW_SKIN = 0xb4826c;
 const SKIN: Finish = { color: VIEW_SKIN, metal: 0, rough: 0.5, sheen: 0.12, band: "flat", wear: 0 };
 /** Oxblood lacquer: the one red she wears, the same family as the game's accent. */
 const NAILS: Finish = { color: 0x6a0f1c, metal: 0, rough: 0.16, coat: 1, band: "flat", wear: 0 };
-const LEATHER: Finish = { color: 0x141214, metal: 0, rough: 0.45, sheen: 0.4, coat: 0.12, band: "leather", scale: 3, wear: 0.2 };
+// Plan item 751: rained on, the leather wears a wet clear coat (0.4, was 0.12) so the fist takes highlights on its knuckles.
+const LEATHER: Finish = { color: 0x141214, metal: 0, rough: 0.34, sheen: 0.4, coat: 0.4, band: "leather", scale: 3, wear: 0.2 };
 const SEAM: Finish = { color: 0x1d1a18, metal: 0, rough: 0.48, sheen: 0.25, band: "leather", wear: 0 };
 
 /** Which sleeve a coat base wears. Unknown bases (future coats) fall back to the trench. */

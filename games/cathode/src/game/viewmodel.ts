@@ -169,6 +169,14 @@ function buildPin(phone = false): GunRig {
   b.add(tag(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helix), 264, 0.0016, 5), M.rubber), { ...wrap, color: 0x2a221c, wear: 1 }));
   b.add(at(tag(cyl(0.019, 0.02, M.brass, 18), FIN.brass), 0, 0, 0.09));
   b.add(at(tag(cyl(0.0185, 0.008, M.brass, 18), FIN.brass), 0, 0, -0.084));
+  // Plan item 751: a crafted Pin, not a tube in a fist. Two raised leather welts bind the wrap's ends; a turned steel
+  // ferrule steps the grip down into the shaft (a bright bevel where the light catches); a polished tip ring sits
+  // under the ball end, so the far end reads against the street.
+  b.add(at(tag(cyl(0.0182, 0.006, M.rubber, 18), { ...wrap, color: 0x231b16, rough: 0.5, wear: 1 }), 0, 0, 0.072));
+  b.add(at(tag(cyl(0.0182, 0.006, M.rubber, 18), { ...wrap, color: 0x231b16, rough: 0.5, wear: 1 }), 0, 0, -0.07));
+  b.add(at(tag(cyl(0.0176, 0.024, M.steel, 18, 0.0138), { ...steel, rough: 0.2, wear: 1 }), 0, 0, -0.1));
+  b.add(at(tag(cyl(0.0179, 0.003, M.steel, 18), { ...steel, color: 0xb8bec6, rough: 0.14, wear: 1 }), 0, 0, -0.0895));
+  b.add(at(tag(cyl(0.0127, 0.006, M.brass, 16), FIN.brass), 0, 0, -0.4565));
   b.add(at(tag(cyl(0.013, 0.2, M.steel, 16), steel), 0, 0, -0.18));
   b.add(at(tag(cyl(0.0148, 0.012, M.steel, 16), collar), 0, 0, -0.272));
   b.add(at(box(0.003, 0.0035, 0.19, M.rim, 0.001), 0.0112, 0.0065, -0.18));
@@ -186,6 +194,9 @@ function buildPin(phone = false): GunRig {
   r.action = b;
   r.muzzle.position.copy(new THREE.Vector3(0, 0, -0.475).applyEuler(b.rotation).add(b.position)); // the ball end: the swing trail follows it
   attachHands(r, [0, 0, 0.02], null, 0, b);
+  // Plan item 751: the elbow out to the right and lower, so the forearm comes in from the frame's right edge and the
+  // trench cuff and the silk under it show at the wrist (from straight behind, the sleeve ran at the lens, a black mass).
+  r.shoulderR = phone ? new THREE.Vector3(0.36, -0.42, 0.22) : new THREE.Vector3(0.4, -0.44, 0.22);
   return r;
 }
 
