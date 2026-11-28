@@ -1563,6 +1563,8 @@ function truckCab(x: number, len: number, h: number, w: number, paint: M): THREE
   const y0 = 0.07;
   g.add(rbox(len, h, w, 0.035, paint, cx, y0, 0));
   g.add(box(0.006, h * 0.36, w * 0.82, glass("#3d5c78"), x + 0.002, y0 + h * 0.52, 0));
+  // Plan item 757: the screen carried over the roof's front edge, so the field camera sees glass from above.
+  g.add(box(len * 0.26, 0.008, w * 0.84, glass("#5f86a8"), x - len * 0.15, y0 + h, 0));
   for (const side of [-1, 1]) {
     g.add(box(len * 0.5, h * 0.3, 0.005, glass("#3d5c78"), cx + len * 0.12, y0 + h * 0.54, side * (w / 2 + 0.002)));
     g.add(ball(0.022, glow("#fff2b0", 2.5), x + 0.004, y0 + h * 0.2, side * w * 0.34, 0));

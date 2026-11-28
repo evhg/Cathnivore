@@ -3636,9 +3636,23 @@ export class Renderer3D {
       }
       // Where the queue has a column (convoy.ts), the badge rides its head.
       const col: ConvoyColumn | undefined = columnNear(this.lay, sw.lane, sw.dist);
-      const p = enemyPoint(game.level, col ? { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) } : sw);
+      const at = col ? { dist: col.dist, ...(col.lane ? { lane: col.lane } : {}) } : sw;
+      const p0 = enemyPoint(game.level, at);
       if (col) ridden.add(col);
-      const up = 1.1;
+      // Plan item 757: the pill stands off the road, beside the queue's head (a cell to the field-centre side of the
+      // lane), not on the road over the lead van, where it hid the vehicle it counts.
+      const q = enemyPoint(game.level, { ...at, dist: at.dist + 0.4 });
+      let nx = -(q.y - p0.y);
+      let ny = q.x - p0.x;
+      const nl = Math.hypot(nx, ny) || 1;
+      nx /= nl;
+      ny /= nl;
+      if (nx * (game.level.cols / 2 - p0.x) + ny * (game.level.rows / 2 - p0.y) < 0) {
+        nx = -nx;
+        ny = -ny;
+      }
+      const p = { x: p0.x + nx * 0.9, y: p0.y + ny * 0.9 };
+      const up = 0.7;
       const v = new THREE.Vector3(p.x, this.height(p.x, p.y) + up, p.y).project(this.camera);
       slot.el.hidden = false;
       slot.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * w).toFixed(1)}px, ${((-v.y * 0.5 + 0.5) * h).toFixed(1)}px) translate(-50%, -100%)`;
