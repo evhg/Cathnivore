@@ -36,7 +36,8 @@ for (const [size, w, h] of (process.env.SIZES ?? 'D,P,L').split(',').map((s) => 
   const fw = [...(m?.folkWorld ?? [])].sort((a, b) => a - b)
   const farmerW = fw.length ? fw[Math.floor(fw.length / 2)] : null
   console.log(size, `farmer ${farmer?.toFixed(0)} px (world ${farmerW?.toFixed(2)}) cath ${m?.cath?.toFixed(0)} px (world ${m?.cathWorld?.toFixed(2)}) built ${kinds.join(',')}`)
-  for (const t of m?.towers ?? []) console.log(`  ${t.kind.padEnd(10)} ${t.h.toFixed(0).padStart(4)} px  world ${t.world.toFixed(2)} = ${farmerW ? (t.world / farmerW).toFixed(2) : '-'}x farmer`)
+  console.log(`  lorry length ${m?.lorry?.toFixed(2) ?? "-"} cells`)
+  for (const t of m?.towers ?? []) console.log(`  ${t.kind.padEnd(10)} ${t.h.toFixed(0).padStart(4)} px  world ${t.world.toFixed(2)} = ${farmerW ? (t.world / farmerW).toFixed(2) : "-"}x farmer  foot ${t.footX?.toFixed(2)}x${t.footZ?.toFixed(2)}${m?.lorry ? ` = ${(Math.max(t.footX, t.footZ) / m.lorry).toFixed(2)} lorries` : ""}`)
   await page.screenshot({ path: `${out}/towers-${size}.png`, timeout: 120000 })
   // the nine in black fill (scripts/hedgerow-515-masks.py draws them and their pairwise overlap)
   if (size === 'D') writeFileSync(`${out}/masks-${size}.json`, JSON.stringify(await page.evaluate(() => window.hedgerow.towerMasks(48))))

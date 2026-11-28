@@ -266,6 +266,10 @@ const TOWER_STAND: Partial<Record<string, number>> = {
 /** The squat towers also stand a little taller than wide (their footprint kept): the hedge grows up, the skep and the
  * stall's canopy rise, the cannon sits higher on its carriage. */
 const TOWER_RISE: Partial<Record<string, number>> = { hedgerow: 1.3, beehive: 1.25, stall: 1.25, cannon: 1.3 };
+/** Plan item 744: the footing (every vertex within 0.25 of the base) kept inside its own plot, at most 0.95 of a cell
+ * across: measured at the stand above, the hedge ran 1.25 cells deep, the mill's skirt 1.31, the cannon's carriage
+ * 1.32 and the pond 1.28, so a body spilled onto its neighbour's plot. Those draw in a little across (not up). */
+const TOWER_SPREAD: Partial<Record<string, number>> = { hedgerow: 0.76, beehive: 0.85, pond: 0.74, windmill: 0.73, cannon: 0.72, stall: 0.94, silo: 0.94 };
 
 export class Renderer3D {
   private renderer: THREE.WebGLRenderer;
@@ -1170,16 +1174,31 @@ export class Renderer3D {
   /** Plan item 78: the share of the frame the field's projected bounding box covers (0..1), at the fitted view. */
   /** Plan item 284: her whole figure's box on the page in CSS px, so shot scripts can crop round her on any level. */
   /** Plan item 515: on-screen heights (CSS px) of each built tower, each farmer and Cath, for the towers' scale checks. */
-  towerHeights(): { towers: Array<{ kind: string; h: number; w: number; world: number }>; folk: number[]; folkWorld: number[]; cath: number | null; cathWorld: number | null } {
+  towerHeights(): { towers: Array<{ kind: string; h: number; w: number; world: number; footX: number; footZ: number }>; folk: number[]; folkWorld: number[]; cath: number | null; cathWorld: number | null; lorry: number | null } {
     const r = this.canvas.getBoundingClientRect();
     const box = (o: THREE.Object3D) => new THREE.Box3().setFromObject(o);
     const hOf = (o: THREE.Object3D) => this.boxRect(box(o), r.width, r.height);
     const tall = (o: THREE.Object3D) => { const b = box(o); return b.max.y - b.min.y; };
-    const towers: Array<{ kind: string; h: number; w: number; world: number }> = [];
+    const towers: Array<{ kind: string; h: number; w: number; world: number; footX: number; footZ: number }> = [];
     for (const [, v] of this.towers) {
       const lean = (v.obj.userData.lean as THREE.Object3D | undefined) ?? v.obj;
       const b = hOf(lean);
-      towers.push({ kind: String(v.sig.split(":")[0]), h: b.h, w: b.w, world: tall(lean) });
+      // Plan item 744: the body's footing in cells (world x and z: every vertex within 0.25 of its base), against its
+      // plot and a lorry's length; a windmill's sails or a mast's guys overhead don't count.
+      const base = box(lean).min.y + 0.25;
+      const foot = new THREE.Box3();
+      const p = new THREE.Vector3();
+      lean.updateWorldMatrix(true, true);
+      lean.traverse((o) => {
+        const g = (o as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+        const pos = g?.getAttribute("position");
+        if (!pos || !o.visible) return;
+        for (let i = 0; i < pos.count; i++) {
+          p.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+          if (p.y <= base) foot.expandByPoint(p);
+        }
+      });
+      towers.push({ kind: String(v.sig.split(":")[0]), h: b.h, w: b.w, world: tall(lean), footX: foot.max.x - foot.min.x, footZ: foot.max.z - foot.min.z });
     }
     const people = this.folkMeshes.people();
     return {
@@ -1188,6 +1207,7 @@ export class Renderer3D {
       folkWorld: people.map(tall),
       cath: this.cath?.visible ? hOf(this.cath).h : null,
       cathWorld: this.cath?.visible ? tall(this.cath) : null,
+      lorry: this.rungs?.drawnLength("lorry") ?? null,
     };
   }
   /** Plan item 515: each built tower drawn alone in flat black on white from the game camera, as an n x n mask of 0/1
@@ -2441,6 +2461,8 @@ export class Renderer3D {
           // Plan item 515: the tower's body stands up as the field's landmark (the plinth stays on its plot)
           lean.scale.setScalar(TOWER_STAND[tw.kind] ?? 1);
           lean.scale.y *= TOWER_RISE[tw.kind] ?? 1;
+          lean.scale.x *= TOWER_SPREAD[tw.kind] ?? 1;
+          lean.scale.z *= TOWER_SPREAD[tw.kind] ?? 1;
           shadowUpright(lean, (m) => m.identity());
         }
         this.dynamic.add(obj);
