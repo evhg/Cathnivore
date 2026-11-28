@@ -14,6 +14,31 @@ import { hearShot, initialState, stepStreet, streetLife, visible, type AgentStat
 /** Wet wool in colours that read under neon: camel, olive, oxblood, slate, mustard, teal, charcoal. */
 const STREET_COATS = ["#7a6248", "#5a5e3c", "#5e2a2a", "#45505e", "#8a6a2c", "#2f5552", "#3a3a40", "#6a4a5a", "#8c7a62", "#2c3a4e"];
 
+/** Plan item 745: canopies in colour, so the umbrellas stop reading as one beige dome repeated: two blacks, then
+ * oxblood, bottle green, navy, mustard, brick red, slate and plum. */
+const STREET_UMBRELLAS = [...UMBRELLAS.slice(0, 2), "#7a1a22", "#1e4a3a", "#1c2a52", "#a07a1e", "#9a2a20", "#5a6a72", "#3a1e4a"];
+
+/** A hood up: a shell round the back and top of the head, open at the face (+x), and its fall onto the collar. */
+function hoodParts(): THREE.BufferGeometry[] {
+  const shell = new THREE.SphereGeometry(0.135, 10, 8, Math.PI * 1.25, Math.PI * 1.5, 0, Math.PI * 0.72);
+  shell.scale(1.05, 1.08, 1.0).translate(-0.01, 1.71, 0);
+  const fall = new THREE.CylinderGeometry(0.13, 0.17, 0.14, 10);
+  fall.translate(-0.03, 1.56, 0);
+  return [shell, fall];
+}
+
+/** A vendor's apron: a bib on the chest, a skirt to the knee just proud of the coat's front (+x), and its tie. */
+function apronParts(): THREE.BufferGeometry[] {
+  const bib = new THREE.BoxGeometry(0.03, 0.3, 0.24);
+  bib.translate(0.2, 1.2, 0);
+  const skirt = new THREE.BoxGeometry(0.03, 0.56, 0.4);
+  skirt.rotateZ(-0.12);
+  skirt.translate(0.25, 0.8, 0);
+  const tie = new THREE.BoxGeometry(0.32, 0.03, 0.46);
+  tie.translate(0.06, 1.05, 0);
+  return [bib, skirt, tie];
+}
+
 function hash(n: number): number {
   const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return s - Math.floor(s);
@@ -104,7 +129,15 @@ export function addStreetLife(
     partsList.push({ mesh, who, onBike });
   };
   const all = plan.agents.map((a) => a.id);
-  const hatted = (i: number) => !plan.agents[i]!.umbrella && hash(plan.agents[i]!.seed * 5.1) < 0.45;
+  // Plan item 745: three heads without umbrellas: a hat, a hood up against the rain, or bare hair.
+  const headKind = (i: number) => {
+    const a = plan.agents[i]!;
+    if (a.umbrella || a.role === "vendor") return "hair";
+    const k = hash(a.seed * 5.1);
+    return k < 0.3 ? "hat" : k < 0.6 ? "hood" : "hair";
+  };
+  const hatted = (i: number) => headKind(i) === "hat";
+  const hooded = (i: number) => headKind(i) === "hood";
   mk(merge(parts.coat), std(0.5), all, STREET_COATS, 1, true);
   if (lo) {
     const tint = (gs: THREE.BufferGeometry[], col: string) =>
@@ -115,16 +148,28 @@ export function addStreetLife(
         return n;
       });
     const detail = wrap(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.65, metalness: 0, vertexColors: true }));
-    mk(merge([...tint(parts.skin, SKINS[0]!), ...tint(parts.dark, "#14130f"), ...tint([new THREE.SphereGeometry(0.112, 6, 4).scale(1.02, 0.9, 0.97).translate(0, 1.72, 0)], HAIRS[1]!)]), detail, all, null, 2, false);
+    // Plan item 745: one skin tone for everyone read as a crowd of mannequins. The instance colour multiplies the
+    // vertex colours, so each person's tone is their skin over the base (the near-black parts barely move).
+    const base = new THREE.Color(SKINS[0]!);
+    const tones = SKINS.map((t) => {
+      const k = new THREE.Color(t);
+      return `#${new THREE.Color(Math.min(1, k.r / base.r), Math.min(1, k.g / base.g), Math.min(1, k.b / base.b)).getHexString()}`;
+    });
+    mk(merge([...tint(parts.skin, SKINS[0]!), ...tint(parts.dark, "#14130f"), ...tint([new THREE.SphereGeometry(0.112, 6, 4).scale(1.02, 0.9, 0.97).translate(0, 1.72, 0)], HAIRS[1]!)]), detail, all, tones, 2, false);
   } else {
     mk(merge(parts.skin), std(0.6), all, SKINS, 2, false);
     mk(merge(parts.dark), std(0.7), all, ["#0e0f12", "#1a1816", "#22201e"], 3, false);
-    mk(merge(hair), std(0.7), all.filter((i) => !hatted(i)), HAIRS, 4, false);
+    mk(merge(hair), std(0.7), all.filter((i) => !hatted(i) && !hooded(i)), HAIRS, 4, false);
+    const hoodMat = std(0.55);
+    hoodMat.side = THREE.DoubleSide;
+    mk(merge(hoodParts()), hoodMat, all.filter(hooded), STREET_COATS, 9, true);
+    // The vendors' aprons over their coats: oilcloth white, butcher's blue, canvas.
+    mk(merge(apronParts()), std(0.45), all.filter((i) => plan.agents[i]!.role === "vendor"), ["#d8d2c4", "#3d6a8a", "#c8b48a", "#e4e0d6"], 10, false);
     mk(merge(hat), std(0.6), all.filter(hatted), ["#121214", "#2a2420", "#1a1c22", "#3a2a22"], 5, false);
   }
   const umbMat = std(0.25);
   umbMat.side = THREE.DoubleSide;
-  mk(merge(umbrellaParts()), umbMat, all.filter((i) => plan.agents[i]!.umbrella), [...UMBRELLAS, "#5a1a22", "#1a3a4a", "#2a2a2a"], 6, true);
+  mk(merge(umbrellaParts()), umbMat, all.filter((i) => plan.agents[i]!.umbrella), STREET_UMBRELLAS, 6, true);
   const riders = all.filter((i) => plan.agents[i]!.role === "cyclist" || plan.agents[i]!.role === "courier");
   mk(merge(bikeParts()), std(0.4, 0.6), riders, ["#1a1c20", "#3a3e44", "#6a1a1a"], 7, true, true);
   // The courier's insulated box: Hollowell orange, the same as the takeaway bags in the stalls (not on the phone).

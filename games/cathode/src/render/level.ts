@@ -641,6 +641,32 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       b.shape("glowWarm", new THREE.SphereGeometry(0.07, 8, 6), bulb);
       bulbs.push(bulb);
       light(bulb.clone(), "#ffc27a", 3.6, 6.5, null, 1);
+      // Plan item 745: stock you can see from the road. Paper lanterns along the tarp's front edge, a line of dried
+      // squid hung under it, and a tray of fruit (or a stack of takeaway boxes) at the counter's end. All in materials
+      // already in view at the stalls, so they merge into draws the street already makes; a seed of its own, so the
+      // street's `rand()` sequence after the stalls is unchanged.
+      const h745 = (n: number) => {
+        const v = Math.sin((z + n) * 127.1 + 311.7) * 43758.5453;
+        return v - Math.floor(v);
+      };
+      for (let k = 0; k < 3; k++) {
+        const lz = z - w / 2 + 0.55 + k * ((w - 1.1) / 2);
+        b.cylinder("cable", V(x0 - 0.25, y0 + front - 0.1, lz), V(x0 - 0.25, y0 + front - 0.32, lz), 0.005, 3);
+        b.shape("glowWarm", new THREE.SphereGeometry(0.15, 6, 4), V(x0 - 0.25, y0 + front - 0.48, lz), 0, V(1, 1.25, 1));
+      }
+      b.cylinder("cable", V(x0 + 0.35, y0 + front - 0.28, z - w / 2 + 0.3), V(x0 + 0.35, y0 + front - 0.28, z + w / 2 - 0.3), 0.005, 3);
+      for (let k = 0; k < 7; k++) {
+        const sq = new THREE.ConeGeometry(0.06, 0.42, 5);
+        sq.rotateX(Math.PI);
+        b.shape("fish", sq, V(x0 + 0.35, y0 + front - 0.5, z - w / 2 + 0.5 + k * ((w - 1.0) / 6)), h745(k * 3.1) * Math.PI, V(1, 1, 0.45));
+      }
+      const tz = z + w / 2 - 0.55;
+      b.box("wood", x0 + 0.6, y0 + 1.08, tz, 0.8, 0.1, 0.6, { uv: 1 });
+      if (h745(9.7) < 0.6) {
+        for (let k = 0; k < 12; k++) b.shape("paintRed", new THREE.SphereGeometry(0.075, 5, 3), V(x0 + 0.28 + (k % 4) * 0.2, y0 + 1.2, tz - 0.2 + Math.floor(k / 4) * 0.2));
+      } else {
+        for (let k = 0; k < 4; k++) b.box(k % 2 ? "styro" : "paintRed", x0 + 0.45 + (k % 2) * 0.3, y0 + 1.2 + Math.floor(k / 2) * 0.16, tz, 0.26, 0.14, 0.3, { rotY: (h745(k * 5.3) - 0.5) * 0.4 });
+      }
     }
     // Crates and styrofoam boxes behind.
     for (let i = 0; i < 4; i++) {
