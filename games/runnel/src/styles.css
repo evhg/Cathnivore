@@ -5872,7 +5872,8 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
   .pal-figs .al-streak .al-art svg { width: 96px; height: 19px; }
   .pal-figs .al-solved .al-art svg, .pal-figs .al-best .al-art svg { width: 24px; height: 21px; }
   .pal-figs .al-solved > span:last-child, .pal-figs .al-best > span:last-child { display: none; }
-  .foot[data-known]:not([data-solved]) .hint:not(.flash) { display: none; }
+  /* The plain hint line gives the foot to the strip (a first daily's how-to is Cath's line; a flashed message still shows). */
+  .foot:not([data-solved]) .hint:not(.flash) { display: none; }
   /* Solved, the result's own strip tells the day; the foot keeps item 633's solved layout (Bea's garden its size). */
   .foot[data-solved] .pal { display: none; }
 }

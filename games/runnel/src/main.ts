@@ -187,6 +187,9 @@ function openGame(): void {
   wetCount = computeFlow(puzzle.cells).wet.size
   if (mode === 'climb') host.say(CLIMB[climbAt]!.expression, CLIMB[climbAt]!.ask)
   else host.greet(mode !== 'practice', mode === 'daily' ? dailyNumber(playDay) : mode === 'orchard' ? level : Math.floor(Math.random() * 3) + 1)
+  // Plan item 750: on a phone the foot has no hint line; a first daily's how-to is Cath's own line instead.
+  if (mode === 'daily' && !game.solved && game.taps === 0 && dailyStats(data, today).played === 0 && matchMedia('(max-width: 600px) and (orientation: portrait)').matches)
+    host.say('smirk', FIRST_DAILY_LINE)
   if (game.solved) host.react(1, true)
   if (game.solved) board.celebrate()
   render()
@@ -1456,9 +1459,6 @@ function render(): void {
   // Plan item 68's strip shows the solve's time; the foot keeps what it doesn't (the next puzzle), and at D sits the
   // note and its button side by side so the column doesn't grow past the screen (it ran 30 px over at 1440x900).
   document.querySelector('.foot')?.toggleAttribute('data-solved', game.solved)
-  // Plan item 750: once a daily has been solved the player knows the taps; on a phone the plain hint line then gives
-  // the foot to the almanac strip (a flashed message still shows).
-  document.querySelector('.foot')?.toggleAttribute('data-known', dailyStats(data, today).played > 0)
   if (game.solved) {
     ui.hint.textContent = isDaily
       ? `Solved. Next in ${untilTomorrow().replace(/ /g, '\u00a0')}.`
@@ -2047,6 +2047,9 @@ function bareBedSvg(state: string): string {
     state === 'today' ? '<path class="bed-marker" d="M14 21V9"/><rect class="bed-packet" x="9.5" y="4" width="9" height="7.5" rx="1"/>' : ''
   }</svg>`
 }
+
+/** Plan item 750: Cath's first line on a phone's first daily, the hint folded into her bubble. */
+const FIRST_DAILY_LINE = 'Tap a tile to turn it, hold one to pin it. Get the spring to every field.'
 
 /** Plan item 725: one figure on the almanac page: its drawing, its number in the display face and a word under it. */
 function railFigure(cls: string, label: string, art: string, value: string, word: string): HTMLDivElement {
