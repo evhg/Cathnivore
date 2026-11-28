@@ -181,7 +181,7 @@ export const createWorld: CreateWorld = async (canvas, options, onProgress) => {
     streetExits(options.district),
   );
   // Plan item 57: the street's own people (walkers, vendors, doorways, riders), who scatter at gunfire.
-  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m) => patchMaterial(m, shared, { kind: "prop", wet: 0.6, volume: PEOPLE_LIGHT.volume, rim: PEOPLE_LIGHT.rim, far: quality === "phone" ? PEOPLE_LIGHT.far : 0 }));
+  const street = addStreetLife(scene, options.district, quality, (x, z) => level.groundHeight(x, z), (m, o) => patchMaterial(m, shared, { kind: "prop", wet: o?.wet ?? 0.6, volume: o?.volume ?? PEOPLE_LIGHT.volume, rim: o?.rim ?? PEOPLE_LIGHT.rim, far: quality === "phone" ? PEOPLE_LIGHT.far : 0 }));
   addPatients(scene, level.seats ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   addShrouds(scene, level.bodies ?? [], (m) => patchMaterial(m, shared, { kind: "prop", wet: 0 }));
   const pool = new LightPool(scene, level.lights, P.pool, 0.7, theme?.signature);

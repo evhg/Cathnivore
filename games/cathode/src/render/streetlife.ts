@@ -16,7 +16,11 @@ const STREET_COATS = ["#7a6248", "#5a5e3c", "#5e2a2a", "#45505e", "#8a6a2c", "#2
 
 /** Plan item 745: canopies in colour, so the umbrellas stop reading as one beige dome repeated: two blacks, then
  * oxblood, bottle green, navy, mustard, brick red, slate and plum. */
-const STREET_UMBRELLAS = [...UMBRELLAS.slice(0, 2), "#7a1a22", "#1e4a3a", "#1c2a52", "#a07a1e", "#9a2a20", "#5a6a72", "#3a1e4a"];
+const STREET_UMBRELLAS = [...UMBRELLAS.slice(0, 2), "#b01e2c", "#1f7a55", "#2a4aa0", "#d4a020", "#c2402a", "#4a7a8a", "#7a2a8a"];
+
+/** An umbrella canopy's light: half the people's volume light (world.ts PEOPLE_LIGHT: volume 2.9, rim 1.35), little
+ * wet sheen and no rim: seen from below, a canopy is all grazing angle, so the rim lit all of it in the lamp's colour. */
+export const UMBRELLA_LIGHT = { volume: 1.4, wet: 0.15, rim: 0 };
 
 /** A hood up: a shell round the back and top of the head, open at the face (+x), and its fall onto the collar. */
 function hoodParts(): THREE.BufferGeometry[] {
@@ -93,7 +97,8 @@ export function addStreetLife(
   district: string | undefined,
   tier: StreetTier,
   ground: (x: number, z: number) => number,
-  wrap: (m: THREE.MeshStandardMaterial) => THREE.Material,
+  /** Patches a material for the street's light; `o` overrides the people's light (volume, wet sheen, rim). */
+  wrap: (m: THREE.MeshStandardMaterial, o?: { volume?: number; wet?: number; rim?: number }) => THREE.Material,
 ): StreetLifeHandle | null {
   const plan = streetLife(district, tier);
   if (!plan.agents.length) return null;
@@ -167,7 +172,9 @@ export function addStreetLife(
     mk(merge(apronParts()), std(0.45), all.filter((i) => plan.agents[i]!.role === "vendor"), ["#d8d2c4", "#3d6a8a", "#c8b48a", "#e4e0d6"], 10, false);
     mk(merge(hat), std(0.6), all.filter(hatted), ["#121214", "#2a2420", "#1a1c22", "#3a2a22"], 5, false);
   }
-  const umbMat = std(0.25);
+  // Plan item 745: the canopies stand nearest the lamps, so the people's strong volume light (world.ts PEOPLE_LIGHT,
+  // tuned for coats in shadow), the wet sheen and the rim washed every colour on them to the same beige.
+  const umbMat = wrap(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, metalness: 0 }), UMBRELLA_LIGHT);
   umbMat.side = THREE.DoubleSide;
   mk(merge(umbrellaParts()), umbMat, all.filter((i) => plan.agents[i]!.umbrella), STREET_UMBRELLAS, 6, true);
   const riders = all.filter((i) => plan.agents[i]!.role === "cyclist" || plan.agents[i]!.role === "courier");
@@ -204,7 +211,7 @@ export function addStreetLife(
       const moving = st.mood === "flee" || st.mood === "return" || (st.mood === "calm" && a.path.length > 1);
       const running = st.mood === "flee";
       const ph = t * (running ? 9 : 5.2) + a.seed * 40;
-      const k = 0.93 + hash(a.seed * 7) * 0.12;
+      const k = (0.93 + hash(a.seed * 7) * 0.12) * (a.scale ?? 1);
       let lift = 0;
       let lean = 0;
       let squash = 1;

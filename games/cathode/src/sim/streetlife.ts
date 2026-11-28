@@ -20,6 +20,10 @@ export interface StreetAgent {
   /** 0..1, for colours, sway and gait. */
   seed: number;
   umbrella: boolean;
+  /** Plan item 745: 1 for an adult; a child walking beside a parent is smaller. */
+  scale?: number;
+  /** Where along the path they start (0..1; defaults to `seed`): a companion shares its lead's, so the two walk together. */
+  phase?: number;
 }
 
 export interface StreetPlan {
@@ -55,6 +59,8 @@ interface Authored {
   yaw?: number;
   /** Drops out on the phone tier (half the walkers). */
   phoneOut?: boolean;
+  /** Plan item 745: a walker who isn't alone: a partner, or a child holding their hand, `dx` metres to the side. */
+  with?: { who: "partner" | "child"; dx: number };
 }
 
 /** The Drowned Market (render/level.ts: west pavement x -10..-6.5, road -6.5..3.5, quay 3.5..9; the street floods
@@ -68,10 +74,12 @@ function market(): { people: Authored[]; exits: Array<[number, number]> } {
     [-7.9, 58, 20], [-7.6, 50, 10], [-7.8, 44, 26], [-7.55, 36, 2], [-7.95, 30, 48], [-7.7, 18, -6],
     [-7.85, 12, 40], [-7.5, 6, -6], [-7.9, -4, 22], [-7.65, -40, -58],
   ];
-  pave.forEach(([x, z0, z1], i) => people.push({ role: "walker", path: [[x, z0], [x + (i % 2 ? 0.1 : -0.1), z1]], phoneOut: i % 2 === 1 }));
+  // Plan item 745: not all alone: a couple, a mother with her child, on the pavement's inner side.
+  const company: Record<number, Authored["with"]> = { 0: { who: "partner", dx: 0.55 }, 2: { who: "child", dx: 0.45 }, 3: { who: "partner", dx: -0.5 }, 4: { who: "child", dx: 0.42 }, 7: { who: "partner", dx: 0.5 } };
+  pave.forEach(([x, z0, z1], i) => people.push({ role: "walker", path: [[x, z0], [x + (i % 2 ? 0.1 : -0.1), z1]], phoneOut: i % 2 === 1, with: company[i] }));
   // Walkers along the road's east edge by the quay's bollards, and two crossing the road.
   const quay: Array<[number, number, number]> = [[3.25, 47, 30.5], [3.2, 21, 4], [3.25, 18, -4]];
-  quay.forEach(([x, z0, z1], i) => people.push({ role: "walker", path: [[x, z0], [x, z1]], phoneOut: i === 1 }));
+  quay.forEach(([x, z0, z1], i) => people.push({ role: "walker", path: [[x, z0], [x, z1]], phoneOut: i === 1, with: i === 2 ? { who: "partner", dx: -0.5 } : undefined }));
   people.push({ role: "walker", path: [[-6.2, 41], [3.2, 37]] }, { role: "walker", path: [[3.2, 31], [-6.0, 32.6]], phoneOut: true });
   // Vendors behind the counters of the open stalls (render/level.ts stall(): counter x 4.3..5.3), facing the street,
   // and shoppers at the front of the first few, facing in.
@@ -152,6 +160,24 @@ export function streetLife(district: string | undefined, tier: StreetTier): Stre
     // Half the walkers under umbrellas; the riders and the vendors (under their tarps) never.
     const umbrella = (p.role === "walker" || p.role === "shelter") && hash(i * 3.3 + 1) < 0.55;
     agents.push({ id: agents.length, role: p.role, path: p.path.map(([x, z]) => [x, z] as [number, number]), yaw, speed, seed, umbrella });
+    // Plan item 745: the one beside them walks the same line a step to the side, at their pace, from the same place:
+    // a partner under their own umbrella or none, a child (about 0.6 of an adult) never under one.
+    if (p.with) {
+      const s2 = hash(i * 7.31 + 91.3);
+      const child = p.with.who === "child";
+      const dx = p.with.dx;
+      agents.push({
+        id: agents.length,
+        role: p.role,
+        path: p.path.map(([x, z]) => [x + dx, z] as [number, number]),
+        yaw,
+        speed,
+        seed: s2,
+        umbrella: !child && !umbrella && s2 < 0.5,
+        phase: seed,
+        ...(child ? { scale: 0.6 + s2 * 0.06 } : {}),
+      });
+    }
   });
   return { agents, exits };
 }
@@ -188,7 +214,7 @@ export interface AgentState {
 }
 
 export function initialState(a: StreetAgent): AgentState {
-  const st: AgentState = { mood: "calm", t: 0, x: a.path[0]![0], z: a.path[0]![1], yaw: a.yaw, s: a.seed * pathLength(a), exit: -1, from: [0, 0] };
+  const st: AgentState = { mood: "calm", t: 0, x: a.path[0]![0], z: a.path[0]![1], yaw: a.yaw, s: (a.phase ?? a.seed) * pathLength(a), exit: -1, from: [0, 0] };
   if (a.path.length > 1) placeOnPath(a, st);
   return st;
 }

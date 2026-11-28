@@ -644,7 +644,8 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       // Plan item 745: stock you can see from the road. Paper lanterns along the tarp's front edge, a line of dried
       // squid hung under it, and a tray of fruit (or a stack of takeaway boxes) at the counter's end. All in materials
       // already in view at the stalls, so they merge into draws the street already makes; a seed of its own, so the
-      // street's `rand()` sequence after the stalls is unchanged.
+      // street's `rand()` sequence after the stalls is unchanged. (Red fruit in the red sedan's gloss paint, not paintRed:
+      // that key's one other box is out of view, so drawing it here cost the phone a draw call.)
       const h745 = (n: number) => {
         const v = Math.sin((z + n) * 127.1 + 311.7) * 43758.5453;
         return v - Math.floor(v);
@@ -663,9 +664,9 @@ export function buildLevel(quality: "phone" | "high" | "ultra"): Level {
       const tz = z + w / 2 - 0.55;
       b.box("wood", x0 + 0.6, y0 + 1.08, tz, 0.8, 0.1, 0.6, { uv: 1 });
       if (h745(9.7) < 0.6) {
-        for (let k = 0; k < 12; k++) b.shape("paintRed", new THREE.SphereGeometry(0.075, 5, 3), V(x0 + 0.28 + (k % 4) * 0.2, y0 + 1.2, tz - 0.2 + Math.floor(k / 4) * 0.2));
+        for (let k = 0; k < 12; k++) b.shape("carRed", new THREE.SphereGeometry(0.075, 5, 3), V(x0 + 0.28 + (k % 4) * 0.2, y0 + 1.2, tz - 0.2 + Math.floor(k / 4) * 0.2));
       } else {
-        for (let k = 0; k < 4; k++) b.box(k % 2 ? "styro" : "paintRed", x0 + 0.45 + (k % 2) * 0.3, y0 + 1.2 + Math.floor(k / 2) * 0.16, tz, 0.26, 0.14, 0.3, { rotY: (h745(k * 5.3) - 0.5) * 0.4 });
+        for (let k = 0; k < 4; k++) b.box(k % 2 ? "styro" : "wood", x0 + 0.45 + (k % 2) * 0.3, y0 + 1.2 + Math.floor(k / 2) * 0.16, tz, 0.26, 0.14, 0.3, { rotY: (h745(k * 5.3) - 0.5) * 0.4 });
       }
     }
     // Crates and styrofoam boxes behind.

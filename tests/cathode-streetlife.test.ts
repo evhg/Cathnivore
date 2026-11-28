@@ -23,6 +23,27 @@ const run = (plan: StreetPlan, st: AgentState[], seconds: number, quietAt: () =>
 };
 
 describe("NIGHT SHIFT street life (plan item 57)", () => {
+  it("market: couples and a parent with a child walk together (plan item 745)", () => {
+    for (const tier of ["phone", "high"] as const) {
+      const plan = streetLife("market", tier);
+      const st = plan.agents.map(initialState);
+      const kids = plan.agents.filter((a) => (a.scale ?? 1) < 0.8);
+      const pairs = plan.agents.filter((a) => a.phase !== undefined);
+      expect(kids.length).toBeGreaterThanOrEqual(1);
+      expect(pairs.length - kids.length).toBeGreaterThanOrEqual(2);
+      for (const a of kids) expect(a.umbrella).toBe(false);
+      // Side by side, at the start and after a minute's walk: within a metre of the one they walk with.
+      for (let k = 0; k < 2; k++) {
+        for (const a of pairs) {
+          const lead = plan.agents[a.id - 1]!;
+          expect(a.phase).toBe(lead.seed);
+          expect(Math.hypot(st[a.id]!.x - st[lead.id]!.x, st[a.id]!.z - st[lead.id]!.z)).toBeLessThan(1);
+        }
+        for (let i = 0; i < 600; i++) stepStreet(plan, st, 0.1, 1e9);
+      }
+    }
+  });
+
   it("is deterministic per district and tier, and phones get about half the walkers", () => {
     for (const d of ["market", "plaza"]) {
       const hi = streetLife(d, "high");
@@ -34,8 +55,8 @@ describe("NIGHT SHIFT street life (plan item 57)", () => {
       expect(walkers(ph)).toBeGreaterThanOrEqual(Math.floor(walkers(hi) * 0.4));
     }
     const m = streetLife("market", "high");
-    expect(m.agents.length).toBe(45);
-    expect(streetLife("market", "phone").agents.length).toBe(30);
+    expect(m.agents.length).toBe(51);
+    expect(streetLife("market", "phone").agents.length).toBe(34);
     for (const role of ["walker", "vendor", "shelter", "shopper", "cyclist", "courier"]) expect(m.agents.some((a) => a.role === role)).toBe(true);
     // Indoors, no street.
     expect(streetLife("clinic", "high").agents).toEqual([]);
