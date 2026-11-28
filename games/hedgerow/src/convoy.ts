@@ -18,6 +18,13 @@ import { enemyPoint, type Level } from "./engine";
  */
 export const SLOT_LEN = 0.62;
 
+/**
+ * A vehicle's 3D slot along the lane, as a share of its model's length (plan item 657). Plan item 757: 1.25 (was
+ * 1.08), a quarter of a van's length of road between queued vans, so a convoy reads as vehicles on a road and not
+ * one wall across the farm.
+ */
+export const GAP_3D = 1.25;
+
 /** How many vehicles high a column stacks in 3D before the rest sit on its top. */
 export const COLUMN_TIERS = 8;
 

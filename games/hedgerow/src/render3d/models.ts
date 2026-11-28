@@ -1391,6 +1391,13 @@ function vehicle(o: VehicleOpts): THREE.Group {
   g.add(box(o.len * 0.98, 0.04, w * 0.9, matte("#26282d", 0.6, false), 0, wr - 0.03, 0));
   // Windscreen, side windows (lit from inside), a grille, bumpers, mirrors, head- and tail-lights.
   g.add(box(o.len * 0.02, o.h * 0.34, w * 0.82, glass(), o.len * 0.495, wr + o.h * 0.38, 0));
+  // Plan item 757: what the field camera sees from above, so a van reads as a van and not a brick: the windscreen
+  // carried over the cab's roof edge in sky-tinted glass (item 469's tint: near-black glass read as a hole), a dark
+  // split between the cab and the box, a door seam on each side of the cab, and dark arches round the wheels.
+  g.add(box(o.len * 0.11, 0.008, w * 0.84, glass("#5f86a8"), o.len * 0.425, wr + o.h * 0.78, 0));
+  g.add(box(0.012, o.h * 0.8, w * 0.99, matte("#1b1c20", 0.8, false), o.len * 0.225, wr, 0));
+  g.add(box(0.03, 0.006, w * 0.99, matte("#1b1c20", 0.8, false), o.len * 0.225 - 0.012, wr + o.h - 0.004, 0));
+  g.add(box(0.006, o.h * 0.5, w * 0.99, matte("#2a2c31", 0.7, false), o.len * 0.27, wr + o.h * 0.06, 0));
   for (const side of [-1, 1]) {
     g.add(box(o.len * 0.18, o.h * 0.28, 0.005, glass(), o.len * 0.36, wr + o.h * 0.42, (side * w * 0.965) / 2));
     g.add(box(o.len * 0.16, o.h * 0.05, 0.004, glow("#cfe8ff", 0.5), o.len * 0.36, wr + o.h * 0.42, (side * (w * 0.965 + 0.004)) / 2));
@@ -1424,7 +1431,9 @@ function vehicle(o: VehicleOpts): THREE.Group {
   const wheels: THREE.Object3D[] = [];
   for (let i = 0; i < n; i++)
     for (const side of [-1, 1]) {
-      const wh = wheel(wr, -o.len * 0.32 + (i * o.len * 0.66) / Math.max(1, n - 1), side * (w / 2 + 0.012));
+      const wx = -o.len * 0.32 + (i * o.len * 0.66) / Math.max(1, n - 1);
+      const wh = wheel(wr, wx, side * (w / 2 + 0.012));
+      if (side === 1) g.add(box(wr * 2.6, wr * 1.25, w + 0.008, matte("#16171a", 0.9, false), wx, wr * 0.55, 0));
       g.add(wh);
       wheels.push(wh);
     }

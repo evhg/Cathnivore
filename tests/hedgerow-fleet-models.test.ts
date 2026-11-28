@@ -6,6 +6,7 @@ import { LEVELS } from "../games/hedgerow/src/levels";
 import { Crops } from "../games/hedgerow/src/render3d/crops";
 import { buildEnemy, buildRung } from "../games/hedgerow/src/render3d/models";
 import { RUNGS } from "../games/hedgerow/src/fleet";
+import { GAP_3D } from "../games/hedgerow/src/convoy";
 
 // Plan item 539: the 3D fleet is modelled, not blocked out (each road vehicle four or more wheels and two or more
 // materials), and a bed grows in several plant shapes rather than one wallpapered cabbage.
@@ -74,5 +75,31 @@ describe("Hedgerow convoy body hues (plan item 703)", () => {
       });
       expect([...got], kind).toContain(want);
     }
+  });
+});
+
+// Plan item 757: Hollowell's vans are vans from the field camera, not bricks: glass the camera sees from above (a
+// flat pane over the cab's roof edge, not only the upright screen) and a quarter of a van's length of road
+// between queued vans.
+describe("Hedgerow 3D vans (plan item 757)", () => {
+  const VANS: EnemyKind[] = ["van", "sprinter", "wrapped", "truck", "tender", "clinic"];
+  for (const kind of VANS)
+    it(`${kind}: four wheels and glass seen from above`, () => {
+      const g = buildRung(kind) ?? buildEnemy(kind);
+      g.updateMatrixWorld(true);
+      expect(stats(g).tyres).toBeGreaterThanOrEqual(4);
+      let roofGlass = 0;
+      g.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !(m.material as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) return;
+        const b = new THREE.Box3().setFromObject(m);
+        const s = b.getSize(new THREE.Vector3());
+        if (s.y < s.x * 0.3 && s.z > 0.15) roofGlass++;
+      });
+      expect(roofGlass).toBeGreaterThanOrEqual(1);
+    });
+
+  it("queued vans keep a quarter of a van's length of road between them", () => {
+    expect(GAP_3D - 1).toBeGreaterThanOrEqual(0.25);
   });
 });

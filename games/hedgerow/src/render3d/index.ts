@@ -56,7 +56,7 @@ import { PUFF, fireTint } from "../firetint";
 import { RungInstances, liveryOf } from "./rungs";
 import { RUNGS, crackStage } from "../fleet";
 import { swarms } from "../swarm";
-import { ABREAST, columnNear, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
+import { ABREAST, columnNear, GAP_3D, layOutField, SLOT_LEN, noConvoy, placeOnLane, type Convoy, type ConvoyColumn } from "../convoy";
 import { enemyIcon } from "../icons";
 import { gateQueue, type GateQueue } from "../gatequeue";
 import { FarmFolk, type Folk } from "../farmfolk";
@@ -114,8 +114,6 @@ function queueShadowMat(): THREE.MeshBasicMaterial {
   shadowMat = Object.assign(new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }), { shared: true });
   return shadowMat;
 }
-/** Plan item 657: a vehicle's 3D slot along the lane, as a share of its model's length (a sliver of road between). */
-const GAP_3D = 1.08;
 /**
  * How many of a column's vehicles 3D draws; the rest are its '+N'. Plan item 684: its head alone, in the file (item
  * 657's jam of three staggered two of them off the road, over the plots).
