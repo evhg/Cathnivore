@@ -949,8 +949,9 @@ function mudCracks(key: string): string {
     const mx = (ix + rx) / 2 + (rnd() - 0.5) * 4
     const my = (iy + ry) / 2 + (rnd() - 0.5) * 4
     d += `M${f([ix, iy])}L${f([mx, my])}L${f([rx, ry])}L${f([rx * 1.35, ry * 1.35])}`
-    // the ring: most neighbours joined, with a kink; one or two gaps so it reads as cracking, not a drawn hexagon
-    if (rnd() < 0.8) {
+    // the ring: a few neighbours joined, with a kink (plan item 747: most of the ring is left out, so a dry plot reads
+    // as calm baked clay with a few cracks, not a web competing with the channels for the eye)
+    if (rnd() < 0.3) {
       const [nx, ny] = ring[(k + 1) % n]!
       const a = Math.atan2((ry + ny) / 2, (rx + nx) / 2)
       const r = S * (0.7 + rnd() * 0.1)
