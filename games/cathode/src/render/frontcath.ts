@@ -3821,9 +3821,62 @@ float reliefShade( vec2 uv ) {
     const square = extrude(sqShape, 0.004, 2);
     square.rotateZ(0.12);
     square.translate(0.1, 0.36, 0);
+    // Plan item 739: the demolition rig over the coat, so the Fixer reads as explosives and gadgets at a glance (she
+    // had only the tie and square, and her booking photo sat closest to the Butcher's): webbing braces from her back
+    // over both shoulders down to the belt, utility pouches round the belt, and two grenades clipped on her left brace.
+    const onCoat = (g: THREE.BufferGeometry, a: number, y: number, lift: number) => {
+      const r = rAtCoat(y);
+      g.rotateY(Math.atan2(Math.sin(a) * 0.7, Math.cos(a)));
+      g.translate(r * Math.sin(a), y, 0.7 * r * Math.cos(a));
+      const n = V(Math.sin(a) * 0.7, 0, Math.cos(a)).normalize();
+      g.translate(n.x * lift, 0, n.z * lift);
+      return g;
+    };
+    const braces = [1, -1].map((s) =>
+      coatStrap(
+        [
+          [s * 2.75, 0.14], // the belt at her back
+          [s * 2.3, 0.42],
+          [s * 1.75, 0.52], // over the shoulder beside the collar
+          [s * 1.0, 0.49],
+          [s * 0.62, 0.36],
+          [s * 0.55, 0.12], // down to the belt at the front
+        ],
+        0.03,
+      ),
+    );
+    const POUCHES: Array<[number, number, number, number]> = [
+      [0.62, 0.075, 0.05, 0.062],
+      [-0.62, 0.075, 0.05, 0.062],
+      [1.25, 0.07, 0.058, 0.07],
+      [-1.25, 0.07, 0.058, 0.07],
+    ];
+    const pouches = POUCHES.map(([a, y, w, h]) => onCoat(new THREE.BoxGeometry(w, h, 0.032), a, y, 0.034));
+    const flaps = POUCHES.map(([a, y, w, h]) => {
+      const f = new THREE.BoxGeometry(w + 0.006, 0.02, 0.036);
+      f.translate(0, h / 2 - 0.008, 0.002);
+      return onCoat(f, a, y, 0.034);
+    });
+    const grenades: THREE.BufferGeometry[] = [];
+    const pins: THREE.BufferGeometry[] = [];
+    for (const [a, y] of [[0.66, 0.33], [0.6, 0.25]] as const) {
+      const body = new THREE.SphereGeometry(0.021, 10, 8);
+      body.scale(1, 1.25, 1);
+      grenades.push(onCoat(body, a, y, 0.04));
+      const cap = new THREE.CylinderGeometry(0.009, 0.011, 0.014, 8);
+      cap.translate(0, 0.029, 0);
+      pins.push(onCoat(cap, a, y, 0.04));
+      const ring = new THREE.TorusGeometry(0.009, 0.0022, 5, 12);
+      ring.rotateY(Math.PI / 2);
+      ring.translate(0.012, 0.034, 0);
+      pins.push(onCoat(ring, a, y, 0.04));
+    }
     kitGroup("fixer", [
       [[tieOn(blade, 0.004), tieOn(knot, 0.003)], kitMat(new THREE.MeshStandardMaterial({ color: 0x6e1f33, roughness: 0.35, metalness: 0.1 }))],
       [[tieOn(square, 0.013)], kitMat(new THREE.MeshStandardMaterial({ color: 0xf2ece2, roughness: 0.6, metalness: 0 }))],
+      [[...braces, ...pouches, ...flaps], kitMat(new THREE.MeshStandardMaterial({ color: 0x55522f, roughness: 0.78, metalness: 0.02 }))],
+      [[...grenades], kitMat(new THREE.MeshStandardMaterial({ color: 0x3c4a2a, roughness: 0.5, metalness: 0.35 }))],
+      [[...pins], kitMat(new THREE.MeshStandardMaterial({ color: 0xb08a3e, roughness: 0.3, metalness: 0.85 }))],
     ]);
   }
   // ---- plan item 136: the auditions' guns in her left hand, in the chest frame. Each is a group built along +y from
