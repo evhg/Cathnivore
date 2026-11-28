@@ -1,5 +1,4 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
-Planning: lane A, 2026-11-28T03:52Z
 
 
 
@@ -7000,5 +6999,44 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - Hedgerow 2D P (hedge-l34-2d-P 255-310 x 818-850, hedge-l27-2d-P 405-470 x 875-905): '+99' / '+29' sit on the scarecrow's hat and under the hedge canopy.
 - Cathnivore campaign D (cath-campaign-D 785-925 x 860-900): Cath cut by the bottom edge; (155-410 x 735-840) the 'Chapter 1 / Play' card spills past the map's torn frame.
 - NIGHT SHIFT class pick D (ns-play-D 350-435 x 380-425): the GUNSLINGER heading runs into the revolver.
+- **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
+- **Size:** 2
+
+## 744. [ ] Hedgerow 3D: one world scale, Cath the hero of the field
+- **Why:** critique 2026-11-28 04:10 (plan1128a hedge-l27-3d-D): the scarecrow (590-720 x 360-560, ~200 px) dwarfs the windmill (570-660 x 150-330); the beehive (270-370 x 130-280) is about 4x a lorry; 3D Cath (780-830 x 280-390) is a 50 px figure among towers bigger than houses (P: scarecrow 440-540 x 870-1040 at 2x). It reads as a toy box, not a farm (VISION: Cath is the face; the world believable).
+- **Build:** one scale table in render3d for every tower against a reference lorry and Cath (towers 1.0x-2.2x her height, the windmill tallest, hives and stalls no longer than 1.6 lorries), footprints kept within their plot (item 742's rule); Cath slightly up-scaled with a lit base ring so she stays findable.
+- **Accept:** **measure first** (each tower's projected height in l27 `?sandbox=1` D). After: scarecrow < windmill on screen; beehive <= 1.6x a lorry's length; Cath >= 70 px tall at D and >= 90 image px at P (2x), unoccluded at the level's camera; hedgerow-3dframe, hedgerow-shadow3d pass; hedgerow tune `--verify` unchanged (no rules touched); key art re-shot; shots P/D.
+- **Size:** 2
+
+## 745. [ ] NIGHT SHIFT: a market crowd that reads as people, stalls with goods
+- **Why:** critique 2026-11-28 04:10 (plan1128a ns-street-P 600-700 x 360-500, 1170-1320 x 360-490): the passers-by are pale grey featureless mannequins under identical umbrellas and the stalls behind them are empty boxes. Items 719 and 724 placed and lit the crowd; they still read as placeholders (VISION: a scene, not a placeholder).
+- **Build:** 4-6 silhouette archetypes on the existing crowd rig (long coat, hood, apron vendor, couple, parent with child), skin and hair tones, coats from the street palette, umbrellas varied (some none, some caps); stall counters stocked from instanced goods (crates, fish on ice, lanterns, hanging cloth).
+- **Accept:** **measure first** (crowd colour spread and the share of stalls with goods). No two neighbouring figures share archetype and colour; figure luminance vs the street behind 2:1+; each stall in view shows 3+ goods meshes; cathode-perf phone alone within budget (<= 256 calls); cathode-street passes; posters/key art re-rendered if the title street changes; shots P/D.
+- **Size:** 3
+
+## 746. [ ] Cathnivore title: Marrow's street is alive behind the table
+- **Why:** critique 2026-11-28 04:10 (plan1128a cath-title-D 0-560 x 230-700 and 1380-1440; cath-title-P 0-390 x 190-500): the backdrop is flat repeated facades with identical window grids and nobody in the street, while the table is alive (VISION: alive; an illustration, not a template).
+- **Build:** the street in three depth layers: back facades with varied windows, shutters and shop signs; a mid layer of awnings and stalls; 3-5 walking shoppers (item 717's folk) and a stall-keeper; morning light gradient; slow pointer parallax at D (static under reduced motion). The board keeps focus.
+- **Accept:** **measure first**. No more than 30% of a facade row's windows identical; 3+ figures visible at D, 2+ at P; board mean saturation >= 1.3x the backdrop's; title-attract and critique specs pass; Lighthouse (gate 7) not below 85 on a quiet machine; key art re-shot; shots P/D.
+- **Size:** 2
+
+## 747. [ ] Runnel: the unsolved route traceable at a glance
+- **Why:** critique 2026-11-28 04:10 (plan1128a runnel-D 470-1330 x 40-830, runnel-P 5-385 x 270-640): after item 741 the dry board is warmer, but each ditch still reads as three parallel brown/cream bands over crackled clay, and wheat bundles and valves sit on the channels, so the route can't be traced at a glance (the solved board beside it is clean).
+- **Build:** one channel language that runs on across tile seams (floor, one lit lip, one shadow lip: at most two tone steps), the field ground calmer (sparser crackle), crop and valve glyphs moved off the channel path and slightly smaller.
+- **Accept:** **measure first** (tone bands across a channel, glyph overlap with channel pixels). At most 2 tone steps across a channel's section; channel floor vs field 3:1+; crop/valve glyphs overlap channel pixels by 0%; runnel-route, runnel-tiles, runnel-greened, runnel-contrast pass; key art re-shot; shots P/D unsolved and solved.
+- **Size:** 2
+
+## 748. [ ] The bugs from the 2026-11-28 04:10 critique, fixed as one batch
+- Hedgerow l34 2D D (hedge-l34-2d-D 320-680 x 740-880; P 100-480 x 960-1140 at 2x): beehive, stall, splash ring, vehicles and a '+67' knot at the lane exit (check after item 742).
+- Hedgerow l34 2D D (180-305 x 118-130 and 738-750): both depots read '0 NEXT': unclear which spawns and what the 0 counts.
+- Hedgerow l27 3D D: '+33' yellow on the yellow beehive (290-335 x 165-185) and '+8' on the scarecrow's chest; P 150-215 x 500-530.
+- Hedgerow l27 2D P (25-100 x 490-540): the gold '+1' coin hides the lead vehicle.
+- Hedgerow l27 3D P (25-135 x 860-960): the depot still cut by the left edge behind '94 TO GO' (item 743 bug; check what it fixed).
+- Cathnivore campaign D: Hollowell's bunting (255-335 x 225-245) reads as the letters 'HHH', not flags; the middle column 740-960 x 150-480 empty above Cath.
+- Cathnivore setup D (103-258 x 113-215): 'You and an AI' and 'Two at the table' cards cramped, overlapping a few px.
+- Cathnivore game P (15-100 and 300-375 x 610-630): the '4 more' / '8 more' tabs sit over the cards' tops.
+- Runnel D (420-590 x 130-225): the spring-house channel ends at a small arch at the board's top-left while the source is the centre tile: the feed doesn't visibly connect.
+- Runnel solved D (690-1090 x 812-858): 'Your card' and 'Play practice' beige on cream, weak boundary (non-text 3:1).
+- NIGHT SHIFT street P (1380-1620 x 140-180 at 2x): 'DRAG TO AIM' over a bright lamp.
 - **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
