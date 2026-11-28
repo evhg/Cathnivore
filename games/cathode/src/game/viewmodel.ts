@@ -149,8 +149,9 @@ function buildPin(phone = false): GunRig {
   // Plan item 665: on a phone held sideways the hip sat her fist under the frame's foot, so the baton rose out of
   // nothing; there it comes up and in, the gloved fist on the frame and clear of the AIM and FIRE buttons.
   // Plan item 673: at D too the fist sat at the frame's foot (its fingers cut, the baton 4.6% of the frame): a little up
-  // and in, so the gloved fist holds it in the frame.
-  const r = rig(phone ? new THREE.Vector3(0.16, -0.17, -0.38) : new THREE.Vector3(0.185, -0.178, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
+  // and in, so the gloved fist holds it in the frame. Plan item 751: on a phone 1 cm higher again (-0.16), as the fist
+  // moved down the grip to show its cap and ferrule.
+  const r = rig(phone ? new THREE.Vector3(0.16, -0.16, -0.38) : new THREE.Vector3(0.185, -0.178, -0.38), new THREE.Vector3(0.12, -0.16, -0.34), 70);
   const b = new THREE.Group();
   // Plan item 712: the Pin as an old, cared-for tool, not a silver tube. The grip is a leather wrap wound in a helix
   // (a raised tape edge every 1.4 cm), the steel is brushed along its length and worn bright at its edges, a darker
@@ -193,7 +194,9 @@ function buildPin(phone = false): GunRig {
   r.root.add(b);
   r.action = b;
   r.muzzle.position.copy(new THREE.Vector3(0, 0, -0.475).applyEuler(b.rotation).add(b.position)); // the ball end: the swing trail follows it
-  attachHands(r, [0, 0, 0.02], null, 0, b);
+  // Plan item 751: the fist 2.5 cm down the grip (was 0.02), so the brass cap and the ferrule's bevel show above her
+  // index finger instead of under it.
+  attachHands(r, [0, 0, 0.045], null, 0, b);
   // Plan item 751: the elbow out to the right and lower, so the forearm comes in from the frame's right edge and the
   // trench cuff and the silk under it show at the wrist (from straight behind, the sleeve ran at the lens, a black mass).
   r.shoulderR = phone ? new THREE.Vector3(0.36, -0.42, 0.22) : new THREE.Vector3(0.4, -0.44, 0.22);
