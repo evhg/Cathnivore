@@ -7067,7 +7067,7 @@ Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, 
 - **Accept:** **measure first** (luminance spread over the face box at title D, from `front-poster`). Spread +30%; 2+ near-white clusters per eye at title D zoom; cheek redder than forehead (a* +8); posters and key art re-rendered; cathode-front, classpick pass; cathode-perf in budget; shots P/D.
 - **Size:** 2
 
-## 753. [ ] Cathnivore campaign: a chapter is chosen with a route, opened with a seal
+## 753. [ ] Cathnivore campaign: a chapter is chosen with a route, opened with a seal *(lane A, in progress)*
 - **Why:** critique (plan1128b cath-campaign-D 740-960 x 140-480, 145-400 x 730-835): choosing a chapter changes a card but nothing moves on the atlas; an unlock has no moment (VISION: the liberation spine, alive). The bust size stays (item 716's decision).
 - **Build:** on choosing a chapter the dotted road from Cath's stall draws to its regions (stroke-dashoffset, 600 ms); a newly opened chapter breaks a wax seal once (stored, so once only); the chapter popover placed off any region label.
 - **Accept:** e2e: the route path's length animates on select (two samples differ), the seal shows once per unlock and not on reload; the popover box meets no region label box at D/P; reduced motion: fades only; campaign-* pass; shots P/D.
