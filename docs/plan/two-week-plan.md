@@ -7002,7 +7002,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
 
-## 744. [ ] Hedgerow 3D: one world scale, Cath the hero of the field
+## 744. [ ] Hedgerow 3D: one world scale, Cath the hero of the field *(lane A, in progress)*
 - **Why:** critique 2026-11-28 04:10 (plan1128a hedge-l27-3d-D): the scarecrow (590-720 x 360-560, ~200 px) dwarfs the windmill (570-660 x 150-330); the beehive (270-370 x 130-280) is about 4x a lorry; 3D Cath (780-830 x 280-390) is a 50 px figure among towers bigger than houses (P: scarecrow 440-540 x 870-1040 at 2x). It reads as a toy box, not a farm (VISION: Cath is the face; the world believable).
 - **Build:** one scale table in render3d for every tower against a reference lorry and Cath (towers 1.0x-2.2x her height, the windmill tallest, hives and stalls no longer than 1.6 lorries), footprints kept within their plot (item 742's rule); Cath slightly up-scaled with a lit base ring so she stays findable.
 - **Accept:** **measure first** (each tower's projected height in l27 `?sandbox=1` D). After: scarecrow < windmill on screen; beehive <= 1.6x a lorry's length; Cath >= 70 px tall at D and >= 90 image px at P (2x), unoccluded at the level's camera; hedgerow-3dframe, hedgerow-shadow3d pass; hedgerow tune `--verify` unchanged (no rules touched); key art re-shot; shots P/D.
