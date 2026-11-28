@@ -88,22 +88,22 @@ function Bunting() {
 }
 
 // Plan item 279: Hollowell's signage over the land it still holds: its orange-and-white tape strung taut across
-// the hex's upper edge (where a freed region's bunting hangs), three branded placards on it. Freeing the region
+// the hex's upper edge (where a freed region's bunting hangs), a branded placard on it. Freeing the region
 // takes the tape down and the bunting goes up in its place.
+// Plan item 748: three placards in a row read as the letters 'HHH' (critique 2026-11-28); one sign hung a little
+// askew from two ties under the tape reads as a cordon's notice.
 function HollowellTape() {
   const x0 = -BUNTING.halfSpan
   const y = BUNTING.top - 1
-  const placards = [-0.55, 0, 0.55].map((t) => t * BUNTING.halfSpan)
   return (
     <g className="cmp-tape" aria-hidden="true">
       <path d={`M${x0} ${y} Q0 ${y + 3} ${-x0} ${y}`} className="cmp-tape-band" />
       <path d={`M${x0} ${y} Q0 ${y + 3} ${-x0} ${y}`} className="cmp-tape-stripe" />
-      {placards.map((x) => (
-        <g key={x} transform={`translate(${x.toFixed(1)} ${(y + 0.5 + (1 - (x / BUNTING.halfSpan) ** 2) * 1.5).toFixed(1)})`}>
-          <rect x={-4.5} y={0} width={9} height={7} rx={1.3} className="cmp-tape-card" />
-          <path d="M-2 1.7 V5.3 M2 1.7 V5.3 M-2 3.5 H2" className="cmp-tape-h" />
-        </g>
-      ))}
+      <g className="cmp-tape-sign" transform={`translate(0 ${(y + 2.4).toFixed(1)}) rotate(-5)`}>
+        <path d="M-3.4 -1.4 L-2.8 0.6 M3.4 -1.4 L2.8 0.6" className="cmp-tape-tie" />
+        <rect x={-5.5} y={0.4} width={11} height={8} rx={1.3} className="cmp-tape-card" />
+        <path d="M-2.1 2.4 V6.4 M2.1 2.4 V6.4 M-2.1 4.4 H2.1" className="cmp-tape-h" />
+      </g>
     </g>
   )
 }

@@ -10,6 +10,10 @@ test('a fresh campaign: nothing freed, Cath at chapter 1, no sideways scroll', a
   await expect(page.locator('.cmp-map [data-region]')).toHaveCount(7)
   await expect(page.locator('.cmp-map [data-liberated="true"]')).toHaveCount(0)
   await expect(page.locator('.cmp-map-cath')).toHaveAttribute('data-at', 'fresh-meat')
+  // Plan item 748: each held region's tape carries one hung sign (three in a row read as the letters 'HHH').
+  const tapes = page.locator('.cmp-map .cmp-tape')
+  expect(await tapes.count()).toBeGreaterThan(0)
+  for (const t of await tapes.all()) await expect(t.locator('.cmp-tape-card')).toHaveCount(1)
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
 })
 

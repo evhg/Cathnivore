@@ -961,7 +961,8 @@ html.no-animations .campaign-screen * {
 .cmp-tape-band { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 2.6; stroke-linecap: round; }
 .cmp-tape-stripe { fill: none; stroke: var(--hollowell); stroke-width: 2.6; stroke-dasharray: 3 3; }
 .cmp-tape-card { fill: var(--hollowell); stroke: var(--hollowell-ink); stroke-width: 0.6; }
-.cmp-tape-h { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 1.3; stroke-linecap: round; }
+.cmp-tape-h { fill: none; stroke: var(--paper-on-fixed-fill); stroke-width: 1.5; stroke-linecap: round; }
+.cmp-tape-tie { fill: none; stroke: var(--hollowell-ink); stroke-width: 0.7; stroke-linecap: round; }
 .cmp-bunting-line { fill: none; stroke: var(--soil); stroke-width: 1; }
 .cmp-flag { stroke: none; }
 .cmp-flag-0 { fill: var(--pasture-deep); }
