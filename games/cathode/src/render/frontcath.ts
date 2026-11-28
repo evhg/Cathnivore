@@ -3691,6 +3691,38 @@ float reliefShade( vec2 uv ) {
         ],
         kitMat(new THREE.MeshStandardMaterial({ color: 0x5f4632, roughness: 0.68, metalness: 0.02 })),
       ],
+      // Plan item 739: a long knitted scarf out from under the cowl, its two tails down her chest over the sling (the
+      // Ghost was the same grey coat with a hood): deep crimson against the grey (a slate green, then a wine, washed to
+      // grey and lavender under the stage key), the right tail to the hip, the left one shorter, each ending in a fringe.
+      [
+        [
+          // Laid on the coat's lathe they sank under the lapels' roll and the bust (only the fringes showed), so
+          // each tail stands 2 cm proud of the lathe, as a scarf hangs off the chest.
+          ...[
+            coatStrap([[-0.24, 0.47], [-0.34, 0.36], [-0.4, 0.2], [-0.42, 0.06], [-0.43, 0.0]], 0.066),
+            coatStrap([[0.26, 0.47], [0.36, 0.36], [0.42, 0.24], [0.44, 0.14]], 0.06),
+          ].map((g) => {
+            const p = g.attributes.position as THREE.BufferAttribute;
+            for (let i = 0; i < p.count; i++) {
+              const n = V(p.getX(i) * 0.7, 0, p.getZ(i) / 0.7).normalize();
+              p.setXYZ(i, p.getX(i) + n.x * 0.02, p.getY(i), p.getZ(i) + n.z * 0.02);
+            }
+            return g;
+          }),
+          ...([[-0.43, 0.0, 0.066], [0.44, 0.14, 0.06]] as const).flatMap(([a, y, w]) =>
+            Array.from({ length: 6 }, (_, k) => {
+              const f = new THREE.BoxGeometry(0.006, 0.03, 0.006);
+              const r = rAtCoat(y - 0.02) + 0.03;
+              const x = (k / 5 - 0.5) * (w - 0.01);
+              f.translate(x, -0.012, 0);
+              f.rotateY(Math.atan2(Math.sin(a) * 0.7, Math.cos(a)));
+              f.translate(r * Math.sin(a), y - 0.012, 0.7 * r * Math.cos(a));
+              return f;
+            }),
+          ),
+        ],
+        kitMat(new THREE.MeshStandardMaterial({ color: 0x5e0a1a, roughness: 0.9, metalness: 0 })),
+      ],
     ]);
     // Plan item 362: the rifle slung on her back is the inspect's own model too (it was three rods). It lies along the
     // old line, butt at her right hip, muzzle and scope clear of her hair over the left shoulder, its top (the scope)
@@ -3739,8 +3771,39 @@ float reliefShade( vec2 uv ) {
     const holster = new THREE.BoxGeometry(0.06, 0.17, 0.045);
     holster.rotateZ(0.12);
     holster.translate(0.215, -0.19, 0.03);
+    // Plan item 739: the duster's shoulder cape, so the Gunslinger reads as a drover at a glance (she had the hat and
+    // gunbelt over the same charcoal coat): a waxed-cotton capelet from the collar over both shoulders to mid-chest,
+    // open at the front over the lapels and at the back (the hair falls there), its cloth in soft folds.
+    const CAPE_FRONT = 0.5; // half the front opening, radians
+    const CAPE_BACK = 0.75; // half the back opening
+    const capeProfile: Array<[number, number]> = [[0.235, 0.335], [0.232, 0.37], [0.224, 0.41], [0.208, 0.452], [0.184, 0.49], [0.152, 0.518], [0.118, 0.536]];
+    const capes = [
+      [CAPE_FRONT, Math.PI - CAPE_BACK - CAPE_FRONT],
+      [Math.PI + CAPE_BACK, Math.PI - CAPE_BACK - CAPE_FRONT],
+    ].map(([from, len]) => {
+      const g = new THREE.LatheGeometry(capeProfile.map(([r, y]) => new THREE.Vector2(r, y)), seg(24), from, len);
+      const p = g.attributes.position as THREE.BufferAttribute;
+      const top = capeProfile[capeProfile.length - 1]![1];
+      const span = top - capeProfile[0]![1];
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i);
+        const y = p.getY(i);
+        const z = p.getZ(i);
+        const t = (top - y) / span; // 0 at the collar, 1 at the hem
+        const phi = Math.atan2(x, z);
+        const fold = 1 + (0.05 * Math.sin(phi * 9 + 0.4) + 0.03 * Math.sin(phi * 14 + 1.7)) * t;
+        // The front corners hang a little lower, as a cape's do over the chest.
+        const front = Math.max(0, Math.cos(phi));
+        p.setXYZ(i, x * fold, y - 0.035 * front * t, z * fold * 0.74);
+      }
+      g.computeVertexNormals();
+      return g;
+    });
+    const capeMat = kitMat(new THREE.MeshStandardMaterial({ color: 0x5c3f27, roughness: 0.62, metalness: 0, side: THREE.DoubleSide }));
+    rimify(capeMat as THREE.MeshStandardMaterial, 0.3); // shares the hat's program
     kitGroup("gunslinger", [
       [[gunbelt, holster], kitMat(new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: 0.48, metalness: 0.04 }))],
+      [capes, capeMat],
     ]);
     // Plan item 362: the revolver in the holster is the inspect's own (it was a grip box and a stub): muzzle down in
     // the leather, its grip, hammer and cylinder standing out of the top, the grip to her back, leaning with the holster.
