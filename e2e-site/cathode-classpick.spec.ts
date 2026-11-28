@@ -769,6 +769,9 @@ test('each class shows her booking photo, 48 px or more', async ({ page, hasTouc
     const plates = await mugs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); const p = e.querySelector('.cp-mug-plate')?.getBoundingClientRect(); return p ? (p.bottom - r.top) / r.height : 0 }))
     for (const f of plates) expect(f, JSON.stringify(plates)).toBeLessThanOrEqual(0.4)
   }
+  // Plan item 739: the unpicked photos stay in colour (dimmed), so five greyscale mugshots don't read as one Cath.
+  const filters = await mugs.evaluateAll((els) => els.map((e) => getComputedStyle(e).filter))
+  for (const f of filters) expect(f, JSON.stringify(filters)).not.toContain('grayscale')
 })
 
 // Plan item 588: once the street is up, the five booking photos are stills of the 3D figure in each class's coat, kit,
