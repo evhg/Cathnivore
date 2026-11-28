@@ -358,49 +358,54 @@ export class Board {
     const waters = el('g', { class: 'waters' }, piece)
     const shimmer = el('g', { class: 'shimmers' }, piece)
     const seed = hashString(`${this.puzzle.seed}:${cell.q},${cell.r}`)
+    // Plan item 747: a field's ditch stops at its plot's rim, so the crop never stands on the channel (a crop over the
+    // trench broke the route where it mattered most, at its ends).
+    const plot = cell.kind === 'field' && !cell.reservoir
+    const r0 = plot ? S * 0.58 : 0
     for (let d = 0; d < 6; d++) {
       if (!(cell.solved & (1 << d))) continue
       const end = edgePoint(d, APOTHEM + 1.5)
+      const st = edgePoint(d, r0)
       // Plan item 264: the cut's outer edge, a dark line just past the lip, so the groove reads as carved into the
       // tile (the lip alone was 2.4:1 on the face; this is 3:1 or more in light and dark).
       // Plan item 466: each open edge named (in the piece's own frame; the piece turns with the tile).
-      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-cut', 'data-open-edge': String(d) }, cuts)
-      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-lip' }, lips)
-      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove' }, grooves)
+      el('line', { x1: st.x, y1: st.y, x2: end.x, y2: end.y, class: 'groove-cut', 'data-open-edge': String(d) }, cuts)
+      el('line', { x1: st.x, y1: st.y, x2: end.x, y2: end.y, class: 'groove-lip' }, lips)
+      el('line', { x1: st.x, y1: st.y, x2: end.x, y2: end.y, class: 'groove' }, grooves)
       const a = (Math.PI / 180) * 60 * d
       const nx = -Math.sin(a)
       const ny = Math.cos(a)
       for (const side of [1, -1] as const) {
         const o = 4.6 * CW * side
-        const line = el('line', { x1: nx * o, y1: ny * o, x2: end.x + nx * o, y2: end.y + ny * o, class: 'bank' }, grooves)
+        const line = el('line', { x1: st.x + nx * o, y1: st.y + ny * o, x2: end.x + nx * o, y2: end.y + ny * o, class: 'bank' }, grooves)
         view.banks.push({ line, dir: d, side })
         // Plan item 97: the cut edge on the shaded side throws a shadow down its wall (hidden on the sunlit side),
         // so the ditch reads as dug into the soil rather than laid on it.
         const c = 7.9 * CW * side
-        const cast = el('line', { x1: nx * c, y1: ny * c, x2: end.x + nx * c, y2: end.y + ny * c, class: 'bank-cast' }, grooves)
+        const cast = el('line', { x1: st.x + nx * c, y1: st.y + ny * c, x2: end.x + nx * c, y2: end.y + ny * c, class: 'bank-cast' }, grooves)
         view.banks.push({ line: cast, dir: d, side })
         // The shaded wall's foot darkens into the damp bed (the sunlit wall stays lit to the bed).
         const f = 3.6 * CW * side
-        const foot = el('line', { x1: nx * f, y1: ny * f, x2: end.x + nx * f, y2: end.y + ny * f, class: 'bank-foot' }, grooves)
+        const foot = el('line', { x1: st.x + nx * f, y1: st.y + ny * f, x2: end.x + nx * f, y2: end.y + ny * f, class: 'bank-foot' }, grooves)
         view.banks.push({ line: foot, dir: d, side })
         // A ragged cut edge: spoil from the digging thrown just past the lip, so the edge is not ruled.
         const r = 11.4 * CW * side
-        const crumb = el('line', { x1: nx * r, y1: ny * r, x2: end.x + nx * r, y2: end.y + ny * r, class: 'lip-crumb' }, grooves)
+        const crumb = el('line', { x1: st.x + nx * r, y1: st.y + ny * r, x2: end.x + nx * r, y2: end.y + ny * r, class: 'lip-crumb' }, grooves)
         crumb.style.setProperty('stroke-dashoffset', `${((seed >>> (d * 3 + (side > 0 ? 1 : 0))) % 7) * 0.9}`)
       }
-      el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, class: 'groove-bed' }, grooves)
+      el('line', { x1: st.x, y1: st.y, x2: end.x, y2: end.y, class: 'groove-bed' }, grooves)
       // Plan item 97: a few small stones lie in the damp bed (on the banks they read as bolts on a plank).
       const h = (seed >>> (d * 4)) & 0xff
       if (h % 3 !== 0) {
         const t = 0.4 + (h / 255) * 0.45
         const o = ((h >> 2) % 3 - 1) * 1.3 * CW
-        el('circle', { cx: end.x * t + nx * o, cy: end.y * t + ny * o, r: 0.7 + (h % 2) * 0.35, class: 'pebble' }, grooves)
+        el('circle', { cx: st.x + (end.x - st.x) * t + nx * o, cy: st.y + (end.y - st.y) * t + ny * o, r: 0.7 + (h % 2) * 0.35, class: 'pebble' }, grooves)
       }
-      const water = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'water' }, waters)
+      const water = el('line', { x1: st.x, y1: st.y, x2: end.x, y2: end.y, pathLength: 1, class: 'water' }, waters)
       water.dataset.dir = String(d)
       view.water[d] = water
       view.spokeDirs.push(d)
-      const sh = el('line', { x1: 0, y1: 0, x2: end.x, y2: end.y, pathLength: 1, class: 'shimmer' }, shimmer)
+      const sh = el('line', { x1: st.x, y1: st.y, x2: end.x, y2: end.y, pathLength: 1, class: 'shimmer' }, shimmer)
       sh.dataset.dir = String(d)
     }
     // Plan item 687: the plank rim and its mill wheel only where three or more channels meet (a hub). On every tile they
@@ -413,8 +418,10 @@ export class Board {
       el('circle', { r: S * 0.17 * CW, class: 'hub-groove' }, grooves)
       el('circle', { r: S * 0.155 * CW, class: 'hub-basin' }, grooves)
     }
-    el('circle', { r: S * 0.1 * WATER_W, class: 'hub-bed' }, grooves)
-    el('circle', { r: S * 0.1 * WATER_W, class: 'hub-water' }, waters)
+    if (!plot) {
+      el('circle', { r: S * 0.1 * WATER_W, class: 'hub-bed' }, grooves)
+      el('circle', { r: S * 0.1 * WATER_W, class: 'hub-water' }, waters)
+    }
     // Plan item 323: the hub is wooden, not a grey washer: a plank rim (CSS). Plan item 675: in it a small mill wheel
     // (six spokes, a paddle on each, a cap), stopped a little askew while the tile is dry and turning once the water
     // reaches it; item 323's gate board across the hub read, with the round rim, as a 'no entry' sign on a dry board.

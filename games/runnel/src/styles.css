@@ -5510,6 +5510,18 @@ body:has(.tiles > g.cell.lesson-target) #hint { visibility: hidden; }
 .bank { stroke-width: 12.4; }
 .groove-bed { stroke-width: 11.4; }
 .water { stroke-width: 13.1; }
+/* Plan item 747: one channel language, floor and two lips: the shaded wall a dark lip, the floor the carved trough,
+   the sunlit wall a lit lip, and nothing else across the section. Item 264's cut edge, item 61's soil lip, item
+   97's spoil crumbs, damp foot and cast shadow each added a band, so a dry ditch read as five or six parallel
+   stripes and the route couldn't be traced at a glance. The floor is wider, so the trench is what the eye follows. */
+.groove-cut,
+.groove-lip,
+.lip-crumb,
+.bank-foot,
+.bank-cast {
+  display: none;
+}
+.groove-bed { stroke-width: 15; }
 .shimmer { stroke-width: 4.6; stroke-dasharray: 0.05 0.6; }
 /* Plan item 646 slice 2: each kind of tile reads as itself: a field (a channel's end, where the crop grows) is a
    planted plot, its face tinted the crop's green (light enough that its channel keeps 3:1); the spring is a stone well-head, pale stone; channels keep

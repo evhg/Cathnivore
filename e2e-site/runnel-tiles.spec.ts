@@ -87,7 +87,11 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
               // that rotation out), so the ditch runs from the tile's centre through it to the edge.
               const bb2 = bed.getBoundingClientRect()
               const p0 = { x: cx, y: cy }
-              const p1 = { x: 2 * (bb2.x + bb2.width / 2) - cx, y: 2 * (bb2.y + bb2.height / 2) - cy }
+              // (plan item 747: a field's ditch starts at its plot's rim, so the box centre is (s + e) / 2 out, s / e the
+              // start's share of the end in the piece's frame)
+              const rho = Math.hypot(bed.x1.baseVal.value, bed.y1.baseVal.value) / Math.hypot(bed.x2.baseVal.value, bed.y2.baseVal.value)
+              const k1 = 2 / (1 + rho)
+              const p1 = { x: cx + k1 * (bb2.x + bb2.width / 2 - cx), y: cy + k1 * (bb2.y + bb2.height / 2 - cy) }
               const dx = p1.x - p0.x
               const dy = p1.y - p0.y
               const dl = Math.hypot(dx, dy)
@@ -98,7 +102,8 @@ for (const [name, size, edgeMin] of [['P', { width: 390, height: 844 }, 2.5], ['
               const reach = Math.max(4, Math.ceil((25.2 / 2) * Math.hypot(m.a, m.b)) + 1)
               const along: number[] = []
               const lift: number[] = []
-              for (let f = 0.35; f <= 0.8; f += 0.05) {
+              for (let f0 = 0.35; f0 <= 0.8; f0 += 0.05) {
+                const f = rho + (1 - rho) * f0
                 let best = 0
                 let top = 0
                 for (let o = -reach; o <= reach; o++) {

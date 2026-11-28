@@ -51,10 +51,16 @@ for (const [name, size] of [['P', { width: 390, height: 844 }], ['D', { width: 1
         let best = 0
         for (const bed of g.querySelectorAll<SVGLineElement>('.groove-bed')) {
           const b2 = bed.getBoundingClientRect()
-          const ex = 2 * (b2.x + b2.width / 2) - cx
-          const ey = 2 * (b2.y + b2.height / 2) - cy
+          // (plan item 747: a field's ditch starts at its plot's rim, so the box centre is (s + e) / 2 out)
+          const rho = Math.hypot(bed.x1.baseVal.value, bed.y1.baseVal.value) / Math.hypot(bed.x2.baseVal.value, bed.y2.baseVal.value)
+          const k1 = 2 / (1 + rho)
+          const ex = cx + k1 * (b2.x + b2.width / 2 - cx)
+          const ey = cy + k1 * (b2.y + b2.height / 2 - cy)
           const along: number[] = []
-          for (let f = 0.4; f <= 0.75; f += 0.05) along.push(L(F, cx + (ex - cx) * f, cy + (ey - cy) * f))
+          for (let f0 = 0.4; f0 <= 0.75; f0 += 0.05) {
+            const f = rho + (1 - rho) * f0
+            along.push(L(F, cx + (ex - cx) * f, cy + (ey - cy) * f))
+          }
           best = Math.max(best, cr(med(along), face))
           const m = bed.getScreenCTM()!
           widths.push(parseFloat(getComputedStyle(bed).strokeWidth) * Math.hypot(m.a, m.b))
