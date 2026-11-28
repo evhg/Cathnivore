@@ -481,10 +481,14 @@ export class Floaters {
    * screen in growing steps, then sideways; none clear keeps it where it rose. `rise` (px) is how far the label
    * climbs the screen over its life: the whole climb keeps off the boxes (one dodged under a tower rose back into
    * it, CI E2E red on 5773e1e6: hedgerow-phone-crisp). */
+  /** Whether a label of size lw x lh centred at (x, y), with `up` px of climb still to come, meets any box. */
+  static meets(x: number, y: number, lw: number, lh: number, boxes: ReadonlyArray<{ x: number; y: number; w: number; h: number }>, up = 0): boolean {
+    return boxes.some((b) => x - lw / 2 < b.x + b.w && x + lw / 2 > b.x && y - lh / 2 - up < b.y + b.h && y + lh / 2 > b.y);
+  }
+
   static dodge(x: number, y: number, lw: number, lh: number, boxes: ReadonlyArray<{ x: number; y: number; w: number; h: number }>, w: number, h: number, rise = 0): { x: number; y: number } {
     const up = Math.max(0, rise);
-    const hits = (cx: number, cy: number) =>
-      boxes.some((b) => cx - lw / 2 < b.x + b.w && cx + lw / 2 > b.x && cy - lh / 2 - up < b.y + b.h && cy + lh / 2 > b.y);
+    const hits = (cx: number, cy: number) => Floaters.meets(cx, cy, lw, lh, boxes, up);
     const inside = (cx: number, cy: number) => cx - lw / 2 >= 2 && cx + lw / 2 <= w - 2 && cy - lh / 2 - up >= 2 && cy + lh / 2 <= h - 2;
     if (!hits(x, y)) return { x: 0, y: 0 };
     // Held inside the frame first (a tower at the edge put half the label past it, so no step counted as clear).
@@ -505,14 +509,22 @@ export class Floaters {
       this.v.copy(it.pos).project(camera);
       let x = (this.v.x * 0.5 + 0.5) * w;
       let y = (-this.v.y * 0.5 + 0.5) * h;
-      if (!it.off) {
-        boxes ??= this.avoid?.() ?? [];
+      if (this.avoid) {
+        boxes ??= this.avoid();
         // The climb still to come, in screen px: where the label stands at the end of its life.
         this.v.copy(it.pos).setY(it.pos.y + (it.life - it.age) * 0.6).project(camera);
         const rise = y - (-this.v.y * 0.5 + 0.5) * h;
         // 1.05: the pop's peak scale; 8 px of air round it.
-        it.off = boxes.length ? Floaters.dodge(x, y, it.el.offsetWidth * 1.05 + 8, it.el.offsetHeight * 1.05 + 8, boxes, w, h, rise) : { x: 0, y: 0 };
+        const lw = it.el.offsetWidth * 1.05 + 8;
+        const lh = it.el.offsetHeight * 1.05 + 8;
+        // Dodged once as it rises, then again whenever a tower's box meets it: the boxes on its first frame can be
+        // stale (a tower still growing in, the view still settling; CI E2E red on f62a5612, hedgerow-phone-crisp,
+        // where the label stood undodged in a tower's box). The real air is checked, 4 px of the 8 kept as slack.
+        const off = it.off;
+        const met = !off || (boxes.length > 0 && Floaters.meets(x + off.x, y + off.y, lw - 4, lh - 4, boxes, Math.max(0, rise)));
+        if (met) it.off = boxes.length ? Floaters.dodge(x, y, lw, lh, boxes, w, h, rise) : { x: 0, y: 0 };
       }
+      it.off ??= { x: 0, y: 0 };
       x += it.off.x;
       y += it.off.y;
       const k = it.age / it.life;

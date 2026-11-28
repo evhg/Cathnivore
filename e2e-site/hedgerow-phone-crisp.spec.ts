@@ -63,10 +63,15 @@ test('Hedgerow phone 3D: device-ratio canvas, no cut gate board, callouts off th
     }, { timeout: 60_000, intervals: [1500] })
     .toBe(true)
   for (let i = 0; i < placed; i++) {
+    // Under swiftshader's few frames a second a callout outlives the 1.3 s wait; check the one just raised, not the
+    // last tower's still rising.
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.callouts()!.callouts.filter((c) => c.text === 'Bridge up!').length), { timeout: 30_000 })
+      .toBe(0)
     await page.evaluate((k) => (window as unknown as { hedgerow: HG }).hedgerow.testCallout('Bridge up!', k), i)
     await page.waitForTimeout(300)
     const shown = (await page.evaluate(() => (window as unknown as { hedgerow: HG }).hedgerow.callouts()))!
-    const label = shown.callouts.find((c) => c.text === 'Bridge up!')
+    const label = shown.callouts.filter((c) => c.text === 'Bridge up!').at(-1)
     if (!label) continue
     // Item 726: a callout carries a dark outline under its fill, so pale gold reads on gold and white models.
     const stroke = await page.evaluate(() => {
@@ -75,7 +80,7 @@ test('Hedgerow phone 3D: device-ratio canvas, no cut gate board, callouts off th
     })
     expect(stroke, 'callout outline px').toBeGreaterThanOrEqual(3)
     const over = shown.towers.filter((t) => label.x < t.x + t.w && label.x + label.w > t.x && label.y < t.y + t.h && label.y + label.h > t.y)
-    expect(over, `callout from tower ${i} at ${JSON.stringify(label)}`).toEqual([])
+    expect(over, `callout from tower ${i} at ${JSON.stringify(label)}, towers ${JSON.stringify(shown.towers.map((t) => [t.x, t.y, t.w, t.h].map(Math.round)))}`).toEqual([])
     await page.waitForTimeout(1300)
   }
   await ctx.close()

@@ -31,4 +31,11 @@ describe("Floaters.dodge", () => {
     const y = 230 + o.y;
     for (let t = 0; t <= rise; t += 2) expect(meets(x, y - t, 84, 30, towers[0]!)).toBe(false);
   });
+  it("tells a label that meets a box, with its climb, from one clear of it", () => {
+    const b = [{ x: 288, y: 169, w: 60, h: 72 }];
+    expect(Floaters.meets(320, 195, 80, 22, b)).toBe(true);
+    expect(Floaters.meets(320, 140, 80, 22, b)).toBe(false);
+    // clear where it starts, but its climb still to come runs up into the box from below
+    expect(Floaters.meets(320, 262, 80, 22, b, 20)).toBe(true);
+  });
 });
