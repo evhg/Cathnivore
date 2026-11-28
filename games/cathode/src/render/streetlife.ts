@@ -11,8 +11,13 @@ import { LAYER_NO_REFLECT } from "./reflection";
 import { RIM_DRIPS, addStreetWet, type WetPerson } from "./streetwet";
 import { dressStreet, hearShot, initialState, stepStreet, streetLife, visible, type AgentState, type StreetPlan, type StreetTier } from "../sim/streetlife";
 
-/** Wet wool in colours that read under neon: camel, olive, oxblood, slate, mustard, teal, charcoal. */
-const STREET_COATS = ["#7a6248", "#5a5e3c", "#5e2a2a", "#45505e", "#8a6a2c", "#2f5552", "#3a3a40", "#6a4a5a", "#8c7a62", "#2c3a4e"];
+/** Wet wool in colours that read under neon: camel, olive, oxblood, cobalt, mustard, teal, charcoal, plum, rust,
+ * navy. Plan item 745: deeper and more saturated than before (the sodium light warms them all toward beige). */
+const STREET_COATS = ["#8a6238", "#4e5a26", "#6e1c22", "#2a4c8a", "#a87a1a", "#1e6058", "#34343c", "#6a2e5e", "#9a4426", "#1c2c58"];
+
+/** Plan item 745: a coat's light: the people's volume light, but half the rim and less wet sheen. The rim (lamp
+ * colour, added over any albedo) and the white sheen were what washed every coat to the same pale beige. */
+export const COAT_LIGHT = { rim: 0.7, wet: 0.3 };
 
 /** Plan item 745: canopies in colour, so the umbrellas stop reading as one beige dome repeated: two blacks, then
  * oxblood, bottle green, navy, mustard, brick red, slate and plum. */
@@ -145,7 +150,7 @@ export function addStreetLife(
   };
   const hatted = (i: number) => headKind(i) === "hat";
   const hooded = (i: number) => headKind(i) === "hood";
-  mk(merge(parts.coat), std(0.5), all, STREET_COATS, 1, true, false, (a) => dress[a]!.coat);
+  mk(merge(parts.coat), wrap(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0 }), COAT_LIGHT), all, STREET_COATS, 1, true, false, (a) => dress[a]!.coat);
   if (lo) {
     const tint = (gs: THREE.BufferGeometry[], col: string) =>
       gs.map((g) => {
