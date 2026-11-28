@@ -349,6 +349,31 @@ export default function CampaignMap({
     const my = (a.y + p.y) / 2 - (p.x - a.x) * 0.18
     return { d: `M${a.x.toFixed(1)} ${a.y.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`, walked: walked.includes(chapters[j]!.id) }
   })
+  // Plan item 753: choosing a chapter (the phone's open stop, the desktop's pointed or next one) draws the road from
+  // Cath's stop to it, leg by leg along the lane, then on to its other home regions; keyed by the target, so each new
+  // choice draws afresh (a 600 ms reveal; reduced motion fades it in).
+  const target = lit ? chapters.findIndex((c) => c.id === lit) : -1
+  const route = (() => {
+    if (target < 0 || allDone || (phase !== 'done' && celebrate)) return null
+    const step = target >= here ? 1 : -1
+    let d = `M${herPin.x.toFixed(1)} ${herPin.y.toFixed(1)}`
+    for (let i = here; i !== target; i += step) {
+      const a = pins[i]!
+      const b = pins[i + step]!
+      // the lane's own curve, the same side whichever way it is walked
+      const [lo, hi] = step > 0 ? [a, b] : [b, a]
+      const mx = (lo.x + hi.x) / 2 + (hi.y - lo.y) * 0.18
+      const my = (lo.y + hi.y) / 2 - (hi.x - lo.x) * 0.18
+      d += ` Q${mx.toFixed(1)} ${my.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`
+    }
+    const homes = CHAPTER_HOMES[chapters[target]!.id] ?? []
+    const end = pins[target]!
+    for (const h of homes.slice(1)) {
+      const c = centre(h)
+      d += ` M${end.x.toFixed(1)} ${end.y.toFixed(1)} L${c.x.toFixed(1)} ${c.y.toFixed(1)}`
+    }
+    return d === `M${herPin.x.toFixed(1)} ${herPin.y.toFixed(1)}` ? null : d
+  })()
   const freedCount = free.size
   const label = allDone
     ? 'Map of Marrow: every region liberated.'
@@ -462,6 +487,14 @@ export default function CampaignMap({
         <g className="cmp-map-trail" aria-hidden="true">
           {legs.map((leg, j) => (leg.walked ? <path key={j} d={leg.d} data-leg={j} /> : null))}
         </g>
+        {route && (
+          <g className="cmp-map-route" data-to={chapters[target]!.id} key={`route-${chapters[target]!.id}`} aria-hidden="true">
+            <mask id="cmp-route-reveal" maskUnits="userSpaceOnUse" x={-160} y={-150} width={320} height={296 + extra}>
+              <path d={route} pathLength={1} className="cmp-route-reveal" />
+            </mask>
+            <path d={route} className="cmp-route-ink" mask="url(#cmp-route-reveal)" />
+          </g>
+        )}
         {regionIds.map((id) => {
           const c = centre(id)
           const isFree = free.has(id)
