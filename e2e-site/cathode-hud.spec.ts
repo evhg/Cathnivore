@@ -313,6 +313,8 @@ test.describe('NIGHT SHIFT HUD (plan item 29)', () => {
     const slip = (await page.locator('.hud-teach').boundingBox())!
     expect(slip.x).toBeGreaterThan(160)
     expect(slip.y).toBeGreaterThan(390 / 2)
+    // Plan item 758: and below the central 30% x 30% of the view, where the fight is framed (its top at 0.65 H or lower)
+    expect(slip.y).toBeGreaterThanOrEqual(390 * 0.65)
     // She walks a couple of metres: the lesson goes.
     await page.evaluate(() => { (window as unknown as { cathode: C }).cathode.player.pos.z -= 2 })
     await expect(page.locator('.hud-teach.on')).toHaveCount(0, { timeout: 60_000 })

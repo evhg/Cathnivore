@@ -2366,7 +2366,9 @@ body:has(.lvl-toast) .look-hint { opacity: 0; }
   .hud-teach {
     left: 50%;
     top: auto;
-    bottom: calc(max(10px, var(--safe-b)) + 92px);
+    /* Plan item 758: 30 px lower, so its top clears the central 30% of the view where the fight is framed (at
+       844x390 it sat 250-302, its top on the crosshair's band) */
+    bottom: calc(max(10px, var(--safe-b)) + 62px);
     max-width: min(340px, calc(100% - 2 * (var(--safe-l) + 180px)));
     transform: translateX(-50%);
     text-align: center;

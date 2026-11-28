@@ -7108,7 +7108,7 @@ Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, 
 - **Accept:** **measure first** (mesh parts, triangles, queue spacing). Each van has 4 wheels and a glass material (unit); gap >= 0.25 van length (unit); a pixel check finds windscreen colour on most on-screen vans; hedgerow 3D specs pass (2 workers); triangle budget held; Hedgerow key art re-shot; shots P/D.
 - **Size:** 2
 
-## 758. [ ] NIGHT SHIFT phone: the first job's hints off the sightline *(lane A, in progress)*
+## 758. [x] NIGHT SHIFT phone: the first job's hints off the sightline *(done 2026-11-28 18:30, lane A: measured at 844x390: the lesson slip spanned y 250-302, its top on the central band; it stays bottom centre (item 737 moved it off the left column) but 30 px lower (y ~280-332), so the crowd and the crosshair's band read clear above it (e2e-site cathode-hud 737 now also wants its top at 0.65 H or lower). The objective plate over the reticle stays by decision (item 658: a world waypoint telling the first frame where to walk). Desktop unchanged (a phone-only rule). Shots scratchpad ns758 vs plan1128c ns-street-P)*
 - **Why:** critique (plan1128c ns-street-P 595-1095 x 500-605 and 655-1000 x 280-320 at 2x): the touch hint card sits dead centre under the crosshair, where enemies appear, and the objective tag rides the sightline too.
 - **Build:** hints become a torn notebook slip by the health bar (`games/cathode/src/ui/` HUD and talk); the objective tag sits above the horizon; item 'Input.coach' glow kept on the named button.
 - **Accept:** **measure first**. At P (844x390) and D no HUD element meets the central 30% x 30% of the view in the first job (e2e box test); hint text still readable (contrast >= 4.5:1); cathode-hud/phone specs pass; shots P/D.
