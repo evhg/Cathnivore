@@ -36,10 +36,17 @@ for (const round of [1, 6]) {
     )
     info.annotations.push({ type: 'widths', description: JSON.stringify(widths) })
     expect(widths.length).toBeGreaterThan(0)
-    const sorted = widths.map((p) => p.w).sort((a, b) => a - b)
-    const median = sorted[Math.floor(sorted.length / 2)]!
-    const floor = desktop ? (round === 1 ? 49 : 39) : round === 1 ? 28 : 22
-    expect(median, `median piece art ${JSON.stringify(widths)}`).toBeGreaterThanOrEqual(floor)
-    for (const p of widths) expect(p.w, `${p.kind} art`).toBeGreaterThanOrEqual(desktop ? 28 : 16)
+    // Plan item 740: the producers' stalls are the pieces that hold room (the landmark the hex's hero above them),
+    // Hollowell's stacks glossy badges under them: the stalls' median art 49 / 30 px wide at D (round 1 / 6) and
+    // 27 / 20 at P; every Hollowell piece 20 px+ at D and 14+ at P, and the stalls' median over Hollowell's.
+    const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!
+    const stalls = widths.filter((p) => p.kind === 'stall').map((p) => p.w)
+    const corp = widths.filter((p) => p.kind !== 'stall').map((p) => p.w)
+    if (stalls.length) {
+      const floor = desktop ? (round === 1 ? 49 : 30) : round === 1 ? 27 : 20
+      expect(med(stalls), `median stall art ${JSON.stringify(widths)}`).toBeGreaterThanOrEqual(floor)
+      if (corp.length) expect(med(stalls), 'stalls over Hollowell').toBeGreaterThan(med(corp))
+    }
+    for (const w of corp) expect(w, 'Hollowell piece art').toBeGreaterThanOrEqual(desktop ? 20 : 14)
   })
 }

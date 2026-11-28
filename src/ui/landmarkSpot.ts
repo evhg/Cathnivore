@@ -130,10 +130,11 @@ export function pickSpot(taken: readonly Box[], minScale = 0): { x: number; y: n
 }
 
 /** Plan item 341: the smallest landmark scale that reads at a glance on a hex drawn `hexPx` CSS px centre to
- *  vertex: about a quarter of the hex's height, 26 px at least. */
+ *  vertex: about a quarter of the hex's height, 26 px at least. Plan item 740: about a third (0.62 of the radius, was
+ *  0.5), up to 78 px (was 58), so the region's landmark is the hex's hero, 64 px+ on a desktop board. */
 export function landmarkMinScale(hexPx: number): number {
   const pxPerUnit = Math.max(1, hexPx) / R
-  const target = Math.max(26, Math.min(58, hexPx * 0.5))
+  const target = Math.max(26, Math.min(78, hexPx * 0.62))
   return target / (LANDMARK_ART_H * pxPerUnit)
 }
 

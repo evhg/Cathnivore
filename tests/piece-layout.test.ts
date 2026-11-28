@@ -1,6 +1,6 @@
 // Plan item 63: a tile's piece tray never overlaps itself and its counts stay readable at every hex size.
 import { describe, expect, it } from 'vitest'
-import { MIN_COUNT_PX, ORNAMENT_PX, OUTLET_BOOST, pieceLayout, rectsOverlap, TILE_R } from '../src/ui/pieceLayout'
+import { ENEMY_ART_H, ENEMY_MAX_PX, MIN_COUNT_PX, ORNAMENT_PX, pieceLayout, rectsOverlap, TILE_R } from '../src/ui/pieceLayout'
 
 const label = (name: string) => name.length * 8.6 + 16
 
@@ -20,17 +20,21 @@ describe('pieceLayout', () => {
           }
     })
 
-  // Plan item 733: Hollowell's storefront leads its pieces: where the tile has room the Outlet's slot grows past the
-  // Buyout's (up to OUTLET_BOOST), standing on the same ground line, and never past it.
-  it('grows the Outlet past the other stacks where the tile has room', () => {
-    const input = { outlets: 3, buyouts: 1, doubt: 0, producers: 1, scheme: false, labelWidth: label('Saltmarsh') }
-    const t = pieceLayout(input, 90)
-    const o = t.rects.find((x) => x.kind === 'outlets')!
-    const b = t.rects.find((x) => x.kind === 'buyouts')!
-    expect(t.outletBoost ?? 1).toBeGreaterThan(1)
-    expect(t.outletBoost ?? 1).toBeLessThanOrEqual(OUTLET_BOOST + 1e-9)
-    expect(o.x1 - o.x0).toBeGreaterThan(b.x1 - b.x0)
-    expect(o.y1).toBeCloseTo(b.y1, 6)
+  // Plan item 740: Hollowell's pieces are badges under the producers: never past ENEMY_MAX_PX of art on screen, a
+  // stall's slot 1.2x+ an Outlet's on a shared hex, and no Outlet grown past the other stacks (item 733's boost gone).
+  it('keeps Hollowell\'s stacks smaller than the producers and the landmark', () => {
+    for (const px of [60, 69, 90, 124])
+      for (const [outlets, buyouts, doubt, producers] of [[3, 1, 0, 1], [1, 0, 0, 2], [2, 1, 1, 3], [4, 0, 0, 0]] as const) {
+        const t = pieceLayout({ outlets, buyouts, doubt, producers, scheme: false, labelWidth: label('Saltmarsh') }, px)
+        const o = t.rects.find((x) => x.kind === 'outlets')!
+        expect(t.outletBoost ?? 1).toBe(1)
+        expect(t.enemyScale * ENEMY_ART_H * (px / TILE_R)).toBeLessThanOrEqual(ENEMY_MAX_PX + 1e-6)
+        // The 1.2x is the desktop board's (a phone keeps its stacks at the chunky-token floor, ENEMY_MIN_PX).
+        if (producers && px >= 90) {
+          const p = t.rects.find((x) => x.kind === 'producer')!
+          expect(((p.x1 - p.x0) * (p.y1 - p.y0)) / ((o.x1 - o.x0) * (o.y1 - o.y0)), `${px} ${outlets}/${producers}`).toBeGreaterThanOrEqual(1.2)
+        }
+      }
   })
 
   it('drops ornaments on a small hex before it shrinks the pieces', () => {
@@ -38,7 +42,8 @@ describe('pieceLayout', () => {
     expect(pieceLayout(input, ORNAMENT_PX - 1).ornaments).toBe(false)
     const big = pieceLayout(input, 90)
     expect(big.ornaments).toBe(true)
-    expect(big.scale).toBeGreaterThanOrEqual(1)
+    // Plan item 740: the landmark's larger floor may take the pieces to 0.95 (LANDMARK_TIERS' middle step).
+    expect(big.scale).toBeGreaterThanOrEqual(0.95)
   })
 
   it('keeps a threat badge clear of the stacks and grows the pieces on a roomy hex', () => {

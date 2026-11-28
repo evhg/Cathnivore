@@ -220,9 +220,25 @@ export function pieceLayout(input: PieceInput, hexPx: number): PieceTray {
 /** Plan item 341: [the landmark's share of its readable size, the pieces' least scale] tried in order. */
 export const LANDMARK_TIERS: ReadonlyArray<readonly [number, number]> = [
   [1, 1],
+  // Plan item 740: a step between, so a crowded desktop hex keeps its landmark near 64 px rather than dropping to 0.8.
+  [0.9, 0.95],
   [0.8, 0.9],
   [0.65, 0.8],
 ]
+
+/** Plan item 740: Hollowell's pieces are glossy badges, not the hex's biggest thing: a stack's art stands this
+ *  many CSS px tall at most (its art is about 31.2 tile units tall a unit of scale, EnemyStack), */
+export const ENEMY_MAX_PX = 46
+export const ENEMY_ART_H = 31.2
+/** and on a hex shared with producers at most this share of their scale, so a stall's box is 1.2x+ an Outlet's, */
+export const ENEMY_SHARE = 0.86
+/** but never cut below this many CSS px of art by that share (a phone's chunky-token floor, board-tokens.spec). */
+export const ENEMY_MIN_PX = 25
+/** Plan item 740: the most Hollowell's stacks may scale to on a hex drawn `hexPx` CSS px, beside pieces at `scale`. */
+export function enemyCap(hexPx: number, scale: number, producers: number): number {
+  const unit = ENEMY_ART_H * (Math.max(1, hexPx) / TILE_R)
+  return Math.min(ENEMY_MAX_PX / unit, producers ? Math.max(scale * ENEMY_SHARE, ENEMY_MIN_PX / unit) : Infinity, scale * 2.4)
+}
 
 /** Plan item 554 slice 3: the flat row first, then the two-deep cluster (only differs with all three stacks). */
 const CLUSTER = [false, true] as const
@@ -253,8 +269,9 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
         for (const ornaments of tryOrnaments)
           for (const cl of CLUSTER)
             for (const dx of ROW_SHIFTS) {
-              const p = place(input, scale, ornaments, countR, k, scale, false, dx, cl)
-              if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: k }, start, lmMin, dx, cl)
+              const e = Math.min(scale, enemyCap(hexPx, scale, input.producers))
+              const p = place(input, scale, ornaments, countR, k, e, false, dx, cl)
+              if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: e, ornaments, countR, badgeK: k }, Math.min(start, enemyCap(hexPx, scale, input.producers)), lmMin, dx, cl)
             }
   if (badgeOnly) return null
   // Item 341: the pieces give the landmark room only down to their nominal size; below that, it takes what's left.
@@ -266,19 +283,21 @@ function layout(input: PieceInput, hexPx: number, lmMin: number, pieceFloor: num
       for (const side of lmMin > 0 && input.producers && (input.outlets || input.buyouts || input.doubt) ? [false, true] : [false])
         for (const cl of CLUSTER)
           for (const dx of ROW_SHIFTS) {
-            const p = place(input, scale, ornaments, countR, 1, scale, side, dx, cl)
-            if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: scale, ornaments, countR, badgeK: 1 }, start, lmMin, dx, cl, side)
+            const e = Math.min(scale, enemyCap(hexPx, scale, input.producers))
+            const p = place(input, scale, ornaments, countR, 1, e, side, dx, cl)
+            if (fits(p.rects, lmMin)) return grow(input, { ...p, scale, enemyScale: e, ornaments, countR, badgeK: 1 }, Math.min(start, enemyCap(hexPx, scale, input.producers)), lmMin, dx, cl, side)
           }
   if (lmMin > 0) return null
   const scale = 0.35
-  return { ...place(input, scale, false, countR), scale, enemyScale: scale, ornaments: false, countR, badgeK: 1 }
+  const e = Math.min(scale, enemyCap(hexPx, scale, input.producers))
+  return { ...place(input, scale, false, countR, 1, e), scale, enemyScale: e, ornaments: false, countR, badgeK: 1 }
 }
 
 /** Plan item 282: with the producers placed at the tray's scale, Hollowell's stacks take the largest scale up to
  *  `start` (the hex's own ceiling) that still fits beside them. */
 function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx = 0, cl = false, side0 = false): PieceTray {
   if (!input.producers || !(input.outlets || input.buyouts || input.doubt)) return boostOutlet(input, t, lmMin, side0, dx, cl)
-  for (let e = start; e > t.scale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
+  for (let e = start; e > t.enemyScale + 1e-9; e = Math.round((e - 0.05) * 100) / 100)
     for (const side of [false, true]) {
       const p = place(input, t.scale, t.ornaments, t.countR, t.badgeK, e, side, dx, cl)
       if (fits(p.rects, lmMin)) return boostOutlet(input, { ...t, ...p, enemyScale: e }, lmMin, side, dx, cl)
@@ -286,8 +305,9 @@ function grow(input: PieceInput, t: PieceTray, start: number, lmMin: number, dx 
   return boostOutlet(input, t, lmMin, side0, dx, cl)
 }
 
-/** Plan item 733: the most an Outlet grows over the other stacks. */
-export const OUTLET_BOOST = 1.3
+/** Plan item 733: the most an Outlet grows over the other stacks. Plan item 740: 1 (was 1.3): the storefront grew
+ *  to the biggest thing on most hexes, so the table read as Hollowell's; it now leads by its gloss and its sign. */
+export const OUTLET_BOOST = 1
 
 /** Plan item 733: with every piece placed, the Outlet alone grows (up to OUTLET_BOOST) while the tile still fits,
  *  so on a crowded hex Hollowell's storefront still leads its pieces. */
