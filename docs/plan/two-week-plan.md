@@ -7113,7 +7113,7 @@ Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, 
 - **Accept:** **measure first**. At P (844x390) and D no HUD element meets the central 30% x 30% of the view in the first job (e2e box test); hint text still readable (contrast >= 4.5:1); cathode-hud/phone specs pass; shots P/D.
 - **Size:** 1
 
-## 759. [ ] The bugs from the 2026-11-28 18:25 critique, fixed as one batch
+## 759. [ ] The bugs from the 2026-11-28 18:25 critique, fixed as one batch *(lane A, in progress)*
 - Cathnivore campaign P (cath-campaign-P 12-24 x 576-594): a stray '3' badge clipped at the left edge by chapter 1's chip.
 - Cathnivore campaign D (145-400 x 730-835): a ticket over the compass rose and Oakvale's foot: measure against item 732's spec (10%) and 753's name check; fix or close by measurement.
 - Runnel D (runnel-D 180-340 x 860-900, 15-145 x 820-885): Cath cut mid-thigh by the window's foot; the 'Tap a tile' note on her hip.
