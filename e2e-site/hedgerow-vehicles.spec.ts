@@ -39,3 +39,33 @@ test('2D vehicles are long enough to read and each has its own silhouette', asyn
   for (const [k, len] of r.lens) expect(len, `${k} at a ${r.cell} px cell`).toBeGreaterThanOrEqual(min)
   expect(r.same).toEqual([])
 })
+
+// Plan item 749: the Fleet's six classes told apart by outline alone (the greyscale test): any two classes' masks,
+// drawn from above at the field's cell, overlap by 0.8 or less (intersection over union).
+test('the Fleet classes differ in outline: pairwise mask IoU 0.8 or less (plan item 749)', async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.goto('/hedgerow/?sandbox=1&2d&level=27')
+  await page.waitForFunction(() => !!(window as unknown as { hedgerow?: HG }).hedgerow?.game(), null, { timeout: 60_000 })
+  const r = await page.evaluate(() => {
+    const hg = (window as unknown as { hedgerow: HG }).hedgerow
+    const cell = Math.round(hg.cellCenter(1, 0)!.x - hg.cellCenter(0, 0)!.x)
+    const kinds = ['courier', 'hatchback', 'van', 'pickup', 'sprinter', 'lorry']
+    const sils = kinds.map((k) => [k, hg.enemySilhouette(k, cell)] as const)
+    const pairs: Array<[string, number]> = []
+    for (let i = 0; i < sils.length; i++)
+      for (let j = i + 1; j < sils.length; j++) {
+        const a = sils[i]![1].mask
+        const b = sils[j]![1].mask
+        let and = 0
+        let or = 0
+        for (let p = 0; p < a.length; p++) {
+          and += a[p]! & b[p]!
+          or += a[p]! | b[p]!
+        }
+        pairs.push([`${sils[i]![0]}~${sils[j]![0]}`, Math.round((and / Math.max(1, or)) * 100) / 100])
+      }
+    return { cell, pairs }
+  })
+  console.log(r.cell, JSON.stringify(r.pairs))
+  expect(r.pairs.filter(([, iou]) => iou > 0.8)).toEqual([])
+})

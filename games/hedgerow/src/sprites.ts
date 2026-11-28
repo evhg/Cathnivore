@@ -1609,10 +1609,43 @@ export const FLEET_TOP: Partial<Record<EnemyKind, { len: number; wid: number; bo
 
 /** Plan item 707: tyres at the body's corners, inside the class's width (`n` axles). */
 function topWheels(ctx: C, L: number, W: number, n: number, s: number): void {
-  ctx.fillStyle = "#2a2522";
+  // Plan item 749: tyres that stand proud of the body (a hair past its sides), with a pale hub line, so a vehicle
+  // reads as standing on wheels and not as a coloured tile.
   for (let i = 0; i < n; i++) {
     const wx = -L / 2 + L * (n === 2 ? (i ? 0.78 : 0.2) : 0.14 + (i * 0.7) / (n - 1));
-    for (const side of [-1, 1]) ctx.fillRect(wx - s * 0.04, side > 0 ? W / 2 - s * 0.05 : -W / 2, s * 0.08, s * 0.05);
+    for (const side of [-1, 1]) {
+      const y0 = side > 0 ? W / 2 - s * 0.055 : -W / 2 - s * 0.01;
+      ctx.fillStyle = "#2a2522";
+      ctx.beginPath();
+      ctx.roundRect(wx - s * 0.05, y0, s * 0.1, s * 0.065, s * 0.015);
+      ctx.fill();
+      ctx.fillStyle = "#8a8580";
+      ctx.fillRect(wx - s * 0.012, y0 + s * 0.012, s * 0.024, s * 0.041);
+    }
+  }
+}
+
+/** Plan item 749: where each Fleet class's windscreen starts (a share of its length from the tail): the wing mirrors
+ * stand there. */
+const SCREEN_AT: Partial<Record<EnemyKind, number>> = { hatchback: 0.58, van: 0.74, sprinter: 0.74, pickup: 0.68, lorry: 0.9 };
+
+/** Plan item 749: the body's volume from above: the far side in shade, a lit edge along the near one, and a wing
+ * mirror each side of the windscreen. */
+function topBody(ctx: C, kind: EnemyKind, L: number, bw: number, s: number): void {
+  const x0 = -L / 2;
+  ctx.fillStyle = "rgba(20,18,30,0.16)";
+  ctx.beginPath();
+  ctx.roundRect(x0 + s * 0.01, bw * 0.28, L - s * 0.02, bw * 0.2, s * 0.03);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.22)";
+  ctx.fillRect(x0 + L * 0.06, -bw * 0.47, L * 0.88, bw * 0.06);
+  const at = SCREEN_AT[kind];
+  if (at === undefined) return;
+  ctx.fillStyle = "#2b2b30";
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.roundRect(x0 + L * at, side > 0 ? bw / 2 - s * 0.005 : -bw / 2 - s * 0.035, s * 0.035, s * 0.04, s * 0.01);
+    ctx.fill();
   }
 }
 
@@ -1675,7 +1708,26 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
     }
     case "pickup": {
       topWheels(ctx, L, W, 2, s);
-      rr(ctx, x0, -bw / 2, L, bw, s * 0.04, f.body);
+      // Plan item 749: its own outline, not a box: the bed full width, the cab a little narrower, the bonnet tapering
+      // to the nose (its mask overlapped the high-roof van's by 0.84; now under 0.8).
+      ctx.fillStyle = f.body;
+      ctx.beginPath();
+      ctx.moveTo(x0 + s * 0.03, -bw / 2);
+      ctx.lineTo(x0 + L * 0.5, -bw / 2);
+      ctx.lineTo(x0 + L * 0.5, -bw * 0.41);
+      ctx.lineTo(x0 + L * 0.78, -bw * 0.41);
+      ctx.quadraticCurveTo(x0 + L, -bw * 0.36, x0 + L, -bw * 0.08);
+      ctx.lineTo(x0 + L, bw * 0.08);
+      ctx.quadraticCurveTo(x0 + L, bw * 0.36, x0 + L * 0.78, bw * 0.41);
+      ctx.lineTo(x0 + L * 0.5, bw * 0.41);
+      ctx.lineTo(x0 + L * 0.5, bw / 2);
+      ctx.lineTo(x0 + s * 0.03, bw / 2);
+      ctx.quadraticCurveTo(x0, bw / 2, x0, bw / 2 - s * 0.03);
+      ctx.lineTo(x0, -bw / 2 + s * 0.03);
+      ctx.quadraticCurveTo(x0, -bw / 2, x0 + s * 0.03, -bw / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
       // The cab up front (roof and windscreen), the open bed behind with a crate in it.
       glass(ctx, x0 + L * 0.68, L * 0.08, bw);
       rr(ctx, x0 + L * 0.5, -bw * 0.36, L * 0.18, bw * 0.72, s * 0.03, "#3c7a2d");
@@ -1694,6 +1746,7 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
       break;
     }
   }
+  topBody(ctx, kind, L, bw, s);
   if (kind !== "lorry") {
     ctx.fillStyle = "#fff2a8";
     for (const side of [-1, 1]) {
