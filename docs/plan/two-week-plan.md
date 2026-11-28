@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-28 18:13 UTC
-
 
 
 
@@ -7087,4 +7085,41 @@ Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, 
 - NIGHT SHIFT pick P (ns-play-P 30-750 x 1440-1490): an empty ruled stat row; 'HER LINE' low contrast.
 - Portfolio D: '23 sessions' against '25 Build sessions'.
 - **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
+- **Size:** 2
+
+Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, NIGHT SHIFT and Hedgerow at 2x; D 1440x900; every game), one subagent critique against VISION.md, told to skip 730-754 and 319/543/752. Dropped: Cathnivore campaign D 'chapter opened in the centre, Cath half length' (item 716's decision: the atlas bounds her column; the ticket is item 659/753's design); its 'ticket over the compass' report goes in 759 to measure (item 732's spec holds it to 10%).
+
+## 755. [ ] NIGHT SHIFT: the case briefing laid out on Cath's desk, not floating in a void
+- **Why:** critique (plan1128c ns-street-D 0-1440 x 0-110, 860-1440 x 650-900): the briefing's mugshot, objective, map, polaroid and List hang on a blurred black street; about 40% of the frame is dead black and the pins and string attach to nothing (items 629/690 staged the pieces, not a surface).
+- **Build:** a desk-and-corkboard set behind the briefing (`games/cathode/src/ui/caseboard.ts` / the loading view): cork, a desk-lamp pool of warm light, a rain-streaked window strip with the street through it, her umbrella and a coffee ring; the papers land one by one (about 1.2 s, slight overshoot, a pin tock); reduced motion fades.
+- **Accept:** **measure first** (the dark share at D and P). No 200x200 window at D has mean luminance under 0.04 (pixel); 3+ distinct materials behind the cards; e2e: cards arrive in order; NIGHT SHIFT CSS lint (`tests/cathode-type.test.ts`); shots P/D.
+- **Size:** 2
+
+## 756. [ ] Hedgerow act map: stops as landmarks along one lane, not rows of bubbles
+- **Why:** critique (plan1128c hedge-menu-D 285-1060 x 320-440 and 60-1060 x 710-850): ten alike medallions in two straight rows read as a button grid; the middle band (220-1110 x 470-700) is decor the path doesn't use; at P the path is a column of buttons.
+- **Build:** in `games/hedgerow/src/map.ts` (`stopart.ts`, `stopland.ts`), one hedge-lined lane snakes through the act; each stop is its landmark on its own patch of land; locked stops under morning mist; Cath's pin walks the lane to the next stop when one is cleared.
+- **Accept:** **measure first** (stop centres, path). At D no two stops share a row (centres differ > 40 px in y for neighbours); the lane passes within 60 px of every stop; locked stops still read as locked (item 702's saturation test); map-diorama and Hedgerow map specs pass; key art re-shot if in its list; shots P/D.
+- **Size:** 2
+
+## 757. [ ] Hedgerow 3D: Hollowell's vans modelled as vans
+- **Why:** critique (plan1128c hedge-l27-3d-D 230-690 x 260-650, -P 160-560 x 590-1100): the convoy reads as flat purple bricks with a gold disc and no gaps, a wall across the farm; items 584/730/749 gave the classes colours and 2D drawings, the 3D meshes stay boxes.
+- **Build:** in `games/hedgerow/src/render3d/` (the vehicle models): a split cab and box, glass windscreen, dark wheels in arches, a door seam, a Hollowell livery decal; queued vans keep a visible gap on the road.
+- **Accept:** **measure first** (mesh parts, triangles, queue spacing). Each van has 4 wheels and a glass material (unit); gap >= 0.25 van length (unit); a pixel check finds windscreen colour on most on-screen vans; hedgerow 3D specs pass (2 workers); triangle budget held; Hedgerow key art re-shot; shots P/D.
+- **Size:** 2
+
+## 758. [ ] NIGHT SHIFT phone: the first job's hints off the sightline
+- **Why:** critique (plan1128c ns-street-P 595-1095 x 500-605 and 655-1000 x 280-320 at 2x): the touch hint card sits dead centre under the crosshair, where enemies appear, and the objective tag rides the sightline too.
+- **Build:** hints become a torn notebook slip by the health bar (`games/cathode/src/ui/` HUD and talk); the objective tag sits above the horizon; item 'Input.coach' glow kept on the named button.
+- **Accept:** **measure first**. At P (844x390) and D no HUD element meets the central 30% x 30% of the view in the first job (e2e box test); hint text still readable (contrast >= 4.5:1); cathode-hud/phone specs pass; shots P/D.
+- **Size:** 1
+
+## 759. [ ] The bugs from the 2026-11-28 18:25 critique, fixed as one batch
+- Cathnivore campaign P (cath-campaign-P 12-24 x 576-594): a stray '3' badge clipped at the left edge by chapter 1's chip.
+- Cathnivore campaign D (145-400 x 730-835): a ticket over the compass rose and Oakvale's foot: measure against item 732's spec (10%) and 753's name check; fix or close by measurement.
+- Runnel D (runnel-D 180-340 x 860-900, 15-145 x 820-885): Cath cut mid-thigh by the window's foot; the 'Tap a tile' note on her hip.
+- Hedgerow l34 2D D/P (hedge-l34-2d-D 180-680 x 730-860, -P 100-480 x 1040-1150): depot, beehive, stall and vans in one heap; '+68' and the beehive over the '200 TO GO' sign.
+- Hedgerow l27 2D P (405-470 x 820-860): a '+50' ghosted over the hedgehog and bush.
+- Hedgerow menu P (235-490 x 645-690): 'Sandbag Sunday' label 80 px off its stop; labels switch sides.
+- Hedgerow l27 3D D (565-770 x 662-695): the convoy pill sits on the road over the lead van.
+- **Accept:** each fixed with a check, or closed by measurement or decision; the specs touched pass; shots P/D.
 - **Size:** 2
