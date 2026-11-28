@@ -7020,7 +7020,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** **measure first**. No more than 30% of a facade row's windows identical; 3+ figures visible at D, 2+ at P; board mean saturation >= 1.3x the backdrop's; title-attract and critique specs pass; Lighthouse (gate 7) not below 85 on a quiet machine; key art re-shot; shots P/D.
 - **Size:** 2
 
-## 747. [ ] Runnel: the unsolved route traceable at a glance
+## 747. [ ] Runnel: the unsolved route traceable at a glance *(lane A, in progress)*
 - **Why:** critique 2026-11-28 04:10 (plan1128a runnel-D 470-1330 x 40-830, runnel-P 5-385 x 270-640): after item 741 the dry board is warmer, but each ditch still reads as three parallel brown/cream bands over crackled clay, and wheat bundles and valves sit on the channels, so the route can't be traced at a glance (the solved board beside it is clean).
 - **Build:** one channel language that runs on across tile seams (floor, one lit lip, one shadow lip: at most two tone steps), the field ground calmer (sparser crackle), crop and valve glyphs moved off the channel path and slightly smaller.
 - **Accept:** **measure first** (tone bands across a channel, glyph overlap with channel pixels). At most 2 tone steps across a channel's section; channel floor vs field 3:1+; crop/valve glyphs overlap channel pixels by 0%; runnel-route, runnel-tiles, runnel-greened, runnel-contrast pass; key art re-shot; shots P/D unsolved and solved.
