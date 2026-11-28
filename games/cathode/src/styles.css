@@ -3631,6 +3631,10 @@ body:has(.hud-pause:not([hidden])) .look-hint { visibility: hidden; }
   .cp-dots { column-gap: max(8px, calc(var(--u) * 4)); justify-content: space-between; } /* px-ok: 8 px between tabs */
   /* Plan item 709: the trees one line of stamps, opening on a tap to what each does (the sheet was a dense form). */
   .cp-sheet[data-dossier] .cp-trees-wrap { display: flex; align-items: center; gap: 8px; margin-top: 6px; } /* px-ok */
+  /* Plan item 754: the stamps' row follows the gun's numbers straight on: the gun's 36u foot plus the 44 px toggle's
+     centring left an empty ruled line between them, read as a blank stat row */
+  .cp-sheet[data-dossier] .cp-weapon { margin-bottom: 0; }
+  .cp-sheet[data-dossier] .cp-trees-wrap { margin-top: -6px; } /* px-ok */
   .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-trees { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; min-width: 0; } /* px-ok: a third stamp that won't fit beside the toggle (Wirewitch's DAEMON) takes a second line rather than running under it */
   .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-tree { display: block; }
   .cp-sheet[data-dossier]:not(.cp-trees-open) .cp-tree-theme { display: none; }

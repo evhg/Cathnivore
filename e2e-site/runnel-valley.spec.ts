@@ -70,3 +70,28 @@ test('the stream fills to the garden at a solve, with Cath still in the valley',
   await expect.poll(wet).toBe(1)
   await expect(page.locator('#valley-cath svg.cath')).toBeVisible()
 })
+
+// Plan item 754: the progress bar's track paints, so its fill reads as a bar's share, not a stray blue dash under
+// the board (static, the track sat under the valley's positioned footpath and only the transformed fill showed).
+test('the progress track is drawn under its fill', async ({ page }) => {
+  await page.goto('/runnel/?nohelp')
+  await expect(page.locator('.tiles > g.cell').first()).toBeVisible()
+  const bar = (await page.locator('.progress').boundingBox())!
+  const want = await page.locator('.progress').evaluate((e) => getComputedStyle(e).backgroundColor.match(/\d+/g)!.slice(0, 3).map(Number))
+  // the unfilled right end, away from the rounded cap
+  const shot = await page.screenshot({ clip: { x: bar.x + bar.width - 24, y: bar.y + 2, width: 8, height: Math.max(2, bar.height - 4) } })
+  const probe = await page.context().newPage()
+  const got = await probe.evaluate(async (b64) => {
+    const img = new Image()
+    img.src = `data:image/png;base64,${b64}`
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const x = c.getContext('2d')!
+    x.drawImage(img, 0, 0)
+    return [...x.getImageData(img.width >> 1, img.height >> 1, 1, 1).data.slice(0, 3)]
+  }, shot.toString('base64'))
+  await probe.close()
+  for (let i = 0; i < 3; i++) expect(Math.abs(got[i]! - want[i]!), `track ${got} vs ${want}`).toBeLessThanOrEqual(16)
+})

@@ -5560,6 +5560,11 @@ img.act-scene {
 .depot-board b { font-size: 1.15em; }
 .depot-board .depot-next { letter-spacing: 0; }
 .depot[data-small] .depot-next { display: none; }
+/* Plan item 754: mid-round a small board says what its count is ('124' alone read as a score at P): the count over
+   'to go', two lines, standing on the roof as a rooftop sign (item 424's) so the HOLLOWELL front stays whole. */
+.depot[data-small] .depot-board[data-going] { flex-direction: column; gap: 0; top: auto; bottom: 78%; height: auto; padding: 1px 4px 2px; }
+.depot[data-small][data-tiny] .depot-board[data-going] { bottom: 62%; }
+.depot[data-small] .depot-board[data-going] .depot-next { display: block; font-size: 0.75rem; line-height: 1; }
 /* Plan item 748: once a round's last vehicle has pulled out, the board goes dim: nothing more leaves this gate. */
 .depot[data-spent] .depot-board { opacity: 0.45; text-shadow: none; }
 /* Plan item 336: on a small depot (an upright phone) the 12 px count is taller than the drawn LED strip, so its own

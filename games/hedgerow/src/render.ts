@@ -1900,6 +1900,10 @@ export class Renderer {
     this.laneR = s * 0.4;
     // and the barns (a badge docked over l34's farmhouse at P hid it)
     this.barnBoxes = (level.barns ?? []).map(([c, r]) => ({ x: X(c), y: Y(r) - s * 0.3, w: s, h: s * 1.3 }));
+    // Plan item 754: and the plots, so a badge prefers grass to a bed (it lay over l27's plots at P and D)
+    this.plotBoxes = [];
+    for (let r = 0; r < level.rows; r++)
+      for (let c = 0; c < level.cols; c++) if (isPlot(level, c, r)) this.plotBoxes.push({ x: X(c) + s * 0.1, y: Y(r) + s * 0.1, w: s * 0.8, h: s * 0.8 });
     // Plan item 706: one badge a lane, docked by its mouth (the depot), counting every pack on that lane: a badge per
     // pack (item 10) put seven pills over l34's late field at P. Its columns keep their own '+N' chips.
     const byLane = new Map<number, Swarm[]>();
@@ -2302,6 +2306,8 @@ export class Renderer {
   depotLanes = new Set<number>();
   /** Plan item 537: the 2D depots' boxes (main.ts places them over the canvas), for the name tag to keep off. */
   depotBoxes: Rect[] = [];
+  /** Plan item 754: the plots' boxes in CSS px, this frame (the badge keeps off them where it can). */
+  plotBoxes: Rect[] = [];
   /** Plan item 695: the towers' boxes this frame, and the swarm badges drawn so far (e2e reads both). */
   towerBoxes: Rect[] = [];
   badgeBoxes: Rect[] = [];
@@ -2712,13 +2718,22 @@ export class Renderer {
         return tries.filter(([tx, ty]) => ty >= 4 && ty + bh <= this.cssH - 4 && tx >= 4 && tx + bw <= this.cssW - 4);
       };
       const dist = ([tx, ty]: [number, number]) => Math.hypot(tx - x0, ty - y0);
-      // the nearest spot clear of everything, off the road if one is within about five badge heights
+      const beds = (bx: number, by: number, bw: number) => this.plotBoxes.filter(over({ x: bx, y: by, w: bw, h: bh })).length;
+      // the nearest spot clear of everything, off the road if one is within about five badge heights, over the fewest plots
       const best = (bw: number, sx: number, sy: number) => {
         const clear = ring(bw, sx, sy).filter((c) => !hard(c[0], c[1], bw, true));
         const offRoad = clear.filter((c) => road(c[0], c[1], bw) === 0 && dist(c) <= Math.max(h * 5, bw * 0.9));
-        return offRoad.sort((p, q) => dist(p) - dist(q))[0] ?? clear.sort((p, q) => road(p[0], p[1], bw) - road(q[0], q[1], bw) || dist(p) - dist(q))[0];
+        return offRoad.sort((p, q) => beds(p[0], p[1], bw) - beds(q[0], q[1], bw) || dist(p) - dist(q))[0] ?? clear.sort((p, q) => road(p[0], p[1], bw) - road(q[0], q[1], bw) || dist(p) - dist(q))[0];
       };
-      if (hard(x0, y0, w, true) || road(x0, y0, w) > 0) {
+      const blocked = hard(x0, y0, w, true) || road(x0, y0, w) > 0;
+      const onBeds = blocked ? 0 : beds(x0, y0, w);
+      if (onBeds > 0) {
+        // Plan item 754: a badge clear of everything but lying on plots moves only to a nearby clear, off-road spot on fewer
+        const pick = ring(w, x0, y0)
+          .filter((c) => !hard(c[0], c[1], w, true) && road(c[0], c[1], w) === 0 && dist(c) <= Math.max(h * 5, w * 0.9) && beds(c[0], c[1], w) < onBeds)
+          .sort((p, q) => beds(p[0], p[1], w) - beds(q[0], q[1], w) || dist(p) - dist(q))[0];
+        if (pick) [x0, y0] = pick;
+      } else if (blocked) {
         let pick = best(w, x0, y0);
         if (!pick) {
           // Mid-wave the lanes can fill the field round the queue: then the badge drops its sprites to the total and the

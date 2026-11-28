@@ -2709,6 +2709,11 @@ body:has(#dlg-pause[open]) .paused-note {
 .play .tray > .tray-peek {
   pointer-events: none;
 }
+/* Plan item 754: the peek shows its picture only: its price and name ran on under the brass tab, read as cut
+   ('Radio Ma', '40'). They come back with the rest of the packet once a scroll brings it in. */
+.play .tray > .tray-peek :is(.build-cost, .tray-name) {
+  visibility: hidden;
+}
 /* Plan item 166: the packet under the brass tab fades out beneath it rather than being cut by it. */
 .play .tray-wrap.more-shown .tray {
   -webkit-mask: linear-gradient(to left, transparent 0 26px, var(--ink) 64px);

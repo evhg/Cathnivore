@@ -124,4 +124,20 @@ test('the corner stage word sits inside its card at D', async ({ page }, testInf
     expect(r.top).toBeGreaterThanOrEqual(2)
     expect(r.right).toBeGreaterThanOrEqual(4)
   }
+  // Plan item 754: the tab's foot is above the head line's text ('STAGE I' sat on 'Pasture' at 1440x900)
+  const clear = await page.evaluate(() =>
+    [...document.querySelectorAll('.plan-strip-item')].flatMap((i) => {
+      const s = i.querySelector('.plan-strip-stage')
+      if (!s?.getClientRects().length || getComputedStyle(s.querySelector('.plan-strip-stage-word')!).display === 'none') return []
+      const t = s.getBoundingClientRect()
+      return ['.plan-strip-headline', '.plan-strip-effect'].map((k) => {
+        const rg = document.createRange()
+        rg.selectNodeContents(i.querySelector(k)!)
+        const q = rg.getBoundingClientRect()
+        // only text running under the tab counts
+        return q.right <= t.left || q.left >= t.right ? 99 : q.top + 2 - t.bottom
+      })
+    }),
+  )
+  for (const c of clear) expect(c).toBeGreaterThanOrEqual(0)
 })

@@ -289,6 +289,13 @@ function hint(id: string): void {
   showDossier(dossierFor(id, { hasSave: hasSave(), jobsDone: done, district }));
 }
 
+/** Plan item 412: a case file's typed number, steady for a name (four digits). */
+function caseFileNo(target: string): string {
+  let h = 7;
+  for (const c of target) h = (h * 31 + c.charCodeAt(0)) % 9973;
+  return String(1000 + (h % 9000)).padStart(4, "0");
+}
+
 /** Plan item 494: the title spins a new edition in once (the first visit after a case closes). */
 let paperSpun = false;
 
@@ -358,7 +365,8 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   } else {
     const who = struck ?? (d.job ? BUST_FOR_CASE[d.job] : d.target === "Tomas Reed" ? "reed" : undefined);
     // Plan item 139: the print carries item 107's lettered shapes; the name stands in type beside it.
-    photo.innerHTML = mugshotSvg(who ?? null, who ? (struckName ?? d.target).toUpperCase().slice(0, 16) : "CASE FILE", true);
+    // Plan item 754: the slate carries the file's own number in big type, not chalk strokes read as a placeholder.
+    photo.innerHTML = mugshotSvg(who ?? null, who ? (struckName ?? d.target).toUpperCase().slice(0, 16) : "CASE FILE", true, 0, who ? caseFileNo(struckName ?? d.target) : undefined);
   }
   photo.classList.toggle("is-struck", page.caseId !== "reed" && page.caseId !== "fishMarket" && !still);
   const col = el("div", "fp-col", body);
@@ -370,9 +378,7 @@ function showDossier(d: ReturnType<typeof dossierFor>): void {
   const tab = el("span", "fp-tab", file);
   el("span", "dossier-kicker", tab, "Case file");
   // Plan item 412: the file's typed number, steady for a name (Hollowell Police, the year, four digits).
-  let h = 7;
-  for (const c of d.target) h = (h * 31 + c.charCodeAt(0)) % 9973;
-  el("span", "dossier-no", tab, `HPD 2079 \u00B7 ${String(1000 + (h % 9000)).padStart(4, "0")}`);
+  el("span", "dossier-no", tab, `HPD 2079 \u00B7 ${caseFileNo(d.target)}`);
   el("b", "dossier-target", file, d.target);
   const where = el("span", "fp-where", file);
   el("span", "dossier-place", where, d.place);

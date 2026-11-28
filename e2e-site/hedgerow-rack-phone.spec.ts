@@ -54,6 +54,11 @@ test('plan item 698: the phone rack has no blank strip, every seed swipes into v
     return out
   })
   expect(Math.max(...gaps), `gaps ${gaps.map(Math.round).join(',')}`).toBeLessThanOrEqual(24)
+  // Plan item 754: the packet peeking under the More tab shows its picture only: no price or name cut by the tab.
+  const peekWords = await page.evaluate(() =>
+    [...document.querySelectorAll('.tray > .tray-peek :is(.build-cost, .tray-name)')].filter((e) => getComputedStyle(e).visibility !== 'hidden').length,
+  )
+  expect(peekWords).toBe(0)
 
   // Every packet in the rack is wholly shown at some point as the rack is swiped along.
   const seen = new Set<string>()

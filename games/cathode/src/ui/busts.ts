@@ -587,14 +587,15 @@ ${slateG}
  * target (null) is a grey silhouette behind a red REDACTED bar and a case stamp, never a black square.
  * Plan item 107: a `small` print (the List's 64-112 px frames) carries no words: at that scale they drew at 4-5 px,
  * so the slate, the bar and the stamp stay as shapes and the caption under the print names it. Plan item 121: the
- * small slate carries chalk strokes, so it reads as a lettered slate, not an empty black bar.
+ * small slate carries chalk strokes, so it reads as a lettered slate, not an empty black bar. Plan item 754: given a
+ * `slateNo` (a few digits), a small slate prints it large instead (the strokes read as a '— —' placeholder at D).
  */
-export function mugshotSvg(who: BustId | null, slate: string, small = false, variant = 0): string {
+export function mugshotSvg(who: BustId | null, slate: string, small = false, variant = 0, slateNo?: string): string {
   uid += 1;
   const id = `mug${uid}`;
   const chart = `<g stroke="#5d5a52" stroke-width="1" opacity=".55">${Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 26 : 14}" y2="${14 + i * 18}"/><line x1="200" y1="${14 + i * 18}" x2="${i % 3 === 0 ? 174 : 186}" y2="${14 + i * 18}"/>`).join("")}</g>`;
   const esc = slate.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Cathode UI, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
+  const slateG = `<g><rect x="54" y="196" width="92" height="30" rx="2" fill="#101114" stroke="#d9d4ca" stroke-width="1.2"/>${small && slateNo ? `<text x="100" y="218" text-anchor="middle" font-family="Cathode UI, system-ui, sans-serif" font-size="19" font-weight="800" letter-spacing="2" fill="#e8e2d6">${slateNo.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`)}</text>` : small ? `<g stroke="#e8e2d6" stroke-width="3.2" stroke-linecap="round" opacity=".8"><line x1="66" y1="211" x2="88" y2="211"/><line x1="96" y1="211" x2="104" y2="211"/><line x1="112" y1="211" x2="134" y2="211"/></g>` : `<text x="100" y="215" text-anchor="middle" font-family="Cathode UI, system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e8e2d6">${esc}</text>`}</g>`;
   if (who) return booking(id, who, small, slateG);
   // Plan item 270: each withheld target a distinct backlit silhouette (a hat brim, and
   // since item 371 Vane's bob, Pell's broad head and the Chair in his high-backed chair), its district's prop in shadow behind, cold rim light on its edge; the red bar a stamp across the eyes only.
