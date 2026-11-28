@@ -7102,7 +7102,7 @@ Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, 
 - **Accept:** **measure first** (stop centres, path). At D no two stops share a row (centres differ > 40 px in y for neighbours); the lane passes within 60 px of every stop; locked stops still read as locked (item 702's saturation test); map-diorama and Hedgerow map specs pass; key art re-shot if in its list; shots P/D.
 - **Size:** 2
 
-## 757. [ ] Hedgerow 3D: Hollowell's vans modelled as vans
+## 757. [ ] Hedgerow 3D: Hollowell's vans modelled as vans *(lane A, in progress)*
 - **Why:** critique (plan1128c hedge-l27-3d-D 230-690 x 260-650, -P 160-560 x 590-1100): the convoy reads as flat purple bricks with a gold disc and no gaps, a wall across the farm; items 584/730/749 gave the classes colours and 2D drawings, the 3D meshes stay boxes.
 - **Build:** in `games/hedgerow/src/render3d/` (the vehicle models): a split cab and box, glass windscreen, dark wheels in arches, a door seam, a Hollowell livery decal; queued vans keep a visible gap on the road; the convoy pill (from 759: at D it sat on the road over the lead van) set off the road.
 - **Accept:** **measure first** (mesh parts, triangles, queue spacing). Each van has 4 wheels and a glass material (unit); gap >= 0.25 van length (unit); a pixel check finds windscreen colour on most on-screen vans; hedgerow 3D specs pass (2 workers); triangle budget held; Hedgerow key art re-shot; shots P/D.
