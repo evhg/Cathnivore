@@ -20,15 +20,17 @@ for (const [size, w, h] of (process.env.SIZES ?? 'D,P,L').split(',').map((s) => 
   }, level)
   await page.goto(`${base}/hedgerow/?sandbox=1&level=${level}`)
   await page.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 90000 })
-  const kinds = await page.evaluate(() => {
+  const kinds = await page.evaluate((up) => {
     const hg = window.hedgerow, g = hg.game(), done = []
     for (const k of g.level.towers ?? []) {
       let ok = false
       for (let r = 0; r < g.level.rows && !ok; r++) for (let c = 0; c < g.level.cols && !ok; c++) ok = hg.place(g, k, c, r).ok
       if (ok) done.push(k)
     }
+    // Plan item 744: UPGRADE=1 buys every path tower up to the key art's goals (two in one path, one in another)
+    if (up) for (const t of g.towers) if (t.path) for (const [k, n] of [[0, 2], [1, 1]]) while (t.path[k] < n && hg.upgrade(g, t.id, k).ok);
     return done
-  })
+  }, !!process.env.UPGRADE)
   await page.waitForTimeout(15000)
   const m = await page.evaluate(() => window.hedgerow.towerHeights())
   const folk = [...(m?.folk ?? [])].sort((a, b) => a - b)
