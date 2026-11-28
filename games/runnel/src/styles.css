@@ -5180,6 +5180,13 @@ body[data-mode='sunday'] .rail > .cal-title:first-of-type {
      valley's rim reads long late shadow, not a grey band */
   .stage:not(:has(.board.won)) .vl-focus-out { stop-color: color-mix(in srgb, var(--bank-shade) 38%, color-mix(in srgb, var(--vl-sky-top, var(--sky-golden)) 50%, var(--sky-golden))); }
 }
+/* Plan item 741 slice 2: in the day scheme the dry valley keeps more of its own colour (--vk 64 -> 78%) and item
+   545's filter no longer drains it (saturate .72 -> 1.2, a touch brighter), so the land round the board reads a
+   warm, sunlit late-autumn valley while it waits for water: mean chroma 13 -> 24 against the solved valley's 33.2; its saturation now passes the tiles' (0.47 vs 0.37, item 499 had them level): the critique asked for a lush valley before the solve
+   (scripts/runnel-741-measure.mjs). The plots move with it, hue kept (a saturate, not a tint: item 704's finding). */
+@media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: light) {
+  .stage:not(:has(.board.won)) .valley { --vk: 78%; filter: saturate(1.2) brightness(.9); }
+}
 @media (min-width: 1100px) and (min-height: 640px) and (prefers-color-scheme: dark) {
   .stage:not(:has(.board.won)) .valley { --vk: 22%; --vk-to: var(--paper); }
   .stage:not(:has(.board.won)) .vl-focus-out { stop-color: var(--bank-shade); }

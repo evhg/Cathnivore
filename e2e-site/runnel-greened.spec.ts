@@ -57,7 +57,7 @@ test('a solved board greens the valley over', async ({ page }) => {
 })
 
 // Plan item 499: on a desktop the valley recedes (toward the paper) while the board is in play, and comes back to
-// full colour once it's solved.
+// full colour once it's solved (item 741: it recedes less in the day scheme, 78% of its own colour, not 64%).
 test('at D the valley recedes during play and returns in full colour when solved', async ({ page, hasTouch }) => {
   test.skip(hasTouch, 'the desktop stage')
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
@@ -65,7 +65,7 @@ test('at D the valley recedes during play and returns in full colour when solved
   await page.goto('/runnel/?shotsolve')
   await page.locator('[data-last]').waitFor()
   const vk = () => page.locator('.stage .valley').first().evaluate((e) => getComputedStyle(e).getPropertyValue('--vk').trim())
-  expect(await vk()).toBe('64%')
+  expect(await vk()).toBe('78%')
   await page.locator('[data-last]').click({ force: true })
   await expect(page.locator('.board.won')).toHaveCount(1)
   expect(await vk()).toBe('100%')
