@@ -6,7 +6,7 @@ import { mkdirSync } from 'node:fs'
 mkdirSync(S, { recursive: true })
 const b = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH })
 const p = await b.newPage({ viewport: { width: 1400, height: 900 } })
-await p.goto('http://localhost:4181/hedgerow/?sandbox=1&2d&level=34')
+await p.goto(`${process.env.BASE ?? 'http://localhost:4181'}/hedgerow/?sandbox=1&2d&level=34`)
 await p.waitForFunction(() => !!window.hedgerow?.game(), null, { timeout: 60000 })
 const kinds = ['courier','hatchback','van','pickup','sprinter','lorry','steel','artic','transporter','skip','crane','plantdozer','drone','quad','execcar']
 const urls = await p.evaluate(([ks, CELL]) => ks.map((k) => [k, window.hedgerow.enemySprite(k, CELL, false), window.hedgerow.enemySprite(k, CELL, true)]), [kinds, Number(process.env.CELL ?? 64)])

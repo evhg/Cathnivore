@@ -1775,7 +1775,8 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
       ctx.fill();
     }
   }
-  shine(ctx, x0 + L * 0.12, -bw * 0.4, L * 0.3, bw * 0.12);
+  // Plan item 749: the gloss lies on the roof (centred 0.12 in, 0.3 wide, it ran out past the tail and the flank).
+  shine(ctx, x0 + L * 0.32, -bw * 0.26, L * 0.2, bw * 0.08);
 }
 
 /** How big each enemy is drawn, relative to a van. */
@@ -1999,7 +2000,8 @@ function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): vo
     ctx.fillText(o.label, lx, y);
     ctx.restore();
   }
-  shine(ctx, x0 + L * 0.12, y0 + W * 0.14, L * 0.3, W * 0.12);
+  // Plan item 749: on the roof, not past the tail (see fleetTop).
+  shine(ctx, x0 + L * 0.32, y0 + W * 0.24, L * 0.2, W * 0.08);
 }
 
 /** Plan item 285: from-above views of the ground vehicles not drawn by `vehicle`, nose to the right, centred on the
