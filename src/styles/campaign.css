@@ -2109,6 +2109,8 @@ html[data-arrived] #root > * { animation: cmp-arrive 300ms ease-out both; }
   rotate: -1deg;
   transition: left 260ms ease, top 260ms ease;
 }
+/* Plan item 753: squeezed between region names, the ticket hangs level (its turned corners grazed 'Highmoor') */
+.cmp-ticket.is-level { rotate: none; }
 .cmp-ticket-pin {
   position: absolute;
   top: -7px;

@@ -477,3 +477,23 @@ test('the map speaks the board: tiles with a body, held land under Hollowell wra
   }, shot)
   expect(sat.freed).toBeGreaterThanOrEqual(sat.locked * 1.5)
 })
+
+// Plan item 753: the moment is stored with the win, so a closing scene left mid-way still breaks the opened chapter's
+// seal on the next visit, once: not again on a reload.
+test('a first win left before the closing scene ends breaks the seal on the next visit, once', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem('seeded')) {
+      sessionStorage.setItem('seeded', '1')
+      localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true, pendingMoment: 'fresh-meat' }))
+    }
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(page.locator('[data-seal-crack="word-of-mouth"]')).toHaveCount(1)
+  await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done', { timeout: 8000 })
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cathnivore:campaign:v1')!).pendingMoment)).toBeUndefined()
+  await page.reload()
+  await page.getByRole('button', { name: 'Campaign' }).click()
+  await expect(page.locator('.cmp-map')).toHaveAttribute('data-phase', 'done')
+  await expect(page.locator('.cmp-ribbon')).toHaveCount(0)
+})

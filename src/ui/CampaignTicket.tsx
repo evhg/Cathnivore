@@ -7,7 +7,7 @@ import type { Chapter } from '../content/chapters'
 // Test hooks: `.cmp-ticket[data-chapter]`, `.cmp-ticket-lead`.
 const GAP = 58
 
-type Place = { left: number; top: number; px: number; py: number; ex: number; ey: number }
+type Place = { left: number; top: number; px: number; py: number; ex: number; ey: number; level: boolean }
 
 export default function CampaignTicket({
   chapter,
@@ -118,7 +118,10 @@ export default function CampaignTicket({
       const side = px < left ? 'l' : px > left + w ? 'r' : py < top ? 't' : 'b'
       const exx = side === 'l' ? left : side === 'r' ? left + w : ex
       const eyy = side === 't' ? top : side === 'b' ? top + h : ey
-      setPlace({ left, top, px, py, ex: exx, ey: eyy })
+      // Plan item 753: turned 1 degree its corners reach about 3 px past its box; squeezed between names (at D chapter
+      // 2's sat 1 px into 'Highmoor') it hangs level instead of moving off further.
+      const level = over(names, left, top, 3) > 0
+      setPlace({ left, top, px, py, ex: exx, ey: eyy, level })
     }
     measure()
     if (typeof ResizeObserver === 'undefined') return
@@ -149,7 +152,7 @@ export default function CampaignTicket({
       <div
         key={chapter.id}
         ref={ref}
-        className={`cmp-ticket cmp-ticket-${state}`}
+        className={`cmp-ticket cmp-ticket-${state}${place?.level ? ' is-level' : ''}`}
         data-chapter={chapter.id}
         style={place ? { left: place.left, top: place.top } : { visibility: 'hidden' }}
         onPointerEnter={() => onHold(true)}

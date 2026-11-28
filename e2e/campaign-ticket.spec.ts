@@ -121,3 +121,32 @@ test("desktop campaign: every chapter's ticket stays on the sheet", async ({ pag
     }
   }
 })
+
+// Plan item 753: no chapter's ticket meets a region name (its turned box included: at 1440 chapter 2's sat 1 px into
+// 'Highmoor'; squeezed between names it now hangs level).
+test("desktop campaign: no chapter's ticket meets a region name", async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-chromium', 'desktop layout')
+  await page.addInitScript(() => localStorage.setItem('cathnivore:campaign:v1', JSON.stringify({ version: 1, completed: ['fresh-meat'], tutorialDone: true })))
+  for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    await page.getByText('Campaign', { exact: false }).first().click()
+    await page.getByRole('heading', { name: 'Campaign' }).waitFor()
+    const ids = await page.locator('.cmp-pin[data-chapter]').evaluateAll((els) => els.map((e) => e.getAttribute('data-chapter')!))
+    for (const id of ids) {
+      await page.locator(`.cmp-pin[data-chapter="${id}"] .cmp-pin-disc`).hover()
+      await expect(page.locator('.cmp-ticket')).toHaveAttribute('data-chapter', id)
+      await page.waitForTimeout(700)
+      const hits = await page.evaluate(() => {
+        const t = document.querySelector('.cmp-ticket')!.getBoundingClientRect()
+        return [...document.querySelectorAll('.campaign-screen > .cmp-map .cmp-map-name')]
+          .filter((e) => {
+            const r = e.getBoundingClientRect()
+            return Math.min(r.right, t.right) > Math.max(r.left, t.left) && Math.min(r.bottom, t.bottom) > Math.max(r.top, t.top)
+          })
+          .map((e) => e.textContent)
+      })
+      expect(hits, `${width}x${height} ${id}'s ticket over a region name`).toEqual([])
+    }
+  }
+})

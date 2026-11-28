@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CHAPTERS, chapterConfig } from '../src/content/chapters'
 import { CHAPTER_HOMES, CHAPTER_SEALS, MAP_AXIAL, currentChapterIndex, hasHardSeal, liberatedRegions, sealsEarned } from '../src/content/campaignMap'
 import { createGame } from '../src/engine/api'
-import { chapterSeals, loadCampaign, markChapterComplete, recordSeals } from '../src/platform/storage'
+import { chapterSeals, clearPendingMoment, loadCampaign, markChapterComplete, markMomentPending, pendingMoment, recordSeals } from '../src/platform/storage'
 import type { GameState } from '../src/engine/types'
 
 // Plan item 35: every chapter is a place on the map, and between them they free all of Marrow.
@@ -80,5 +80,19 @@ describe('seals in campaign storage', () => {
     markChapterComplete('fresh-meat')
     expect(chapterSeals('fresh-meat')).toEqual(['win'])
     expect(loadCampaign().completed).toEqual(['fresh-meat'])
+  })
+
+  // Plan item 753: a first win's map moment waits in the save until the campaign screen shows it, once.
+  it('keeps a first win\'s map moment until it is shown, then clears it', () => {
+    expect(pendingMoment()).toBeUndefined()
+    markChapterComplete('fresh-meat')
+    markMomentPending('fresh-meat')
+    expect(pendingMoment()).toBe('fresh-meat')
+    clearPendingMoment()
+    expect(pendingMoment()).toBeUndefined()
+    expect(loadCampaign().completed).toEqual(['fresh-meat'])
+    // a moment for a chapter not in the save's completed list never plays
+    markMomentPending('the-plan')
+    expect(pendingMoment()).toBeUndefined()
   })
 })

@@ -196,6 +196,10 @@ export interface CampaignProgress {
   // Plan item 35: the wax seals earned per chapter id ('win', 'hard', 'feat'; content/campaignMap.ts).
   // A chapter in `completed` from an older save counts its 'win' seal (`chapterSeals`).
   seals?: Record<string, string[]>
+  // Plan item 753: a first win whose map moment (the region floods, the next chapter's seal breaks) hasn't played
+  // yet. Set on the win, cleared once the campaign screen shows it, so it plays once even if the closing scene was
+  // left mid-way, and never again on a reload.
+  pendingMoment?: string
 }
 
 export function loadCampaign(): CampaignProgress {
@@ -222,6 +226,21 @@ export function markChapterComplete(chapterId: string): void {
   const progress = loadCampaign()
   if (progress.completed.includes(chapterId)) return
   storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, completed: [...progress.completed, chapterId] }))
+}
+
+export function markMomentPending(chapterId: string): void {
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...loadCampaign(), pendingMoment: chapterId }))
+}
+
+export function pendingMoment(progress: CampaignProgress = loadCampaign()): string | undefined {
+  const id = progress.pendingMoment
+  return typeof id === 'string' && progress.completed.includes(id) ? id : undefined
+}
+
+export function clearPendingMoment(): void {
+  const progress = loadCampaign()
+  if (progress.pendingMoment === undefined) return
+  storage.set(CAMPAIGN_KEY, JSON.stringify({ ...progress, pendingMoment: undefined }))
 }
 
 // The guided tutorial runs automatically only for someone who hasn't finished or skipped it. A save

@@ -14,6 +14,9 @@ import {
   clearGame,
   loadCampaign,
   markChapterComplete,
+  markMomentPending,
+  pendingMoment,
+  clearPendingMoment,
   recordGrowingSeasonCarryOver,
   recordSeals,
   chapterSeals,
@@ -268,6 +271,7 @@ function Screens() {
       const firstWin = !loadCampaign().completed.includes(chapter.id)
       recordSeals(chapter.id, sealsEarned(chapter.id, state))
       markChapterComplete(chapter.id)
+      if (firstWin) markMomentPending(chapter.id)
       clearChapterLossCount(chapter.id)
       setScreen({ name: 'chapterScene', chapter, which: 'closing', mode, celebrate: firstWin })
     } else {
@@ -400,18 +404,22 @@ function Screens() {
 
   if (screen.name === 'campaign') {
     return (
+      <CampaignMoment celebrate={screen.celebrate}>
+        {(celebrate) => (
       <CampaignScreen
         chapters={CHAPTERS}
         completed={loadCampaign().completed}
         tutorialDone={isTutorialDone()}
         coachDone={(id) => isCoachDone(id)}
         seals={(id) => chapterSeals(id)}
-        celebrate={screen.celebrate}
+        celebrate={celebrate}
         onStartHard={(chapter) => startChapter(chapter, true)}
         onStart={startChapter}
         onReplayTutorial={replayTutorial}
         onBack={() => setScreen({ name: 'title' })}
       />
+        )}
+      </CampaignMoment>
     )
   }
 
@@ -581,4 +589,15 @@ function DailyButton({ onStart }: { onStart(config: GameConfig, seed: number, mo
       </small>
     </button>
   )
+}
+
+// Plan item 753: the map's first-win moment (the region floods, the opened chapter's seal breaks) plays once per
+// unlock: straight after the closing scene, or on the next visit if that scene was left mid-way; never on a reload.
+// Read once on entering the screen (so clearing it can't cut the moment short), cleared once shown.
+function CampaignMoment({ celebrate, children }: { celebrate?: string; children(celebrate: string | undefined): React.ReactNode }) {
+  const [moment] = useState(() => celebrate ?? pendingMoment())
+  useEffect(() => {
+    if (moment) clearPendingMoment()
+  }, [moment])
+  return <>{children(moment)}</>
 }
