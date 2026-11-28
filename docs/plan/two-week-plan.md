@@ -1,7 +1,5 @@
 # Two-week plan (2026-11-01 to 2026-11-15, extended 2026-11-02 twice)
 
-Planning: lane A, 2026-11-28T10:55Z
-
 
 
 
@@ -7010,7 +7008,7 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - **Accept:** **measure first** (each tower's projected height in l27 `?sandbox=1` D). After: scarecrow < windmill on screen; beehive <= 1.6x a lorry's length; Cath >= 70 px tall at D and >= 90 image px at P (2x), unoccluded at the level's camera; hedgerow-3dframe, hedgerow-shadow3d pass; hedgerow tune `--verify` unchanged (no rules touched); key art re-shot; shots P/D.
 - **Size:** 2
 
-## 745. [ ] NIGHT SHIFT: a market crowd that reads as people, stalls with goods
+## 745. [ ] NIGHT SHIFT: a market crowd that reads as people, stalls with goods *(lane A, in progress)*
 - **Why:** critique 2026-11-28 04:10 (plan1128a ns-street-P 600-700 x 360-500, 1170-1320 x 360-490): the passers-by are pale grey featureless mannequins under identical umbrellas and the stalls behind them are empty boxes. Items 719 and 724 placed and lit the crowd; they still read as placeholders (VISION: a scene, not a placeholder).
 - **Build:** 4-6 silhouette archetypes on the existing crowd rig (long coat, hood, apron vendor, couple, parent with child), skin and hair tones, coats from the street palette, umbrellas varied (some none, some caps); stall counters stocked from instanced goods (crates, fish on ice, lanterns, hanging cloth).
 - **Accept:** **measure first** (crowd colour spread and the share of stalls with goods). No two neighbouring figures share archetype and colour; figure luminance vs the street behind 2:1+; each stall in view shows 3+ goods meshes; cathode-perf phone alone within budget (<= 256 calls); cathode-street passes; posters/key art re-rendered if the title street changes; shots P/D.
@@ -7040,5 +7038,51 @@ Planning 2026-11-26 19:30 lane A: shots `e2e/screenshots/plan1126d` (P 390x844, 
 - Runnel D (420-590 x 130-225): the spring-house channel ends at a small arch at the board's top-left while the source is the centre tile: the feed doesn't visibly connect.
 - Runnel solved D (690-1090 x 812-858): 'Your card' and 'Play practice' beige on cream, weak boundary (non-text 3:1).
 - NIGHT SHIFT street P (1380-1620 x 140-180 at 2x): 'DRAG TO AIM' over a bright lamp.
+- **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
+- **Size:** 2
+
+Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, NIGHT SHIFT and Hedgerow at 2x; D 1440x900; every game), one subagent critique against VISION.md, told to skip 739-748 and 319/543/745. Dropped: NIGHT SHIFT phone title recomposition (item 678 closed it by measurement: face 70 px+, List whole, no scroll); campaign D's bigger bust (item 716's decision: the atlas bounds her column). The critique rates Cathnivore and Runnel D closest to the bar; the gaps are NIGHT SHIFT up close, Hedgerow 2D's vehicles, Runnel's phone.
+
+## 749. [ ] Hedgerow 2D: vehicles you can tell apart, drawn as vehicles
+- **Why:** critique 2026-11-28 11:10 (plan1128b hedge-l27-2d-P 40-480 x 620-1100, hedge-l27-2d-D 280-570 x 560-780): the convoy reads as flat coloured rectangles; 2D is the no-WebGL fallback and must stand on its own beside the 3D renderer. (Its 'field fills x 260-790' was settled by earlier fit items; measure it, don't redo it.)
+- **Build:** top-down sprites per vehicle class in `games/hedgerow/src/sprites.ts`: a cab and a cargo bed, wheels, a soft cast shadow, Hollowell livery stripe; the van, the lorry, the plated lorry and the drone each a different outline, not just colour (item 703's one colour per class kept).
+- **Accept:** **measure first** (the field's width share at D; each class's sprite outline). A greyscale shot tells the four classes apart (outline IoU between any two classes <= 0.8); hedgerow-convoy, -readable, -late-labels pass; key art re-shot (`sprites.ts` is in its list); shots P/D.
+- **Size:** 2
+
+## 750. [ ] Runnel phone: the day as a ritual, not a hint line
+- **Why:** critique (plan1128b runnel-P 20-370 x 790-825, 30-375 x 640-780): the phone drops Bea's almanac, the streak and the month row that make the desktop a daily ritual (runnel-D 15-345 x 290-590); it ends on a plain hint sentence, and Cath's bubble crowds the board's foot.
+- **Build:** a compact almanac strip at P (weather vignette, the week's dots, days kept and watered counts, item 725's drawn forms); the hint folded into Cath's bubble on a first play; her bubble kept off the board's bottom row.
+- **Accept:** **measure first**. At 390x844 the strip, streak and week row are visible without scrolling past the board; no plain paragraph below the board; the board's corners whole; runnel-phone-board, runnel-one-cath, runnel-win pass; key art unchanged (P only) or re-shot; shots P/D.
+- **Size:** 2
+
+## 751. [ ] NIGHT SHIFT: the Pin in her hand is a crafted thing
+- **Why:** critique (plan1128b ns-street-P 1120-1690 x 330-780 at 2x): the Pin is a plain grey cylinder in a black blob glove, the largest object on the play screen and the least made. Items 698/713 placed the viewmodel; this is its modelling.
+- **Build:** the Pin's view model: the coat cuff over the wrist, the glove's knuckle seams (item 713's fingers kept), a ridged leather grip, a steel ferrule and a tip ring; wet specular; the idle sway and walk bob checked to move it.
+- **Accept:** **measure first** (the viewmodel's triangles and parts). Cuff and grip visible in a P and D shot; sway non-zero between frames 1 s apart; `scripts/cathode-perf.mjs` phone alone within budget (<= 256 calls); cathode-viewmodel/street specs pass; shots P/D.
+- **Size:** 2
+
+## 752. [ ] NIGHT SHIFT: Cath's face made up and lit (catch-lights, liner, blush, gloss)
+- **Why:** critique (plan1128b ns-title-D 960-1065 x 285-375, ns-play-P 300-380 x 270-380): her face reads as flat porcelain, no catch-lights, faint liner and blush, a matte mouth, one look everywhere (VISION's character bible). Item 319 sculpts her; this is the paint and light on the face only; check 319's slices first and build only what's missing.
+- **Build:** on the face material: a catch-light pair per eye (unlit, view-facing), winged liner and a raised right brow in the face texture, cheek blush, a lip gloss specular lobe; the title smirk, the pick's determined look (item 727) kept.
+- **Accept:** **measure first** (luminance spread over the face box at title D, from `front-poster`). Spread +30%; 2+ near-white clusters per eye at title D zoom; cheek redder than forehead (a* +8); posters and key art re-rendered; cathode-front, classpick pass; cathode-perf in budget; shots P/D.
+- **Size:** 2
+
+## 753. [ ] Cathnivore campaign: a chapter is chosen with a route, opened with a seal
+- **Why:** critique (plan1128b cath-campaign-D 740-960 x 140-480, 145-400 x 730-835): choosing a chapter changes a card but nothing moves on the atlas; an unlock has no moment (VISION: the liberation spine, alive). The bust size stays (item 716's decision).
+- **Build:** on choosing a chapter the dotted road from Cath's stall draws to its regions (stroke-dashoffset, 600 ms); a newly opened chapter breaks a wax seal once (stored, so once only); the chapter popover placed off any region label.
+- **Accept:** e2e: the route path's length animates on select (two samples differ), the seal shows once per unlock and not on reload; the popover box meets no region label box at D/P; reduced motion: fades only; campaign-* pass; shots P/D.
+- **Size:** 2
+
+## 754. [ ] The bugs from the 2026-11-28 11:10 critique, fixed as one batch
+- Cathnivore game D (cath-game-D 1275-1335 x 88-112): 'STAGE I' crowds the 'EXPAND Pasture' title.
+- Cathnivore setup P (cath-setup-P 60-140 and 270-330 x 340-360): plates say 'Brindle', 'River' (item 671's short plates: check they match the game's names or are by design).
+- Hedgerow l27 2D P (hedge-l27-2d-P 580-750 x 1420-1545): the tower strip's scroll arrow over the Radio Mast card's price.
+- Hedgerow l34 2D P (370-760 x 120-230): 'Look at them go!' bubble over the field's top-right.
+- Hedgerow l27 2D (D 730-930 x 768-800, P 30-380 x 1160-1200): the wave health bar over plots.
+- Hedgerow l34 2D P (70-200 x 215-250): depot boards '122' without 'to go' (D says it).
+- Runnel D (runnel-D 740-778 x 851-859): a stray blue bar under the board.
+- NIGHT SHIFT title D (ns-title-D 455-520 x 462-478): the Ledger plate shows a '— —' placeholder.
+- NIGHT SHIFT pick P (ns-play-P 30-750 x 1440-1490): an empty ruled stat row; 'HER LINE' low contrast.
+- Portfolio D: '23 sessions' against '25 Build sessions'.
 - **Accept:** each closed by a fix with a spec assertion, or by a logged measurement or decision. Shots P and D.
 - **Size:** 2
