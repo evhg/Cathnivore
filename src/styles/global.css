@@ -4752,9 +4752,11 @@ html.no-animations .setup[data-phone-steps] .setup-board-stage .opening-preview 
   /* Step 1: the mode as two tags stacked at the strip's left, the four producers as a strip of nameplates. */
   .setup[data-steps] .setup-table[data-setup-table] .step-who { grid-template-columns: 150px minmax(0, 1fr); gap: 14px; }
   .setup[data-steps] .setup-table[data-setup-table] .setup-step[data-step='1'] > .step-head { margin-bottom: 6px; }
-  .setup[data-steps] .setup-table[data-setup-table] .setup-mode .segmented.mode-picker { gap: 6px; justify-content: flex-end; }
+  /* plan item 748: the picked card's 3 px gold ring and the laid-flat card under it read as touching (8 px of box gap,
+     about 4 px to see): 12 px apart, each 2 px shorter, so the pair still ends with the nameplates. */
+  .setup[data-steps] .setup-table[data-setup-table] .setup-mode .segmented.mode-picker { gap: 10px; justify-content: flex-end; }
   .setup[data-steps] .setup-table[data-setup-table] .setup-mode .segmented.mode-picker label[data-place-card] {
-    min-height: 48px; padding: 6px 8px; border-bottom-width: 3px;
+    min-height: 46px; padding: 5px 8px; border-bottom-width: 3px;
   }
   /* Laid flat a little less than item 204's 32 deg, so the unpicked card keeps 44 px+ of height in a short strip. */
   .setup[data-steps] .setup-table[data-setup-table] .setup-mode .segmented.mode-picker label[data-place-card]:not(:has(input:checked)) { transform: rotateX(20deg); }

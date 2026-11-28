@@ -23,6 +23,9 @@ for (const [width, height] of [[1440, 900], [1280, 800]] as const) {
       expect(b.width).toBeGreaterThanOrEqual(44)
       expect(b.height).toBeLessThanOrEqual(160)
     }
+    // Plan item 748: the two cards stand 12 px apart, so the picked card's gold ring never meets the flat one.
+    const [solo, hot] = [(await cards.nth(0).boundingBox())!, (await cards.nth(1).boundingBox())!]
+    expect(hot.y - (solo.y + solo.height)).toBeGreaterThanOrEqual(11)
     const upright = (sel: string) => page.locator(sel).evaluate((el) => getComputedStyle(el).transform === 'none')
     expect(await upright('[data-place-card="solo"]')).toBe(true)
     expect(await upright('[data-place-card="hotseat"]')).toBe(false)
