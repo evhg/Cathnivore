@@ -7073,7 +7073,7 @@ Planning 2026-11-28 11:15 lane A: shots `e2e/screenshots/plan1128b` (P 390x844, 
 - **Accept:** e2e: the route path's length animates on select (two samples differ), the seal shows once per unlock and not on reload; the popover box meets no region label box at D/P; reduced motion: fades only; campaign-* pass; shots P/D.
 - **Size:** 2
 
-## 754. [ ] The bugs from the 2026-11-28 11:10 critique, fixed as one batch
+## 754. [ ] The bugs from the 2026-11-28 11:10 critique, fixed as one batch *(lane A, in progress)*
 - Cathnivore game D (cath-game-D 1275-1335 x 88-112): 'STAGE I' crowds the 'EXPAND Pasture' title.
 - Cathnivore setup P (cath-setup-P 60-140 and 270-330 x 340-360): plates say 'Brindle', 'River' (item 671's short plates: check they match the game's names or are by design).
 - Hedgerow l27 2D P (hedge-l27-2d-P 580-750 x 1420-1545): the tower strip's scroll arrow over the Radio Mast card's price.
