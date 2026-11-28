@@ -1823,6 +1823,47 @@ html.no-animations .title-screen * {
 .sq-sun-out { stop-color: var(--sky-sun-glow); stop-opacity: 0; }
 .sq-haze-in { stop-color: var(--paper); stop-opacity: .62; }
 .sq-haze-out { stop-color: var(--paper); stop-opacity: 0; }
+/* Plan item 746: window boxes, balcony rails and hanging shop signs, and the square's people (TitleSquare's SquareFolk,
+   drawn as item 717's shoppers): one strolls, one browses, still under reduced motion and while the tab is hidden. */
+.sq-rail { fill: none; stroke: var(--square-trim); stroke-width: 2; }
+.sq-box { fill: color-mix(in srgb, var(--wood) 80%, var(--square-trim)); }
+.sq-bloom { fill: var(--clay); }
+.sq-bracket { fill: none; stroke: color-mix(in srgb, var(--square-trim) 60%, var(--ink)); stroke-width: 2; stroke-linecap: round; }
+.sq-sign { stroke: var(--square-trim); stroke-width: 1.5; }
+.sq-sign.t0 { fill: var(--pasture); }
+.sq-sign.t1 { fill: var(--sea); }
+.sq-sign.t2 { fill: var(--wheat); }
+.sq-folk-shadow { fill: var(--ink); opacity: .18; }
+.sq-folk-legs { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
+.sq-folk-coat { stroke: var(--ink); stroke-width: .7; stroke-linejoin: round; fill: var(--clay); }
+.sq-folk-coat[data-tone="1"] { fill: var(--sea); }
+.sq-folk-coat[data-tone="2"] { fill: var(--pasture); }
+.sq-folk-coat[data-tone="3"] { fill: color-mix(in srgb, var(--clay) 55%, var(--sea)); }
+.sq-folk-head { stroke: var(--ink); stroke-width: .6; fill: color-mix(in srgb, var(--wheat) 45%, var(--paper-hi)); }
+.sq-folk-head[data-skin="1"] { fill: color-mix(in srgb, var(--wheat) 55%, var(--soil)); }
+.sq-folk-head[data-skin="2"] { fill: color-mix(in srgb, var(--soil) 75%, var(--ink)); }
+.sq-folk-basket { fill: var(--wheat); stroke: var(--ink); stroke-width: .5; stroke-linejoin: round; }
+.sq-folk-hat { fill: var(--ink); stroke: var(--ink); stroke-width: .9; stroke-linecap: round; }
+.sq-face { transform-box: fill-box; transform-origin: 50% 100%; }
+.sq-face[data-dir="l"] { scale: -1 1; }
+.sq-walk { animation: sq-stroll 15s ease-in-out infinite; }
+.sq-walk .sq-face { animation: sq-turn 15s step-end infinite; }
+.sq-walk .sq-face[data-dir="l"] { animation-name: sq-turn-l; }
+.sq-walk[data-pace="2"], .sq-walk[data-pace="2"] .sq-face { animation-duration: 19s; animation-delay: -7s; }
+.sq-stand .sq-face { animation: sq-browse 7s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes sq-stroll {
+  0%, 10% { translate: 0 0; }
+  44%, 60% { translate: var(--wx) 0; }
+  94%, 100% { translate: 0 0; }
+}
+@keyframes sq-turn { 0% { scale: 1 1; } 52% { scale: -1 1; } }
+@keyframes sq-turn-l { 0% { scale: -1 1; } 52% { scale: 1 1; } }
+@keyframes sq-browse { 0%, 70%, 100% { rotate: 0deg; } 80%, 90% { rotate: 4deg; } }
+html[data-tab-hidden] .sq-walk, html[data-tab-hidden] .sq-walk .sq-face, html[data-tab-hidden] .sq-stand .sq-face { animation-play-state: paused; }
+html.no-animations .sq-walk, html.no-animations .sq-walk .sq-face, html.no-animations .sq-stand .sq-face { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .sq-walk, .sq-walk .sq-face, .sq-stand .sq-face { animation: none; }
+}
 .title-screen[data-sky='evening'] .sq-glass.is-lit { fill: var(--street-window-lit); }
 .title-screen[data-sky='evening'] .sq-sunwash { display: none; }
 .title-screen[data-sky='evening'] .sq-haze-in { stop-opacity: .5; }

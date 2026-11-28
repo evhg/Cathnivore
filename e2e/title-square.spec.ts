@@ -99,3 +99,22 @@ test('the phone title shows the square behind Cath and the board, with no sidewa
   const [band] = await sample(page, [[0, sq.y + 110, 34, 120]])
   expect(band!.chroma).toBeGreaterThanOrEqual(40)
 })
+
+// Plan item 746: people in the square. A figure is in view when hiding it changes the pixels over its head (the
+// menu, Cath, the board and the table paint over some; their boxes are wider than what they paint, so this is read
+// from the screen, not hit-tested): 3+ at a desktop, 2+ on a phone.
+test('the square has people in view (item 746)', async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, 9, 'light')
+  const heads = await page.evaluate(() =>
+    [...document.querySelectorAll('.title-square .sq-folk-head')].map((h) => {
+      const r = h.getBoundingClientRect()
+      return { x: Math.round(r.left), y: Math.round(r.top), width: Math.max(2, Math.round(r.width)), height: Math.max(2, Math.round(r.height)) }
+    }).filter((r) => r.x >= 0 && r.x + r.width <= window.innerWidth),
+  )
+  const shown = await Promise.all(heads.map((clip) => page.screenshot({ clip })))
+  await page.addStyleTag({ content: '.sq-folk { visibility: hidden; }' })
+  let seen = 0
+  for (const [i, clip] of heads.entries()) if (!(await page.screenshot({ clip })).equals(shown[i]!)) seen++
+  expect(seen).toBeGreaterThanOrEqual(info.project.name.includes('phone') ? 2 : 3)
+})

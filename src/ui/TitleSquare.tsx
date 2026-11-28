@@ -1,4 +1,3 @@
-import { rng } from './seededRng'
 
 // Plan item 382: Marrow's market square behind the title's counter, between the bunting and the table, so Cath and
 // the board stand in a place, not an empty cream room. Washed facades (ochre, sage, rose, slate, cream) under
@@ -7,68 +6,7 @@ import { rng } from './seededRng'
 // the same square at dusk with lit windows. A paper haze sits behind the menu, Cath and the board so the square
 // stays back. Static (nothing moves); purely decorative (aria-hidden). Colours are tokens (`--square-*`).
 
-const W = 1440
-const GROUND = 548
-
-interface Facade {
-  x: number
-  w: number
-  top: number
-  tone: number
-  roof: 'gable' | 'step' | 'mansard' | 'hip'
-  floors: number
-}
-
-/** One row of tall townhouses across the frame; each a different wash from its neighbour. */
-function facades(): Facade[] {
-  const r = rng(382)
-  const out: Facade[] = []
-  let x = -14
-  let last = -1
-  while (x < W + 10) {
-    const w = Math.round(118 + r() * 54)
-    const top = Math.round(70 + r() * 70)
-    let tone = Math.floor(r() * 5)
-    if (tone === last) tone = (tone + 2) % 5
-    last = tone
-    const k = r()
-    const roof = k < 0.35 ? 'gable' : k < 0.55 ? 'step' : k < 0.8 ? 'mansard' : 'hip'
-    out.push({ x, w, top, tone, roof, floors: 6 })
-    x += w + 2
-  }
-  return out
-}
-
-const FACADES = facades()
-
-function roofPath(f: Facade): string {
-  const { x, w, top } = f
-  if (f.roof === 'gable') return `M${x - 4} ${top}L${x + w / 2} ${top - w * 0.34}L${x + w + 4} ${top}Z`
-  if (f.roof === 'hip') return `M${x - 4} ${top}L${x + w * 0.22} ${top - 30}H${x + w * 0.78}L${x + w + 4} ${top}Z`
-  if (f.roof === 'mansard') return `M${x - 4} ${top}L${x + 10} ${top - 34}H${x + w - 10}L${x + w + 4} ${top}Z`
-  // a Dutch stepped gable: the wall itself climbs, capped in trim
-  const s = w / 7
-  let d = `M${x} ${top}`
-  for (let i = 1; i <= 3; i++) d += `V${top - i * 14}H${x + s * i}`
-  d += `V${top - 50}H${x + w - s * 3}`
-  for (let i = 3; i >= 1; i--) d += `V${top - i * 14}H${x + w - s * (i - 1)}`
-  return d + `V${top}Z`
-}
-
-/** Windows: a grid over the upper floors, every third lit at dusk; each with a pair of shutters on the sage houses. */
-const WINDOWS = FACADES.flatMap((f, i) => {
-  const cols = Math.max(2, Math.round(f.w / 38))
-  const gap = f.w / cols
-  const out: { x: number; y: number; lit: boolean; shut: boolean }[] = []
-  for (let row = 0; row < f.floors; row++) {
-    const y = f.top + 22 + row * 56
-    if (y + 28 > 430) continue
-    for (let c = 0; c < cols; c++) {
-      out.push({ x: Math.round(f.x + c * gap + gap / 2 - 8), y, lit: (i * 5 + c * 3 + row * 7) % 4 === 0, shut: f.tone === 1 })
-    }
-  }
-  return out
-})
+import { FACADES, GROUND, roofPath, W, WINDOWS } from './titleSquareLayout'
 
 /** Each house's ground floor: a shopfront under a striped awning, the door on the side away from the sun. */
 const SHOPS = FACADES.map((f, i) => ({ x: f.x + 10, w: f.w - 20, tone: i % 3 }))
@@ -100,12 +38,40 @@ const L = (() => {
   let glassLit = ''
   let mullions = ''
   let sills = ''
+  let boxes = ''
+  let blooms = ''
+  let rails = ''
+  const pane = (lit: boolean, d: string) => {
+    if (lit) glassLit += d
+    else glass += d
+  }
   for (const w of WINDOWS) {
-    if (w.shut) shutters += box(w.x - 6, w.y, 28, 28)
-    if (w.lit) glassLit += box(w.x, w.y, 16, 28)
-    else glass += box(w.x, w.y, 16, 28)
-    mullions += `M${w.x + 8} ${w.y}v28M${w.x} ${w.y + 12}h16`
-    sills += box(w.x - 3, w.y + 28, 22, 3)
+    const { x, y } = w
+    if (w.style === 'arch') {
+      shutters += box(x - 9, y + 2, 7, 28) + box(x + 18, y + 2, 7, 28)
+      pane(w.lit, `M${x} ${y + 30}V${y + 8}a8 8 0 0 1 16 0V${y + 30}Z`)
+      mullions += `M${x + 8} ${y + 2}v28`
+      sills += box(x - 3, y + 30, 22, 3)
+    } else if (w.style === 'pair') {
+      pane(w.lit, box(x - 2, y + 2, 9, 26) + box(x + 9, y + 2, 9, 26))
+      mullions += `M${x - 2} ${y + 12}h9M${x + 9} ${y + 12}h9`
+      sills += box(x - 4, y - 2, 24, 3) + box(x - 4, y + 28, 24, 3)
+    } else if (w.style === 'french' && w.row === 1) {
+      pane(w.lit, box(x - 1, y - 4, 18, 36))
+      mullions += `M${x + 8} ${y - 4}v36M${x - 1} ${y + 8}h18`
+      rails += `M${x - 6} ${y + 20}h28` + [0, 1, 2, 3, 4].map((k) => `M${x - 5 + k * 6.5} ${y + 20}v12`).join('')
+      sills += box(x - 7, y + 32, 30, 3)
+    } else {
+      if (w.shut) shutters += box(x - 6, y, 28, 28)
+      const h = w.style === 'french' ? 24 : 28
+      pane(w.lit, box(x, y + 28 - h, 16, h))
+      mullions += `M${x + 8} ${y + 28 - h}v${h}M${x} ${y + 12}h16`
+      sills += box(x - 3, y + 28, 22, 3)
+    }
+    if (w.box) {
+      boxes += box(x - 3, y + 26, 22, 6)
+      blooms += [0, 1, 2, 3].map((k) => `M${x - 1 + k * 6} ${y + 26}a2.6 2.6 0 1 0 0.1 0`).join('')
+    }
   }
   let shopfronts = ''
   let shopGlass = ''
@@ -121,7 +87,16 @@ const L = (() => {
     awnings[s.tone] += `M${s.x - 4} 446H${s.x + s.w + 4}L${s.x + s.w + 12} 470H${s.x - 12}Z`
     for (let k = 0; k < Math.floor(s.w / 24); k++) stripes += `M${s.x + 8 + k * 24} 447l-4 22`
   })
-  return { walls, steps, roofs, roofs2, chimneys, shades, cornices, shutters, glass, glassLit, mullions, sills, shopfronts, shopGlass, shopGlassLit, doors, awnings, stripes }
+  // Plan item 746: a hanging sign on every other shop, on a wrought bracket at the house's edge
+  let brackets = ''
+  const signs = ['', '', '']
+  SHOPS.forEach((s, i) => {
+    if (i % 2) return
+    const bx = s.x + s.w - 4
+    brackets += `M${bx} 404h24M${bx + 4} 404l14 -10M${bx + 6} 404v4M${bx + 20} 404v4`
+    signs[i % 3] += `M${bx + 3} 408h20v18a10 4 0 0 1 -20 0Z`
+  })
+  return { walls, steps, roofs, roofs2, chimneys, shades, cornices, shutters, glass, glassLit, mullions, sills, boxes, blooms, rails, shopfronts, shopGlass, shopGlassLit, doors, awnings, stripes, brackets, signs }
 })()
 
 const TOWER_X = 530
@@ -135,6 +110,41 @@ const COBBLES = Array.from({ length: 4 }, (_, row) => {
   for (let x = -off; x < W; x += step) out.push(`M${Math.round(x)} ${y}h${len}`)
   return out.join('')
 }).join('')
+
+/** Plan item 746: the square's people, in the gaps the menu, Cath and the board leave (D: 360-540, 800-870, the right
+ * stall; P: 376-535). Drawn in RegionFolk's (item 717) ink at street scale; each strolls its walk and browses. */
+const SQ_FOLK: { x0: number; x1: number; tone: number; s: number; basket?: boolean; hat?: boolean }[] = [
+  { x0: 392, x1: 500, tone: 0, s: 3.3, basket: true },
+  { x0: 468, x1: 468, tone: 1, s: 3.1, hat: true },
+  { x0: 1430, x1: 1396, tone: 2, s: 3.2, basket: true },
+  { x0: 1408, x1: 1408, tone: 3, s: 3.0, hat: true },
+]
+
+function SquareFolk() {
+  return (
+    <g className="sq-folk">
+      {SQ_FOLK.map((f, i) => {
+        const dx = f.x1 - f.x0
+        return (
+          <g key={i} transform={`translate(${f.x0},${GROUND + 6})`}>
+            <g className={dx ? 'sq-walk' : 'sq-stand'} data-pace={i % 3} style={{ ['--wx' as string]: `${dx}px` }}>
+              <g transform={`scale(${f.s})`}>
+                <g className="sq-face" data-dir={i % 2 ? 'l' : 'r'}>
+                  <ellipse cx={0} cy={0} rx={3.8} ry={0.9} className="sq-folk-shadow" />
+                  <path className="sq-folk-legs" d="M-1.4,0 L-1.1,-5.2 M1.4,0 L1.1,-5.2" />
+                  <path className="sq-folk-coat" data-tone={f.tone} d="M-3.6,-4.6 L-2.5,-11.6 Q0,-13 2.5,-11.6 L3.6,-4.6 Z" />
+                  {f.basket && <path className="sq-folk-basket" d="M2.4,-8.6 h3.6 l-0.6,2.8 h-2.4 Z M2.9,-8.6 q1.3,-2.2 2.6,0" />}
+                  <circle className="sq-folk-head" data-skin={(f.tone + i) % 3} cx={0} cy={-14.6} r={2.5} />
+                  {f.hat && <path className="sq-folk-hat" d="M-3.6,-15.6 h7.2 M-2.1,-15.6 v-1.8 h4.2 v1.8" />}
+                </g>
+              </g>
+            </g>
+          </g>
+        )
+      })}
+    </g>
+  )
+}
 
 /** A market stall: two posts, a striped scalloped awning, a counter of crates with produce. */
 function Stall({ x, flip }: { x: number; flip?: boolean }) {
@@ -201,6 +211,9 @@ export default function TitleSquare() {
         <path className="sq-glass is-lit" d={L.glassLit} />
         <path className="sq-mullion" d={L.mullions} />
         <path className="sq-sill" d={L.sills} />
+        <path className="sq-rail" d={L.rails} />
+        <path className="sq-box" d={L.boxes} />
+        <path className="sq-bloom" d={L.blooms} />
         <path className="sq-shopfront" d={L.shopfronts} />
         <path className="sq-glass" d={L.shopGlass} />
         <path className="sq-glass is-lit" d={L.shopGlassLit} />
@@ -209,6 +222,10 @@ export default function TitleSquare() {
           <path key={t} className={`sq-awning t${t}`} d={L.awnings[t]} />
         ))}
         <path className="sq-awning-stripe" d={L.stripes} />
+        <path className="sq-bracket" d={L.brackets} />
+        {[0, 1, 2].map((t) => (
+          <path key={t} className={`sq-sign t${t}`} d={L.signs[t]} />
+        ))}
         {/* Marrow's clock tower, between the price-board and Cath */}
         <g className="sq-tower">
           <rect className="sq-wall w4" x={TOWER_X} y={60} width={64} height={GROUND - 60} />
@@ -227,6 +244,7 @@ export default function TitleSquare() {
         <path className="sq-cobble-line" d={COBBLES} />
         <Stall x={-30} />
         <Stall x={W - 120} flip />
+        <SquareFolk />
         {/* low sun from the right; then the paper haze that keeps the square behind the menu, Cath and the board */}
         <rect className="sq-sunwash" x={0} y={0} width={W} height={600} fill="url(#sq-sun)" />
         <rect x={0} y={0} width={W} height={600} fill="url(#sq-haze-menu)" />
