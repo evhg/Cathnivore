@@ -7098,12 +7098,13 @@ Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, 
 ## 756. [ ] Hedgerow act map: stops as landmarks along one lane, not rows of bubbles
 - **Why:** critique (plan1128c hedge-menu-D 285-1060 x 320-440 and 60-1060 x 710-850): ten alike medallions in two straight rows read as a button grid; the middle band (220-1110 x 470-700) is decor the path doesn't use; at P the path is a column of buttons.
 - **Build:** in `games/hedgerow/src/map.ts` (`stopart.ts`, `stopland.ts`), one hedge-lined lane snakes through the act; each stop is its landmark on its own patch of land; locked stops under morning mist; Cath's pin walks the lane to the next stop when one is cleared.
+- **Also (from 759):** at P each stop's name sits on one side, by its stop ('Sandbag Sunday' sat 80 px up-left of stop 32).
 - **Accept:** **measure first** (stop centres, path). At D no two stops share a row (centres differ > 40 px in y for neighbours); the lane passes within 60 px of every stop; locked stops still read as locked (item 702's saturation test); map-diorama and Hedgerow map specs pass; key art re-shot if in its list; shots P/D.
 - **Size:** 2
 
 ## 757. [ ] Hedgerow 3D: Hollowell's vans modelled as vans
 - **Why:** critique (plan1128c hedge-l27-3d-D 230-690 x 260-650, -P 160-560 x 590-1100): the convoy reads as flat purple bricks with a gold disc and no gaps, a wall across the farm; items 584/730/749 gave the classes colours and 2D drawings, the 3D meshes stay boxes.
-- **Build:** in `games/hedgerow/src/render3d/` (the vehicle models): a split cab and box, glass windscreen, dark wheels in arches, a door seam, a Hollowell livery decal; queued vans keep a visible gap on the road.
+- **Build:** in `games/hedgerow/src/render3d/` (the vehicle models): a split cab and box, glass windscreen, dark wheels in arches, a door seam, a Hollowell livery decal; queued vans keep a visible gap on the road; the convoy pill (from 759: at D it sat on the road over the lead van) set off the road.
 - **Accept:** **measure first** (mesh parts, triangles, queue spacing). Each van has 4 wheels and a glass material (unit); gap >= 0.25 van length (unit); a pixel check finds windscreen colour on most on-screen vans; hedgerow 3D specs pass (2 workers); triangle budget held; Hedgerow key art re-shot; shots P/D.
 - **Size:** 2
 
@@ -7113,7 +7114,7 @@ Planning 2026-11-28 18:30 lane A: shots `e2e/screenshots/plan1128c` (P 390x844, 
 - **Accept:** **measure first**. At P (844x390) and D no HUD element meets the central 30% x 30% of the view in the first job (e2e box test); hint text still readable (contrast >= 4.5:1); cathode-hud/phone specs pass; shots P/D.
 - **Size:** 1
 
-## 759. [ ] The bugs from the 2026-11-28 18:25 critique, fixed as one batch *(lane A, in progress)*
+## 759. [x] The bugs from the 2026-11-28 18:25 critique, fixed as one batch *(done 2026-11-28 18:30, lane A, all closed by measurement or decision, or moved: campaign P's '3' is chapter 1's mini-vignette barn cut by the chip's frame (elementsFromPoint: `.cmp-vig-*` paths, no text; whole at 3x), not a badge; campaign D's ticket clears the compass (left 145 px, the rose's right ~140) and every name (753's e2e), lying on Oakvale's land only; Runnel D's waist-cut Cath is item 694's half-length host under the window's foot, and the tap note (x 15-145) ends 35 px short of her; Hedgerow l34 2D's cluster is the shot's own towers on their plots by the depot with the convoy passing on the road, and '+68'/'+50' are coin pops caught mid-fade; Hedgerow menu P's label sides move into 756 (which rebuilds the stops); the 3D convoy pill over the lead van moves into 757)*
 - Cathnivore campaign P (cath-campaign-P 12-24 x 576-594): a stray '3' badge clipped at the left edge by chapter 1's chip.
 - Cathnivore campaign D (145-400 x 730-835): a ticket over the compass rose and Oakvale's foot: measure against item 732's spec (10%) and 753's name check; fix or close by measurement.
 - Runnel D (runnel-D 180-340 x 860-900, 15-145 x 820-885): Cath cut mid-thigh by the window's foot; the 'Tap a tile' note on her hip.
