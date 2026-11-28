@@ -257,8 +257,11 @@ const CATH_LEAN_FROM = 0.95;
 /** Plan item 515: how much each 3D tower's body is scaled over its model (its plinth isn't), so the defences stand
  * as the field's landmarks: the tall ones about 1.3-1.5x a farmer, the squat ones as tall as a farmer, each body
  * still inside its plot. The 2D sprites are unchanged. */
+// Plan item 744: one world scale. The windmill is the field's tallest (about 1.4x Cath), the mast and silo under it;
+// a scarecrow is her own height, not a giant over the mill (1.75 world against the mill's 1.82, and nearer the lens it
+// read twice the mill's size); the beehive and stall a little under her (the skep was 1.55 world, taller than a lorry).
 const TOWER_STAND: Partial<Record<string, number>> = {
-  hedgerow: 1.45, scarecrow: 1.6, beehive: 1.5, stall: 1.4, pond: 1.25, windmill: 1.55, mast: 1.3, cannon: 1.55, silo: 1.55,
+  hedgerow: 1.45, scarecrow: 1.38, beehive: 1.25, stall: 1.3, pond: 1.25, windmill: 1.95, mast: 1.3, cannon: 1.55, silo: 1.5,
 };
 /** The squat towers also stand a little taller than wide (their footprint kept): the hedge grows up, the skep and the
  * stall's canopy rise, the cannon sits higher on its carriage. */
