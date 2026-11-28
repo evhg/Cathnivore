@@ -1600,6 +1600,7 @@ export class Renderer {
               shield: e.shield,
               still: this.reducedMotion,
               heading,
+              above: level.rules === "fleet",
             },
             X(p.x),
             Y(gy),
@@ -1611,7 +1612,8 @@ export class Renderer {
           // body's overlays turn with it.
           const run = TOP_DOWN.has(e.kind) ? heading : undefined;
           // Plan item 707: a Fleet rung on a level run is drawn from above too; its overlays lie over the roof.
-          const level2 = !run && FLEET_TOP[e.kind] !== undefined;
+          // Plan item 749: and on a Fleet level every vehicle with a from-above view is.
+          const level2 = !run && (FLEET_TOP[e.kind] !== undefined || (level.rules === "fleet" && TOP_DOWN.has(e.kind)));
           if (run || level2) {
             const cy = Y(gy) - s * enemyScale(e.kind) * 0.2;
             ctx.save();

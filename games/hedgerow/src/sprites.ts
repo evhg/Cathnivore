@@ -1590,6 +1590,9 @@ export interface EnemyLook {
   shield?: number;
   /** Plan item 285: on an up or down run of the lane a vehicle is drawn from above, nose along the lane. */
   heading?: "up" | "down";
+  /** Plan item 749: a Hollowell Fleet level (act 2 on): every vehicle with a from-above view is drawn from above on
+   *  a level run too, nose along its travel, as the Fleet rungs are, so the convoy is one top-down picture. */
+  above?: boolean;
 }
 
 /**
@@ -1649,6 +1652,12 @@ function topBody(ctx: C, kind: EnemyKind, L: number, bw: number, s: number): voi
   }
 }
 
+/** Plan item 749: the class's livery down both flanks, from a to b along its length (shares, tail to nose). */
+function flankStripes(ctx: C, x0: number, L: number, bw: number, a: number, b: number, colour: string): void {
+  ctx.fillStyle = colour;
+  for (const side of [-1, 1]) ctx.fillRect(x0 + L * a, side * bw * 0.415 - bw * 0.055, L * (b - a), bw * 0.11);
+}
+
 /** Plan item 707: a glazed panel (windscreen or rear window) across the body at x, w wide. */
 function glass(ctx: C, x: number, w: number, W: number): void {
   ctx.fillStyle = "#a9d4e6";
@@ -1682,6 +1691,8 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
       topWheels(ctx, L, W, 2, s);
       rr(ctx, x0, -bw / 2, L, bw, s * 0.1, f.body);
       // Bonnet, windscreen, a dark roof, the rear screen: a stubby car, all glass and roof.
+      // Plan item 749: a black flank stripe, the Hollowell runabout's go-faster livery.
+      flankStripes(ctx, x0, L, bw, 0.06, 0.9, "#2b2b30");
       glass(ctx, x0 + L * 0.58, L * 0.14, bw);
       rr(ctx, x0 + L * 0.24, -bw * 0.34, L * 0.34, bw * 0.68, s * 0.04, "#2b2b30");
       glass(ctx, x0 + L * 0.1, L * 0.12, bw);
@@ -1694,6 +1705,11 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
       // The load roof, a teal stripe down each side of it (the delivery livery).
       ctx.fillStyle = "#1f8a8a";
       for (const side of [-1, 1]) ctx.fillRect(x0 + L * 0.06, side * bw * 0.3 - bw * 0.06, L * 0.62, bw * 0.12);
+      // Plan item 749: the seam where the cab's roof meets the load box.
+      ctx.beginPath();
+      ctx.moveTo(x0 + L * 0.71, -bw * 0.46);
+      ctx.lineTo(x0 + L * 0.71, bw * 0.46);
+      ctx.stroke();
       break;
     }
     case "sprinter": {
@@ -1702,6 +1718,8 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
       // A short bonnet, the windscreen, then the long raised roof pod and its amber light bar (the 'Same-Day' van).
       rr(ctx, x0 + L * 0.86, -bw * 0.34, L * 0.14, bw * 0.68, s * 0.03, "#6d3aa8");
       glass(ctx, x0 + L * 0.74, L * 0.1, bw);
+      // Plan item 749: the 'Same-Day' yellow down both flanks, under the pod.
+      flankStripes(ctx, x0, L, bw, 0.04, 0.84, "#ffd23f");
       rr(ctx, x0 + L * 0.05, -bw * 0.34, L * 0.62, bw * 0.68, s * 0.03, "#a676e0");
       rr(ctx, x0 + L * 0.6, -bw * 0.3, L * 0.06, bw * 0.6, s * 0.01, "#ffd23f");
       break;
@@ -1731,6 +1749,8 @@ function fleetTop(ctx: C, kind: EnemyKind, s: number): void {
       // The cab up front (roof and windscreen), the open bed behind with a crate in it.
       glass(ctx, x0 + L * 0.68, L * 0.08, bw);
       rr(ctx, x0 + L * 0.5, -bw * 0.36, L * 0.18, bw * 0.72, s * 0.03, "#3c7a2d");
+      // Plan item 749: a white stripe down the bed's sides (its side view's livery).
+      flankStripes(ctx, x0, L, bw, 0.03, 0.48, "#f4f6f8");
       rr(ctx, x0 + L * 0.04, -bw * 0.34, L * 0.42, bw * 0.68, s * 0.01, "#2f3a2a");
       rr(ctx, x0 + L * 0.1, -bw * 0.24, L * 0.18, bw * 0.48, s * 0.01, "#c79a62");
       break;
@@ -1897,7 +1917,7 @@ interface VehicleOpts {
 /** Plan item 285: set while a vehicle on an up/down run is drawn, so `vehicle` draws it from above. */
 let fromAbove = false;
 /** The kinds drawn by `vehicle` alone, which have a from-above view; the rest keep their side view on any run. */
-export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter", "wrapped", "influencer", "bulldozer", "megadozer", "courier", "borer", "ship"]);
+export const TOP_DOWN: ReadonlySet<EnemyKind> = new Set(["van", "phantom", "truck", "tender", "director", "clinic", "hatchback", "sprinter", "lorry", "artic", "execcar", "rival", "boss", "convoy", "bus", "board", "pickup", "steel", "skip", "crane", "plantdozer", "transporter", "wrapped", "influencer", "bulldozer", "megadozer", "courier", "borer", "ship", "drone"]);
 
 /** A vehicle seen from above, nose to the right, centred on (x, y): its roof, cab and windscreen, the livery down
  *  both sides, the label on the roof, wheels at the corners and headlights at the nose. */
@@ -1907,11 +1927,19 @@ function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): vo
   const x0 = x - L / 2;
   const y0 = y - W / 2;
   // Wheels first, poking out at the corners (three axles on the long ones).
-  ctx.fillStyle = "#2a2522";
   const n = Math.max(2, o.wheels ?? 2);
   for (let i = 0; i < n; i++) {
     const wx = x0 + L * (0.16 + (i * 0.66) / (n - 1));
-    for (const side of [-1, 1]) ctx.fillRect(wx - s * 0.04, y + side * W * 0.5 - s * 0.025 + (side < 0 ? -s * 0.012 : 0), s * 0.08, s * 0.05);
+    for (const side of [-1, 1]) {
+      // Plan item 749: a rounded tyre with a pale hub line, as the Fleet rungs' (topWheels).
+      const ty = y + side * W * 0.5 - s * 0.025 + (side < 0 ? -s * 0.012 : 0);
+      ctx.fillStyle = "#2a2522";
+      ctx.beginPath();
+      ctx.roundRect(wx - s * 0.045, ty, s * 0.09, s * 0.055, s * 0.015);
+      ctx.fill();
+      ctx.fillStyle = "#8a8580";
+      ctx.fillRect(wx - s * 0.011, ty + s * 0.01, s * 0.022, s * 0.035);
+    }
   }
   // The body and roof.
   rr(ctx, x0, y0, L, W, s * 0.06, o.body);
@@ -1960,7 +1988,16 @@ function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): vo
     ctx.font = `800 ${Math.max(6, Math.round(W * 0.42))}px 'Hedgerow UI', system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(o.label, x0 + L * (cabFront ? 0.37 : 0.5), y);
+    // Plan item 749: a vehicle heading left on a level run is turned half round; its roof label stays upright.
+    const lx = x0 + L * (cabFront ? 0.37 : 0.5);
+    ctx.save();
+    if (ctx.getTransform().a < -0.5) {
+      ctx.translate(lx, y);
+      ctx.rotate(Math.PI);
+      ctx.translate(-lx, -y);
+    }
+    ctx.fillText(o.label, lx, y);
+    ctx.restore();
   }
   shine(ctx, x0 + L * 0.12, y0 + W * 0.14, L * 0.3, W * 0.12);
 }
@@ -1968,6 +2005,42 @@ function vehicleTop(ctx: C, x: number, y: number, s: number, o: VehicleOpts): vo
 /** Plan item 285: from-above views of the ground vehicles not drawn by `vehicle`, nose to the right, centred on the
  *  body. (The Candor spheres read the same from any side; the quads, carriers, drones, blimp and swarm fly.) */
 const TOP_VIEW: Partial<Record<EnemyKind, (ctx: C, s: number, t: number) => void>> = {
+  drone: (ctx, s, t) => {
+    // Plan item 749: a quadcopter from above: an X of arms, a rotor disc blurring at each tip, the parcel slung under
+    // the white body, its teal tape across.
+    rr(ctx, -s * 0.1, -s * 0.08, s * 0.2, s * 0.16, s * 0.02, "#c79a62");
+    ctx.strokeStyle = "#1f8a8a";
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.1, 0);
+    ctx.lineTo(s * 0.1, 0);
+    ctx.stroke();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = Math.max(1.5, s * 0.03);
+    ctx.beginPath();
+    for (const [dx, dy] of [[1, 1], [1, -1]] as const) {
+      ctx.moveTo(-s * 0.2 * dx, -s * 0.2 * dy);
+      ctx.lineTo(s * 0.2 * dx, s * 0.2 * dy);
+    }
+    ctx.stroke();
+    ctx.lineWidth = lw(s);
+    for (const [dx, dy] of [[-1, -1], [-1, 1], [1, -1], [1, 1]] as const) {
+      ctx.fillStyle = "rgba(200,210,220,0.55)";
+      ctx.beginPath();
+      ctx.arc(s * 0.2 * dx, s * 0.2 * dy, s * 0.11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      const a = t * 40 + dx * 1.3 + dy;
+      ctx.beginPath();
+      ctx.moveTo(s * 0.2 * dx - Math.cos(a) * s * 0.1, s * 0.2 * dy - Math.sin(a) * s * 0.1);
+      ctx.lineTo(s * 0.2 * dx + Math.cos(a) * s * 0.1, s * 0.2 * dy + Math.sin(a) * s * 0.1);
+      ctx.stroke();
+    }
+    rr(ctx, -s * 0.08, -s * 0.06, s * 0.16, s * 0.12, s * 0.04, "#e6eaee");
+    ctx.fillStyle = "#d95f3b";
+    ctx.beginPath();
+    ctx.arc(s * 0.06, 0, s * 0.02, 0, Math.PI * 2);
+    ctx.fill();
+  },
   bulldozer: (ctx, s, t) => dozerTop(ctx, s, t, false),
   megadozer: (ctx, s, t) => dozerTop(ctx, s, t, true),
   courier: (ctx, s) => {
@@ -2160,9 +2233,10 @@ export function drawEnemy(ctx: C, look: EnemyLook, x: number, y: number, s0: num
   const kb = !look.still && look.hit < 0.12 ? s0 * 0.04 * (1 - look.hit / 0.12) : 0;
   // Plan item 285: up or down the lane a vehicle is seen from above, nose along the lane, centred over its ground
   // point (the side view stands on it).
-  fromAbove = !!look.heading && TOP_DOWN.has(kind);
   const fleet = FLEET_TOP[kind] !== undefined;
-  if (fleet && !look.heading) {
+  const flat = !fleet && !look.heading && !!look.above && TOP_DOWN.has(kind);
+  fromAbove = (!!look.heading || flat) && TOP_DOWN.has(kind);
+  if ((fleet || flat) && !look.heading) {
     // Plan item 707: a Fleet rung on a level run is seen from above too, nose along its travel.
     ctx.translate(-look.facing * kb, -s * 0.2);
     ctx.rotate(look.facing < 0 ? Math.PI : 0);
@@ -3057,14 +3131,15 @@ export function towerSilhouette(kind: TowerKind, cell = 24): { w: number; h: num
  * Plan item 105: a vehicle's 2D silhouette at a cell size, drawn by its own sprite: the mask and the drawn length
  * (its widest opaque run), for the size and tell-apart checks.
  */
-export function enemySilhouette(kind: EnemyKind, cell = 64): { w: number; h: number; len: number; mask: number[] } {
+export function enemySilhouette(kind: EnemyKind, cell = 64, above = false): { w: number; h: number; len: number; mask: number[] } {
   const w = Math.round(cell * 3);
   const h = Math.round(cell * 2.4);
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
   const ctx = c.getContext("2d")!;
-  drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: 0, still: true }, w / 2, h * 0.8, cell, 0);
+  // Plan item 749: `above` draws it as a Fleet level's level run does (from above).
+  drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: 0, still: true, above }, w / 2, h * 0.8, cell, 0);
   const d = ctx.getImageData(0, 0, w, h).data;
   const mask: number[] = [];
   let x0 = w;
@@ -3079,6 +3154,19 @@ export function enemySilhouette(kind: EnemyKind, cell = 64): { w: number; h: num
     }
   }
   return { w, h, len: x1 >= x0 ? x1 - x0 + 1 : 0, mask };
+}
+
+/** Plan item 749: a vehicle drawn alone on a transparent canvas (a data URL), for the greyscale contact sheet:
+ *  `above` draws it as a Fleet level's level run does. */
+export function enemySprite(kind: EnemyKind, cell = 64, above = false): string {
+  const w = Math.round(cell * 2.4);
+  const h = Math.round(cell * 2);
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d")!;
+  drawEnemy(ctx, { kind, facing: 1, hit: 9, ghost: false, phase: 0, still: true, above }, w / 2, h * 0.7, cell, 0);
+  return c.toDataURL();
 }
 
 /** Plan item 114: Cath's 2D figure drawn offscreen at a cell size: her drawn height and width in px. */

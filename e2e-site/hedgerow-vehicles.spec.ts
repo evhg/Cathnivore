@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 // Plan item 105: every vehicle on the 2D lane at level 21 (and every fleet rung) is drawn 28 px long or more at D
 // and 20 on a phone, at the field's real cell size, and no two vehicle types share a silhouette (overlap under 90%).
 type Sil = { w: number; h: number; len: number; mask: number[] }
-type HG = { game(): { level: { waves: Array<Array<{ enemy: string }>> } } | null; cellCenter(c: number, r: number): { x: number } | null; enemySilhouette(k: string, cell: number): Sil }
+type HG = { game(): { level: { waves: Array<Array<{ enemy: string }>> } } | null; cellCenter(c: number, r: number): { x: number } | null; enemySilhouette(k: string, cell: number, above?: boolean): Sil }
 
 test('2D vehicles are long enough to read and each has its own silhouette', async ({ page, hasTouch }) => {
   test.setTimeout(120_000)
@@ -49,8 +49,9 @@ test('the Fleet classes differ in outline: pairwise mask IoU 0.8 or less (plan i
   const r = await page.evaluate(() => {
     const hg = (window as unknown as { hedgerow: HG }).hedgerow
     const cell = Math.round(hg.cellCenter(1, 0)!.x - hg.cellCenter(0, 0)!.x)
-    const kinds = ['courier', 'hatchback', 'van', 'pickup', 'sprinter', 'lorry']
-    const sils = kinds.map((k) => [k, hg.enemySilhouette(k, cell)] as const)
+    // Plan item 749 slice 2: with the plated lorry and the drone as a Fleet level draws them (from above).
+    const kinds = ['courier', 'hatchback', 'van', 'pickup', 'sprinter', 'lorry', 'steel', 'drone']
+    const sils = kinds.map((k) => [k, hg.enemySilhouette(k, cell, true)] as const)
     const pairs: Array<[string, number]> = []
     for (let i = 0; i < sils.length; i++)
       for (let j = i + 1; j < sils.length; j++) {

@@ -155,7 +155,7 @@ import { suggestedPlot } from "./bot";
 import { barkSpot, type BarkSpot } from "./cathsay";
 import { BARK_SHOW, BarkGate, barkCorner, type BarkKind } from "./bark";
 import { countersFor, needsUpgrade, newThisRound, rosetteSpot, traitsOf, TRAIT_TEXT, type Box, type Trait } from "./intro";
-import { enemySilhouette, towerSilhouette, towerTier } from "./sprites";
+import { enemySilhouette, enemySprite, towerSilhouette, towerTier } from "./sprites";
 import { countAt, foldLeaks, tallyTimeline, type LeakRecord, type TallyCounter } from "./tally";
 import { PATHS, PATH_TIERS, buildName, hasPaths, legacyPath, pathBlock, topPath, type Path, type PathIndex, type PathKind } from "./paths";
 import * as sfx from "./sound";
@@ -974,6 +974,8 @@ if (SANDBOX)
     silhouette: towerSilhouette,
     // Plan item 105: a vehicle's 2D silhouette and drawn length at a cell size.
     enemySilhouette,
+    // Plan item 749: a vehicle drawn alone (data URL), side view or as a Fleet level draws it.
+    enemySprite,
     // Plan item 285: every vehicle's icon, for the greyscale contact sheet.
     enemyIcon,
     // Plan item 64: pin a round-end rosette now (e2e checks it covers no plot), and the plot cells' boxes.
