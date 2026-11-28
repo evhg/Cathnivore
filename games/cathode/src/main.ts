@@ -941,7 +941,7 @@ async function begin(fromTitle: boolean): Promise<void> {
   // C14 (S9.6): the case file, unless the push handed over a built street (no load to cover).
   const travel = takeTravel();
   const card = loadingCard(jobs(), district, { seen: listSeen(), travel });
-  const loading = world ? null : openLoading($("loading"), card, { still: still() });
+  const loading = world ? null : openLoading($("loading"), card, { still: still(), onLand: () => audio.tock() });
   if (loading) fade.classList.remove("is-black");
   const progress = (share: number) => loading?.set(share);
   const { startSession } = await sessionMod;

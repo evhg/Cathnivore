@@ -135,3 +135,18 @@ test('the briefing sits on a window, cork wall and desk, and its cards are dealt
   })
   for (let i = 1; i < delays.length; i++) expect(delays[i]!, `card ${i} after card ${i - 1}`).toBeGreaterThan(delays[i - 1]!)
 })
+
+// Plan item 755: each print lands with its pin's tock (one per card, counted on `data-landed`), and reduced motion
+// fades the prints in where they lie instead of dropping them.
+test('the prints land one by one, and reduced motion fades them in', async ({ page }) => {
+  test.setTimeout(180_000)
+  await open(page, { width: 1440, height: 900 })
+  // (?shot holds the deal still: let it play)
+  await page.locator('#loading').evaluate((r) => r.classList.remove('is-still'))
+  await expect(page.locator('#loading')).toHaveAttribute('data-landed', '4', { timeout: 15_000 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const names = await page.locator('#loading').evaluate((r) =>
+    ['.ld-still', '.ld-obj', '.ld-print', '.ld-map'].map((s) => getComputedStyle(r.querySelector(s)!).animationName),
+  )
+  expect(names).toEqual(['ld-deal-fade', 'ld-deal-fade', 'ld-deal-fade', 'none'])
+})

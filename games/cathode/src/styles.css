@@ -330,6 +330,8 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 .ld-cork {
   inset: calc(var(--win) + var(--u) * 12) 0 var(--desk);
   background:
+    /* plan item 755: the cork's own grain, fractal noise thresholded to dark flecks, so the tiled specks below no longer read as a lattice */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='173' height='173'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.6' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .07 0 0 0 0 .03 -2.6 0 0 0 1.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / calc(var(--u) * 173) calc(var(--u) * 173),
     radial-gradient(circle at 20% 30%, rgb(var(--black-rgb) / .09) 0 1px, transparent 1.5px) 0 0 / calc(var(--u) * 7) calc(var(--u) * 9), /* px-ok: a cork fleck */
     radial-gradient(circle at 60% 20%, rgb(var(--black-rgb) / .12) 0 1px, transparent 2px) calc(var(--u) * 3) calc(var(--u) * 5) / calc(var(--u) * 13) calc(var(--u) * 17), /* px-ok */
     radial-gradient(circle at 70% 60%, rgb(var(--white-rgb) / .06) 0 1px, transparent 1.5px) 0 0 / calc(var(--u) * 11) calc(var(--u) * 14), /* px-ok */
@@ -482,8 +484,14 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 @keyframes ld-string-in { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes ld-deal-move { from { transform: translateY(-4vh) rotate(calc(var(--tilt) * -2)) scale(1.04); } }
 .loading.is-still :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; }
-:root.reduce-motion :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; }
-@media (prefers-reduced-motion: reduce) { :is(.ld-still, .ld-print, .ld-map, .ld-obj, .ld-string path) { animation: none; } }
+/* Plan item 755: reduced motion fades the prints in where they lie (same order), no drop, no overshoot */
+:root.reduce-motion :is(.ld-map, .ld-string path) { animation: none; }
+:root.reduce-motion :is(.ld-still, .ld-print, .ld-obj) { animation-name: ld-deal-fade; animation-timing-function: ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.ld-map, .ld-string path) { animation: none; }
+  :is(.ld-still, .ld-print, .ld-obj) { animation-name: ld-deal-fade; animation-timing-function: ease-out; }
+}
+@keyframes ld-deal-fade { from { opacity: 0; } to { opacity: 1; } }
 .ld-string { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: var(--z-lift-3); }
 .ld-string path { fill: none; stroke-linecap: round; }
 .ld-string-shade { stroke: rgb(var(--black-rgb) / .45); stroke-width: max(2px, calc(var(--u) * 4)); transform: translate(0, calc(var(--u) * 4)); } /* px-ok */

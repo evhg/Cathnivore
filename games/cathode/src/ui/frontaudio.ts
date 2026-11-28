@@ -380,6 +380,41 @@ export class FrontAudio {
     o.stop(now + 0.24);
   }
 
+  /**
+   * Plan item 755: the pin tock as a briefing print lands on the cork: a short knock of hollow wood (a 1.1 kHz
+   * sine falling to 640 Hz in 30 ms) under a narrow band of noise at 3.2 kHz for the pin, about 45 ms at -20 dB.
+   */
+  tock(): void {
+    const c = this.ctx;
+    if (!c || !this.ui || !this.awake) return;
+    const now = c.currentTime;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(db(-20), now + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+    g.connect(this.ui);
+    const o = c.createOscillator();
+    o.type = "sine";
+    o.frequency.setValueAtTime(1100, now);
+    o.frequency.exponentialRampToValueAtTime(640, now + 0.03);
+    o.connect(g);
+    o.start(now);
+    o.stop(now + 0.05);
+    const n = this.noiseSrc();
+    if (n) {
+      const bp = c.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 3200;
+      bp.Q.value = 6;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(db(-6), now);
+      ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+      n.connect(bp).connect(ng).connect(g);
+      n.start(now);
+      n.stop(now + 0.02);
+    }
+  }
+
   /** The push into the street: a saw pad swelling as its low-pass sweeps 200 Hz to 2 kHz over `s` seconds. */
   swell(s = 1.6): void {
     const c = this.ctx;

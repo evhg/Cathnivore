@@ -44,7 +44,7 @@ export interface LoadingView {
   readonly trace: number[];
 }
 
-export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: boolean; held?: number } = { still: false }): LoadingView {
+export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: boolean; held?: number; onLand?: () => void } = { still: false }): LoadingView {
   root.dataset.district = card.district;
   root.dataset.motif = card.motif;
   root.classList.toggle("is-still", o.still);
@@ -353,6 +353,15 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   requestAnimationFrame(restring);
   // The prints drop into place over about a second: the string follows their pins until they land.
   for (const e of [still, goalCard, print, sheet]) e.addEventListener("animationend", restring);
+  // Plan item 755: a pin's tock as each print lands on the cork (its own deal, not the string's or a child's).
+  const landed = new Set<Element>();
+  for (const e of [still, goalCard, print, sheet])
+    e.addEventListener("animationend", (ev) => {
+      if (ev.target !== e || landed.has(e) || !/^ld-deal/.test(ev.animationName)) return;
+      landed.add(e);
+      root.dataset.landed = String(landed.size);
+      o.onLand?.();
+    });
   // (the sheet's labels sized once it has landed: measured mid-deal they came out at 11 px)
   sheet.addEventListener("animationend", () => {
     const plan = sheet.querySelector<SVGSVGElement>("svg");
