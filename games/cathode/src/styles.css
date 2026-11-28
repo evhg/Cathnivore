@@ -308,6 +308,80 @@ fieldset label:has(input:focus-visible) span::after { transform: none; }
 }
 :root.reduce-motion :is(.ld-img, .ld-grain, .ld-trace::before, .ld-ready, .ld-corner) { animation: none; }
 :root.reduce-motion .ld-list li.is-fresh::after { transition-duration: 1ms; }
+/* Plan item 755: the room the briefing is laid out in. The street shows only through the window strip along the top
+   (rain running down the glass, a sash bar); below it a cork wall, lit by the desk lamp's warm pool and falling off
+   to the corners; along the foot the desk's front edge, walnut, with her furled umbrella and a coffee ring. Over the
+   frame and the shading, under the papers and the type. */
+.ld-set { position: absolute; inset: 0; z-index: var(--z-lift); pointer-events: none; --win: 11vh; --desk: 9vh; }
+.ld-set > * { position: absolute; display: block; }
+/* Between cases the frame is her office already (the office key art): no second room over it. */
+.loading[data-district="office"] .ld-set { display: none; }
+.ld-window {
+  inset: 0 0 auto;
+  height: var(--win);
+  background:
+    linear-gradient(90deg, transparent calc(50% - var(--u) * 5), var(--night-2) calc(50% - var(--u) * 5) calc(50% + var(--u) * 5), transparent calc(50% + var(--u) * 5)),
+    repeating-linear-gradient(97deg, transparent 0 calc(var(--u) * 23), rgb(var(--white-rgb) / .1) calc(var(--u) * 23) calc(var(--u) * 24.5), transparent calc(var(--u) * 24.5) calc(var(--u) * 41)),
+    repeating-linear-gradient(93deg, transparent 0 calc(var(--u) * 57), rgb(var(--white-rgb) / .07) calc(var(--u) * 57) calc(var(--u) * 59)),
+    linear-gradient(180deg, rgb(var(--white-rgb) / .1), rgb(var(--white-rgb) / .04));
+  border-bottom: calc(var(--u) * 12) solid var(--night-2);
+  box-shadow: inset 0 calc(var(--u) * -6) calc(var(--u) * 10) rgb(var(--black-rgb) / .5), 0 calc(var(--u) * 6) calc(var(--u) * 14) rgb(var(--black-rgb) / .55);
+}
+.ld-cork {
+  inset: calc(var(--win) + var(--u) * 12) 0 var(--desk);
+  background:
+    radial-gradient(circle at 20% 30%, rgb(var(--black-rgb) / .09) 0 1px, transparent 1.5px) 0 0 / calc(var(--u) * 7) calc(var(--u) * 9), /* px-ok: a cork fleck */
+    radial-gradient(circle at 60% 20%, rgb(var(--black-rgb) / .12) 0 1px, transparent 2px) calc(var(--u) * 3) calc(var(--u) * 5) / calc(var(--u) * 13) calc(var(--u) * 17), /* px-ok */
+    radial-gradient(circle at 70% 60%, rgb(var(--white-rgb) / .06) 0 1px, transparent 1.5px) 0 0 / calc(var(--u) * 11) calc(var(--u) * 14), /* px-ok */
+    radial-gradient(circle at 40% 80%, rgb(var(--black-rgb) / .14) 0 2px, transparent 3px) 0 0 / calc(var(--u) * 23) calc(var(--u) * 19), /* px-ok */
+    radial-gradient(ellipse at 50% 40%, var(--cork-hi), var(--cork) 55%, var(--cork-lo));
+  box-shadow: inset 0 0 calc(var(--u) * 120) rgb(var(--black-rgb) / .55);
+}
+/* The lamp stands off the left edge: its pool warms the wall behind the name and the papers, the far corner in shade. */
+.ld-lamp {
+  inset: 0;
+  background:
+    radial-gradient(42% 58% at 26% 72%, rgb(var(--amber-rgb) / .13), transparent 75%),
+    linear-gradient(90deg, transparent 40%, rgb(var(--black-rgb) / .34)),
+    linear-gradient(180deg, rgb(var(--black-rgb) / .28), transparent 28%);
+}
+.ld-desk {
+  inset: auto 0 0;
+  height: var(--desk);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cork-hi) 60%, var(--print-paper)) 0 calc(var(--u) * 2), transparent calc(var(--u) * 5)),
+    radial-gradient(45% 140% at 32% 0%, rgb(var(--amber-rgb) / .16), transparent 70%),
+    repeating-linear-gradient(178deg, transparent 0 calc(var(--u) * 9), rgb(var(--black-rgb) / .16) calc(var(--u) * 9) calc(var(--u) * 11), transparent calc(var(--u) * 11) calc(var(--u) * 17)),
+    linear-gradient(180deg, color-mix(in srgb, var(--cork-lo) 82%, var(--cork)), color-mix(in srgb, var(--cork-lo) 70%, var(--night)));
+  box-shadow: 0 calc(var(--u) * -10) calc(var(--u) * 24) rgb(var(--black-rgb) / .45);
+}
+/* A cup's ring on the walnut, right of centre: a thin pale arc, darker on its lower lip. */
+.ld-ring {
+  right: 15vw;
+  bottom: calc(var(--desk) * .28);
+  width: calc(var(--u) * 96);
+  height: calc(var(--u) * 32);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 calc(var(--u) * 3) color-mix(in srgb, var(--cork-hi) 80%, transparent), inset 0 calc(var(--u) * -2) 0 calc(var(--u) * 3) rgb(var(--black-rgb) / .2);
+}
+/* Her umbrella, furled and lying along the desk's edge, the crook toward the lamp. */
+.ld-brolly { left: 40vw; bottom: calc(var(--desk) * .12); width: calc(var(--u) * 640); filter: drop-shadow(0 calc(var(--u) * 6) calc(var(--u) * 5) rgb(var(--black-rgb) / .55)); }
+.ld-brolly svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ld-brolly-cloth { fill: var(--night-3); stroke: rgb(var(--white-rgb) / .3); stroke-width: 1.4; }
+.ld-brolly-fold { fill: none; stroke: rgb(var(--white-rgb) / .2); stroke-width: 1.2; }
+.ld-brolly-strap { stroke: var(--night-2); stroke-width: 5; stroke-linecap: round; }
+.ld-brolly-tip { stroke: color-mix(in srgb, var(--print-paper) 70%, var(--night)); stroke-width: 3; stroke-linecap: round; }
+.ld-brolly-crook { fill: none; stroke: var(--cork-hi); stroke-width: 7; stroke-linecap: round; }
+/* The papers lie on cork now: the type side's shading lifts to the lamp's falloff alone. */
+.loading::after { background: linear-gradient(90deg, rgb(var(--shade-rgb) / .38) 0%, rgb(var(--shade-rgb) / .14) 34%, transparent 55%); }
+@media (max-width: 640px) and (orientation: portrait) {
+  .ld-set { --win: 6vh; --desk: 7vh; }
+  .ld-brolly { left: 30vw; width: 62vw; }
+  .ld-ring { right: 6vw; }
+}
+@media (max-height: 430px) and (orientation: landscape) {
+  .ld-set { --win: 9vh; --desk: 10vh; }
+}
 /* Plan item 629: the briefing pinned over the frame: the next name's surveillance still (top left), the district's
    survey sheet with the route ringed (centre), Cath's photograph from the title's street (right), and a red string
    pinned through them that draws itself as the load runs. Prints are paper with a drop shadow and a slight tilt. */

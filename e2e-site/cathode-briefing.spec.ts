@@ -93,3 +93,45 @@ test('at D the clinic sheet names its walled floor too', async ({ page }) => {
   expect(tb.x >= wb.x - 1 && tb.x + tb.width <= wb.x + wb.width + 1 && tb.y >= wb.y - 1 && tb.y + tb.height <= wb.y + wb.height + 1).toBe(true)
   expect(tb.height).toBeGreaterThanOrEqual(60)
 })
+
+// Plan item 755: the briefing lies in her office, not over a void: a window strip, a cork wall and the desk's edge
+// behind the cards (three materials), and the cards dealt one after another (still, objective, sheet, her print).
+test('the briefing sits on a window, cork wall and desk, and its cards are dealt in order', async ({ page }) => {
+  test.setTimeout(180_000)
+  await open(page, { width: 1440, height: 900 })
+  const set = await page.locator('#loading .ld-set').evaluate((s) =>
+    ['.ld-window', '.ld-cork', '.ld-desk'].map((sel) => {
+      const e = s.querySelector(sel)!
+      const r = e.getBoundingClientRect()
+      return { sel, h: r.height, w: r.width, bg: getComputedStyle(e).backgroundImage }
+    }),
+  )
+  for (const p of set) {
+    expect(p.w, p.sel).toBeGreaterThan(1000)
+    expect(p.h, p.sel).toBeGreaterThan(40)
+    expect(p.bg, p.sel).not.toBe('none')
+  }
+  expect(new Set(set.map((p) => p.bg)).size).toBe(3)
+  // the papers stand over the set, not under it
+  const z = await page.locator('#loading').evaluate((root) => {
+    const at = (sel: string) => [...root.children].findIndex((c) => c.matches(sel) || !!c.querySelector(sel))
+    return { set: at('.ld-set'), board: at('.ld-board'), file: at('.ld-file') }
+  })
+  expect(z.set).toBeLessThan(z.board)
+  expect(z.set).toBeLessThan(z.file)
+  // (?shot holds the cards still, so the deal is read from the stylesheet's own rules)
+  const delays = await page.evaluate(() => {
+    const rules = [...document.styleSheets].flatMap((sh) => {
+      try {
+        return [...sh.cssRules]
+      } catch {
+        return []
+      }
+    }) as CSSStyleRule[]
+    return ['.ld-still', '.ld-obj', '.ld-map', '.ld-print'].map((sel) => {
+      const r = rules.find((x) => x.selectorText === sel && x.style.animationDelay)
+      return r ? parseFloat(r.style.animationDelay) * (r.style.animationDelay.endsWith('ms') ? 1 : 1000) : NaN
+    })
+  })
+  for (let i = 1; i < delays.length; i++) expect(delays[i]!, `card ${i} after card ${i - 1}`).toBeGreaterThan(delays[i - 1]!)
+})

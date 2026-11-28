@@ -55,6 +55,21 @@ export function openLoading(root: HTMLElement, card: LoadingCard, o: { still: bo
   el("div", "ld-tone", art);
   el("div", "ld-dots", art);
   el("div", "ld-grain", art);
+  // Plan item 755: the briefing is laid out in her office, not over a void: the street only through a rain-streaked
+  // window strip along the top, a cork wall behind the papers warmed by a desk lamp's pool, and the desk's front edge
+  // along the foot with her furled umbrella and the ring a coffee cup left.
+  const set = el("div", "ld-set", root);
+  set.setAttribute("aria-hidden", "true");
+  el("div", "ld-window", set);
+  el("div", "ld-cork", set);
+  el("div", "ld-lamp", set);
+  el("div", "ld-desk", set);
+  el("i", "ld-ring", set);
+  const brolly = el("i", "ld-brolly", set);
+  brolly.innerHTML =
+    '<svg viewBox="0 0 400 40"><path class="ld-brolly-cloth" d="M60 20 Q66 9 120 11 L330 17 Q338 20 330 23 L120 29 Q66 31 60 20 Z"/>' +
+    '<path class="ld-brolly-fold" d="M120 11 Q200 19 330 17 M120 29 Q210 22 330 23"/><path class="ld-brolly-strap" d="M182 13 L190 27"/>' +
+    '<path class="ld-brolly-tip" d="M330 20 L384 20"/><path class="ld-brolly-crook" d="M60 20 L26 20 Q8 20 8 34"/></svg>';
 
   const file = el("div", "ld-file", root);
   // No portrait plate (DECISIONS 2026-10-21): the bosses share one helmeted Enforcer rig, so a plate showed the
